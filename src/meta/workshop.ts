@@ -14,6 +14,7 @@ export const META_GUN = 3;
 export const META_REVIVE = 4;
 export const META_REROLL = 5;
 export const META_N = 6;
+const FIT_CODES = "PRSGVL";
 
 export const META_NAMES: readonly string[] = [
   "MAX HP",
@@ -113,6 +114,36 @@ export function awardRun(shop: Workshop, w: World): number {
   return n;
 }
 
+export function fitLabel(ranks: ArrayLike<number>): string {
+  let out = "";
+  const n = Math.min(ranks.length, META_N);
+  for (let i = 0; i < n; i++) {
+    const cap = META_MAX[i] ?? 0;
+    const raw = ranks[i] ?? 0;
+    let lv = 0;
+    if (typeof raw === "number" && Number.isFinite(raw)) lv = Math.trunc(raw);
+    if (lv < 0) lv = 0;
+    if (lv > cap) lv = cap;
+    if (lv > 0) out += FIT_CODES.charAt(i) + lv;
+  }
+  return out;
+}
+
+export function canonFit(raw: unknown): string {
+  if (typeof raw !== "string" || raw.length === 0 || raw.length > META_N * 2) return "";
+  const ranks = [0, 0, 0, 0, 0, 0];
+  let prev = -1;
+  for (let i = 0; i < raw.length; i += 2) {
+    const idx = FIT_CODES.indexOf(raw.charAt(i));
+    const lv = raw.charCodeAt(i + 1) - 48;
+    if (idx <= prev || lv < 1 || lv > 9) return "";
+    ranks[idx] = lv;
+    prev = idx;
+  }
+  const built = fitLabel(ranks);
+  return built === raw ? raw : "";
+}
+
 export function applyWorkshop(w: World, shop: Workshop): void {
   const m = w.meta;
   m.hp = (shop.ranks[META_HP] ?? 0) * BONUS_HP;
@@ -123,6 +154,7 @@ export function applyWorkshop(w: World, shop: Workshop): void {
   m.reroll = shop.ranks[META_REROLL] ?? 0;
   m.rerollLeft = 0;
   m.banked = 0;
+  w.workshop = fitLabel(shop.ranks);
   w.maxHp = maxHpOf(w);
   w.hp = w.maxHp;
 }

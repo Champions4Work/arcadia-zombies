@@ -603,6 +603,7 @@ function frame(now: number): void {
           upgrades: world.upgrades,
           character: characterAt(world.charId).id,
           mods: world.mods,
+          workshop: world.workshop,
         }));
         runLineText = settled.line;
         runShare = settled.share;

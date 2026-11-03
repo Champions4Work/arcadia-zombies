@@ -1,3 +1,4 @@
+import { canonFit } from "../meta/workshop";
 import { CHAR_TINKER, characterAt, characterIndex } from "../sim/characters";
 import { tierName } from "../sim/difficulty";
 import { clampMods, modNames, scoreLabel } from "../sim/modifiers";
@@ -26,6 +27,7 @@ export interface RunRecord {
   build: string;
   character: string;
   mods: number;
+  workshop: string;
 }
 
 export interface Life {
@@ -48,6 +50,7 @@ export interface RunInput {
   upgrades: ArrayLike<number>;
   character?: string;
   mods?: number;
+  workshop?: string;
 }
 
 export interface KillTracker {
@@ -138,6 +141,7 @@ export function captureRun(input: RunInput): RunRecord {
     build: buildLabel(input.upgrades),
     character: input.character ?? characterAt(CHAR_TINKER).id,
     mods: clampMods(input.mods ?? 0),
+    workshop: input.workshop ?? "",
   });
 }
 
@@ -148,15 +152,19 @@ export function formatTime(ticks: number): string {
   return `${m}:${s < 10 ? "0" : ""}${s}`;
 }
 
+function fitSuffix(workshop: string): string {
+  return workshop ? ` · ${workshop}` : "";
+}
+
 export function runLine(run: RunRecord): string {
   const row = sanitize(run);
-  return `${formatTime(row.time)} · ${tierName(row.tier)} · ${row.kills} kills · ${row.build} · ${characterAt(characterIndex(row.character)).name}${modSuffix(row.mods)}`;
+  return `${formatTime(row.time)} · ${tierName(row.tier)} · ${row.kills} kills · ${row.build} · ${characterAt(characterIndex(row.character)).name}${modSuffix(row.mods)}${fitSuffix(row.workshop)}`;
 }
 
 export function shareText(run: RunRecord): string {
   const row = sanitize(run);
   const who = characterAt(characterIndex(row.character)).name;
-  return `Arcadia: Gears of the Dead — Score ${row.score} · ${formatTime(row.time)} · ${tierName(row.tier)} · ${row.kills} kills · ${row.build} · ${who}${modSuffix(row.mods)}`;
+  return `Arcadia: Gears of the Dead — Score ${row.score} · ${formatTime(row.time)} · ${tierName(row.tier)} · ${row.kills} kills · ${row.build} · ${who}${modSuffix(row.mods)}${fitSuffix(row.workshop)}`;
 }
 
 function modSuffix(mods: number): string {
@@ -253,7 +261,7 @@ export function saveLeaderboard(store: Store, saved: SavedRecords): void {
     store.setItem(LEADERBOARD_KEY, JSON.stringify({
       v: 1,
       board: saved.board.map((r) => ({
-        score: r.score, time: r.time, tier: r.tier, kills: r.kills, build: r.build, character: r.character, mods: r.mods,
+        score: r.score, time: r.time, tier: r.tier, kills: r.kills, build: r.build, character: r.character, mods: r.mods, workshop: r.workshop,
       })),
       life: { kills: saved.life.kills, bestTime: saved.life.bestTime, runs: saved.life.runs },
       unlocked: saved.unlocked.slice(),
@@ -284,6 +292,7 @@ function sanitize(run: RunRecord): RunRecord {
     build: cleanBuild(run.build),
     character: cleanCharacter(run.character),
     mods: clampMods(run.mods ?? 0),
+    workshop: canonFit(run.workshop),
   };
 }
 
@@ -332,6 +341,7 @@ function decode(v: unknown): SavedRecords {
         build: typeof item.build === "string" ? item.build : "",
         character: typeof item.character === "string" ? item.character : "",
         mods: clampMods((item.mods as number) ?? 0),
+        workshop: typeof item.workshop === "string" ? item.workshop : "",
       }));
     }
     saved.board.sort(compareRuns);

@@ -8,6 +8,7 @@ import {
   BONUS_SPD,
   cheapestCost,
   emptyWorkshop,
+  fitLabel,
   loadWorkshop,
   META_BLURB,
   META_COST,
@@ -17,6 +18,7 @@ import {
   META_MAX,
   META_N,
   META_NAMES,
+  META_REROLL,
   META_REVIVE,
   META_SPD,
   nextCost,
@@ -31,15 +33,17 @@ import {
 } from "../src/meta/workshop";
 import { CHAR_ALCHEMIST, CHAR_BRUTE, CHAR_GUNSLINGER, offerCount, RAGE_DMG } from "../src/sim/characters";
 import { tierAt } from "../src/sim/difficulty";
+import { doubledScrap, harmLich, isWon, killCount, lichHp, lichMaxHp, lichUp, seekSeconds } from "../src/sim/finale";
 import { cannonHit, MOD_FAST, MOD_GEAR, MOD_GLASS, MOD_NOHEAL } from "../src/sim/modifiers";
 import { applyUpgrade, bulletDmg, CARD_H, CARD_Y, fireEvery, maxHpOf, moveSpeed, takeXp, xpNeed } from "../src/sim/progress";
 import { REROLL_H, REROLL_W, REROLL_X, REROLL_Y, rerollHit, tryReroll } from "../src/sim/reroll";
 import { step } from "../src/sim/step.hot";
 import {
-  EV_REVIVE, EV_SHOT, EVOL_CANNON, H, MAX_BULLETS, MAX_ZOMBIES, UPG_DMG, UPG_HP, UPG_MAX, UPG_SPEED, WPN_MORT, type Input, type World,
+  EV_KILL, EV_REVIVE, EV_SHOT, EVOL_CANNON, H, MAX_BULLETS, MAX_ZOMBIES, UPG_DMG, UPG_HP, UPG_MAX, UPG_SPEED, WPN_MORT, type Input, type World,
 } from "../src/sim/types";
 import { weaponEvery } from "../src/sim/weapons";
 import { createWorld } from "../src/sim/world";
+import { createTracker, noteKills } from "../src/shell/leaderboard";
 import {
   begin,
   closeWorkshop,
@@ -152,6 +156,31 @@ describe("brass scrap", () => {
     expect(n).toBeLessThan(META_COST[META_REVIVE]?.[0] ?? 0);
     expect(n).toBeLessThan(rackCost());
   });
+
+  it("pays a lich win from the same kill total as the tally and the tracker", () => {
+    const w = createWorld(4);
+    w.hp = 5000;
+    w.maxHp = 5000;
+    w.fireCd = 99999;
+    const tracker = createTracker();
+    seekSeconds(w, 1200);
+    let guard = 0;
+    while (!w.over && guard < 8) {
+      if (lichUp(w) && lichHp(w) > 0) harmLich(w, lichMaxHp());
+      step(w, idle(0));
+      noteKills(tracker, w.events[EV_KILL] ?? 0);
+      guard++;
+    }
+    expect(isWon(w)).toBe(true);
+    expect(w.kills).toBe(killCount(w));
+    expect(tracker.kills).toBe(killCount(w));
+    expect(w.kills).toBeGreaterThan(0);
+    const shop = emptyWorkshop();
+    const paid = awardRun(shop, w);
+    expect(paid).toBe(doubledScrap(scrapEarned(w.tick, w.rank, killCount(w))));
+    expect(paid).toBe(doubledScrap(scrapEarned(w.tick, w.rank, tracker.kills)));
+    expect(paid).toBe(doubledScrap(scrapEarned(w.tick, w.rank, w.kills)));
+  });
 });
 
 describe("workshop schema", () => {
@@ -255,6 +284,23 @@ describe("permanent fittings", () => {
     expect(fireEvery(w)).toBe(12);
     expect(w.meta.revive).toBe(0);
     expect(w.meta.reroll).toBe(0);
+    expect(w.workshop).toBe("");
+  });
+
+  it("snapshots the fittings applied at the start of the run", () => {
+    const w = createWorld(3);
+    const shop = emptyWorkshop();
+    shop.ranks[META_HP] = 2;
+    shop.ranks[META_DMG] = 1;
+    shop.ranks[META_REVIVE] = 1;
+    shop.ranks[META_REROLL] = 1;
+    applyWorkshop(w, shop);
+    expect(w.workshop).toBe("P2R1V1L1");
+    expect(w.workshop).toBe(fitLabel(shop.ranks));
+    w.meta.revive = 0;
+    shop.ranks[META_HP] = 3;
+    expect(w.workshop).toBe("P2R1V1L1");
+    expect(fitLabel(emptyWorkshop().ranks)).toBe("");
   });
 
   it("stays weaker than maxing the same stats inside a run", () => {

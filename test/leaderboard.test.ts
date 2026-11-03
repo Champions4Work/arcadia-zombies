@@ -36,8 +36,10 @@ const mem = (): Store & { raw(): Map<string, string> } => {
   };
 };
 
-const row = (score: number, time = 0, tier = 1, kills = 0, build = "STOCK", character = "tinker", mods = 0): RunRecord => ({
-  score, time, tier, kills, build, character, mods,
+const row = (
+  score: number, time = 0, tier = 1, kills = 0, build = "STOCK", character = "tinker", mods = 0, workshop = "",
+): RunRecord => ({
+  score, time, tier, kills, build, character, mods, workshop,
 });
 
 const zero = (): RunRecord => row(0);
@@ -47,7 +49,7 @@ describe("run records", () => {
     const run = captureRun({
       score: 80, time: 600, tier: 4, kills: 9, upgrades: [0, 2, 0, 0, 1, 0, 0, 0, 0, 0],
     });
-    expect(run).toEqual({ score: 80, time: 600, tier: 4, kills: 9, build: "SHOT2 DMG1", character: "tinker", mods: 0 });
+    expect(run).toEqual({ score: 80, time: 600, tier: 4, kills: 9, build: "SHOT2 DMG1", character: "tinker", mods: 0, workshop: "" });
     expect(shareText(run)).toBe("Arcadia: Gears of the Dead — Score 80 · 0:10 · OVERPRESSURE · 9 kills · SHOT2 DMG1 · Tinker");
     const brute = captureRun({
       score: 80, time: 600, tier: 4, kills: 9, upgrades: [0, 2, 0, 0, 1, 0, 0, 0, 0, 0], character: "brute",
@@ -215,6 +217,41 @@ describe("leaderboard", () => {
       "Arcadia: Gears of the Dead — Score 80 · 0:10 · OVERPRESSURE · 9 kills · SHOT2 DMG1 · Tinker",
     );
   });
+
+  it("prints workshop fittings on a fitted row and leaves a stock row bare", () => {
+    const base = {
+      score: 80, time: 600, tier: 4, kills: 9, upgrades: [0, 2, 0, 0, 1, 0, 0, 0, 0, 0],
+    };
+    const stock = captureRun(base);
+    const fitted = captureRun({ ...base, workshop: "P2L1" });
+    expect(stock.workshop).toBe("");
+    expect(fitted.workshop).toBe("P2L1");
+    expect(fitted.build).toBe(stock.build);
+    expect(rankSum(fitted.build)).toBe(rankSum(stock.build));
+    expect(runLine(fitted)).not.toBe(runLine(stock));
+    expect(shareText(fitted)).not.toBe(shareText(stock));
+    expect(runLine(fitted)).toBe(`${runLine(stock)} · P2L1`);
+    expect(shareText(fitted)).toBe(`${shareText(stock)} · P2L1`);
+    expect(captureRun({ ...base, workshop: "NOPE" }).workshop).toBe("");
+    expect(captureRun({ ...base, workshop: "P4" }).workshop).toBe("");
+    expect(captureRun({ ...base, workshop: "L1P2" }).workshop).toBe("");
+    expect(captureRun({ ...base, workshop: "P3R2S3G2V1L1" }).workshop).toBe("P3R2S3G2V1L1");
+    const store = mem();
+    const saved = emptyLeaderboard();
+    commitRun(saved, fitted);
+    saveLeaderboard(store, saved);
+    const loaded = loadLeaderboard(store);
+    expect(loaded.board[0]?.workshop).toBe("P2L1");
+    expect(runLine(loaded.board[0] ?? row(0))).toBe(runLine(fitted));
+    expect(shareText(loaded.board[0] ?? row(0))).toBe(shareText(fitted));
+    store.setItem(LEADERBOARD_KEY, JSON.stringify({
+      v: 1,
+      board: [{ score: 12, time: 30, tier: 1, kills: 2, build: "STOCK", workshop: "P9 V1" }],
+      life: { kills: 2, bestTime: 30, runs: 1 },
+      unlocked: [],
+    }));
+    expect(loadLeaderboard(store).board[0]?.workshop).toBe("");
+  });
 });
 
 describe("lifetime stats and achievements", () => {
@@ -344,7 +381,7 @@ describe("leaderboard storage", () => {
     ]);
     expect(loaded.life).toEqual({ kills: 40, bestTime: 500, runs: 12 });
     expect(loaded.unlocked).toEqual(["first-blood"]);
-    expect(loaded.board.every((r) => r.mods === 0)).toBe(true);
+    expect(loaded.board.every((r) => r.mods === 0 && r.workshop === "")).toBe(true);
     const bits = MOD_DOUBLE | MOD_GEAR;
     store.setItem(LEADERBOARD_KEY, JSON.stringify({
       v: 1,

@@ -52,6 +52,7 @@ export const createWorld = (seed: number, charId = CHAR_TINKER, mods = 0): World
     fxA: new Float32Array(MAX_FX), fxTick: new Int32Array(MAX_FX), fxHead: 0,
     arena: createArena(seed, ARENA_W / 2, ARENA_H / 2),
     meta: { hp: 0, dmg: 0, spd: 0, gun: 0, revive: 0, reroll: 0, rerollLeft: 0, banked: 0 },
+    workshop: "",
   };
   attachFinale(world);
   attachMapEvents(world);

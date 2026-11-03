@@ -79,6 +79,7 @@ export interface World {
   fxKind: Uint8Array; fxX: Float32Array; fxY: Float32Array; fxA: Float32Array; fxTick: Int32Array; fxHead: number;
   arena: Arena;
   meta: RunMods;
+  workshop: string;
 }
 export const EV_SHOT = 0;
 export const EV_KILL = 1;
