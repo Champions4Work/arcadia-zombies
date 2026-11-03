@@ -16,7 +16,9 @@ import {
   syncStore,
   toggleMute,
   togglePause,
+  toggleShake,
 } from "./shell/session";
+import { resetShake } from "./render/shake";
 import { createStick, liftStick, moveStick, pressStick, showRestStick } from "./shell/stick";
 import { cardSlot } from "./sim/progress";
 import { step } from "./sim/step.hot";
@@ -28,8 +30,8 @@ function tryStore(): { getItem(k: string): string | null; setItem(k: string, v: 
 }
 
 const store = tryStore();
-const saved = store ? loadStore(store) : { best: 0, muted: false };
-const session = createSession(saved.best, saved.muted);
+const saved = store ? loadStore(store) : { best: 0, muted: false, shake: true };
+const session = createSession(saved.best, saved.muted, saved.shake);
 setMuted(session.muted);
 
 const canvas = document.getElementById("game") as HTMLCanvasElement;
@@ -40,6 +42,7 @@ const headline = document.getElementById("headline") as HTMLElement;
 const sub = document.getElementById("sub") as HTMLElement;
 const goBtn = document.getElementById("go") as HTMLButtonElement;
 const muteBtn = document.getElementById("mute") as HTMLButtonElement;
+const shakeBtn = document.getElementById("shake") as HTMLButtonElement;
 const joy = document.getElementById("joy") as HTMLElement;
 const knob = document.getElementById("knob") as HTMLElement;
 
@@ -76,6 +79,8 @@ function paint(): void {
   }
   muteBtn.textContent = session.muted ? "Muted" : "Sound";
   muteBtn.setAttribute("aria-pressed", session.muted ? "true" : "false");
+  shakeBtn.textContent = session.shake ? "Screen shake: On" : "Screen shake: Off";
+  shakeBtn.setAttribute("aria-pressed", session.shake ? "true" : "false");
   setMusicOn(session.phase === PHASE_PLAY || session.phase === PHASE_TITLE);
   setMusicWave(playing ? world.wave : 0);
 }
@@ -85,6 +90,7 @@ function startRun(): void {
   const reset = begin(session);
   if (reset) {
     world = createWorld(Date.now() >>> 0);
+    resetShake();
     acc = 0;
     pendingPick = 0;
   }
@@ -96,6 +102,13 @@ function mute(): void {
   unlockAudio();
   toggleMute(session);
   setMuted(session.muted);
+  persist();
+  paint();
+}
+
+function shake(): void {
+  toggleShake(session);
+  if (!session.shake) resetShake();
   persist();
   paint();
 }
@@ -127,6 +140,7 @@ function sfx(): void {
 
 goBtn.addEventListener("click", startRun);
 muteBtn.addEventListener("click", mute);
+shakeBtn.addEventListener("click", shake);
 
 addEventListener("keydown", (e) => {
   unlockAudio();
@@ -238,7 +252,7 @@ function frame(now: number): void {
     acc = 0;
   }
   fit = applyCanvas(canvas, ctx, innerWidth, innerHeight, devicePixelRatio || 1, W, H);
-  draw(ctx, world);
+  draw(ctx, world, session.shake);
   placeJoy();
   requestAnimationFrame(frame);
 }
