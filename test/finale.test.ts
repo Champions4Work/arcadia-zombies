@@ -71,9 +71,9 @@ describe("clockwork lich", () => {
     seekSeconds(w, 1200);
     step(w, idle());
     expect(ringLive(w)).toBe(0);
-    for (let t = 0; t < 80 && ringLive(w) < 8; t++) step(w, idle());
+    for (let t = 0; t < 90 && ringLive(w) < 6; t++) step(w, idle());
     expect(lichPhase(w)).toBe(0);
-    expect(ringLive(w)).toBeGreaterThanOrEqual(8);
+    expect(ringLive(w)).toBeGreaterThanOrEqual(6);
     expect(countZ(w)).toBe(0);
     const late = createWorld(6);
     tank(late);

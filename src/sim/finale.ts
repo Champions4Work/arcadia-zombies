@@ -13,7 +13,7 @@ export const RING_N = 40;
 const SUMMON_N = 6;
 const RING_LIFE = 200;
 const LICH_R2 = 30 * 30;
-const RING_HIT_R2 = 12 * 12;
+const RING_HIT_R2 = 8 * 8;
 const BODY_R2 = 22 * 22;
 
 interface Lich {
@@ -198,21 +198,21 @@ function phaseOf(hp: number, maxHp: number): number {
 }
 
 function ringEvery(phase: number): number {
-  if (phase >= 2) return 28;
-  if (phase === 1) return 36;
-  return 50;
+  if (phase >= 2) return 32;
+  if (phase === 1) return 46;
+  return 70;
 }
 
 function ringCount(phase: number): number {
-  if (phase >= 2) return 16;
-  if (phase === 1) return 12;
-  return 8;
+  if (phase >= 2) return 14;
+  if (phase === 1) return 10;
+  return 6;
 }
 
 function ringSpeed(phase: number): number {
-  if (phase >= 2) return 2.2;
-  if (phase === 1) return 1.85;
-  return 1.45;
+  if (phase >= 2) return 2.05;
+  if (phase === 1) return 1.6;
+  return 1.15;
 }
 
 function clearShots(f: Lich): void {
@@ -240,8 +240,8 @@ function arrive(w: World): void {
   f.maxHp = lichMaxHp();
   f.hp = f.maxHp;
   f.x = W / 2;
-  f.y = 108;
-  f.timer = 42;
+  f.y = 214;
+  f.timer = 36;
   f.spin = 0;
   f.summoned = 0;
   clearShots(f);
@@ -400,6 +400,10 @@ export function stepFinale(w: World): void {
   if (f.on !== 1 || w.over) return;
   f.phase = phaseOf(f.hp, f.maxHp);
   moveLich(w, f);
+  if (w.banner > 0) {
+    stepShots(w, f);
+    return;
+  }
   f.timer--;
   if (f.timer <= 0) {
     const n = ringCount(f.phase);
