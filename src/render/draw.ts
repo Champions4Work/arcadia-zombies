@@ -4,6 +4,7 @@ import { shouldBlitHorde } from "./cull";
 import { paintFps } from "./fps";
 import { drawLich } from "./finale";
 import { renderHorde } from "./horde-draw";
+import { drawJuice } from "./juice";
 import { drawCards, drawHud } from "./hud";
 import { drawSaws, drawShield, drawTesla } from "./progress";
 import { LAYER_BACK, LAYER_FRONT, LAYER_HUD, LAYER_MID, paintLayers } from "./plugins";
@@ -70,6 +71,7 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
     drawTesla(c, w);
     paintFx(c, w);
   }
+  drawJuice(c);
   paintLayers(c, w, LAYER_MID);
   drawLich(c, w);
   c.restore();

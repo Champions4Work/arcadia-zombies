@@ -1,4 +1,5 @@
 import { noteFrame, toggleFps, toggleFromKey } from "./render/fps";
+import { setNumbersOn, stopRemaining } from "./render/juice";
 import { setMusicOn, setMusicWave } from "./render/music";
 import { draw } from "./render/draw";
 import { pauseHit } from "./render/hud";
@@ -31,6 +32,7 @@ import {
   shouldStep,
   syncStore,
   toggleMute,
+  toggleNumbers,
   togglePause,
   toggleShake,
 } from "./shell/session";
@@ -50,8 +52,8 @@ function tryStore(): { getItem(k: string): string | null; setItem(k: string, v: 
 }
 
 const store = tryStore();
-const saved = store ? loadStore(store) : { best: 0, muted: false, shake: true };
-const session = createSession(saved.best, saved.muted, saved.shake);
+const saved = store ? loadStore(store) : { best: 0, muted: false, shake: true, numbers: true };
+const session = createSession(saved.best, saved.muted, saved.shake, saved.numbers);
 let crown = store ? loadCrown(store) : { won: false, endless: false };
 const records = store ? loadLeaderboard(store) : emptyLeaderboard();
 const tracker = createTracker();
@@ -70,6 +72,7 @@ const goBtn = document.getElementById("go") as HTMLButtonElement;
 const muteBtn = document.getElementById("mute") as HTMLButtonElement;
 const shakeBtn = document.getElementById("shake") as HTMLButtonElement;
 const endlessBtn = document.getElementById("endless") as HTMLButtonElement;
+const numbersBtn = document.getElementById("numbers") as HTMLButtonElement;
 const summary = document.getElementById("summary") as HTMLElement;
 const sfxMuteBtn = document.getElementById("sfx-mute") as HTMLButtonElement;
 const sfxVol = document.getElementById("sfx-vol") as HTMLInputElement;
@@ -132,6 +135,9 @@ function paint(): void {
   endlessBtn.hidden = !crown.won;
   endlessBtn.textContent = crown.endless ? "Endless: On" : "Endless: Off";
   endlessBtn.setAttribute("aria-pressed", crown.endless ? "true" : "false");
+  numbersBtn.textContent = session.numbers ? "Damage numbers: On" : "Damage numbers: Off";
+  numbersBtn.setAttribute("aria-pressed", session.numbers ? "true" : "false");
+  setNumbersOn(session.numbers);
   sfxMuteBtn.textContent = sfxMuteLabel(sfxMuted());
   sfxMuteBtn.setAttribute("aria-pressed", sfxMuted() ? "true" : "false");
   if (document.activeElement !== sfxVol) sfxVol.value = String(sfxVolumePercent(sfxVolume()));
@@ -184,6 +190,15 @@ function shake(): void {
   paint();
 }
 
+function numbers(): void {
+  unlockAudio();
+  toggleNumbers(session);
+  setNumbersOn(session.numbers);
+  playUiClick();
+  persist();
+  paint();
+}
+
 function sfxMute(): void {
   unlockAudio();
   toggleSfxMuted();
@@ -230,6 +245,7 @@ function sfx(): void {
 goBtn.addEventListener("click", startRun);
 muteBtn.addEventListener("click", mute);
 shakeBtn.addEventListener("click", shake);
+numbersBtn.addEventListener("click", numbers);
 sfxMuteBtn.addEventListener("click", sfxMute);
 sfxVol.addEventListener("input", sfxVolInput);
 endlessBtn.addEventListener("click", endless);
@@ -348,6 +364,7 @@ function frame(now: number): void {
   noteFrame(now);
   acc += Math.min(250, now - last);
   last = now;
+  setNumbersOn(session.numbers);
   if (shouldStep(session)) {
     if (!stick.on) {
       input.dx = (keys.has("d") || keys.has("arrowright") ? 1 : 0) - (keys.has("a") || keys.has("arrowleft") ? 1 : 0);
@@ -381,6 +398,10 @@ function frame(now: number): void {
         leader.toast(settled.toasts);
         persist();
         paint();
+        acc = 0;
+        break;
+      }
+      if (stopRemaining() > 0) {
         acc = 0;
         break;
       }

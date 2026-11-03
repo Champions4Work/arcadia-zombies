@@ -1,4 +1,5 @@
 import { Z_ELITE, Z_GAS, Z_KIND, Z_KNIGHT, Z_RAT, Z_SPITTER } from "../sim/foes";
+import { enemyFlash } from "./juice";
 import {
   FX_FLASH, FX_PUFF, FX_SPARK, FX_XP, Z_BRUTE, Z_GHOUL, Z_SHAMBLER, type World,
 } from "../sim/types";
@@ -111,6 +112,11 @@ function paintOne(ctx: CanvasRenderingContext2D, w: World, i: number): void {
   const hp = z.hp[i] ?? 1;
   const flip = w.px - x < 0 ? -1 : 1;
   const glyph = zombieGlyph(kind, fallbackGlyph);
+  const flash = enemyFlash(i) > 0;
+  if (flash) {
+    ctx.save();
+    ctx.filter = "grayscale(1) brightness(8)";
+  }
   if (elite) {
     ctx.save();
     ctx.translate(x, y);
@@ -130,6 +136,7 @@ function paintOne(ctx: CanvasRenderingContext2D, w: World, i: number): void {
     ctx.fillRect(x - 12, top + 1, bw, 2);
   }
   if (elite) paintElite(ctx, x, y, glyph.w * 1.28, glyph.h * 1.28, w.tick);
+  if (flash) ctx.restore();
 }
 
 export function paintActors(ctx: CanvasRenderingContext2D, w: World, moving: boolean): void {
