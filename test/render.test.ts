@@ -1,10 +1,11 @@
+import { BIN_HI, BIN_LO } from "../src/render/actors";
+import { ARENA_H } from "../src/sim/arena";
 import { B_ACID, Z_GAS, Z_KNIGHT, Z_RAT, Z_SPITTER } from "../src/sim/foes";
 import { createWorld } from "../src/sim/world";
 import { projectileFor } from "../src/render/foes";
 import { UPG_FIRE, UPG_SAWS, Z_SHAMBLER } from "../src/sim/types";
 import { paintLayers, registerLayer, registerZombie, zombieGlyph, LAYER_BACK, LAYER_FRONT } from "../src/render/plugins";
 import { blurbFor, difficultyLabel, formatClock, pauseHit, weaponBadge, PAUSE_X, PAUSE_Y } from "../src/render/hud";
-import "../src/render/actors";
 import type { BulletPaint, Glyph } from "../src/render/plugins";
 import type { World } from "../src/sim/types";
 
@@ -37,6 +38,13 @@ describe("clocktower hud", () => {
     const w = createWorld(1);
     w.upgrades[UPG_SAWS] = 3;
     expect(weaponBadge(w)).toEqual({ name: "SAWSTORM", pips: 3, kind: UPG_SAWS });
+  });
+});
+
+describe("actor sort", () => {
+  it("covers the full arena height", () => {
+    expect(BIN_LO).toBeLessThanOrEqual(0);
+    expect(BIN_HI).toBeGreaterThanOrEqual(ARENA_H);
   });
 });
 

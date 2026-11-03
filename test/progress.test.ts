@@ -1,3 +1,4 @@
+import { ARENA_W } from "../src/sim/arena";
 import { killXp } from "../src/sim/difficulty";
 import {
   applyUpgrade, beginLevel, cardSlot, CARD_GAP, CARD_H, CARD_W, CARD_X0, CARD_Y, evolutionReady,
@@ -9,7 +10,7 @@ import {
   EV_HURT, EV_KILL, EV_LEVEL, EV_SHIELD, EV_SHOT, EV_TESLA, EVOL_AEGIS, EVOL_CANNON, EVOL_STORM, MAX_BULLETS,
   MAX_ZOMBIES, UPG_COOLANT, UPG_COUNT, UPG_DMG, UPG_DYNAMO, UPG_FIRE, UPG_HP, UPG_MAX, UPG_MORTAR,
   UPG_PIERCE, UPG_RICOCHET, UPG_SAWS, UPG_SHIELD, UPG_SHOTGUN, UPG_SPIKES, UPG_SPEED, UPG_TESLA,
-  UPG_VENT, UPG_WHISTLE, W, Z_SHAMBLER, type Input, type World,
+  UPG_VENT, UPG_WHISTLE, Z_SHAMBLER, type Input, type World,
 } from "../src/sim/types";
 import { createWorld } from "../src/sim/world";
 const idle = (pick = 0): Input => ({ dx: 0, dy: 0, pick });
@@ -273,7 +274,7 @@ describe("upgrade effects", () => {
     const w = createWorld(26);
     freeze(w);
     applyUpgrade(w, UPG_RICOCHET);
-    const j = addBullet(w, W - 3, 40, 6, 0);
+    const j = addBullet(w, ARENA_W - 3, 40, 6, 0);
     w.bullets.kind[j] = 1;
     step(w, idle());
     expect(w.bullets.alive[j]).toBe(1);

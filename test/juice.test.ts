@@ -328,6 +328,8 @@ describe("horde blit flash", () => {
     resetJuice();
     const w = createWorld(3);
     w.toSpawn = 0;
+    w.arena.camX = 0;
+    w.arena.camY = 0;
     w.zombies.alive[0] = 1;
     w.zombies.kind[0] = Z_SHAMBLER;
     w.zombies.x[0] = 80;

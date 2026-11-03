@@ -1,9 +1,15 @@
+import { JUICE_DT, juiceFrame, juicePlayerHurt, tickJuice } from "../render/juice";
+import {
+  chaseZombie, cutProps, pickupHeals, queueSpawn, slidePlayer, teleCount, tickTelegraphs, updateCamera,
+} from "./arena.hot";
 import { emitFx, hurtZombie, killZombie } from "./combat.hot";
 import { scaledDmg, spawnEvery, tierAt } from "./difficulty";
+import { holdSpawns, lichMinion, stepFinale, watchFinale } from "./finale";
 import {
-  foeContact, foeTouchR2, GAS_FUSE_R2, Z_GAS, Z_KIND, Z_KNIGHT, Z_SPITTER,
+  foeContact, foeTouchR2, GAS_FUSE_R2, rollKind, Z_GAS, Z_KIND, Z_KNIGHT, Z_SPITTER,
 } from "./foes";
-import { spawnWaveFoe, tickKnight, tickSpitter } from "./foes.hot";
+import { tickKnight, tickSpitter } from "./foes.hot";
+import { beginQuery, nextQuery } from "./grid.hot";
 import {
   briarOn, calliopeBite, calliopeOn, heartBite, heartOn, howitzerBite, howitzerShells, shieldCap,
 } from "./evolve";
@@ -12,16 +18,13 @@ import {
   sawRadius, shieldReload, teslaChain, teslaEvery, teslaPower, teslaRange, tryPick,
   ventEvery, ventRange, whistleRange,
 } from "./progress";
-import { holdSpawns, lichMinion, stepFinale, watchFinale } from "./finale";
-import { beginQuery, nextQuery } from "./grid.hot";
 import { stepMapEvents } from "./map-events.hot";
 import { clearMapStrike, mapStrikeDmg, mapStrikeOn, mapStrikeR, mapStrikeX, mapStrikeY } from "./map-events";
 import {
   EV_HURT, EV_RANK, EV_SAW, EV_SHIELD, EV_TESLA, EV_WAVE, FX_FLASH, FX_SPARK,
-  H, MAX_ZOMBIES, UPG_COOLANT, UPG_MORTAR, UPG_SPIKES, UPG_TESLA,
-  UPG_VENT, UPG_WHISTLE, W, EVOL_AEGIS, type Input, type World,
+  MAX_ZOMBIES, UPG_COOLANT, UPG_MORTAR, UPG_SPIKES, UPG_TESLA,
+  UPG_VENT, UPG_WHISTLE, EVOL_AEGIS, type Input, type World,
 } from "./types";
-import { JUICE_DT, juiceFrame, juicePlayerHurt, tickJuice } from "../render/juice";
 import { rivetEvery } from "./weapons";
 import { fireRivet, tickProjectiles, tickWeapons } from "./weapons.hot";
 function pulseAt(w: World, x: number, y: number, r: number, dmg: number): void {
@@ -97,6 +100,7 @@ function spinSaws(w: World): void {
         if (w.over) return;
       }
     }
+    cutProps(w, sx, sy);
   }
 }
 function ventPulse(w: World): void {
@@ -162,27 +166,21 @@ export function step(w: World, input: Input): void {
     w.events[EV_RANK] = 1;
   }
   if (w.teslaFlash > 0) w.teslaFlash--;
-  const len = Math.sqrt(input.dx * input.dx + input.dy * input.dy);
-  const sp = moveSpeed(w);
-  if (len > 0) {
-    w.px += (input.dx / Math.max(1, len)) * sp;
-    w.py += (input.dy / Math.max(1, len)) * sp;
-  }
-  w.px = Math.min(W - 10, Math.max(10, w.px));
-  w.py = Math.min(H - 10, Math.max(18, w.py));
+  slidePlayer(w, input.dx, input.dy, moveSpeed(w));
+  updateCamera(w);
   const z = w.zombies;
   let alive = 0;
   for (let i = 0; i < MAX_ZOMBIES; i++) if (z.alive[i]) alive++;
   watchFinale(w);
   if (holdSpawns(w)) {
     w.toSpawn = 0;
-  } else if (alive === 0 && w.toSpawn === 0) {
+  } else if (alive === 0 && w.toSpawn === 0 && teleCount(w) === 0) {
     w.wave++;
     w.toSpawn = 4 + w.wave * 2 + w.rank;
     w.events[EV_WAVE] = 1;
   }
   if (!holdSpawns(w) && w.toSpawn > 0 && --w.spawnCd <= 0) {
-    spawnWaveFoe(w);
+    queueSpawn(w, rollKind(w));
     w.toSpawn--;
     w.spawnCd = spawnEvery(w.rank);
   }
@@ -211,17 +209,16 @@ export function step(w: World, input: Input): void {
       const dx = w.px - (z.x[i] ?? 0);
       const dy = w.py - (z.y[i] ?? 0);
       const d2 = dx * dx + dy * dy;
-      const d = Math.sqrt(d2) || 1;
-      let zsp = z.vx[i] ?? 0;
+      const saved = z.vx[i] ?? 0;
       if (whistle > 0 && d2 < wr2) {
-        zsp *= 0.62;
+        z.vx[i] = saved * 0.62;
         if (calliopeOn(w) && (w.tick % 10) === 0) {
           hurtZombie(w, i, calliopeBite(w));
           if (w.over) return;
         }
       }
-      z.x[i] = (z.x[i] ?? 0) + (dx / d) * zsp;
-      z.y[i] = (z.y[i] ?? 0) + (dy / d) * zsp;
+      chaseZombie(w, i);
+      z.vx[i] = saved;
       if (kind === Z_KNIGHT) tickKnight(w, i);
     }
     const tx = w.px - (z.x[i] ?? 0);
@@ -284,5 +281,7 @@ export function step(w: World, input: Input): void {
     if (w.over) return;
   }
   stepFinale(w);
+  tickTelegraphs(w);
+  pickupHeals(w);
   tickJuice(JUICE_DT);
 }

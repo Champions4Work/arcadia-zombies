@@ -1,9 +1,10 @@
-import { H, MAX_ZOMBIES, W } from "./types";
+import { ARENA_H, ARENA_W } from "./arena";
+import { MAX_ZOMBIES } from "./types";
 
 export const GRID_CELL = 24;
 export const GRID_PAD = 32;
-export const GRID_COLS = Math.ceil((W + GRID_PAD * 2) / GRID_CELL);
-export const GRID_ROWS = Math.ceil((H + GRID_PAD * 2) / GRID_CELL);
+export const GRID_COLS = Math.ceil((ARENA_W + GRID_PAD * 2) / GRID_CELL);
+export const GRID_ROWS = Math.ceil((ARENA_H + GRID_PAD * 2) / GRID_CELL);
 export const GRID_CELLS = GRID_COLS * GRID_ROWS;
 export const QUERY_REACH = 3;
 export const QUERY_SPAN = (QUERY_REACH * 2 + 1) * (QUERY_REACH * 2 + 1);

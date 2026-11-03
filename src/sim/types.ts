@@ -1,3 +1,4 @@
+import type { Arena } from "./arena";
 import type { Rng } from "./rng";
 export const W = 480;
 export const H = 320;
@@ -72,6 +73,7 @@ export interface World {
   zMark: Uint8Array; teslaHit: Int16Array;
   wpnCd: Int16Array; gun: number;
   fxKind: Uint8Array; fxX: Float32Array; fxY: Float32Array; fxA: Float32Array; fxTick: Int32Array; fxHead: number;
+  arena: Arena;
 }
 export const EV_SHOT = 0;
 export const EV_KILL = 1;

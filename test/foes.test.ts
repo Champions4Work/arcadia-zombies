@@ -28,6 +28,7 @@ function tally(rank: number, n: number): { kinds: number[]; elites: number } {
   const kinds = [0, 0, 0, 0, 0, 0, 0];
   let elites = 0;
   for (let t = 0; t < n; t++) {
+    w.tick = 0;
     w.rank = rank;
     w.toSpawn = 2;
     w.spawnCd = 0;
@@ -35,7 +36,11 @@ function tally(rank: number, n: number): { kinds: number[]; elites: number } {
     w.choosing = 0;
     w.hurtCd = 0;
     for (let i = 0; i < MAX_ZOMBIES; i++) w.zombies.alive[i] = 0;
+    w.arena.teleAlive.fill(0);
     step(w, idle);
+    w.toSpawn = 0;
+    w.spawnCd = 99999;
+    for (let k = 0; k < 40; k++) step(w, idle);
     for (let i = 0; i < MAX_ZOMBIES; i++) {
       if (!w.zombies.alive[i]) continue;
       const raw = w.zombies.kind[i] ?? 0;
@@ -121,11 +126,15 @@ describe("spawn tables", () => {
     w.rank = 3;
     let packs = 0;
     for (let t = 0; t < 200 && packs < 3; t++) {
-      w.toSpawn = 2;
+      w.toSpawn = 1;
       w.spawnCd = 0;
       w.over = false;
       for (let i = 0; i < MAX_ZOMBIES; i++) w.zombies.alive[i] = 0;
+      w.arena.teleAlive.fill(0);
       step(w, idle);
+      w.toSpawn = 0;
+      w.spawnCd = 99999;
+      for (let k = 0; k < 40; k++) step(w, idle);
       let rats = 0;
       let other = 0;
       for (let i = 0; i < MAX_ZOMBIES; i++) {

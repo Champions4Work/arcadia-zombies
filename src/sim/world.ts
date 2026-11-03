@@ -1,11 +1,12 @@
 import { resetJuice } from "../render/juice";
+import { ARENA_H, ARENA_W, createArena } from "./arena";
 import { CHAR_TINKER, CHARACTERS, characterAt } from "./characters";
 import { attachFinale } from "./finale";
 import { attachMapEvents } from "./map-events";
 import { applyUpgrade } from "./progress";
 import { createRng } from "./rng";
 import {
-  EV_N, H, MAX_BULLETS, MAX_FX, MAX_ZOMBIES, OFFER_N, UPG_COUNT, UPG_WPN_RIVET, W, WPN_COUNT,
+  EV_N, MAX_BULLETS, MAX_FX, MAX_ZOMBIES, OFFER_N, UPG_COUNT, UPG_WPN_RIVET, WPN_COUNT,
   type Pool, type World,
 } from "./types";
 const pool = (n: number): Pool => ({
@@ -32,7 +33,7 @@ export const createWorld = (seed: number, charId = CHAR_TINKER): World => {
   const upgrades = new Uint8Array(UPG_COUNT);
   upgrades[UPG_WPN_RIVET] = 1;
   const world: World = {
-    rng: createRng(seed), tick: 0, px: W / 2, py: H / 2, hp: 5, maxHp: 5,
+    rng: createRng(seed), tick: 0, px: ARENA_W / 2, py: ARENA_H / 2, hp: 5, maxHp: 5,
     score: 0, wave: 0, toSpawn: 0, spawnCd: 0, fireCd: 0, hurtCd: 0, over: false,
     xp: 0, level: 0, choosing: 0, teslaCd: 0, teslaN: 0, teslaFlash: 0, shield: 0, shieldCd: 0,
     aimX: 1, aimY: 0,
@@ -47,6 +48,7 @@ export const createWorld = (seed: number, charId = CHAR_TINKER): World => {
     zMark: new Uint8Array(MAX_ZOMBIES), teslaHit,
     fxKind: new Uint8Array(MAX_FX), fxX: new Float32Array(MAX_FX), fxY: new Float32Array(MAX_FX),
     fxA: new Float32Array(MAX_FX), fxTick: new Int32Array(MAX_FX), fxHead: 0,
+    arena: createArena(seed, ARENA_W / 2, ARENA_H / 2),
   };
   attachFinale(world);
   attachMapEvents(world);

@@ -1,6 +1,7 @@
+import { ARENA_H, ARENA_W } from "../src/sim/arena";
 import { Z_ELITE, Z_KNIGHT, foeHitR2 } from "../src/sim/foes";
 import { SAW_HIT_R2, sawAngle, sawRadius } from "../src/sim/progress";
-import { GRID_CELL } from "../src/sim/grid";
+import { GRID_CELL, GRID_COLS, GRID_PAD, GRID_ROWS } from "../src/sim/grid";
 import { beginQuery, nextQuery, rebuildZombieGrid } from "../src/sim/grid.hot";
 import { fillHorde, HORDE_BULLETS, HORDE_ZOMBIES } from "../src/sim/horde";
 import { snapshot } from "../src/sim/run";
@@ -90,6 +91,21 @@ describe("spatial hash", () => {
     w.zombies.y[9] = 280;
     rebuildZombieGrid(w.zombies.alive, w.zombies.x, w.zombies.y, MAX_ZOMBIES);
     expect(queryAt(24, 40)).toEqual([1, 2, 3]);
+  });
+
+  it("keeps a far-arena zombie out of the near-screen cell", () => {
+    expect(GRID_COLS * GRID_CELL).toBeGreaterThanOrEqual(ARENA_W + GRID_PAD);
+    expect(GRID_ROWS * GRID_CELL).toBeGreaterThanOrEqual(ARENA_H + GRID_PAD);
+    const w = createWorld(1);
+    w.zombies.alive[0] = 1;
+    w.zombies.x[0] = 600;
+    w.zombies.y[0] = 100;
+    w.zombies.alive[1] = 1;
+    w.zombies.x[1] = ARENA_W - 40;
+    w.zombies.y[1] = ARENA_H - 40;
+    rebuildZombieGrid(w.zombies.alive, w.zombies.x, w.zombies.y, MAX_ZOMBIES);
+    expect(queryAt(600, 100)).toEqual([0]);
+    expect(queryAt(ARENA_W - 40, ARENA_H - 40)).toEqual([1]);
   });
 
   it("damages a brute across a diagonal cell and not a far decoy", () => {
@@ -223,6 +239,8 @@ describe("horde drawing", () => {
     bg.fill(0);
     const w = createWorld(1);
     hold(w);
+    w.arena.camX = 0;
+    w.arena.camY = 0;
     w.zombies.alive[0] = 1;
     w.zombies.x[0] = -200;
     w.zombies.y[0] = -200;
@@ -247,6 +265,8 @@ describe("horde drawing", () => {
     bg.fill(0);
     const w = createWorld(2);
     hold(w);
+    w.arena.camX = 0;
+    w.arena.camY = 0;
     w.tick = 0;
     w.zombies.alive[0] = 1;
     w.zombies.kind[0] = Z_SHAMBLER;
@@ -274,6 +294,42 @@ describe("horde drawing", () => {
       }
     }
     expect(matched).toBeGreaterThan(8);
+  });
+
+  it("blits the camera window instead of the world origin", () => {
+    buildSprites();
+    bg.fill(0);
+    const w = createWorld(5);
+    hold(w);
+    w.tick = 0;
+    w.arena.camX = 400;
+    w.arena.camY = 180;
+    w.zombies.alive[0] = 1;
+    w.zombies.kind[0] = Z_SHAMBLER;
+    w.zombies.x[0] = 480;
+    w.zombies.y[0] = 250;
+    composeHorde(w, frame);
+    const spr = zombieSprite(Z_SHAMBLER, 0);
+    const dx = (80 - spr.ox) | 0;
+    const dy = (70 - spr.oy) | 0;
+    let matched = 0;
+    for (let y = 0; y < spr.h; y++) {
+      const py = dy + y;
+      if (py < 0 || py >= H) continue;
+      for (let x = 0; x < spr.w; x++) {
+        const px = dx + x;
+        if (px < 0 || px >= W) continue;
+        const src = spr.pix[y * spr.w + x] ?? 0;
+        if (!src) continue;
+        expect(frame[py * W + px]).toBe(src);
+        matched++;
+      }
+    }
+    expect(matched).toBeGreaterThan(8);
+    w.arena.camX = 0;
+    w.arena.camY = 0;
+    composeHorde(w, frame);
+    expect(frame[dy * W + dx] ?? 0).toBe(0);
   });
 });
 
