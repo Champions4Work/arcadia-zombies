@@ -4,6 +4,7 @@ import { isUnion, unionHint, unionSpec } from "../sim/evolve";
 import { lichUp, lichX, lichY, runLabel } from "../sim/finale";
 import { Z_GAS, Z_KIND, Z_KNIGHT, Z_RAT, Z_SPITTER } from "../sim/foes";
 import { offerCount } from "../sim/characters";
+import { pacedXpNeed } from "../sim/modifiers";
 import { CARD_Y, cardFrame, offerId, rarityName, UPG_RARITY, upgName, xpNeed } from "../sim/progress";
 import {
   EVOL_AEGIS, EVOL_CANNON, EVOL_STORM, H, UNION_BELLOWS, UNION_BRIAR, UNION_CALLIOPE,
@@ -192,7 +193,7 @@ function heartGauge(ctx: CanvasRenderingContext2D, w: World): void {
   ink(ctx, "GEARHEART", 50, 6, 8, "#ffe7ad");
   ink(ctx, `${Math.max(0, w.hp)}/${w.maxHp}`, 50, 16, 14, "#fff8ee");
   ink(ctx, `LV. ${w.level}`, 50, 32, 9, "#f0c86a");
-  const need = xpNeed(w.level);
+  const need = pacedXpNeed(xpNeed(w.level), w.mods);
   const t = need <= 0 ? 0 : Math.min(1, w.xp / need);
   const bx = 62;
   const by = 45;

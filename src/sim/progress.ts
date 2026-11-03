@@ -4,6 +4,7 @@ import {
   briarRate, calliopeReach, crownHops, crownOn, crownRate, grantUnion, haloBite, haloBlades,
   haloReach, heartReach, howitzerRate, isUnion, slugBonus, unionReady,
 } from "./evolve";
+import { hasMod, MOD_GLASS, MOD_NOHEAL, pacedXpNeed } from "./modifiers";
 import { nextFloat } from "./rng";
 import {
   EV_LEVEL, EVOL_AEGIS, EVOL_CANNON, EVOL_STORM, OFFER_N, UPG_COOLANT, UPG_COUNT, UPG_DMG,
@@ -219,6 +220,7 @@ export function evolutionReady(w: World, id: number): boolean {
 
 export function offerable(w: World, id: number): boolean {
   if (id < 0 || id >= UPG_COUNT) return false;
+  if (id === UPG_COOLANT && hasMod(w.mods, MOD_NOHEAL)) return false;
   const legacy = evolutionReady(w, id);
   if (isUnion(id)) return unionReady(w, id, legacy);
   if ((w.upgrades[id] ?? 0) >= UPG_MAX) return false;
@@ -239,8 +241,9 @@ export function applyUpgrade(w: World, id: number): void {
   if (lv >= UPG_MAX) return;
   w.upgrades[id] = lv + 1;
   if (id === UPG_HP) {
-    w.maxHp = 5 + characterAt(w.charId).hp + (w.upgrades[UPG_HP] ?? 0);
-    w.hp = w.maxHp;
+    const base = hasMod(w.mods, MOD_GLASS) ? 1 : 5 + characterAt(w.charId).hp;
+    w.maxHp = base + (w.upgrades[UPG_HP] ?? 0);
+    if (!hasMod(w.mods, MOD_NOHEAL)) w.hp = w.maxHp;
   }
   if (id === UPG_SHIELD) {
     w.shield = w.upgrades[UPG_SHIELD] ?? 0;
@@ -318,7 +321,7 @@ export function rollOffers(w: World): void {
 
 export function beginLevel(w: World): void {
   if (w.choosing) return;
-  const need = xpNeed(w.level);
+  const need = pacedXpNeed(xpNeed(w.level), w.mods);
   if (w.xp < need) return;
   if (!canUpgrade(w)) return;
   w.xp -= need;

@@ -1,3 +1,4 @@
+import { MOD_DOUBLE, MOD_GEAR, MOD_GLASS, MOD_NOHEAL, modNames, scoreLabel } from "../src/sim/modifiers";
 import { applyUpgrade } from "../src/sim/progress";
 import { step } from "../src/sim/step.hot";
 import { EV_KILL, UNION_CROWN, UPG_PIERCE, UPG_WPN_FLAME, UPG_WPN_HARP, UPG_WPN_MORT, UPG_WPN_RIVET, UPG_WPN_SHOT, type Input } from "../src/sim/types";
@@ -35,8 +36,8 @@ const mem = (): Store & { raw(): Map<string, string> } => {
   };
 };
 
-const row = (score: number, time = 0, tier = 1, kills = 0, build = "STOCK", character = "tinker"): RunRecord => ({
-  score, time, tier, kills, build, character,
+const row = (score: number, time = 0, tier = 1, kills = 0, build = "STOCK", character = "tinker", mods = 0): RunRecord => ({
+  score, time, tier, kills, build, character, mods,
 });
 
 const zero = (): RunRecord => row(0);
@@ -46,7 +47,7 @@ describe("run records", () => {
     const run = captureRun({
       score: 80, time: 600, tier: 4, kills: 9, upgrades: [0, 2, 0, 0, 1, 0, 0, 0, 0, 0],
     });
-    expect(run).toEqual({ score: 80, time: 600, tier: 4, kills: 9, build: "SHOT2 DMG1", character: "tinker" });
+    expect(run).toEqual({ score: 80, time: 600, tier: 4, kills: 9, build: "SHOT2 DMG1", character: "tinker", mods: 0 });
     expect(shareText(run)).toBe("Arcadia: Gears of the Dead — Score 80 · 0:10 · OVERPRESSURE · 9 kills · SHOT2 DMG1 · Tinker");
     const brute = captureRun({
       score: 80, time: 600, tier: 4, kills: 9, upgrades: [0, 2, 0, 0, 1, 0, 0, 0, 0, 0], character: "brute",
@@ -194,6 +195,26 @@ describe("leaderboard", () => {
       share: "Arcadia: Gears of the Dead — Score 80 · 0:10 · OVERPRESSURE · 9 kills · SHOT2 DMG1 · Tinker",
     });
   });
+
+  it("keeps the ended run's modifier bits after the next pick changes", () => {
+    const bits = MOD_DOUBLE | MOD_GLASS | MOD_NOHEAL;
+    const input = {
+      score: 80, time: 600, tier: 4, kills: 9, upgrades: [0, 2, 0, 0, 1, 0, 0, 0, 0, 0], mods: bits,
+    };
+    const saved = emptyLeaderboard();
+    const settled = settleRun(saved, captureRun(input));
+    input.mods = MOD_GEAR;
+    const suffix = ` · ${scoreLabel(bits)} · ${modNames(bits)}`;
+    expect(saved.board[0]?.mods).toBe(bits);
+    expect(settled.line).toBe(`0:10 · OVERPRESSURE · 9 kills · SHOT2 DMG1 · Tinker${suffix}`);
+    expect(settled.share).toBe(`Arcadia: Gears of the Dead — Score 80 · 0:10 · OVERPRESSURE · 9 kills · SHOT2 DMG1 · Tinker${suffix}`);
+    expect(runLine(saved.board[0] ?? row(0))).toBe(settled.line);
+    expect(shareText(saved.board[0] ?? row(0))).toBe(settled.share);
+    expect(runLine(row(80, 600, 4, 9, "SHOT2 DMG1"))).toBe("0:10 · OVERPRESSURE · 9 kills · SHOT2 DMG1 · Tinker");
+    expect(shareText(row(80, 600, 4, 9, "SHOT2 DMG1"))).toBe(
+      "Arcadia: Gears of the Dead — Score 80 · 0:10 · OVERPRESSURE · 9 kills · SHOT2 DMG1 · Tinker",
+    );
+  });
 });
 
 describe("lifetime stats and achievements", () => {
@@ -323,6 +344,21 @@ describe("leaderboard storage", () => {
     ]);
     expect(loaded.life).toEqual({ kills: 40, bestTime: 500, runs: 12 });
     expect(loaded.unlocked).toEqual(["first-blood"]);
+    expect(loaded.board.every((r) => r.mods === 0)).toBe(true);
+    const bits = MOD_DOUBLE | MOD_GEAR;
+    store.setItem(LEADERBOARD_KEY, JSON.stringify({
+      v: 1,
+      board: [{ score: 12, time: 30, tier: 1, kills: 2, build: "STOCK", character: "brute", mods: bits | 1024 }],
+      life: { kills: 2, bestTime: 30, runs: 1 },
+      unlocked: [],
+    }));
+    const marked = loadLeaderboard(store);
+    expect(marked.board[0]?.mods).toBe(bits);
+    const kept = emptyLeaderboard();
+    commitRun(kept, row(12, 30, 1, 2, "STOCK", "brute", bits));
+    saveLeaderboard(store, kept);
+    expect(loadLeaderboard(store).board[0]?.mods).toBe(bits);
+    expect(JSON.parse(store.getItem(LEADERBOARD_KEY) ?? "{}").v).toBe(1);
     expect(() => saveLeaderboard({
       getItem: () => null,
       setItem: () => { throw new Error("quota"); },

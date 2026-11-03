@@ -60,7 +60,7 @@ export interface Pool {
 }
 export interface World {
   rng: Rng; tick: number; px: number; py: number; hp: number; maxHp: number;
-  score: number; wave: number; toSpawn: number; spawnCd: number; fireCd: number;
+  score: number; mods: number; wave: number; toSpawn: number; spawnCd: number; fireCd: number;
   hurtCd: number; over: boolean; xp: number; level: number; choosing: number;
   teslaCd: number; teslaN: number; teslaFlash: number; shield: number; shieldCd: number;
   aimX: number; aimY: number;
