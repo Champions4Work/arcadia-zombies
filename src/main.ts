@@ -6,6 +6,18 @@ import { CUE_BOSS, sfxMuteLabel, sfxVolumePercent } from "./render/sfx-cues";
 import { setMuted, unlockAudio } from "./render/sound";
 import { applyCanvas, screenToGame, type Fit } from "./shell/fit";
 import {
+  captureRun,
+  createTracker,
+  emptyLeaderboard,
+  loadLeaderboard,
+  noteKills,
+  presentBoard,
+  resetTracker,
+  saveLeaderboard,
+  settleRun,
+} from "./shell/leaderboard";
+import { mountLeaderboard } from "./shell/leaderboard-dom";
+import {
   begin,
   createSession,
   finish,
@@ -39,6 +51,10 @@ const store = tryStore();
 const saved = store ? loadStore(store) : { best: 0, muted: false, shake: true };
 const session = createSession(saved.best, saved.muted, saved.shake);
 let crown = store ? loadCrown(store) : { won: false, endless: false };
+const records = store ? loadLeaderboard(store) : emptyLeaderboard();
+const tracker = createTracker();
+let runLineText = "";
+let runShare: string | null = null;
 setMuted(session.muted);
 bootSfx(store);
 
@@ -55,6 +71,8 @@ const endlessBtn = document.getElementById("endless") as HTMLButtonElement;
 const summary = document.getElementById("summary") as HTMLElement;
 const sfxMuteBtn = document.getElementById("sfx-mute") as HTMLButtonElement;
 const sfxVol = document.getElementById("sfx-vol") as HTMLInputElement;
+const panel = document.getElementById("panel") as HTMLElement;
+const leader = mountLeaderboard(panel, () => presentBoard(records));
 const joy = document.getElementById("joy") as HTMLElement;
 const knob = document.getElementById("knob") as HTMLElement;
 
@@ -109,12 +127,18 @@ function paint(): void {
   sfxMuteBtn.textContent = sfxMuteLabel(sfxMuted());
   sfxMuteBtn.setAttribute("aria-pressed", sfxMuted() ? "true" : "false");
   if (document.activeElement !== sfxVol) sfxVol.value = String(sfxVolumePercent(sfxVolume()));
+  leader.sync({
+    phase: session.phase,
+    line: session.phase === PHASE_OVER ? runLineText : "",
+    share: session.phase === PHASE_OVER ? runShare : null,
+  });
   setMusicOn(session.phase === PHASE_PLAY || session.phase === PHASE_TITLE);
   setMusicWave(playing ? Math.max(world.wave, world.rank) : 0);
 }
 
 function startRun(): void {
   unlockAudio();
+  leader.close();
   const reset = begin(session);
   if (reset) {
     world = createWorld(Date.now() >>> 0);
@@ -125,6 +149,9 @@ function startRun(): void {
     acc = 0;
     pendingPick = 0;
     resetSfxPlayback();
+    resetTracker(tracker);
+    runLineText = "";
+    runShare = null;
   }
   playUiClick();
   persist();
@@ -208,6 +235,11 @@ addEventListener("keydown", (e) => {
   if (k === "escape") {
     e.preventDefault();
     if (e.repeat) return;
+    if (leader.isOpen()) {
+      leader.close();
+      paint();
+      return;
+    }
     togglePause(session);
     playUiClick();
     persist();
@@ -310,6 +342,7 @@ function frame(now: number): void {
     while (acc >= STEP_MS) {
       input.pick = pendingPick;
       step(world, input);
+      noteKills(tracker, world.events[EV_KILL] ?? 0);
       pendingPick = 0;
       input.pick = 0;
       acc -= STEP_MS;
@@ -321,6 +354,17 @@ function frame(now: number): void {
       }
       if (world.over) {
         finish(session, world.score);
+        const settled = settleRun(records, captureRun({
+          score: world.score,
+          time: world.tick,
+          tier: world.rank,
+          kills: tracker.kills,
+          upgrades: world.upgrades,
+        }));
+        runLineText = settled.line;
+        runShare = settled.share;
+        if (store) saveLeaderboard(store, records);
+        leader.toast(settled.toasts);
         persist();
         paint();
         acc = 0;

@@ -34,7 +34,7 @@ function killZombie(w: World, i: number): void {
   z.alive[i] = 0;
   tallyKill(w);
   w.score += foeScore(raw, w.wave, w.rank);
-  w.events[EV_KILL] = 1;
+  w.events[EV_KILL] = (w.events[EV_KILL] ?? 0) + 1;
   emitFx(w, FX_PUFF, x, y, raw & Z_KIND);
   const xp = foeKillXp(raw, w.rank);
   emitFx(w, FX_XP, x, y - 8, xp);
