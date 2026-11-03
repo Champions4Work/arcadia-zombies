@@ -1,8 +1,9 @@
+import { ARENA_H, ARENA_W } from "../sim/arena";
 import { tierFrac, tierName } from "../sim/difficulty";
 import { Z_GAS, Z_KIND, Z_KNIGHT, Z_RAT, Z_SPITTER } from "../sim/foes";
 import { CARD_GAP, CARD_H, CARD_W, CARD_X0, CARD_Y, rarityName, UPG_RARITY, upgName, xpNeed } from "../sim/progress";
 import {
-  EVOL_AEGIS, EVOL_CANNON, EVOL_STORM, H, OFFER_N, UPG_DMG, UPG_FIRE, UPG_HP, UPG_MAX, UPG_MORTAR,
+  EVOL_AEGIS, EVOL_CANNON, EVOL_STORM, OFFER_N, UPG_DMG, UPG_FIRE, UPG_HP, UPG_MAX, UPG_MORTAR,
   UPG_PIERCE, UPG_SAWS, UPG_SHIELD, UPG_SHOTGUN, UPG_SPEED, UPG_TESLA, UPG_VENT, W, Z_BRUTE, Z_GHOUL, type World,
 } from "../sim/types";
 import { BRASS, cog, flame, font, heart, lit, OUTLINE, roundRect } from "./paint";
@@ -296,6 +297,10 @@ function pauseButton(ctx: CanvasRenderingContext2D): void {
   ctx.fillRect(PAUSE_X + 1.6, PAUSE_Y - 5, 2.6, 10);
 }
 
+export function yardDot(p: number, world: number, span: number): number {
+  return (p / world - 0.5) * span;
+}
+
 function minimap(ctx: CanvasRenderingContext2D, w: World): void {
   const cx = 48;
   const cy = 262;
@@ -314,8 +319,8 @@ function minimap(ctx: CanvasRenderingContext2D, w: World): void {
   const span = r * 1.45;
   for (let i = 0; i < z.alive.length; i++) {
     if (!z.alive[i]) continue;
-    const mx = cx + ((z.x[i] ?? 0) / W - 0.5) * span;
-    const my = cy + ((z.y[i] ?? 0) / H - 0.5) * span;
+    const mx = cx + yardDot(z.x[i] ?? 0, ARENA_W, span);
+    const my = cy + yardDot(z.y[i] ?? 0, ARENA_H, span);
     const kind = (z.kind[i] ?? 0) & Z_KIND;
     ctx.fillStyle = kind === Z_BRUTE ? "#d06aff"
       : kind === Z_GHOUL ? "#3ad4f0"
@@ -327,7 +332,7 @@ function minimap(ctx: CanvasRenderingContext2D, w: World): void {
     ctx.fillRect(mx - 1.3, my - 1.3, 2.6, 2.6);
   }
   ctx.save();
-  ctx.translate(cx + (w.px / W - 0.5) * span, cy + (w.py / H - 0.5) * span);
+  ctx.translate(cx + yardDot(w.px, ARENA_W, span), cy + yardDot(w.py, ARENA_H, span));
   ctx.rotate(Math.atan2(w.aimY, w.aimX || 1));
   ctx.beginPath();
   ctx.moveTo(5, 0);

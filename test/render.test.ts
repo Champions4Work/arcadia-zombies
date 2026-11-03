@@ -3,7 +3,8 @@ import { createWorld } from "../src/sim/world";
 import { projectileFor } from "../src/render/foes";
 import { UPG_FIRE, UPG_SAWS, Z_SHAMBLER } from "../src/sim/types";
 import { paintLayers, registerLayer, registerZombie, zombieGlyph, LAYER_BACK, LAYER_FRONT } from "../src/render/plugins";
-import { blurbFor, difficultyLabel, formatClock, pauseHit, weaponBadge, PAUSE_X, PAUSE_Y } from "../src/render/hud";
+import { ARENA_H, ARENA_W } from "../src/sim/arena";
+import { blurbFor, difficultyLabel, formatClock, pauseHit, weaponBadge, yardDot, PAUSE_X, PAUSE_Y } from "../src/render/hud";
 import "../src/render/actors";
 import type { BulletPaint, Glyph } from "../src/render/plugins";
 import type { World } from "../src/sim/types";
@@ -31,6 +32,13 @@ describe("clocktower hud", () => {
   it("describes known upgrades and still says something for a new one", () => {
     expect(blurbFor(UPG_FIRE).toLowerCase()).toContain("fire rate");
     expect(blurbFor(99).length).toBeGreaterThan(0);
+  });
+
+  it("puts the arena center in the middle of the yard map", () => {
+    expect(yardDot(ARENA_W / 2, ARENA_W, 40)).toBe(0);
+    expect(yardDot(ARENA_H / 2, ARENA_H, 40)).toBe(0);
+    expect(yardDot(0, ARENA_W, 40)).toBeLessThan(0);
+    expect(yardDot(ARENA_W, ARENA_W, 40)).toBeGreaterThan(0);
   });
 
   it("badges the saw upgrade as sawstorm", () => {
