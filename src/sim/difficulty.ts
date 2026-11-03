@@ -23,7 +23,7 @@ export const CURVE = {
   spawnMin: 4,
   hpNum: 100,
   hpPer: 10,
-  hpQuad: 56,
+  hpQuad: 36,
   dmgNum: 100,
   dmgPer: 35,
   speedNum: 100,
@@ -45,6 +45,12 @@ export const CURVE = {
   legendary: 8,
   legendaryPer: 5,
 };
+
+export const MIDGAME = { startMin: 3, endMin: 8 } as const;
+
+export function tickAtMinute(min: number): number {
+  return min * 2 * CURVE.ticks;
+}
 
 export function tierAt(tick: number): number {
   return Math.floor(Math.max(0, tick) / CURVE.ticks);
