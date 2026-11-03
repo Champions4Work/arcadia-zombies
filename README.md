@@ -1,6 +1,6 @@
 # Arcadia Zombies
 
-A steampunk zombie survival browser game. Move with WASD/arrows or drag on touch; your brass automaton fires on its own. Survive the waves.
+A steampunk zombie survival browser game. Move with WASD/arrows or drag on touch; your brass automaton fires on its own. A run timer ranks the boiler from Calm to Clockwork Apocalypse, and each level-up offers two power-ups.
 
 Built with Vite, TypeScript and canvas 2D. The simulation is seeded and deterministic, so bots can play it headless (`test/sim.test.ts`).
 

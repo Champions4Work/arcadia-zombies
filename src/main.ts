@@ -20,9 +20,9 @@ import {
 } from "./shell/session";
 import { resetShake } from "./render/shake";
 import { createStick, liftStick, moveStick, pressStick, showRestStick } from "./shell/stick";
-import { cardSlot } from "./sim/progress";
+import { cardSlot, summaryText } from "./sim/progress";
 import { step } from "./sim/step.hot";
-import { EV_HURT, EV_KILL, EV_LEVEL, EV_SHIELD, EV_SHOT, EV_TESLA, EV_WAVE, H, W, type Input } from "./sim/types";
+import { EV_HURT, EV_KILL, EV_LEVEL, EV_RANK, EV_SHIELD, EV_SHOT, EV_TESLA, EV_WAVE, H, W, type Input } from "./sim/types";
 import { createWorld } from "./sim/world";
 
 function tryStore(): { getItem(k: string): string | null; setItem(k: string, v: string): void } | null {
@@ -43,6 +43,7 @@ const sub = document.getElementById("sub") as HTMLElement;
 const goBtn = document.getElementById("go") as HTMLButtonElement;
 const muteBtn = document.getElementById("mute") as HTMLButtonElement;
 const shakeBtn = document.getElementById("shake") as HTMLButtonElement;
+const summary = document.getElementById("summary") as HTMLElement;
 const joy = document.getElementById("joy") as HTMLElement;
 const knob = document.getElementById("knob") as HTMLElement;
 
@@ -74,15 +75,18 @@ function paint(): void {
     goBtn.textContent = "Resume";
   } else if (session.phase === PHASE_OVER) {
     headline.textContent = "The Gears Stop";
-    sub.textContent = `Score ${session.last} · Best ${session.best}`;
+    sub.textContent = `Best ${session.best}`;
     goBtn.textContent = "Play";
   }
+  const over = session.phase === PHASE_OVER ? summaryText(world) : "";
+  summary.hidden = over.length === 0;
+  summary.textContent = over;
   muteBtn.textContent = session.muted ? "Muted" : "Sound";
   muteBtn.setAttribute("aria-pressed", session.muted ? "true" : "false");
   shakeBtn.textContent = session.shake ? "Screen shake: On" : "Screen shake: Off";
   shakeBtn.setAttribute("aria-pressed", session.shake ? "true" : "false");
   setMusicOn(session.phase === PHASE_PLAY || session.phase === PHASE_TITLE);
-  setMusicWave(playing ? world.wave : 0);
+  setMusicWave(playing ? Math.max(world.wave, world.rank) : 0);
 }
 
 function startRun(): void {
@@ -136,6 +140,7 @@ function sfx(): void {
   if (world.events[EV_LEVEL]) blip(880, 0.25, "triangle");
   if (world.events[EV_TESLA]) blip(980, 0.08, "square");
   if (world.events[EV_SHIELD]) blip(300, 0.12, "sine");
+  if (world.events[EV_RANK]) blip(180, 0.45, "sawtooth");
 }
 
 goBtn.addEventListener("click", startRun);
@@ -169,7 +174,7 @@ addEventListener("keydown", (e) => {
     startRun();
     return;
   }
-  if (session.phase === PHASE_PLAY && world.choosing && e.key >= "1" && e.key <= "3") {
+  if (session.phase === PHASE_PLAY && world.choosing && e.key >= "1" && e.key <= "2") {
     pendingPick = e.key.charCodeAt(0) - 48;
     return;
   }
@@ -247,7 +252,7 @@ function frame(now: number): void {
         break;
       }
     }
-    setMusicWave(world.wave);
+    setMusicWave(Math.max(world.wave, world.rank));
   } else {
     acc = 0;
   }

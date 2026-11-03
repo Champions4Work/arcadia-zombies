@@ -1,8 +1,15 @@
+import { clock, rarityWeight, tierName } from "./difficulty";
 import { nextFloat } from "./rng";
 import {
-  EV_LEVEL, OFFER_N, UPG_COUNT, UPG_DMG, UPG_FIRE, UPG_HP, UPG_MAGNET, UPG_MAX,
-  UPG_SAWS, UPG_SHIELD, UPG_SPEED, UPG_TESLA, type World,
+  EV_LEVEL, EVOL_AEGIS, EVOL_CANNON, EVOL_STORM, OFFER_N, UPG_COOLANT, UPG_COUNT, UPG_DMG,
+  UPG_FIRE, UPG_HP, UPG_MAX, UPG_MORTAR, UPG_PIERCE, UPG_SAWS, UPG_SHIELD, UPG_SHOTGUN, UPG_SPEED,
+  UPG_TESLA, UPG_VENT, UPG_WHISTLE, W, type World,
 } from "./types";
+
+export const RARITY_COMMON = 0;
+export const RARITY_RARE = 1;
+export const RARITY_LEGENDARY = 2;
+
 export const UPG_NAMES: readonly string[] = [
   "TESLA COIL",
   "STEAM SHOTGUN",
@@ -11,55 +18,128 @@ export const UPG_NAMES: readonly string[] = [
   "DAMAGE",
   "MAX HP",
   "MOVE SPEED",
-  "MAGNET",
+  "BOILER VENT",
   "PIERCE RIVET",
   "BOILER SHIELD",
+  "SPIKED PLATE",
+  "COOLANT",
+  "MORTAR",
+  "STEAM WHISTLE",
+  "RICOCHET",
+  "DYNAMO",
+  "STORM GEAR",
+  "CANNON",
+  "AEGIS ENGINE",
 ];
-export const CARD_W = 132;
-export const CARD_H = 168;
-export const CARD_Y = 68;
-export const CARD_GAP = 8;
-export const CARD_X0 = 34;
-export const PICKUP_R2 = 144;
-export const COG_PULL = 2.4;
+
+export const UPG_RARITY: readonly number[] = [
+  RARITY_LEGENDARY,
+  RARITY_RARE,
+  RARITY_RARE,
+  RARITY_COMMON,
+  RARITY_COMMON,
+  RARITY_COMMON,
+  RARITY_COMMON,
+  RARITY_RARE,
+  RARITY_RARE,
+  RARITY_RARE,
+  RARITY_COMMON,
+  RARITY_COMMON,
+  RARITY_LEGENDARY,
+  RARITY_COMMON,
+  RARITY_RARE,
+  RARITY_LEGENDARY,
+  RARITY_LEGENDARY,
+  RARITY_LEGENDARY,
+  RARITY_LEGENDARY,
+];
+
+export const CARD_W = 176;
+export const CARD_H = 180;
+export const CARD_Y = 86;
+export const CARD_GAP = 16;
+export const CARD_X0 = Math.floor((W - (CARD_W * OFFER_N + CARD_GAP * (OFFER_N - 1))) / 2);
 export const SAW_HIT_R2 = 81;
 export const SAW_SPIN = 0.08;
+
 export function xpNeed(level: number): number {
   return 4 + level * 4;
 }
+
 export function fireEvery(w: World): number {
   return Math.max(3, 12 - (w.upgrades[UPG_FIRE] ?? 0) * 2);
 }
+
 export function moveSpeed(w: World): number {
   return 2 + (w.upgrades[UPG_SPEED] ?? 0) * 0.4;
 }
-export function magnetR(w: World): number {
-  return 16 + (w.upgrades[UPG_MAGNET] ?? 0) * 24;
-}
+
 export function bulletDmg(w: World): number {
-  return 1 + (w.upgrades[UPG_DMG] ?? 0);
+  return 1 + (w.upgrades[UPG_DMG] ?? 0) + (w.upgrades[EVOL_CANNON] ?? 0);
 }
+
 export function sawRadius(w: World): number {
   return 26 + (w.upgrades[UPG_SAWS] ?? 0) * 8;
 }
+
+export function sawDamage(w: World): number {
+  return 1 + (w.upgrades[EVOL_STORM] ?? 0);
+}
+
 export function sawAngle(tick: number, i: number, n: number): number {
   return tick * SAW_SPIN + i * ((Math.PI * 2) / n);
 }
+
 export function teslaEvery(w: World): number {
   return Math.max(18, 54 - (w.upgrades[UPG_TESLA] ?? 0) * 6);
 }
+
 export function teslaRange(w: World): number {
-  return 64 + (w.upgrades[UPG_TESLA] ?? 0) * 20;
+  return 64 + (w.upgrades[UPG_TESLA] ?? 0) * 20 + (w.upgrades[EVOL_STORM] ?? 0) * 12;
 }
+
 export function teslaChain(w: World): number {
   return 40 + (w.upgrades[UPG_TESLA] ?? 0) * 14;
 }
-export function shieldReload(w: World): number {
-  return Math.max(60, 180 - (w.upgrades[UPG_SHIELD] ?? 0) * 20);
+
+export function teslaPower(w: World): number {
+  return (w.upgrades[UPG_TESLA] ?? 0) + (w.upgrades[EVOL_STORM] ?? 0);
 }
+
+export function shieldReload(w: World): number {
+  return Math.max(40, 180 - (w.upgrades[UPG_SHIELD] ?? 0) * 20 - (w.upgrades[EVOL_AEGIS] ?? 0) * 24);
+}
+
+export function ventEvery(w: World): number {
+  return Math.max(22, 78 - (w.upgrades[UPG_VENT] ?? 0) * 10);
+}
+
+export function ventRange(w: World): number {
+  return 32 + (w.upgrades[UPG_VENT] ?? 0) * 14 + (w.upgrades[EVOL_AEGIS] ?? 0) * 8;
+}
+
+export function mortarEvery(w: World): number {
+  return Math.max(28, 96 - (w.upgrades[UPG_MORTAR] ?? 0) * 12);
+}
+
+export function healEvery(w: World): number {
+  return Math.max(40, 190 - (w.upgrades[UPG_COOLANT] ?? 0) * 26);
+}
+
+export function whistleRange(w: World): number {
+  return 34 + (w.upgrades[UPG_WHISTLE] ?? 0) * 16;
+}
+
 export function upgName(id: number): string {
   return UPG_NAMES[id] ?? "";
 }
+
+export function rarityName(rarity: number): string {
+  if (rarity >= RARITY_LEGENDARY) return "LEGENDARY";
+  if (rarity === RARITY_RARE) return "RARE";
+  return "COMMON";
+}
+
 export function cardSlot(x: number, y: number): number {
   if (y < CARD_Y || y > CARD_Y + CARD_H) return 0;
   for (let i = 0; i < OFFER_N; i++) {
@@ -68,12 +148,27 @@ export function cardSlot(x: number, y: number): number {
   }
   return 0;
 }
+
+export function evolutionReady(w: World, id: number): boolean {
+  if (id === EVOL_STORM) return (w.upgrades[UPG_TESLA] ?? 0) >= 2 && (w.upgrades[UPG_SAWS] ?? 0) >= 2;
+  if (id === EVOL_CANNON) return (w.upgrades[UPG_SHOTGUN] ?? 0) >= 2 && (w.upgrades[UPG_PIERCE] ?? 0) >= 2;
+  if (id === EVOL_AEGIS) return (w.upgrades[UPG_SHIELD] ?? 0) >= 2 && (w.upgrades[UPG_VENT] ?? 0) >= 2;
+  return true;
+}
+
+export function offerable(w: World, id: number): boolean {
+  if (id < 0 || id >= UPG_COUNT) return false;
+  if ((w.upgrades[id] ?? 0) >= UPG_MAX) return false;
+  return evolutionReady(w, id);
+}
+
 export function canUpgrade(w: World): boolean {
   for (let i = 0; i < UPG_COUNT; i++) {
-    if ((w.upgrades[i] ?? 0) < UPG_MAX) return true;
+    if (offerable(w, i)) return true;
   }
   return false;
 }
+
 export function applyUpgrade(w: World, id: number): void {
   if (id < 0 || id >= UPG_COUNT) return;
   const lv = w.upgrades[id] ?? 0;
@@ -87,26 +182,60 @@ export function applyUpgrade(w: World, id: number): void {
     w.shield = w.upgrades[UPG_SHIELD] ?? 0;
     w.shieldCd = shieldReload(w);
   }
+  if (id === UPG_VENT) w.ventCd = ventEvery(w);
+  if (id === UPG_COOLANT) w.healCd = healEvery(w);
+  if (id === UPG_MORTAR) w.mortarCd = mortarEvery(w);
 }
+
+function rarityOf(id: number): number {
+  return UPG_RARITY[id] ?? RARITY_COMMON;
+}
+
+function pickOffer(w: World, n: number, ban: number): number {
+  let n0 = 0;
+  let n1 = 0;
+  let n2 = 0;
+  const s = w.scratch;
+  for (let i = 0; i < n; i++) {
+    const id = s[i] ?? 0;
+    if (id === ban) continue;
+    const r = rarityOf(id);
+    if (r >= RARITY_LEGENDARY) n2++;
+    else if (r === RARITY_RARE) n1++;
+    else n0++;
+  }
+  const tier = w.rank;
+  const w0 = n0 > 0 ? rarityWeight(tier, RARITY_COMMON) : 0;
+  const w1 = n1 > 0 ? rarityWeight(tier, RARITY_RARE) : 0;
+  const w2 = n2 > 0 ? rarityWeight(tier, RARITY_LEGENDARY) : 0;
+  const total = w0 + w1 + w2;
+  if (total <= 0) return -1;
+  const roll = nextFloat(w.rng) * total;
+  const want = roll < w0 ? RARITY_COMMON : roll < w0 + w1 ? RARITY_RARE : RARITY_LEGENDARY;
+  const count = want === RARITY_COMMON ? n0 : want === RARITY_RARE ? n1 : n2;
+  let k = (nextFloat(w.rng) * count) | 0;
+  for (let i = 0; i < n; i++) {
+    const id = s[i] ?? 0;
+    if (id === ban || rarityOf(id) !== want) continue;
+    if (k === 0) return id;
+    k--;
+  }
+  return -1;
+}
+
 export function rollOffers(w: World): void {
   const s = w.scratch;
-  for (let i = 0; i < UPG_COUNT; i++) s[i] = i;
-  for (let i = UPG_COUNT - 1; i > 0; i--) {
-    const j = (nextFloat(w.rng) * (i + 1)) | 0;
-    const t = s[i] ?? 0;
-    s[i] = s[j] ?? 0;
-    s[j] = t;
-  }
-  w.offers[0] = -1;
-  w.offers[1] = -1;
-  w.offers[2] = -1;
   let n = 0;
-  for (let i = 0; i < UPG_COUNT && n < OFFER_N; i++) {
-    const id = s[i] ?? 0;
-    if ((w.upgrades[id] ?? 0) >= UPG_MAX) continue;
-    w.offers[n++] = id;
+  for (let i = 0; i < UPG_COUNT; i++) {
+    if (!offerable(w, i)) continue;
+    s[n++] = i;
   }
+  for (let i = 0; i < OFFER_N; i++) w.offers[i] = -1;
+  const first = pickOffer(w, n, -1);
+  w.offers[0] = first;
+  if (OFFER_N > 1) w.offers[1] = pickOffer(w, n, first);
 }
+
 export function beginLevel(w: World): void {
   if (w.choosing) return;
   const need = xpNeed(w.level);
@@ -119,10 +248,12 @@ export function beginLevel(w: World): void {
   w.choosing = 1;
   w.events[EV_LEVEL] = 1;
 }
+
 export function takeXp(w: World, n: number): void {
   w.xp += n;
   beginLevel(w);
 }
+
 export function tryPick(w: World, pick: number): boolean {
   if (!w.choosing) return false;
   if (pick < 1 || pick > OFFER_N) return false;
@@ -130,9 +261,20 @@ export function tryPick(w: World, pick: number): boolean {
   if (id < 0) return false;
   applyUpgrade(w, id);
   w.choosing = 0;
-  w.offers[0] = -1;
-  w.offers[1] = -1;
-  w.offers[2] = -1;
+  for (let i = 0; i < OFFER_N; i++) w.offers[i] = -1;
   beginLevel(w);
   return true;
+}
+
+export function summaryText(w: World): string {
+  const lines = [tierName(w.rank), clock(w.tick), `SCORE ${w.score}`];
+  let any = false;
+  for (let i = 0; i < UPG_COUNT; i++) {
+    const lv = w.upgrades[i] ?? 0;
+    if (lv <= 0) continue;
+    any = true;
+    lines.push(`${upgName(i)} LV ${lv}`);
+  }
+  if (!any) lines.push("NO UPGRADES");
+  return lines.join("\n");
 }

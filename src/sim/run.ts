@@ -5,6 +5,7 @@ export function snapshot(w: World) {
   return {
     tick: w.tick, score: w.score, hp: w.hp, maxHp: w.maxHp, wave: w.wave, over: w.over,
     px: w.px, py: w.py, xp: w.xp, level: w.level, choosing: w.choosing, shield: w.shield,
+    rank: w.rank, rankFlash: w.rankFlash, banner: w.banner,
     upgrades: Array.from(w.upgrades), offers: Array.from(w.offers),
   };
 }
