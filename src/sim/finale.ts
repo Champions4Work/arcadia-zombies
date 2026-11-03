@@ -415,7 +415,7 @@ function defeat(w: World, f: Lich): void {
   dropMinions(w, f);
   tallyKill(w);
   w.score += 500 * scoreMul(w.rank);
-  w.events[EV_KILL] = 1;
+  w.events[EV_KILL] = (w.events[EV_KILL] ?? 0) + 1;
   if (f.endless !== 1) w.over = true;
 }
 
