@@ -1,6 +1,6 @@
 import {
-  clock, CURVE, dmgScale, hpScale, killXp, mixWeight, rarityWeight, scaledDmg, scaledHp, scoreMul,
-  spawnEvery, speedScale, tierAt, tierFrac, tierName,
+  clock, CURVE, dmgScale, hpScale, killXp, MIDGAME, mixWeight, rarityWeight, scaledDmg, scaledHp, scoreMul,
+  spawnEvery, speedScale, tickAtMinute, tierAt, tierFrac, tierName,
 } from "../src/sim/difficulty";
 import { step } from "../src/sim/step.hot";
 import { EV_RANK, MAX_ZOMBIES, Z_BRUTE, Z_GHOUL, Z_SHAMBLER } from "../src/sim/types";
@@ -32,6 +32,12 @@ describe("difficulty ranks", () => {
     expect(clock(0)).toBe("0:00");
     expect(clock(1800)).toBe("0:30");
     expect(clock(3600)).toBe("1:00");
+    expect(MIDGAME.startMin).toBe(3);
+    expect(MIDGAME.endMin).toBe(8);
+    expect(tickAtMinute(MIDGAME.startMin)).toBe(3 * 60 * 60);
+    expect(tickAtMinute(MIDGAME.endMin)).toBe(8 * 60 * 60);
+    expect(tierAt(tickAtMinute(MIDGAME.startMin))).toBe(6);
+    expect(tierAt(tickAtMinute(MIDGAME.endMin))).toBe(16);
   });
   it("ranks the live run up at the boundary and raises a banner", () => {
     const w = createWorld(1);
