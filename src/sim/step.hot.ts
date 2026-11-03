@@ -8,7 +8,7 @@ import {
 } from "./progress";
 import { nextFloat } from "./rng";
 import {
-  EV_HURT, EV_KILL, EV_RANK, EV_SHIELD, EV_SHOT, EV_TESLA, EV_WAVE, FX_FLASH, FX_PUFF, FX_SPARK,
+  EV_HURT, EV_KILL, EV_RANK, EV_SAW, EV_SHIELD, EV_SHOT, EV_TESLA, EV_WAVE, FX_FLASH, FX_PUFF, FX_SPARK,
   FX_XP, H, MAX_BULLETS, MAX_FX, MAX_ZOMBIES, UPG_COOLANT, UPG_DYNAMO, UPG_MORTAR, UPG_PIERCE, UPG_RICOCHET,
   UPG_SAWS, UPG_SHIELD, UPG_SHOTGUN, UPG_SPIKES, UPG_TESLA, UPG_VENT, UPG_WHISTLE, W, Z_BRUTE,
   Z_GHOUL, Z_SHAMBLER, EVOL_AEGIS, EVOL_CANNON, type Input, type World,
@@ -192,7 +192,10 @@ function spinSaws(w: World): void {
       if (!z.alive[i]) continue;
       const dx = (z.x[i] ?? 0) - sx;
       const dy = (z.y[i] ?? 0) - sy;
-      if (dx * dx + dy * dy < SAW_HIT_R2) hurtZombie(w, i, dmg);
+      if (dx * dx + dy * dy < SAW_HIT_R2) {
+        w.events[EV_SAW] = 1;
+        hurtZombie(w, i, dmg);
+      }
     }
   }
 }
