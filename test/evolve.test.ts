@@ -1,7 +1,8 @@
 import { PASSIVE_IDS, unionReady, UNIONS, WEAPON_IDS } from "../src/sim/evolve";
 import {
-  applyUpgrade, beginLevel, bulletDmg, evolutionReady, mortarEvery, offerable, rollOffers, sawCount,
-  sawDamage, shieldReload, takeXp, teslaEvery, teslaPower, tryPick, upgName, ventRange, whistleRange, xpNeed,
+  applyUpgrade, beginLevel, bulletDmg, evolutionReady, mortarEvery, offerable, rollOffers, sawAngle,
+  sawCount, sawDamage, sawRadius, sawSpin, shieldReload, takeXp, teslaEvery, teslaPower, tryPick, upgName,
+  ventRange, whistleRange, xpNeed,
 } from "../src/sim/progress";
 import { step } from "../src/sim/step.hot";
 import {
@@ -198,8 +199,8 @@ describe("weapon unions", () => {
       expect(sawCount(w)).toBe(UPG_MAX + (on ? 2 : 0));
       w.tick = 3;
       const n = sawCount(w);
-      const r = 26 + UPG_MAX * 8 + (on ? 14 : 0);
-      const a = (4 * 0.08);
+      const r = sawRadius(w);
+      const a = sawAngle(w.tick + 1, 0, n, sawSpin(w));
       const i = addZombie(w, w.px + Math.cos(a) * r, w.py + Math.sin(a) * r, 12);
       step(w, idle());
       expect(n).toBeGreaterThan(0);
