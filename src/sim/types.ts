@@ -1,8 +1,8 @@
 import type { Rng } from "./rng";
 export const W = 480;
 export const H = 320;
-export const MAX_ZOMBIES = 128;
-export const MAX_BULLETS = 128;
+export const MAX_ZOMBIES = 1500;
+export const MAX_BULLETS = 1000;
 export const MAX_FX = 16;
 export const UPG_COUNT = 19;
 export const UPG_MAX = 5;

@@ -1,3 +1,4 @@
+import { noteFrame, toggleFps, toggleFromKey } from "./render/fps";
 import { setMusicOn, setMusicWave } from "./render/music";
 import { draw } from "./render/draw";
 import { pauseHit } from "./render/hud";
@@ -26,6 +27,7 @@ import { devSeconds, loadCrown, markWon, saveCrown, toggleEndless } from "./shel
 import { createStick, liftStick, moveStick, pressStick, showRestStick } from "./shell/stick";
 import { clock } from "./sim/difficulty";
 import { armDevJump, isWon, killCount, setRunEndless, takeCue, victoryText } from "./sim/finale";
+import { fillHorde, HORDE_BULLETS, HORDE_ZOMBIES } from "./sim/horde";
 import { cardSlot, summaryText } from "./sim/progress";
 import { step } from "./sim/step.hot";
 import { H, OFFER_N, W, type Input } from "./sim/types";
@@ -58,7 +60,13 @@ const sfxVol = document.getElementById("sfx-vol") as HTMLInputElement;
 const joy = document.getElementById("joy") as HTMLElement;
 const knob = document.getElementById("knob") as HTMLElement;
 
-let world = createWorld(1);
+function makeWorld(seed: number) {
+  const next = createWorld(seed);
+  if (location.hash === "#horde") fillHorde(next, HORDE_ZOMBIES, HORDE_BULLETS);
+  return next;
+}
+
+let world = makeWorld(1);
 let fit: Fit = applyCanvas(canvas, ctx, innerWidth, innerHeight, devicePixelRatio || 1, W, H);
 const keys = new Set<string>();
 const input: Input = { dx: 0, dy: 0, pick: 0 };
@@ -117,7 +125,7 @@ function startRun(): void {
   unlockAudio();
   const reset = begin(session);
   if (reset) {
-    world = createWorld(Date.now() >>> 0);
+    world = makeWorld(Date.now() >>> 0);
     const jump = devSeconds(location.search, import.meta.env.DEV);
     if (jump > 0) armDevJump(world, jump);
     setRunEndless(world, crown.endless);
@@ -218,6 +226,11 @@ addEventListener("keydown", (e) => {
     mute();
     return;
   }
+  if (toggleFromKey(k, e.repeat)) {
+    e.preventDefault();
+    toggleFps();
+    return;
+  }
   if (k === " " || k === "enter") {
     if (session.phase !== PHASE_PLAY) {
       e.preventDefault();
@@ -300,6 +313,7 @@ addEventListener("blur", hide);
 document.addEventListener("visibilitychange", () => { if (document.hidden) hide(); });
 
 function frame(now: number): void {
+  noteFrame(now);
   acc += Math.min(250, now - last);
   last = now;
   if (shouldStep(session)) {
@@ -338,5 +352,9 @@ function frame(now: number): void {
   requestAnimationFrame(frame);
 }
 
+if (location.hash === "#horde") {
+  begin(session);
+  setRunEndless(world, crown.endless);
+}
 paint();
 requestAnimationFrame(frame);
