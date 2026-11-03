@@ -1,4 +1,7 @@
+import { PHONE_MAX_W } from "./phone";
+
 export const STICK_R = 56;
+export const STICK_DEAD = 0.12;
 
 export interface Stick {
   on: boolean;
@@ -18,6 +21,7 @@ export function aimStick(ox: number, oy: number, x: number, y: number, r: number
   const len = Math.hypot(vx, vy);
   if (len <= 0 || r <= 0) return { dx: 0, dy: 0 };
   const mag = Math.min(1, len / r);
+  if (mag < STICK_DEAD) return { dx: 0, dy: 0 };
   return { dx: (vx / len) * mag, dy: (vy / len) * mag };
 }
 
@@ -43,5 +47,5 @@ export function liftStick(s: Stick): void {
 }
 
 export function showRestStick(vw: number, coarse: boolean, hoverNone: boolean): boolean {
-  return coarse || hoverNone || vw <= 720;
+  return coarse || hoverNone || vw <= PHONE_MAX_W;
 }

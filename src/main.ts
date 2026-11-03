@@ -61,6 +61,7 @@ import {
   saveQuests,
   snapshotRun,
 } from "./shell/quests";
+import { lockPlayGestures, phoneChrome } from "./shell/phone";
 import { createStick, liftStick, moveStick, pressStick, showRestStick } from "./shell/stick";
 import {
   CHAR_TINKER,
@@ -148,6 +149,11 @@ const panel = document.getElementById("panel") as HTMLElement;
 const leader = mountLeaderboard(panel, () => presentBoard(records));
 const joy = document.getElementById("joy") as HTMLElement;
 const knob = document.getElementById("knob") as HTMLElement;
+lockPlayGestures(window);
+function envSafe(side: "l" | "b"): number {
+  const n = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue(`--safe-${side}`));
+  return Number.isFinite(n) ? n : 0;
+}
 function dismissGuide(): boolean {
   if (!briefing.guideOpen()) return false;
   briefing.hideGuide();
@@ -431,9 +437,14 @@ function placeJoy(): void {
   const show = playing && (stick.on || rest);
   joy.hidden = !show;
   if (!show) return;
-  joy.style.left = `${stick.on ? stick.x : 88}px`;
-  joy.style.top = `${stick.on ? stick.y : innerHeight - 108}px`;
-  knob.style.transform = `translate(${stick.dx * 40}px,${stick.dy * 40}px)`;
+  const chrome = phoneChrome(innerWidth, innerHeight, envSafe("l"), envSafe("b"));
+  const size = chrome.joyR * 2;
+  joy.style.width = `${size}px`;
+  joy.style.height = `${size}px`;
+  joy.style.margin = `-${chrome.joyR}px 0 0 -${chrome.joyR}px`;
+  joy.style.left = `${stick.on ? stick.x : chrome.restX}px`;
+  joy.style.top = `${stick.on ? stick.y : chrome.restY}px`;
+  knob.style.transform = `translate(${stick.dx * chrome.knobTravel}px,${stick.dy * chrome.knobTravel}px)`;
 }
 
 function sfx(): void {
@@ -584,6 +595,7 @@ addEventListener("pointerdown", (e) => {
   unlockAudio();
   paint();
   if (fromHud(e.target)) return;
+  if (session.phase === PHASE_PLAY && e.cancelable) e.preventDefault();
   if (session.phase !== PHASE_PLAY) return;
   const p = screenToGame(fit, e.clientX, e.clientY);
   if (pauseHit(p.x, p.y)) {
@@ -608,6 +620,7 @@ addEventListener("pointerdown", (e) => {
   input.dy = 0;
 });
 addEventListener("pointermove", (e) => {
+  if (session.phase === PHASE_PLAY && e.cancelable && !fromHud(e.target)) e.preventDefault();
   if (!stick.on || e.pointerId !== stickId) return;
   moveStick(stick, e.clientX, e.clientY);
   input.dx = stick.dx;
