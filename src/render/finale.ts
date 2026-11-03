@@ -105,5 +105,5 @@ export function drawLich(ctx: CanvasRenderingContext2D, w: World): void {
   roundRect(ctx, x - 20, y - 66, Math.max(2, 40 * frac), 3, 1.5);
   ctx.fillStyle = eye;
   ctx.fill();
-  plate(ctx, x, y - 78, "CLOCKWORK LICH");
+  plate(ctx, x, y + 36, "CLOCKWORK LICH");
 }

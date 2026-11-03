@@ -1,4 +1,5 @@
 import { tierFrac, tierName } from "../sim/difficulty";
+import { runLabel } from "../sim/finale";
 import { Z_GAS, Z_KIND, Z_KNIGHT, Z_RAT, Z_SPITTER } from "../sim/foes";
 import { CARD_GAP, CARD_H, CARD_W, CARD_X0, CARD_Y, rarityName, UPG_RARITY, upgName, xpNeed } from "../sim/progress";
 import {
@@ -284,7 +285,8 @@ function clockPanel(ctx: CanvasRenderingContext2D, w: World): void {
   const y = 4;
   brassPanel(ctx, x, y, 104, 44, 12, "#1a2744");
   clockIcon(ctx, x + 14, y + 16);
-  ink(ctx, formatClock(w.tick), x + 24, y + 8, 12, "#fff8ee");
+  const label = runLabel(w.tick);
+  ink(ctx, label, x + 22, y + 9, label.length > 5 ? 8 : 12, "#fff8ee");
   skull(ctx, x + 14, y + 32);
   ink(ctx, String(w.score), x + 24, y + 24, 12, "#fff8ee");
 }
