@@ -411,10 +411,11 @@ describe("rarity, evolutions, and the run summary", () => {
     expect(evolutionReady(w, EVOL_STORM)).toBe(false);
     expect(evolutionReady(w, EVOL_CANNON)).toBe(false);
     expect(evolutionReady(w, EVOL_AEGIS)).toBe(false);
+    const evolution = (id: number): boolean => id === EVOL_STORM || id === EVOL_CANNON || id === EVOL_AEGIS;
     for (let i = 0; i < 40; i++) {
       rollOffers(w);
-      expect(w.offers[0] ?? 0).toBeLessThan(EVOL_STORM);
-      expect(w.offers[1] ?? 0).toBeLessThan(EVOL_STORM);
+      expect(evolution(w.offers[0] ?? -1)).toBe(false);
+      expect(evolution(w.offers[1] ?? -1)).toBe(false);
     }
     applyUpgrade(w, UPG_TESLA);
     applyUpgrade(w, UPG_TESLA);

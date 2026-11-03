@@ -1,5 +1,5 @@
 import {
-  GRID_CELL, GRID_COLS, GRID_PAD, GRID_ROWS, qh, qn, zHead, zNext, zTail,
+  GRID_CELL, GRID_COLS, GRID_PAD, GRID_ROWS, QUERY_REACH, qh, qn, zHead, zNext, zTail,
 } from "./grid";
 
 export function cellIndex(x: number, y: number): number {
@@ -30,15 +30,21 @@ export function rebuildZombieGrid(alive: Uint8Array, xs: Float32Array, ys: Float
 }
 
 export function beginQuery(x: number, y: number): void {
+  beginRadiusQuery(x, y, GRID_CELL);
+}
+
+export function beginRadiusQuery(x: number, y: number, r: number): void {
   const c0 = cellIndex(x, y);
   const cx = c0 % GRID_COLS;
   const cy = (c0 / GRID_COLS) | 0;
+  let span = Math.ceil(r / GRID_CELL);
+  if (span > QUERY_REACH) span = QUERY_REACH;
   let n = 0;
-  for (let oy = -1; oy <= 1; oy++) {
+  for (let oy = -span; oy <= span; oy++) {
     const yy = cy + oy;
     if (yy < 0 || yy >= GRID_ROWS) continue;
     const row = yy * GRID_COLS;
-    for (let ox = -1; ox <= 1; ox++) {
+    for (let ox = -span; ox <= span; ox++) {
       const xx = cx + ox;
       if (xx < 0 || xx >= GRID_COLS) continue;
       const h = zHead[row + xx] ?? -1;
