@@ -110,6 +110,8 @@ export function stageArmed(w: World): void {
   z.vy[0] = 0;
   w.teslaN = 1;
   w.teslaHit[0] = 0;
+  const b = w.bullets;
+  for (let j = 0; j < b.alive.length; j++) b.alive[j] = 0;
 }
 
 export function rush(w: World): void {

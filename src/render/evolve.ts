@@ -18,21 +18,23 @@ function px(c: CanvasRenderingContext2D, x: number, y: number, s: string, w = 1,
 
 function crown(c: CanvasRenderingContext2D, w: World): void {
   const x = w.px | 0;
-  const y = (w.py - 20) | 0;
-  px(c, x - 11, y - 6, BRASS, 22, 4);
-  for (let i = 0; i < 5; i++) px(c, x - 11 + i * 5, y - 14, i === 2 ? CROWN : BRASS, 3, 9);
-  px(c, x - 2, y - 16, ARC, 4, 4);
-  px(c, x - 1, y - 15, "#ffffff", 2, 2);
-  if (w.teslaFlash <= 0) return;
-  c.strokeStyle = CROWN;
+  const y = (w.py - 78) | 0;
+  px(c, x - 16, y, BRASS, 32, 6);
+  for (let i = 0; i < 5; i++) px(c, x - 16 + i * 8, y - 16, i === 2 ? CROWN : BRASS, 5, 18);
+  c.fillStyle = ARC;
+  c.beginPath();
+  c.arc(x, y - 18, 4, 0, Math.PI * 2);
+  c.fill();
+  c.strokeStyle = "rgba(255,220,90,0.9)";
   c.lineWidth = 3;
   c.beginPath();
-  c.arc(w.px, w.py, 24, 0, Math.PI * 2);
+  c.arc(w.px, w.py - 30, 30, 0, Math.PI * 2);
   c.stroke();
-  c.strokeStyle = ARC;
-  c.lineWidth = 1;
+  if (w.teslaFlash <= 0) return;
+  c.strokeStyle = CROWN;
+  c.lineWidth = 4;
   c.beginPath();
-  c.arc(w.px, w.py, 30, 0, Math.PI * 2);
+  c.arc(w.px, w.py - 30, 40, 0, Math.PI * 2);
   c.stroke();
 }
 
@@ -52,50 +54,46 @@ function heart(c: CanvasRenderingContext2D, w: World): void {
 export function drawBriar(c: CanvasRenderingContext2D, w: World): void {
   const hot = w.shield > 0;
   c.strokeStyle = hot ? BRASS : "#6a5428";
-  c.lineWidth = hot ? 3 : 1;
+  c.lineWidth = hot ? 4 : 2;
   c.beginPath();
-  c.arc(w.px, w.py, 18, 0, Math.PI * 2);
+  c.arc(w.px, w.py - 24, 34, 0, Math.PI * 2);
   c.stroke();
-  c.fillStyle = hot ? EMBER : "#6a3018";
-  for (let i = 0; i < 8; i++) {
-    const a = w.tick * 0.03 + i * (Math.PI / 4);
-    px(c, w.px + Math.cos(a) * 18 - 2, w.py + Math.sin(a) * 18 - 2, hot ? EMBER : "#6a3018", 4, 4);
+  for (let i = 0; i < 10; i++) {
+    const a = w.tick * 0.04 + i * (Math.PI / 5);
+    px(c, w.px + Math.cos(a) * 34 - 3, w.py - 24 + Math.sin(a) * 34 - 3, hot ? EMBER : "#6a3018", 7, 7);
   }
 }
 
 function howitzer(c: CanvasRenderingContext2D, w: World): void {
-  const x = (w.px + 14) | 0;
-  const y = (w.py - 6) | 0;
-  const kick = w.tick % 24 < 4 ? 3 : 0;
-  px(c, x, y, "#7a5420", 16, 8);
-  px(c, x + 12 + kick, y + 2, "#120c08", 10, 4);
-  px(c, x + 2, y + 2, EMBER, 4, 4);
-  px(c, x - 2, y - 4, BRASS, 6, 4);
+  const x = (w.px + 18) | 0;
+  const y = (w.py - 40) | 0;
+  const kick = w.tick % 20 < 4 ? 6 : 0;
+  px(c, x, y, "#5a3810", 22, 12);
+  px(c, x + 16 + kick, y + 3, "#1c120c", 18, 6);
+  px(c, x + 4, y + 3, EMBER, 6, 6);
+  px(c, x - 4, y - 6, BRASS, 10, 6);
   c.strokeStyle = EMBER;
-  c.globalAlpha = 0.45;
+  c.lineWidth = 3;
+  c.globalAlpha = 0.7;
   c.beginPath();
-  c.arc(w.px, w.py, 70, -0.6, 0.6);
+  c.arc(w.px, w.py - 20, 78, -0.7, 0.45);
   c.stroke();
   c.globalAlpha = 1;
 }
 
 function calliope(c: CanvasRenderingContext2D, w: World): void {
-  const x = (w.px - 16) | 0;
-  const y = (w.py - 28) | 0;
-  for (let i = 0; i < 4; i++) {
-    const h = 10 + ((w.tick >> 2) + i) % 5;
-    px(c, x + i * 4, y - h, i % 2 ? BRASS : "#d4784a", 3, h + 8);
+  const x = (w.px - 18) | 0;
+  const y = (w.py - 78) | 0;
+  for (let i = 0; i < 5; i++) {
+    const h = 16 + ((w.tick >> 2) + i * 3) % 10;
+    px(c, x + i * 7, y - h, i % 2 ? BRASS : "#d4784a", 5, h + 14);
   }
   const p = (w.tick % 28) / 28;
   c.strokeStyle = STEAM;
-  c.lineWidth = 2;
-  c.globalAlpha = 1 - p;
+  c.lineWidth = 3;
+  c.globalAlpha = 0.85 * (1 - p);
   c.beginPath();
-  c.arc(w.px, w.py, 12 + p * 64, 0, Math.PI * 2);
-  c.stroke();
-  c.globalAlpha = 0.55;
-  c.beginPath();
-  c.arc(w.px, w.py, 8 + ((p + 0.45) % 1) * 64, 0, Math.PI * 2);
+  c.arc(w.px, w.py - 20, 20 + p * 70, 0, Math.PI * 2);
   c.stroke();
   c.globalAlpha = 1;
 }
