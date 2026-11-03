@@ -46,7 +46,20 @@ import {
   toggleShake,
 } from "./shell/session";
 import { resetShake } from "./render/shake";
+import { mountBriefing } from "./shell/briefing";
 import { devSeconds, loadCrown, markWon, saveCrown, toggleEndless } from "./shell/crown";
+import { loadGuideSeen, saveGuideSeen } from "./shell/guide";
+import {
+  applyRun,
+  dayKey,
+  freshQuests,
+  loadQuests,
+  openRun,
+  questBoard,
+  rollDay,
+  saveQuests,
+  snapshotRun,
+} from "./shell/quests";
 import { createStick, liftStick, moveStick, pressStick, showRestStick } from "./shell/stick";
 import {
   CHAR_TINKER,
@@ -96,6 +109,10 @@ let runLineText = "";
 let runShare: string | null = null;
 const codex = store ? loadCodex(store) : emptyCodex();
 let codexDrawn = "";
+function today(): string {
+  return dayKey(new Date());
+}
+let questState = store ? loadQuests(store, today()) : freshQuests(today());
 setMuted(session.muted);
 bootSfx(store);
 let survivor = roster.index;
@@ -129,6 +146,19 @@ const panel = document.getElementById("panel") as HTMLElement;
 const leader = mountLeaderboard(panel, () => presentBoard(records));
 const joy = document.getElementById("joy") as HTMLElement;
 const knob = document.getElementById("knob") as HTMLElement;
+function dismissGuide(): boolean {
+  if (!briefing.guideOpen()) return false;
+  briefing.hideGuide();
+  if (store) saveGuideSeen(store);
+  return true;
+}
+const briefing = mountBriefing(() => {
+  if (!dismissGuide()) return;
+  unlockAudio();
+  playUiClick();
+  paint();
+});
+if ((!store || !loadGuideSeen(store)) && location.hash !== "#horde") briefing.showGuide();
 
 function makeWorld(seed: number) {
   const next = createWorld(seed, survivor, mods);
@@ -158,6 +188,7 @@ function persist(): void {
   saveCrown(store, crown);
   saveRoster(store, survivor, bestWave);
   saveMods(store, mods);
+  saveQuests(store, questState);
 }
 
 function noteCodex(): void {
@@ -257,6 +288,9 @@ function paint(): void {
     line: session.phase === PHASE_OVER ? runLineText : "",
     share: session.phase === PHASE_OVER ? runShare : null,
   });
+  questState = rollDay(questState, today());
+  const showQuests = (session.phase === PHASE_TITLE || session.phase === PHASE_OVER) && !session.codex;
+  briefing.setQuests(questBoard(questState), showQuests);
   setMusicOn(playing || session.phase === PHASE_TITLE || fitting);
   setMusicWave(playing ? Math.max(world.wave, world.rank) : 0);
 }
@@ -284,11 +318,13 @@ function leaveWorkshop(): void {
 
 function startRun(): void {
   if (session.phase === PHASE_WORKSHOP) return;
+  dismissGuide();
   unlockAudio();
   leader.close();
   closeCodex(session);
   const reset = begin(session);
   if (reset) {
+    questState = openRun(rollDay(questState, today()));
     const seedQuery = import.meta.env.DEV ? Number(new URLSearchParams(location.search).get("seed")) : NaN;
     const seed = Number.isFinite(seedQuery) && seedQuery > 0 ? seedQuery >>> 0 : Date.now() >>> 0;
     world = makeWorld(seed);
@@ -430,9 +466,19 @@ addEventListener("keydown", (e) => {
   if (inSfx && e.key !== "Escape") return;
   const inMods = e.target instanceof HTMLElement && !!e.target.closest("#mods");
   if (inMods && e.key !== "Escape") return;
+  const k = e.key.toLowerCase();
+  if (briefing.guideOpen()) {
+    if (k === "escape" || k === " " || k === "enter") {
+      e.preventDefault();
+      if (e.repeat) return;
+      unlockAudio();
+      if (dismissGuide()) playUiClick();
+      paint();
+    }
+    return;
+  }
   unlockAudio();
   paint();
-  const k = e.key.toLowerCase();
   if (k === "escape") {
     e.preventDefault();
     if (e.repeat) return;
@@ -594,6 +640,13 @@ function frame(now: number): void {
       if (world.over) {
         lastBase = scrapEarned(world.tick, world.rank, world.kills);
         lastScrap = awardRun(shop, world);
+        questState = applyRun(rollDay(questState, today()), snapshotRun({
+          kills: killCount(world),
+          tick: world.tick,
+          upgrades: world.upgrades,
+          score: world.score,
+          level: world.level,
+        }));
         finish(session, world.score);
         const settled = settleRun(records, captureRun({
           score: world.score,
