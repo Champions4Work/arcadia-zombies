@@ -13,6 +13,7 @@ export default defineConfig({
         passes: 3,
         toplevel: true,
         defaults: true,
+        inline: 1,
         drop_console: true,
         drop_debugger: true,
         pure_getters: true,
@@ -23,13 +24,7 @@ export default defineConfig({
       mangle: {
         toplevel: true,
         module: true,
-        properties: {
-          reserved: [
-            "v", "scrap", "ranks",
-            "day", "kills", "bestSeconds", "unions", "bestScore", "bestLevel",
-            "board", "score", "time", "tier", "build", "character", "mods", "workshop", "life", "bestTime", "runs", "unlocked",
-          ],
-        },
+        properties: { keep_quoted: "strict" },
       },
       format: { comments: false, ecma: 2022 },
     },

@@ -1,5 +1,5 @@
 export const OUTLINE = "#1c120c";
-export const FONT = "Inter, Cantarell, 'Liberation Sans', sans-serif";
+export const FONT = "sans-serif";
 export const SCALE = 3;
 
 export interface Metal {

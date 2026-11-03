@@ -171,7 +171,7 @@ function isRecord(v: unknown): v is Record<string, unknown> {
 export function serializeWorkshop(shop: Workshop): string {
   const ranks: number[] = [];
   for (let i = 0; i < META_N; i++) ranks.push(shop.ranks[i] ?? 0);
-  return JSON.stringify({ v: WORKSHOP_VERSION, scrap: shop.scrap | 0, ranks });
+  return JSON.stringify({ "v": WORKSHOP_VERSION, "scrap": shop.scrap | 0, "ranks": ranks });
 }
 
 export function loadWorkshop(store: ScrapStore): WorkshopFile {
@@ -181,12 +181,15 @@ export function loadWorkshop(store: ScrapStore): WorkshopFile {
     let data: unknown;
     try { data = JSON.parse(raw); } catch { return { shop: emptyWorkshop(), writable: true }; }
     if (!isRecord(data)) return { shop: emptyWorkshop(), writable: true };
-    if (typeof data.v === "number" && data.v > WORKSHOP_VERSION) return { shop: emptyWorkshop(), writable: false };
-    if (data.v !== WORKSHOP_VERSION) return { shop: emptyWorkshop(), writable: true };
+    const version = data["v"];
+    const scrap = data["scrap"];
+    const savedRanks = data["ranks"];
+    if (typeof version === "number" && version > WORKSHOP_VERSION) return { shop: emptyWorkshop(), writable: false };
+    if (version !== WORKSHOP_VERSION) return { shop: emptyWorkshop(), writable: true };
     const shop = emptyWorkshop();
-    shop.scrap = clampCount(data.scrap, SCRAP_CAP);
-    if (Array.isArray(data.ranks)) {
-      for (let i = 0; i < META_N; i++) shop.ranks[i] = clampCount(data.ranks[i], META_MAX[i] ?? 0);
+    shop.scrap = clampCount(scrap, SCRAP_CAP);
+    if (Array.isArray(savedRanks)) {
+      for (let i = 0; i < META_N; i++) shop.ranks[i] = clampCount(savedRanks[i], META_MAX[i] ?? 0);
     }
     return { shop, writable: true };
   } catch {
