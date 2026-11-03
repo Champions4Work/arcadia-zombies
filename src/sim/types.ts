@@ -38,17 +38,22 @@ export interface Pool {
   x: Float32Array; y: Float32Array; vx: Float32Array; vy: Float32Array;
   hp: Int16Array; alive: Uint8Array; kind: Uint8Array;
 }
+export interface Arena {
+  x: Float32Array; y: Float32Array; hw: Float32Array; hh: Float32Array;
+  kind: Uint8Array; hp: Int16Array; alive: Uint8Array; phase: Uint16Array;
+  n: number;
+}
 export interface World {
   rng: Rng; tick: number; px: number; py: number; hp: number; maxHp: number;
   score: number; wave: number; toSpawn: number; spawnCd: number; fireCd: number;
   hurtCd: number; over: boolean; xp: number; level: number; choosing: number;
   teslaCd: number; teslaN: number; teslaFlash: number; shield: number; shieldCd: number;
-  aimX: number; aimY: number;
+  aimX: number; aimY: number; arena: Arena;
   rank: number; rankFlash: number; banner: number;
   ventCd: number; healCd: number; mortarCd: number;
   zombies: Pool; bullets: Pool; events: Uint8Array;
   upgrades: Uint8Array; offers: Int8Array; scratch: Uint8Array;
-  bHit: Int16Array; bPierce: Uint8Array; zMark: Uint8Array; teslaHit: Int16Array;
+  bHit: Int16Array; bPierce: Uint8Array; zMark: Uint8Array; zSide: Int8Array; teslaHit: Int16Array;
   fxKind: Uint8Array; fxX: Float32Array; fxY: Float32Array; fxA: Float32Array; fxTick: Int32Array; fxHead: number;
 }
 export const EV_SHOT = 0;
@@ -60,4 +65,5 @@ export const EV_TESLA = 5;
 export const EV_SHIELD = 6;
 export const EV_RANK = 7;
 export const EV_SAW = 8;
-export const EV_N = 9;
+export const EV_BOOM = 9;
+export const EV_N = 10;

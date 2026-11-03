@@ -1,14 +1,32 @@
 import { H, W, type World } from "../sim/types";
 import { paintActors, paintBullets, paintFx } from "./actors";
+import { createCam, followCam, snapCam } from "./camera";
 import { drawCards, drawHud } from "./hud";
+import { drawMarkers } from "./markers";
 import { drawSaws, drawShield, drawTesla } from "./progress";
 import { LAYER_BACK, LAYER_FRONT, LAYER_HUD, LAYER_MID, paintLayers } from "./plugins";
+import { drawObstacle, drawWalls } from "./scenery";
 import { absorbShake, shakePixels } from "./shake";
 import { drawStage } from "./stage";
 
+const cam = createCam();
+let camWorld: World | null = null;
 let lastPx = 0;
 let lastPy = 0;
 let walk = 0;
+
+function drawProps(c: CanvasRenderingContext2D, w: World): void {
+  const a = w.arena;
+  for (let i = 0; i < a.n; i++) {
+    if (!a.alive[i]) continue;
+    const x = a.x[i] ?? 0;
+    const y = a.y[i] ?? 0;
+    const hw = a.hw[i] ?? 0;
+    const hh = a.hh[i] ?? 0;
+    if (x + hw < cam.x - 24 || x - hw > cam.x + W + 24 || y + hh < cam.y - 24 || y - hh > cam.y + H + 24) continue;
+    drawObstacle(c, w, i);
+  }
+}
 
 export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boolean; shake?: boolean }): void {
   c.imageSmoothingEnabled = true;
@@ -19,12 +37,21 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
   else if (walk > 0) walk--;
   lastPx = w.px;
   lastPy = w.py;
+  if (camWorld !== w) {
+    snapCam(cam, w.px, w.py);
+    camWorld = w;
+  }
+  followCam(cam, w.px, w.py);
   absorbShake(w.tick, w.events);
   const [sx, sy] = shakePixels(w.tick, opts?.shake !== false);
   c.save();
   if (sx !== 0 || sy !== 0) c.translate(sx, sy);
+  c.save();
+  c.translate(-cam.x, -cam.y);
   drawStage(c, w.tick);
   paintLayers(c, w, LAYER_BACK);
+  drawWalls(c);
+  drawProps(c, w);
   paintActors(c, w, walk > 0);
   drawSaws(c, w);
   drawShield(c, w);
@@ -32,6 +59,8 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
   drawTesla(c, w);
   paintFx(c, w);
   paintLayers(c, w, LAYER_MID);
+  c.restore();
+  drawMarkers(c, w, cam.x, cam.y);
   c.restore();
   if (w.hurtCd > 0) {
     const g = c.createRadialGradient(W / 2, H / 2, 60, W / 2, H / 2, 280);

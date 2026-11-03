@@ -1,3 +1,4 @@
+import { ARENA_H, ARENA_W } from "../sim/arena";
 import { H, W } from "../sim/types";
 import { BRASS, cog, COPPER, lit, OUTLINE, rivet, roundRect, STEEL } from "./paint";
 import { puffSprite } from "./sprites";
@@ -445,6 +446,8 @@ function spinGears(ctx: CanvasRenderingContext2D, tick: number): void {
 }
 
 export function drawStage(ctx: CanvasRenderingContext2D, tick: number): void {
+  ctx.save();
+  ctx.scale(ARENA_W / W, ARENA_H / H);
   ctx.drawImage(background(), 0, 0, W, H);
   slats(ctx, 292, 156, 176, 26, tick);
   slats(ctx, 310, 204, 158, 22, tick + 6);
@@ -454,4 +457,5 @@ export function drawStage(ctx: CanvasRenderingContext2D, tick: number): void {
   smoke(ctx, tick);
   balloon(ctx, tick);
   embers(ctx, tick);
+  ctx.restore();
 }

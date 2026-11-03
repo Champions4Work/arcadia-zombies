@@ -1,6 +1,7 @@
 import { createRng, nextFloat } from "../src/sim/rng";
 import { simulate } from "../src/sim/run";
 import { step } from "../src/sim/step.hot";
+import { ARENA_H, ARENA_W, ARENA_WALL } from "../src/sim/arena";
 import { EV_HURT, EV_KILL, MAX_ZOMBIES, Z_BRUTE, Z_GHOUL, Z_SHAMBLER, type Input } from "../src/sim/types";
 import { createWorld } from "../src/sim/world";
 const script = (n: number, seed: number): Input[] => {
@@ -25,8 +26,12 @@ describe("headless simulation", () => {
   });
   it("player stays inside the arena", () => {
     const r = simulate(3, Array.from({ length: 600 }, () => ({ dx: 1, dy: 1, pick: 0 })));
-    expect(r.px).toBeLessThanOrEqual(474);
-    expect(r.py).toBeLessThanOrEqual(314);
+    expect(r.px).toBeGreaterThan(ARENA_W / 2);
+    expect(r.py).toBeGreaterThan(ARENA_H / 2);
+    expect(r.px).toBeLessThanOrEqual(ARENA_W - ARENA_WALL);
+    expect(r.py).toBeLessThanOrEqual(ARENA_H - ARENA_WALL);
+    expect(r.px).toBeGreaterThanOrEqual(ARENA_WALL);
+    expect(r.py).toBeGreaterThanOrEqual(ARENA_WALL);
   });
 });
 describe("zombie kinds", () => {

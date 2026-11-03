@@ -194,6 +194,7 @@ describe("spitter", () => {
   it("spits an acid glob that hurts the player and ignores other foes", () => {
     const w = createWorld(2);
     place(w, w.px + 140);
+    for (let i = 0; i < w.arena.n; i++) w.arena.alive[i] = 0;
     w.zombies.vx[0] = 0;
     w.zombies.alive[1] = 1;
     w.zombies.kind[1] = Z_SHAMBLER;

@@ -1,3 +1,7 @@
+import {
+  ARENA_H, ARENA_W, ARENA_WALL, BLAST_R2, OBS_BARREL, OBS_VENT, PLAYER_R, VENT_CYCLE, VENT_REACH,
+  actorStep, bodyR, clampX, clampY, obstacleAt, stepSide, stepX, stepY,
+} from "./arena";
 import { scaledDmg, spawnEvery, tierAt } from "./difficulty";
 import {
   B_ACID, foeContact, foeHitR2, foeKillXp, foeScore, foeTouchR2, GAS_FUSE_R2, knightBlocks,
@@ -10,9 +14,9 @@ import {
   ventEvery, ventRange, whistleRange,
 } from "./progress";
 import {
-  EV_HURT, EV_KILL, EV_RANK, EV_SAW, EV_SHIELD, EV_SHOT, EV_TESLA, EV_WAVE, FX_FLASH, FX_PUFF, FX_SPARK,
-  FX_XP, H, MAX_BULLETS, MAX_FX, MAX_ZOMBIES, UPG_COOLANT, UPG_DYNAMO, UPG_MORTAR, UPG_PIERCE, UPG_RICOCHET,
-  UPG_SAWS, UPG_SHIELD, UPG_SHOTGUN, UPG_SPIKES, UPG_TESLA, UPG_VENT, UPG_WHISTLE, W,
+  EV_BOOM, EV_HURT, EV_KILL, EV_RANK, EV_SAW, EV_SHIELD, EV_SHOT, EV_TESLA, EV_WAVE, FX_FLASH, FX_PUFF, FX_SPARK,
+  FX_XP, MAX_BULLETS, MAX_FX, MAX_ZOMBIES, UPG_COOLANT, UPG_DYNAMO, UPG_MORTAR, UPG_PIERCE, UPG_RICOCHET,
+  UPG_SAWS, UPG_SHIELD, UPG_SHOTGUN, UPG_SPIKES, UPG_TESLA, UPG_VENT, UPG_WHISTLE, Z_BRUTE,
   EVOL_AEGIS, EVOL_CANNON, type Input, type World,
 } from "./types";
 const BULLET_SPEED = 5;
@@ -57,6 +61,78 @@ function pulseAt(w: World, x: number, y: number, r: number, dmg: number): void {
     if (dx * dx + dy * dy < r2) {
       hurtZombie(w, i, dmg);
       if (w.over) return;
+    }
+  }
+}
+function harmPlayer(w: World, dmg: number): boolean {
+  w.hurtCd = 45;
+  if (w.shield > 0) {
+    w.shield--;
+    w.shieldCd = shieldReload(w);
+    w.events[EV_SHIELD] = 1;
+    const aegis = w.upgrades[EVOL_AEGIS] ?? 0;
+    if (aegis > 0) {
+      pulseAt(w, w.px, w.py, 52 + aegis * 8, aegis + 1);
+      if (w.over) return true;
+    }
+    return false;
+  }
+  w.hp -= dmg;
+  w.events[EV_HURT] = 1;
+  const spikes = w.upgrades[UPG_SPIKES] ?? 0;
+  if (spikes > 0) {
+    thorns(w, spikes);
+    if (w.over) return true;
+  }
+  if (w.hp <= 0) { w.over = true; return true; }
+  return false;
+}
+function blast(w: World, i: number): void {
+  const a = w.arena;
+  if (!(a.alive[i] ?? 0) || (a.kind[i] ?? 0) !== OBS_BARREL) return;
+  a.alive[i] = 0;
+  const x = a.x[i] ?? 0;
+  const y = a.y[i] ?? 0;
+  w.events[EV_BOOM] = 1;
+  emitFx(w, FX_FLASH, x, y, 0);
+  emitFx(w, FX_PUFF, x, y, Z_BRUTE);
+  const z = w.zombies;
+  for (let k = 0; k < MAX_ZOMBIES; k++) {
+    if (!z.alive[k]) continue;
+    const dx = (z.x[k] ?? 0) - x;
+    const dy = (z.y[k] ?? 0) - y;
+    if (dx * dx + dy * dy < BLAST_R2) hurtZombie(w, k, 8);
+  }
+  const pdx = w.px - x;
+  const pdy = w.py - y;
+  if (!w.over && w.hurtCd === 0 && pdx * pdx + pdy * pdy < BLAST_R2) harmPlayer(w, 2);
+  for (let j = 0; j < a.n; j++) {
+    if (j === i || !(a.alive[j] ?? 0) || (a.kind[j] ?? 0) !== OBS_BARREL) continue;
+    const dx = (a.x[j] ?? 0) - x;
+    const dy = (a.y[j] ?? 0) - y;
+    if (dx * dx + dy * dy < BLAST_R2) blast(w, j);
+  }
+}
+function tickVents(w: World): void {
+  const a = w.arena;
+  const z = w.zombies;
+  for (let i = 0; i < a.n; i++) {
+    if ((a.kind[i] ?? 0) !== OBS_VENT || !(a.alive[i] ?? 0)) continue;
+    if (((w.tick + (a.phase[i] ?? 0)) % VENT_CYCLE) !== 0) continue;
+    const vx = a.x[i] ?? 0;
+    const vy = a.y[i] ?? 0;
+    const pdx = w.px - vx;
+    const pdy = w.py - vy;
+    const reach = PLAYER_R + VENT_REACH;
+    if (!w.over && w.hurtCd === 0 && pdx * pdx + pdy * pdy < reach * reach) {
+      if (harmPlayer(w, scaledDmg(1, w.rank))) return;
+    }
+    for (let k = 0; k < MAX_ZOMBIES; k++) {
+      if (!z.alive[k]) continue;
+      const dx = (z.x[k] ?? 0) - vx;
+      const dy = (z.y[k] ?? 0) - vy;
+      const rad = bodyR(z.kind[k] ?? 0) + VENT_REACH;
+      if (dx * dx + dy * dy < rad * rad) hurtZombie(w, k, 1);
     }
   }
 }
@@ -223,12 +299,17 @@ export function step(w: World, input: Input): void {
   if (w.teslaFlash > 0) w.teslaFlash--;
   const len = Math.sqrt(input.dx * input.dx + input.dy * input.dy);
   const sp = moveSpeed(w);
+  let mx = w.px;
+  let my = w.py;
   if (len > 0) {
-    w.px += (input.dx / Math.max(1, len)) * sp;
-    w.py += (input.dy / Math.max(1, len)) * sp;
+    const sc = sp / Math.max(1, len);
+    mx += input.dx * sc;
+    my += input.dy * sc;
   }
-  w.px = Math.min(W - 10, Math.max(10, w.px));
-  w.py = Math.min(H - 10, Math.max(18, w.py));
+  mx = clampX(mx, PLAYER_R);
+  my = clampY(my, PLAYER_R);
+  if (obstacleAt(w.arena, mx, w.py, PLAYER_R) < 0) w.px = mx;
+  if (obstacleAt(w.arena, w.px, my, PLAYER_R) < 0) w.py = my;
   const z = w.zombies;
   let alive = 0;
   for (let i = 0; i < MAX_ZOMBIES; i++) if (z.alive[i]) alive++;
@@ -266,11 +347,12 @@ export function step(w: World, input: Input): void {
       const dx = w.px - (z.x[i] ?? 0);
       const dy = w.py - (z.y[i] ?? 0);
       const d2 = dx * dx + dy * dy;
-      const d = Math.sqrt(d2) || 1;
       let zsp = z.vx[i] ?? 0;
       if (whistle > 0 && d2 < wr2) zsp *= 0.62;
-      z.x[i] = (z.x[i] ?? 0) + (dx / d) * zsp;
-      z.y[i] = (z.y[i] ?? 0) + (dy / d) * zsp;
+      actorStep(w.arena, z.x[i] ?? 0, z.y[i] ?? 0, w.px, w.py, bodyR(kind), zsp, w.zSide[i] ?? 0);
+      z.x[i] = stepX();
+      z.y[i] = stepY();
+      w.zSide[i] = stepSide();
       if (kind === Z_KNIGHT) tickKnight(w, i);
     }
     const tx = w.px - (z.x[i] ?? 0);
@@ -282,28 +364,11 @@ export function step(w: World, input: Input): void {
       continue;
     }
     if (td2 < foeTouchR2(raw) && w.hurtCd === 0) {
-      w.hurtCd = 45;
-      if (w.shield > 0) {
-        w.shield--;
-        w.shieldCd = shieldReload(w);
-        w.events[EV_SHIELD] = 1;
-        const aegis = w.upgrades[EVOL_AEGIS] ?? 0;
-        if (aegis > 0) {
-          pulseAt(w, w.px, w.py, 52 + aegis * 8, aegis + 1);
-          if (w.over) return;
-        }
-      } else {
-        w.hp -= scaledDmg(foeContact(raw), w.rank);
-        w.events[EV_HURT] = 1;
-        const spikes = w.upgrades[UPG_SPIKES] ?? 0;
-        if (spikes > 0) {
-          thorns(w, spikes);
-          if (w.over) return;
-        }
-        if (w.hp <= 0) { w.over = true; return; }
-      }
+      if (harmPlayer(w, scaledDmg(foeContact(raw), w.rank))) return;
     }
   }
+  tickVents(w);
+  if (w.over) return;
   const b = w.bullets;
   const dmg = bulletDmg(w);
   for (let j = 0; j < MAX_BULLETS; j++) {
@@ -311,20 +376,33 @@ export function step(w: World, input: Input): void {
     let bx = (b.x[j] ?? 0) + (b.vx[j] ?? 0);
     let by = (b.y[j] ?? 0) + (b.vy[j] ?? 0);
     let left = b.kind[j] ?? 0;
-    if (left > 0 && (bx < 2 || bx > W - 2)) {
+    if (left > 0 && (bx < ARENA_WALL || bx > ARENA_W - ARENA_WALL)) {
       b.vx[j] = -(b.vx[j] ?? 0);
-      bx = bx < 2 ? 2 : W - 2;
+      bx = bx < ARENA_WALL ? ARENA_WALL + 2 : ARENA_W - ARENA_WALL - 2;
       left--;
     }
-    if (left > 0 && (by < 2 || by > H - 2)) {
+    if (left > 0 && (by < ARENA_WALL || by > ARENA_H - ARENA_WALL)) {
       b.vy[j] = -(b.vy[j] ?? 0);
-      by = by < 2 ? 2 : H - 2;
+      by = by < ARENA_WALL ? ARENA_WALL + 2 : ARENA_H - ARENA_WALL - 2;
       left--;
     }
     b.kind[j] = left;
     b.x[j] = bx;
     b.y[j] = by;
-    if (bx < -10 || by < -10 || bx > W + 10 || by > H + 10) { b.alive[j] = 0; continue; }
+    if (bx < ARENA_WALL || by < ARENA_WALL || bx > ARENA_W - ARENA_WALL || by > ARENA_H - ARENA_WALL) {
+      b.alive[j] = 0;
+      continue;
+    }
+    const obs = obstacleAt(w.arena, bx, by, 2);
+    if (obs >= 0) {
+      if ((w.arena.kind[obs] ?? 0) === OBS_BARREL) {
+        w.arena.hp[obs] = (w.arena.hp[obs] ?? 1) - dmg;
+        if ((w.arena.hp[obs] ?? 0) <= 0) blast(w, obs);
+      }
+      b.alive[j] = 0;
+      if (w.over) return;
+      continue;
+    }
     if ((b.hp[j] ?? 0) === B_ACID) {
       const hit = acidTouch(w, bx, by);
       if (hit > 0) b.alive[j] = 0;
