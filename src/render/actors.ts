@@ -4,6 +4,7 @@ import {
   FX_FLASH, FX_PUFF, FX_SPARK, FX_XP, Z_BRUTE, Z_GHOUL, Z_SHAMBLER, type World,
 } from "../sim/types";
 import { gasGlyph, knightGlyph, projectileFor, ratGearGlyph, spitterGlyph } from "./foes";
+import { paintWeapon } from "./weapons";
 import {
   bulletPaint, fxPaint, registerBullet, registerFx, registerZombie, zombieGlyph, type BulletPaint, type FxPaint, type Glyph,
 } from "./plugins";
@@ -201,6 +202,7 @@ export function paintBullets(ctx: CanvasRenderingContext2D, w: World): void {
   for (let i = 0; i < b.alive.length; i++) {
     if (!b.alive[i]) continue;
     if (offScreen(b.x[i] ?? 0, b.y[i] ?? 0, 24)) continue;
+    if (paintWeapon(ctx, w, i)) continue;
     const paint = projectileFor(b.hp[i] ?? 0, bulletPaint(b.kind[i] ?? 0, defaultBolt));
     paint(ctx, b.x[i] ?? 0, b.y[i] ?? 0, b.vx[i] ?? 1, b.vy[i] ?? 0, w.tick);
   }

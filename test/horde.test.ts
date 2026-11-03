@@ -54,9 +54,16 @@ describe("horde capacity", () => {
     expect(w.bullets.vx).toBeInstanceOf(Float32Array);
     expect(w.zombies.x.length).toBe(MAX_ZOMBIES);
     expect(w.bullets.x.length).toBe(MAX_BULLETS);
+    w.bGun[3] = 4;
+    w.bLife[3] = 12;
+    w.bRad[3] = 66;
     fillHorde(w);
     expect(aliveCount(w.zombies.alive, MAX_ZOMBIES)).toBe(HORDE_ZOMBIES);
     expect(aliveCount(w.bullets.alive, MAX_BULLETS)).toBe(HORDE_BULLETS);
+    expect(w.bGun[3]).toBe(0);
+    expect(w.bLife[3]).toBe(0);
+    expect(w.bRad[3]).toBe(0);
+    expect(w.bullets.alive[3]).toBe(1);
   });
 
   it("keeps the broadphase cell larger than a brute, elite knight, or saw hit", () => {

@@ -12,7 +12,7 @@ export const RARITY_LEGENDARY = 2;
 
 export const UPG_NAMES: readonly string[] = [
   "TESLA COIL",
-  "STEAM SHOTGUN",
+  "SCATTER VALVE",
   "SAW GEARS",
   "FIRE RATE",
   "DAMAGE",
@@ -30,6 +30,11 @@ export const UPG_NAMES: readonly string[] = [
   "STORM GEAR",
   "CANNON",
   "AEGIS ENGINE",
+  "RIVET GUN",
+  "STEAM SHOTGUN",
+  "FLAME BOILER",
+  "HARPOON",
+  "BOMB MORTAR",
 ];
 
 export const UPG_RARITY: readonly number[] = [
@@ -51,6 +56,11 @@ export const UPG_RARITY: readonly number[] = [
   RARITY_LEGENDARY,
   RARITY_LEGENDARY,
   RARITY_LEGENDARY,
+  RARITY_LEGENDARY,
+  RARITY_COMMON,
+  RARITY_RARE,
+  RARITY_RARE,
+  RARITY_RARE,
   RARITY_LEGENDARY,
 ];
 

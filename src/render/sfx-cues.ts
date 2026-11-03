@@ -1,6 +1,6 @@
 import {
   EV_HURT, EV_KILL, EV_LEVEL, EV_RANK, EV_SAW, EV_SHIELD, EV_SHOT, EV_TESLA, FX_SPARK,
-  MAX_FX, UPG_PIERCE, UPG_SHOTGUN, type World,
+  MAX_FX, UPG_PIERCE, UPG_SHOTGUN, WPN_FLAME, WPN_HARP, WPN_MORT, WPN_SHOT, type World,
 } from "../sim/types";
 
 export const SFX_MUTE_KEY = "arcadia.sfx.muted";
@@ -88,6 +88,10 @@ export function isBossWave(wave: number): boolean {
 }
 
 export function shotCue(w: World): number {
+  const gun = w.gun;
+  if (gun === WPN_SHOT) return CUE_SHOTGUN;
+  if (gun === WPN_HARP) return CUE_RIVET;
+  if (gun === WPN_FLAME || gun === WPN_MORT) return CUE_RIFLE;
   if ((w.upgrades[UPG_SHOTGUN] ?? 0) > 0) return CUE_SHOTGUN;
   if ((w.upgrades[UPG_PIERCE] ?? 0) > 0) return CUE_RIVET;
   return CUE_RIFLE;

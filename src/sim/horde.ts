@@ -46,6 +46,9 @@ export function fillHorde(w: World, zombies = HORDE_ZOMBIES, bullets = HORDE_BUL
     b.kind[j] = 0;
     w.bHit[j] = -1;
     w.bPierce[j] = 0;
+    w.bLife[j] = 0;
+    w.bGun[j] = 0;
+    w.bRad[j] = 0;
   }
   for (let j = bN; j < MAX_BULLETS; j++) b.alive[j] = 0;
   w.toSpawn = 0;

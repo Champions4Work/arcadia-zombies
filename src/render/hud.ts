@@ -28,6 +28,11 @@ const BLURB = [
   "Tesla and saws fuse into a storm.",
   "Shotgun and pierce become a cannon.",
   "Shield and vent lock into an aegis.",
+  "Brass bolts from the rivet gun.",
+  "A close cone of steam pellets.",
+  "A boiler jet of flame.",
+  "A harpoon that pierces the line.",
+  "A lobbed bomb with an area blast.",
 ];
 
 export const PAUSE_X = 456;

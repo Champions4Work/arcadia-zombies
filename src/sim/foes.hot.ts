@@ -79,6 +79,9 @@ function spawnAcid(w: World, x: number, y: number, ux: number, uy: number): bool
     b.hp[j] = B_ACID;
     w.bHit[j] = -1;
     w.bPierce[j] = 0;
+    w.bLife[j] = 0;
+    w.bGun[j] = 0;
+    w.bRad[j] = 0;
     return true;
   }
   return false;
