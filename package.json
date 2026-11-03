@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "size": "node scripts/size.mjs",
-    "ci": "npm run lint && npm run typecheck && npm run test && npm run build && npm run size"
+    "ci": "npm run lint && npm run typecheck && npm run test && npm run build && npm run size",
+    "playtest": "vitest run test/playtest.test.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.14.0",
