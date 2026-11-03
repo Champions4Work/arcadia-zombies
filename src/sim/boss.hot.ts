@@ -2,9 +2,11 @@ import { juicePlayerHurt } from "../render/juice";
 import { ARENA_H, ARENA_W, TELE_LIFE } from "./arena";
 import { queueSpawn } from "./arena.hot";
 import {
-  BOSS_BEHEMOTH, BOSS_EVERY, BOSS_GEAR, BOSS_WARN, BOSS_WITCH, bossMaxHp, bossScore, bossSlowFactor,
-  bossTier, bossXp, MAX_BOSS_SHOTS, MAX_CLOUDS, patternCount,
+  BOSS_BEHEMOTH, BOSS_EVERY, BOSS_GEAR, BOSS_KINDS, BOSS_TANK, BOSS_WARN, BOSS_WITCH, bossMaxHp, bossScore,
+  bossSlowFactor, bossTier, bossXp, MAX_BOSS_SHOTS, MAX_CLOUDS, patternCount,
 } from "./boss";
+import { TANK_BODY_R2, TANK_HURT_R2 } from "./tank";
+import { stepTank } from "./tank.hot";
 import { finaleBlocksBoss, FINALE_TICK } from "./finale";
 import { applyScore, pacedSpeed } from "./modifiers";
 import {
@@ -349,6 +351,7 @@ function stepGear(w: World): void {
 function bossHurtR2(kind: number): number {
   if (kind === BOSS_WITCH) return 520;
   if (kind === BOSS_GEAR) return 640;
+  if (kind === BOSS_TANK) return TANK_HURT_R2;
   return 1100;
 }
 function soakBullets(w: World): void {
@@ -445,7 +448,10 @@ function bodyTouch(w: World): void {
   const b = w.boss;
   if (!b.on || w.over) return;
   if (b.kind === BOSS_BEHEMOTH && b.phase === 0 && b.mode === 2) return;
-  const r2 = b.kind === BOSS_BEHEMOTH ? 900 : b.kind === BOSS_WITCH ? 420 : 520;
+  const r2 = b.kind === BOSS_BEHEMOTH ? 900
+    : b.kind === BOSS_WITCH ? 420
+    : b.kind === BOSS_TANK ? TANK_BODY_R2
+    : 520;
   touchBoss(w, hitDmg(b.tier, 1), r2);
 }
 function stepFight(w: World): void {
@@ -455,7 +461,8 @@ function stepFight(w: World): void {
     return;
   }
   if (b.timer > 0) b.timer--;
-  if (b.kind === BOSS_WITCH) stepWitch(w);
+  if (b.kind === BOSS_TANK) stepTank(w);
+  else if (b.kind === BOSS_WITCH) stepWitch(w);
   else if (b.kind === BOSS_GEAR) stepGear(w);
   else stepBehemoth(w);
   if (!b.on || w.over) return;
@@ -471,7 +478,7 @@ function stepFight(w: World): void {
 }
 function spawnBoss(w: World): void {
   const b = w.boss;
-  const kind = b.n % 3;
+  const kind = b.n % BOSS_KINDS;
   const tier = bossTier(w);
   const index = b.n;
   b.on = 1;
@@ -527,7 +534,7 @@ function clockBoss(w: World): void {
   if (!b.pending && w.tick >= due - BOSS_WARN) {
     b.pending = 1;
     b.tele = 0;
-    b.kind = b.n % 3;
+    b.kind = b.n % BOSS_KINDS;
     const lead = due - w.tick;
     b.warn = lead > BOSS_WARN ? BOSS_WARN : lead > 0 ? lead : 1;
     w.events[EV_SIREN] = 1;
