@@ -40,7 +40,7 @@ import { clock } from "./sim/difficulty";
 import { armDevJump, isWon, killCount, setRunEndless, takeCue, victoryText } from "./sim/finale";
 import { cardSlot, summaryText } from "./sim/progress";
 import { step } from "./sim/step.hot";
-import { H, OFFER_N, W, type Input } from "./sim/types";
+import { EV_KILL, H, OFFER_N, W, type Input } from "./sim/types";
 import { createWorld } from "./sim/world";
 
 function tryStore(): { getItem(k: string): string | null; setItem(k: string, v: string): void } | null {

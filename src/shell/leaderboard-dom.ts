@@ -2,13 +2,14 @@ import type { BoardView } from "./leaderboard";
 import { PHASE_OVER, PHASE_TITLE, type Phase } from "./session";
 
 const STYLE = `
-#lb-line,#lb-status,#lb-board-status{margin:0;max-width:36rem;font:14px/1.45 monospace;color:#e6c27a;letter-spacing:.04em;text-align:center}
+#lb-line,#lb-status,#lb-board-status{margin:0;max-width:min(36rem,100%);font:14px/1.45 monospace;color:#e6c27a;letter-spacing:.04em;text-align:center;overflow-wrap:anywhere}
 #lb-status,#lb-board-status{font-size:12px;color:#e8c878}
 #lb-actions,#lb-board-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 #lb-open,#lb-share,#lb-back,#lb-share-top{font:700 14px/1 monospace;letter-spacing:.14em;text-transform:uppercase;color:#c8963e;background:rgba(18,12,8,.72);border:2px solid #c8963e;padding:10px 14px;cursor:pointer}
 #lb-open:hover,#lb-share:hover,#lb-back:hover,#lb-share-top:hover{background:#c8963e;color:#120c08}
+#panel.lb-open{max-height:90vh;overflow:hidden;box-sizing:border-box}
 #panel.lb-open>:not(#lb-board){display:none}
-#lb-board{width:min(440px,88vw);max-height:min(78vh,640px);overflow:auto;display:flex;flex-direction:column;align-items:center;gap:10px;padding:4px}
+#lb-board{width:min(440px,86vw);max-height:calc(90vh - 72px);overflow:auto;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:10px;padding:4px 4px 12px}
 #lb-board[hidden]{display:none}
 #lb-board h2{margin:0;font:700 22px Palatino,Georgia,serif;color:#c8963e;letter-spacing:.04em;text-align:center}
 #lb-life{margin:0;font:13px/1.4 monospace;color:#e6c27a;text-align:center}
