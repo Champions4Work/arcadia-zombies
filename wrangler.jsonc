@@ -1,0 +1,6 @@
+{
+  "name": "arcadia-zombies",
+  "compatibility_date": "2026-10-01",
+  "assets": { "directory": "./dist" },
+  "routes": [{ "pattern": "zombies.arcadiaworlds.com", "custom_domain": true }]
+}
