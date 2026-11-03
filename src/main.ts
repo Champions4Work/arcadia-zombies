@@ -1,5 +1,6 @@
 import { setMusicOn, setMusicWave } from "./render/music";
 import { draw } from "./render/draw";
+import { pauseHit } from "./render/hud";
 import { bootSfx, persistSfx, playUiClick, playWorldSfx, resetSfxPlayback, setSfxVolume, sfxMuted, sfxVolume, toggleSfxMuted } from "./render/sfx";
 import { sfxMuteLabel, sfxVolumePercent } from "./render/sfx-cues";
 import { setMuted, unlockAudio } from "./render/sound";
@@ -24,7 +25,7 @@ import { resetShake } from "./render/shake";
 import { createStick, liftStick, moveStick, pressStick, showRestStick } from "./shell/stick";
 import { cardSlot, summaryText } from "./sim/progress";
 import { step } from "./sim/step.hot";
-import { H, W, type Input } from "./sim/types";
+import { H, OFFER_N, W, type Input } from "./sim/types";
 import { createWorld } from "./sim/world";
 
 function tryStore(): { getItem(k: string): string | null; setItem(k: string, v: string): void } | null {
@@ -39,7 +40,7 @@ bootSfx(store);
 
 const canvas = document.getElementById("game") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
-ctx.imageSmoothingEnabled = false;
+ctx.imageSmoothingEnabled = true;
 const veil = document.getElementById("veil") as HTMLElement;
 const headline = document.getElementById("headline") as HTMLElement;
 const sub = document.getElementById("sub") as HTMLElement;
@@ -208,7 +209,7 @@ addEventListener("keydown", (e) => {
     });
     return;
   }
-  if (session.phase === PHASE_PLAY && world.choosing && e.key >= "1" && e.key <= "2") {
+  if (session.phase === PHASE_PLAY && world.choosing && e.key >= "1" && e.key <= String(OFFER_N)) {
     pendingPick = e.key.charCodeAt(0) - 48;
     return;
   }
@@ -224,8 +225,15 @@ addEventListener("pointerdown", (e) => {
   paint();
   if (fromHud(e.target)) return;
   if (session.phase !== PHASE_PLAY) return;
+  const p = screenToGame(fit, e.clientX, e.clientY);
+  if (pauseHit(p.x, p.y)) {
+    togglePause(session);
+    playUiClick();
+    persist();
+    paint();
+    return;
+  }
   if (world.choosing) {
-    const p = screenToGame(fit, e.clientX, e.clientY);
     pendingPick = cardSlot(p.x, p.y);
     return;
   }
@@ -291,7 +299,8 @@ function frame(now: number): void {
     acc = 0;
   }
   fit = applyCanvas(canvas, ctx, innerWidth, innerHeight, devicePixelRatio || 1, W, H);
-  draw(ctx, world, session.shake);
+  const showHud = session.phase === PHASE_PLAY || session.phase === PHASE_PAUSE;
+  draw(ctx, world, { hud: showHud, shake: session.shake });
   placeJoy();
   requestAnimationFrame(frame);
 }

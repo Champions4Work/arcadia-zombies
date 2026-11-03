@@ -1,223 +1,134 @@
-import { B_ACID, Z_GAS, Z_KNIGHT, Z_RAT, Z_SPITTER } from "../sim/foes";
+import { B_ACID } from "../sim/foes";
+import { bakeActor, bakeRaw, blit, blob, BRASS, cog, COPPER, eye, GREEN, grin, pill, rivet, type Metal } from "./paint";
+import { drawCreep, type CreepSpec } from "./sprites";
+import type { BulletPaint, Glyph } from "./plugins";
 
-const SOOT = "#120c08";
-const BRASS = "#c8963e";
-const BRASS_HI = "#e8c878";
-const BRASS_LO = "#7a5420";
-const COPPER = "#b5562f";
-const COPPER_HI = "#d4784a";
-const EMBER = "#ff7a2a";
-const EMBER_HI = "#ffd27a";
-const ROT = "#3d5a22";
-const ROT_HI = "#6a8a38";
-const ROT_LO = "#2a3c14";
-const ACID = "#8fd84a";
-const ACID_HI = "#e7ff9a";
-const ACID_LO = "#3f6a14";
-const GAS = "#b6e86a";
-const ELITE_BOX = [14, 11, 18, 13, 15, 17, 8];
+const ACID: Metal = { hi: "#f4ffc4", mid: "#9ae046", lo: "#3d7a16", edge: "#163008" };
+const TANK: Metal = { hi: "#ffe0b0", mid: "#d07030", lo: "#7a3014", edge: "#3a1408" };
 
-function px(c: CanvasRenderingContext2D, x: number, y: number, s: string, w = 1, h = 1): void {
-  c.fillStyle = s;
-  c.fillRect(x | 0, y | 0, w, h);
+const SPITTER: CreepSpec = {
+  metal: GREEN, boot: BRASS, arm: BRASS, fat: 0.78, head: 1.16,
+  gearEye: true, helmet: false, jaw: false, fists: false, stitch: true, w: 48, h: 62,
+};
+const GAS: CreepSpec = {
+  metal: GREEN, boot: COPPER, arm: COPPER, fat: 1.28, head: 0.86,
+  gearEye: false, helmet: false, jaw: false, fists: false, stitch: false, w: 58, h: 70,
+};
+const KNIGHT: CreepSpec = {
+  metal: COPPER, boot: BRASS, arm: BRASS, fat: 1.16, head: 0.92,
+  gearEye: false, helmet: true, jaw: true, fists: false, stitch: false, w: 60, h: 72,
+};
+
+function nozzle(ctx: CanvasRenderingContext2D, frame: number): void {
+  const bob = frame & 1 ? -1.4 : 0;
+  pill(ctx, 16, -30 + bob, 12, 4.4, -0.15, BRASS, 1.5);
+  blob(ctx, 23, -30 + bob, 3.4, 3.2, ACID, 1.6);
+  ctx.beginPath();
+  ctx.arc(24, -30 + bob, 1.2, 0, Math.PI * 2);
+  ctx.fillStyle = frame & 2 ? "#f4ffd0" : "#c6f25a";
+  ctx.fill();
 }
 
-function shadow(c: CanvasRenderingContext2D, x: number, y: number, w: number): void {
-  c.globalAlpha = 0.45;
-  px(c, x - w / 2, y + 6, SOOT, w, 3);
-  c.globalAlpha = 1;
+function tank(ctx: CanvasRenderingContext2D, frame: number): void {
+  const bob = frame & 1 ? -1.4 : 0;
+  pill(ctx, -4, -32 + bob, 18, 12, 0.2, TANK, 2);
+  rivet(ctx, -10, -34 + bob, 1.2);
+  rivet(ctx, 2, -30 + bob, 1.2);
+  pill(ctx, 6, -40 + bob, 4, 6, 0.4, BRASS, 1.2);
+  blob(ctx, -10, -46 + bob - (frame & 2 ? 2 : 0), 3.2, 2.6, ACID, 1.2);
+  ctx.beginPath();
+  ctx.arc(8, -28 + bob, 1.6, 0, Math.PI * 2);
+  ctx.fillStyle = frame & 1 ? "#ffb040" : "#ffe08a";
+  ctx.fill();
 }
 
-function spitter(c: CanvasRenderingContext2D, x: number, y: number, tick: number, px0: number, py0: number): void {
-  const ix = x | 0;
-  const iy = y | 0;
-  const bob = tick >> 3 & 1;
-  const pulse = tick >> 2 & 1;
-  shadow(c, ix, iy, 16);
-  px(c, ix - 7, iy + 2 + bob, ROT_LO, 4, 9);
-  px(c, ix + 3, iy + 2 + (bob ^ 1), ROT_LO, 4, 9);
-  px(c, ix - 8, iy + 9 + bob, ACID_LO, 5, 3);
-  px(c, ix + 3, iy + 9 + (bob ^ 1), ACID_LO, 5, 3);
-  px(c, ix - 8, iy - 10 + bob, ROT, 16, 14);
-  px(c, ix - 6, iy - 8 + bob, ROT_LO, 7, 10);
-  px(c, ix - 5, iy - 6 + bob, pulse ? ACID_HI : ACID, 10, 9);
-  px(c, ix - 2, iy - 3 + bob, ACID_HI, 4, 4);
-  px(c, ix - 1, iy - 2 + bob, "#f4ffd0", 2, 2);
-  px(c, ix - 6, iy - 18 + bob, ROT_HI, 12, 9);
-  px(c, ix - 4, iy - 16 + bob, ROT_LO, 8, 5);
-  px(c, ix + 1, iy - 15 + bob, ACID_HI, 3, 3);
-  px(c, ix + 2, iy - 14 + bob, EMBER, 1, 1);
-  px(c, ix - 11, iy - 6 + bob, ROT, 4, 8);
-  const dx = px0 - x;
-  const dy = py0 - y;
-  const d = Math.sqrt(dx * dx + dy * dy) || 1;
-  const ux = dx / d;
-  const uy = dy / d;
-  const nx = ix + ux * 12;
-  const ny = iy - 12 + bob + uy * 8;
-  px(c, nx - 2, ny - 2, BRASS_LO, 7, 5);
-  px(c, nx + ux * 5, ny + uy * 3, BRASS, 4, 3);
-  px(c, nx + ux * 8, ny + uy * 4, pulse ? ACID_HI : ACID, 3, 3);
-  if (pulse) px(c, nx + ux * 10, ny + uy * 6 + 3, ACID, 2, 2);
+function drawRat(ctx: CanvasRenderingContext2D, frame: number): void {
+  const bob = frame & 1 ? -1 : 0;
+  const step = frame & 1 ? 1.4 : -0.6;
+  blob(ctx, -1, -8 + bob, 11, 6.2, BRASS, 1.8);
+  cog(ctx, -2, -9 + bob, 3.2, frame * 0.4, COPPER, 6, false);
+  blob(ctx, 8, -9 + bob, 4.2, 3.4, BRASS, 1.4);
+  eye(ctx, 9.2, -9.4 + bob, 1.3, 0.2);
+  ctx.beginPath();
+  ctx.arc(10.4, -9.2 + bob, 0.7, 0, Math.PI * 2);
+  ctx.fillStyle = "#ff4450";
+  ctx.fill();
+  pill(ctx, -12, -7 + bob, 7, 1.6, 0.4, COPPER, 1);
+  blob(ctx, -4, -3 + step, 1.6, 1.4, { hi: "#3a2414", mid: "#24160c", lo: "#120c08", edge: "#120c08" }, 0.8);
+  blob(ctx, 3, -3 - step, 1.6, 1.4, { hi: "#3a2414", mid: "#24160c", lo: "#120c08", edge: "#120c08" }, 0.8);
+  grin(ctx, 8.4, -7.2 + bob, 1.4);
 }
 
-function gasTank(c: CanvasRenderingContext2D, x: number, y: number, tick: number, hp: number): void {
-  const ix = x | 0;
-  const iy = y | 0;
-  const bob = tick >> 4 & 1;
-  const blink = tick >> 2 & 1;
-  shadow(c, ix, iy, 22);
-  px(c, ix - 8, iy + 4 + bob, ROT_LO, 6, 8);
-  px(c, ix + 3, iy + 4 + (bob ^ 1), ROT_LO, 6, 8);
-  px(c, ix - 9, iy + 10 + bob, SOOT, 7, 3);
-  px(c, ix + 3, iy + 10 + (bob ^ 1), SOOT, 7, 3);
-  px(c, ix - 9, iy - 8 + bob, ROT, 18, 14);
-  px(c, ix - 7, iy - 6 + bob, ROT_LO, 8, 10);
-  px(c, ix - 10, iy - 16 + bob, "#6a3018", 20, 12);
-  px(c, ix - 8, iy - 14 + bob, COPPER, 16, 8);
-  px(c, ix - 10, iy - 12 + bob, BRASS, 20, 2);
-  px(c, ix - 10, iy - 8 + bob, BRASS_LO, 20, 2);
-  px(c, ix + 8, iy - 18 + bob, BRASS_HI, 3, 6);
-  px(c, ix + 7, iy - 20 + bob, BRASS, 5, 3);
-  c.globalAlpha = 0.55;
-  const leak = tick % 14;
-  px(c, ix + 8 + (tick >> 2 & 1), iy - 24 - leak + bob, GAS, 5, 4);
-  px(c, ix + 6, iy - 30 - (leak >> 1) + bob, ACID_HI, 4, 3);
-  c.globalAlpha = 1;
-  px(c, ix - 4, iy - 22 + bob, ROT_HI, 8, 7);
-  px(c, ix - 2, iy - 20 + bob, SOOT, 4, 3);
-  px(c, ix - 1, iy - 19 + bob, EMBER, 2, 2);
-  px(c, ix + 2, iy - 10 + bob, blink ? EMBER : EMBER_HI, 4, 4);
-  const pips = Math.min(8, hp);
-  for (let p = 0; p < pips; p++) px(c, ix - 8 + p * 3, iy - 18 + bob, p < 3 ? EMBER : BRASS_HI, 2, 2);
+const sheets = new Map<string, HTMLCanvasElement[]>();
+
+function sheet(key: string, w: number, h: number, draw: (ctx: CanvasRenderingContext2D, frame: number) => void): HTMLCanvasElement[] {
+  let hit = sheets.get(key);
+  if (!hit) {
+    hit = [0, 1, 2, 3].map((frame) => bakeActor(w, h, (ctx) => draw(ctx, frame)));
+    sheets.set(key, hit);
+  }
+  return hit;
 }
 
-function knight(c: CanvasRenderingContext2D, x: number, y: number, tick: number, face: number, hp: number): void {
-  const ix = x | 0;
-  const iy = y | 0;
-  const bob = tick >> 4 & 1;
-  shadow(c, ix, iy, 20);
-  px(c, ix - 7, iy + 3 + bob, "#5a3018", 5, 8);
-  px(c, ix + 2, iy + 3 + (bob ^ 1), "#5a3018", 5, 8);
-  px(c, ix - 8, iy + 9 + bob, BRASS_LO, 6, 3);
-  px(c, ix + 2, iy + 9 + (bob ^ 1), BRASS_LO, 6, 3);
-  px(c, ix - 9, iy - 12 + bob, COPPER, 18, 16);
-  px(c, ix - 7, iy - 10 + bob, "#8a3e28", 14, 12);
-  px(c, ix - 8, iy - 11 + bob, BRASS_HI, 2, 2);
-  px(c, ix + 6, iy - 11 + bob, BRASS_HI, 2, 2);
-  px(c, ix - 8, iy + 1 + bob, BRASS, 2, 2);
-  px(c, ix + 6, iy + 1 + bob, BRASS, 2, 2);
-  px(c, ix - 6, iy - 22 + bob, COPPER, 12, 10);
-  px(c, ix - 4, iy - 24 + bob, BRASS, 8, 3);
-  px(c, ix - 1, iy - 26 + bob, BRASS_HI, 2, 3);
-  px(c, ix - 4, iy - 19 + bob, SOOT, 8, 3);
-  px(c, ix - 2, iy - 19 + bob, EMBER, 2, 2);
-  px(c, ix + 2, iy - 19 + bob, EMBER, 2, 2);
-  const sx = Math.cos(face) * 11;
-  const sy = Math.sin(face) * 9;
-  const hx = ix + sx;
-  const hy = iy - 8 + bob + sy;
-  px(c, hx - 6, hy - 8, BRASS_LO, 12, 18);
-  px(c, hx - 4, hy - 6, COPPER, 8, 14);
-  px(c, hx - 5, hy - 7, COPPER_HI, 10, 2);
-  px(c, hx - 5, hy + 6, BRASS_HI, 10, 2);
-  px(c, hx - 2, hy - 2, BRASS, 4, 4);
-  px(c, hx - 1, hy - 1, BRASS_HI, 2, 2);
-  const pips = Math.min(8, hp);
-  for (let p = 0; p < pips; p++) px(c, ix - 8 + p * 2, iy - 14 + bob, BRASS_HI, 2, 2);
+function baked(spec: CreepSpec, extra?: (ctx: CanvasRenderingContext2D, frame: number) => void): Glyph {
+  const key = extra ? `${spec.w}x${spec.h}` : `body-${spec.w}`;
+  return {
+    w: spec.w,
+    h: spec.h,
+    draw(ctx, x, y, tick, flip) {
+      const frames = sheet(key + (extra ? "-x" : ""), spec.w, spec.h, (c, frame) => {
+        drawCreep(c, frame, spec);
+        extra?.(c, frame);
+      });
+      blit(ctx, frames, spec.w, spec.h, (tick >> (spec.fat > 1.2 ? 4 : 3)) & 3, x, y, flip);
+    },
+  };
 }
 
-function rat(c: CanvasRenderingContext2D, x: number, y: number, tick: number): void {
-  const ix = x | 0;
-  const iy = y | 0;
-  const scurry = tick >> 2 & 1;
-  shadow(c, ix, iy + 2, 10);
-  px(c, ix - 6, iy - 1, BRASS_LO, 2, 2);
-  px(c, ix + 4, iy - 1, BRASS_LO, 2, 2);
-  px(c, ix - 5, iy - 3, BRASS, 10, 6);
-  px(c, ix - 3, iy - 5, BRASS_HI, 6, 3);
-  px(c, ix - 1, iy - 2, SOOT, 2, 2);
-  px(c, ix + 3, iy - 4, COPPER, 5, 4);
-  px(c, ix + 6, iy - 3, "#ff3a2a", 2, 2);
-  px(c, ix + 7, iy - 5, BRASS_LO, 2, 2);
-  px(c, ix - 8, iy + scurry, BRASS_LO, 4, 1);
-  px(c, ix - 3, iy + 3, SOOT, 2, 2);
-  px(c, ix + 1, iy + 3 + scurry, SOOT, 2, 2);
+const ratGlyph: Glyph = {
+  w: 40,
+  h: 36,
+  draw(ctx, x, y, tick, flip) {
+    blit(ctx, sheet("rat", 40, 36, drawRat), 40, 36, (tick >> 2) & 3, x, y, flip);
+  },
+};
+
+export const spitterGlyph = baked(SPITTER, nozzle);
+export const gasGlyph = baked(GAS, tank);
+export const knightGlyph = baked(KNIGHT);
+export const ratGearGlyph = ratGlyph;
+
+let acid: HTMLCanvasElement | null = null;
+
+export function acidSprite(): HTMLCanvasElement {
+  if (!acid) {
+    acid = bakeRaw(24, 24, (ctx) => {
+      const g = ctx.createRadialGradient(12, 12, 1, 12, 12, 11);
+      g.addColorStop(0, "rgba(244,255,196,0.95)");
+      g.addColorStop(0.45, "rgba(154,224,70,0.85)");
+      g.addColorStop(1, "rgba(60,120,20,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(12, 12, 11, 0, Math.PI * 2);
+      ctx.fill();
+      blob(ctx, 12, 12, 5.2, 4.6, ACID, 1.4);
+      ctx.beginPath();
+      ctx.arc(13.4, 10.6, 1.3, 0, Math.PI * 2);
+      ctx.fillStyle = "#f4ffd0";
+      ctx.fill();
+    });
+  }
+  return acid;
 }
 
-export function drawFoe(
-  c: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  tick: number,
-  kind: number,
-  hp: number,
-  face: number,
-  px0: number,
-  py0: number,
-): void {
-  if (kind === Z_SPITTER) spitter(c, x, y, tick, px0, py0);
-  else if (kind === Z_GAS) gasTank(c, x, y, tick, hp);
-  else if (kind === Z_KNIGHT) knight(c, x, y, tick, face, hp);
-  else if (kind === Z_RAT) rat(c, x, y, tick);
-  else shamStandIn(c, x, y, tick);
-}
+export const acidBolt: BulletPaint = (ctx, x, y, vx, vy) => {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(Math.atan2(vy, vx || 1));
+  ctx.drawImage(acidSprite(), -12, -12, 24, 24);
+  ctx.restore();
+};
 
-function shamStandIn(c: CanvasRenderingContext2D, x: number, y: number, tick: number): void {
-  const ix = x | 0;
-  const iy = y | 0;
-  const bob = tick >> 4 & 1;
-  shadow(c, ix, iy, 12);
-  px(c, ix - 4, iy - 8 + bob, ROT, 8, 12);
-  px(c, ix - 2, iy - 14 + bob, ROT_HI, 6, 6);
-}
-
-export function openElite(c: CanvasRenderingContext2D, x: number, y: number): void {
-  c.save();
-  c.translate(x, y);
-  c.scale(1.34, 1.34);
-  c.translate(-x, -y);
-}
-
-export function closeElite(c: CanvasRenderingContext2D, x: number, y: number, tick: number, kind: number): void {
-  c.restore();
-  const r = ELITE_BOX[kind] ?? 14;
-  const y0 = (y - r - 6) | 0;
-  const x0 = (x - r) | 0;
-  const s = r * 2;
-  const h = r * 2 + 8;
-  const col = (tick >> 2) & 1 ? "#fff1b0" : "#e2b84a";
-  const hot = (tick >> 3) & 1 ? "#fff6c8" : "#ff9a3a";
-  c.globalAlpha = 0.95;
-  px(c, x0, y0, col, s, 2);
-  px(c, x0, y0 + h - 2, col, s, 2);
-  px(c, x0, y0, col, 2, h);
-  px(c, x0 + s - 2, y0, col, 2, h);
-  px(c, x0 - 2, y0 - 2, hot, 4, 4);
-  px(c, x0 + s - 2, y0 - 2, hot, 4, 4);
-  px(c, x0 - 2, y0 + h - 2, hot, 4, 4);
-  px(c, x0 + s - 2, y0 + h - 2, hot, 4, 4);
-  c.globalAlpha = 1;
-}
-
-export function drawAcid(c: CanvasRenderingContext2D, x: number, y: number, vx: number, vy: number): void {
-  const ix = x | 0;
-  const iy = y | 0;
-  px(c, ix - vx * 0.9 - 2, iy - vy * 0.9 - 2, ACID_LO, 5, 5);
-  px(c, ix - 3, iy - 3, ACID, 6, 6);
-  px(c, ix - 1, iy - 1, ACID_HI, 3, 3);
-}
-
-export function drawGasCloud(c: CanvasRenderingContext2D, x: number, y: number, age: number): void {
-  const s = 10 + age * 2;
-  c.globalAlpha = Math.max(0, 0.72 - age / 18);
-  px(c, x - s, y - s, GAS, s * 2, s + 8);
-  px(c, x - s * 0.55, y - s - 4, ACID_HI, s, s);
-  px(c, x - 6, y - age * 1.4, EMBER, 8, 6);
-  px(c, x + 4, y - s * 0.4, ACID_LO, 6, 5);
-  c.globalAlpha = 1;
-}
-
-export function isAcid(kind: number): boolean {
-  return kind === B_ACID;
+export function projectileFor(hp: number, bolt: BulletPaint): BulletPaint {
+  return hp === B_ACID ? acidBolt : bolt;
 }

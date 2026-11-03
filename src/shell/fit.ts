@@ -43,9 +43,10 @@ export function applyCanvas(
     canvas.height = f.bufH;
   }
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.fillStyle = "#120c08";
+  ctx.fillStyle = "#160e24";
   ctx.fillRect(0, 0, f.bufW, f.bufH);
-  ctx.imageSmoothingEnabled = false;
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
   ctx.setTransform(f.dpr * f.scale, 0, 0, f.dpr * f.scale, f.ox * f.dpr, f.oy * f.dpr);
   return f;
 }
