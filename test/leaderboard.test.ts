@@ -1,6 +1,6 @@
 import { applyUpgrade } from "../src/sim/progress";
 import { step } from "../src/sim/step.hot";
-import { EV_KILL, UNION_CROWN, UPG_PIERCE, type Input } from "../src/sim/types";
+import { EV_KILL, UNION_CROWN, UPG_PIERCE, UPG_WPN_FLAME, UPG_WPN_HARP, UPG_WPN_MORT, UPG_WPN_RIVET, UPG_WPN_SHOT, type Input } from "../src/sim/types";
 import { createWorld } from "../src/sim/world";
 import {
   ACHIEVEMENTS,
@@ -80,6 +80,21 @@ describe("run records", () => {
     const crowned: number[] = [];
     crowned[UNION_CROWN] = 1;
     expect(buildLabel(crowned)).toContain("CROWN1");
+  });
+
+  it("labels the five auto guns", () => {
+    const levels: number[] = [];
+    levels[UPG_WPN_RIVET] = 1;
+    levels[UPG_WPN_SHOT] = 1;
+    levels[UPG_WPN_FLAME] = 1;
+    levels[UPG_WPN_HARP] = 1;
+    levels[UPG_WPN_MORT] = 1;
+    const label = buildLabel(levels);
+    expect(label).toContain("RIVET1");
+    expect(label).toContain("STEAM1");
+    expect(label).toContain("FLAME1");
+    expect(label).toContain("HARPN1");
+    expect(label).toContain("BOMB1");
   });
 
   it("adds every kill reported in a tick", () => {

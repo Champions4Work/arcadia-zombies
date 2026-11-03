@@ -9,6 +9,7 @@ const CODES: readonly string[] = [
   "TESLA", "SHOT", "SAWS", "FIRE", "DMG", "HP", "SPEED", "VENT", "PIERCE", "SHIELD",
   "SPIKES", "COOLANT", "MORTAR", "WHISTLE", "RICOCHET", "DYNAMO", "STORM", "CANNON", "AEGIS",
   "CROWN", "BELLOW", "HALO", "HEART", "BRIAR", "HOWITZ", "CALLIO",
+  "RIVET", "STEAM", "FLAME", "HARPN", "BOMB",
 ];
 
 export interface Store {

@@ -1,13 +1,13 @@
 import { PASSIVE_IDS, unionReady, UNIONS, WEAPON_IDS } from "../src/sim/evolve";
 import {
   applyUpgrade, beginLevel, bulletDmg, evolutionReady, mortarEvery, offerable, rollOffers, sawCount,
-  sawDamage, shieldReload, takeXp, teslaEvery, teslaPower, tryPick, ventRange, whistleRange, xpNeed,
+  sawDamage, shieldReload, takeXp, teslaEvery, teslaPower, tryPick, upgName, ventRange, whistleRange, xpNeed,
 } from "../src/sim/progress";
 import { step } from "../src/sim/step.hot";
 import {
   MAX_BULLETS, MAX_ZOMBIES, UNION_BELLOWS, UNION_BRIAR, UNION_CALLIOPE, UNION_CROWN, UNION_HALO,
   UNION_HEART, UNION_HOWITZER, UPG_DYNAMO, UPG_MAX, UPG_MORTAR, UPG_RICOCHET, UPG_SAWS,
-  UPG_SHIELD, UPG_SHOTGUN, UPG_SPIKES, UPG_TESLA, UPG_VENT, UPG_WHISTLE, type Input, type World,
+  UPG_SHIELD, UPG_SHOTGUN, UPG_SPIKES, UPG_TESLA, UPG_VENT, UPG_WHISTLE, UPG_WPN_SHOT, type Input, type World,
 } from "../src/sim/types";
 import { createWorld } from "../src/sim/world";
 
@@ -47,6 +47,15 @@ describe("weapon unions", () => {
       expect(spec.hint.length).toBeGreaterThan(0);
       expect(spec.effect.length).toBeGreaterThan(0);
     }
+  });
+
+  it("names the scatter valve in the bellows recipe", () => {
+    let recipe = "";
+    for (let i = 0; i < UNIONS.length; i++) {
+      if (UNIONS[i]?.id === UNION_BELLOWS) recipe = UNIONS[i]?.recipe ?? "";
+    }
+    expect(recipe).toContain(upgName(UPG_SHOTGUN));
+    expect(recipe).not.toContain(upgName(UPG_WPN_SHOT));
   });
 
   it("stays sealed until the weapon is maxed and the passive is owned", () => {

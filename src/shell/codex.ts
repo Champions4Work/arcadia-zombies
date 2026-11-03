@@ -1,8 +1,15 @@
 import { LEGACY_UNIONS, PASSIVE_IDS, UNIONS, WEAPON_IDS } from "../sim/evolve";
 import { Z_ELITE, Z_KIND } from "../sim/foes";
 import { upgName } from "../sim/progress";
-import { MAX_ZOMBIES, UPG_COUNT, type World } from "../sim/types";
+import {
+  MAX_ZOMBIES, UPG_COUNT, UPG_WPN_FLAME, UPG_WPN_HARP, UPG_WPN_MORT, UPG_WPN_RIVET, UPG_WPN_SHOT,
+  type World,
+} from "../sim/types";
 import type { Store } from "./session";
+
+const GUN_IDS: readonly number[] = [
+  UPG_WPN_RIVET, UPG_WPN_SHOT, UPG_WPN_FLAME, UPG_WPN_HARP, UPG_WPN_MORT,
+];
 
 export const CODEX_KEY = "arcadia.codex";
 export const FOE_N = 7;
@@ -106,6 +113,16 @@ export function codexLines(book: Codex): CodexLine[] {
   const out: CodexLine[] = [];
   for (let i = 0; i < WEAPON_IDS.length; i++) {
     const id = WEAPON_IDS[i] ?? 0;
+    const known = (book.ups[id] ?? 0) > 0;
+    out.push({
+      section: "WEAPONS",
+      title: upgName(id),
+      detail: known ? "Fitted on a run." : "Not yet fitted.",
+      locked: !known,
+    });
+  }
+  for (let i = 0; i < GUN_IDS.length; i++) {
+    const id = GUN_IDS[i] ?? 0;
     const known = (book.ups[id] ?? 0) > 0;
     out.push({
       section: "WEAPONS",

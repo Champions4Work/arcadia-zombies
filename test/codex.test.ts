@@ -5,7 +5,8 @@ import {
 import { Z_ELITE } from "../src/sim/foes";
 import { upgName } from "../src/sim/progress";
 import {
-  UNION_CROWN, UPG_DYNAMO, UPG_TESLA, Z_GHOUL, Z_SHAMBLER,
+  UNION_CROWN, UPG_DYNAMO, UPG_TESLA, UPG_WPN_FLAME, UPG_WPN_HARP, UPG_WPN_MORT, UPG_WPN_RIVET,
+  UPG_WPN_SHOT, Z_GHOUL, Z_SHAMBLER,
 } from "../src/sim/types";
 import { createWorld } from "../src/sim/world";
 
@@ -23,6 +24,11 @@ describe("codex", () => {
     const sections = new Set(lines.map((line) => line.section));
     expect(sections).toEqual(new Set(["WEAPONS", "PASSIVES", "EVOLUTIONS", "ENEMIES"]));
     expect(lines.some((line) => line.section === "WEAPONS" && line.title === upgName(UPG_TESLA))).toBe(true);
+    const guns = [UPG_WPN_RIVET, UPG_WPN_SHOT, UPG_WPN_FLAME, UPG_WPN_HARP, UPG_WPN_MORT];
+    for (let i = 0; i < guns.length; i++) {
+      const title = upgName(guns[i] ?? 0);
+      expect(lines.some((line) => line.section === "WEAPONS" && line.title === title)).toBe(true);
+    }
     expect(lines.some((line) => line.section === "PASSIVES" && line.title === upgName(UPG_DYNAMO))).toBe(true);
     const crown = lines.find((line) => line.detail.includes("TESLA COIL max + DYNAMO"));
     expect(crown?.title).toBe("UNKNOWN UNION");

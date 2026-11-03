@@ -38,7 +38,7 @@ export const UNIONS: readonly UnionSpec[] = [
   {
     id: UNION_BELLOWS, weapon: UPG_SHOTGUN, passive: UPG_RICOCHET,
     hint: "SHOTGUN + RICOCHET",
-    recipe: "STEAM SHOTGUN max + RICOCHET",
+    recipe: "SCATTER VALVE max + RICOCHET",
     effect: "A gatling of heavy slugs that bounce and pierce.",
   },
   {
@@ -75,7 +75,7 @@ export const UNIONS: readonly UnionSpec[] = [
 
 export const LEGACY_UNIONS: readonly LegacySpec[] = [
   { id: EVOL_STORM, recipe: "TESLA COIL LV2 + SAW GEARS LV2", effect: "Storm gear widens the coil and the saws." },
-  { id: EVOL_CANNON, recipe: "STEAM SHOTGUN LV2 + PIERCE RIVET LV2", effect: "Cannon adds pellets, pierce, and rivet damage." },
+  { id: EVOL_CANNON, recipe: "SCATTER VALVE LV2 + PIERCE RIVET LV2", effect: "Cannon adds pellets, pierce, and rivet damage." },
   { id: EVOL_AEGIS, recipe: "BOILER SHIELD LV2 + BOILER VENT LV2", effect: "Aegis reloads faster and vents harder." },
 ];
 
