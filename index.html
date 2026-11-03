@@ -32,6 +32,10 @@ canvas{position:fixed;inset:0;display:block;width:100%;height:100%;image-renderi
 #summary{margin:0;max-height:42vh;overflow:auto;font:13px/1.45 ui-monospace,monospace;color:#e6c27a;letter-spacing:.06em;text-align:center;white-space:pre-line}
 #go{font:700 18px monospace;letter-spacing:.16em;text-transform:uppercase;color:#120c08;background:#c8963e;border:3px solid #8a6420;padding:12px 36px;cursor:pointer}
 #shake{font:700 13px/1 monospace;letter-spacing:.12em;text-transform:uppercase;color:#e6c27a;background:transparent;border:2px solid #8a6420;padding:10px 14px;cursor:pointer}
+#sfx{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;touch-action:auto}
+#sfx-mute{font:700 12px/1 monospace;letter-spacing:.12em;text-transform:uppercase;color:#c8963e;background:rgba(18,12,8,.72);border:2px solid #c8963e;padding:8px 10px;cursor:pointer;touch-action:auto}
+#sfx label{font:700 12px/1 monospace;letter-spacing:.08em;text-transform:uppercase;color:#e6c27a;display:flex;align-items:center;gap:8px}
+#sfx input{accent-color:#c8963e;width:min(120px,42vw);touch-action:auto}
 #joy{position:fixed;width:128px;height:128px;margin:-64px 0 0 -64px;z-index:3;pointer-events:none}
 #base{position:absolute;inset:0;border-radius:50%;border:3px solid rgba(200,150,62,.5);background:rgba(18,12,8,.28)}
 #knob{position:absolute;left:40px;top:40px;width:48px;height:48px;border-radius:50%;background:rgba(200,150,62,.75);border:2px solid #c8963e}
@@ -47,6 +51,10 @@ canvas{position:fixed;inset:0;display:block;width:100%;height:100%;image-renderi
     <pre id="summary" hidden></pre>
     <button id="go" type="button">Play</button>
     <button id="shake" type="button" aria-label="Screen shake" aria-pressed="true">Screen shake: On</button>
+    <div id="sfx">
+      <button id="sfx-mute" type="button" aria-label="Mute sound effects" aria-pressed="false">SFX On</button>
+      <label>Vol <input id="sfx-vol" type="range" min="0" max="100" value="80" aria-label="Sound effects volume"></label>
+    </div>
   </div>
 </div>
 <div id="joy" hidden>

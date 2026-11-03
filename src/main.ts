@@ -1,6 +1,8 @@
 import { setMusicOn, setMusicWave } from "./render/music";
 import { draw } from "./render/draw";
-import { blip, setMuted, unlockAudio } from "./render/sound";
+import { bootSfx, persistSfx, playUiClick, playWorldSfx, resetSfxPlayback, setSfxVolume, sfxMuted, sfxVolume, toggleSfxMuted } from "./render/sfx";
+import { sfxMuteLabel, sfxVolumePercent } from "./render/sfx-cues";
+import { setMuted, unlockAudio } from "./render/sound";
 import { applyCanvas, screenToGame, type Fit } from "./shell/fit";
 import {
   begin,
@@ -22,7 +24,7 @@ import { resetShake } from "./render/shake";
 import { createStick, liftStick, moveStick, pressStick, showRestStick } from "./shell/stick";
 import { cardSlot, summaryText } from "./sim/progress";
 import { step } from "./sim/step.hot";
-import { EV_HURT, EV_KILL, EV_LEVEL, EV_RANK, EV_SHIELD, EV_SHOT, EV_TESLA, EV_WAVE, H, W, type Input } from "./sim/types";
+import { H, W, type Input } from "./sim/types";
 import { createWorld } from "./sim/world";
 
 function tryStore(): { getItem(k: string): string | null; setItem(k: string, v: string): void } | null {
@@ -33,6 +35,7 @@ const store = tryStore();
 const saved = store ? loadStore(store) : { best: 0, muted: false, shake: true };
 const session = createSession(saved.best, saved.muted, saved.shake);
 setMuted(session.muted);
+bootSfx(store);
 
 const canvas = document.getElementById("game") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
@@ -44,6 +47,8 @@ const goBtn = document.getElementById("go") as HTMLButtonElement;
 const muteBtn = document.getElementById("mute") as HTMLButtonElement;
 const shakeBtn = document.getElementById("shake") as HTMLButtonElement;
 const summary = document.getElementById("summary") as HTMLElement;
+const sfxMuteBtn = document.getElementById("sfx-mute") as HTMLButtonElement;
+const sfxVol = document.getElementById("sfx-vol") as HTMLInputElement;
 const joy = document.getElementById("joy") as HTMLElement;
 const knob = document.getElementById("knob") as HTMLElement;
 
@@ -85,6 +90,9 @@ function paint(): void {
   muteBtn.setAttribute("aria-pressed", session.muted ? "true" : "false");
   shakeBtn.textContent = session.shake ? "Screen shake: On" : "Screen shake: Off";
   shakeBtn.setAttribute("aria-pressed", session.shake ? "true" : "false");
+  sfxMuteBtn.textContent = sfxMuteLabel(sfxMuted());
+  sfxMuteBtn.setAttribute("aria-pressed", sfxMuted() ? "true" : "false");
+  if (document.activeElement !== sfxVol) sfxVol.value = String(sfxVolumePercent(sfxVolume()));
   setMusicOn(session.phase === PHASE_PLAY || session.phase === PHASE_TITLE);
   setMusicWave(playing ? Math.max(world.wave, world.rank) : 0);
 }
@@ -97,7 +105,9 @@ function startRun(): void {
     resetShake();
     acc = 0;
     pendingPick = 0;
+    resetSfxPlayback();
   }
+  playUiClick();
   persist();
   paint();
 }
@@ -106,15 +116,33 @@ function mute(): void {
   unlockAudio();
   toggleMute(session);
   setMuted(session.muted);
+  if (!session.muted) playUiClick();
   persist();
   paint();
 }
 
 function shake(): void {
+  unlockAudio();
   toggleShake(session);
   if (!session.shake) resetShake();
+  playUiClick();
   persist();
   paint();
+}
+
+function sfxMute(): void {
+  unlockAudio();
+  toggleSfxMuted();
+  if (!sfxMuted()) playUiClick();
+  if (store) persistSfx(store);
+  paint();
+}
+
+function sfxVolInput(): void {
+  unlockAudio();
+  setSfxVolume(Number(sfxVol.value) / 100);
+  if (store) persistSfx(store);
+  playUiClick();
 }
 
 function placeJoy(): void {
@@ -133,21 +161,18 @@ function placeJoy(): void {
 }
 
 function sfx(): void {
-  if (world.events[EV_SHOT]) blip(720, 0.04, "square");
-  if (world.events[EV_KILL]) blip(110, 0.16, "sawtooth");
-  if (world.events[EV_HURT]) blip(70, 0.28, "triangle");
-  if (world.events[EV_WAVE]) blip(360, 0.35, "sine");
-  if (world.events[EV_LEVEL]) blip(880, 0.25, "triangle");
-  if (world.events[EV_TESLA]) blip(980, 0.08, "square");
-  if (world.events[EV_SHIELD]) blip(300, 0.12, "sine");
-  if (world.events[EV_RANK]) blip(180, 0.45, "sawtooth");
+  playWorldSfx(world);
 }
 
 goBtn.addEventListener("click", startRun);
 muteBtn.addEventListener("click", mute);
 shakeBtn.addEventListener("click", shake);
+sfxMuteBtn.addEventListener("click", sfxMute);
+sfxVol.addEventListener("input", sfxVolInput);
 
 addEventListener("keydown", (e) => {
+  const inSfx = e.target instanceof HTMLElement && !!e.target.closest("#sfx");
+  if (inSfx && e.key !== "Escape") return;
   unlockAudio();
   paint();
   const k = e.key.toLowerCase();
@@ -155,6 +180,7 @@ addEventListener("keydown", (e) => {
     e.preventDefault();
     if (e.repeat) return;
     togglePause(session);
+    playUiClick();
     persist();
     paint();
     return;
@@ -183,7 +209,7 @@ addEventListener("keydown", (e) => {
 });
 addEventListener("keyup", (e) => keys.delete(e.key.toLowerCase()));
 
-const fromHud = (t: EventTarget | null): boolean => t instanceof HTMLElement && !!t.closest("button");
+const fromHud = (t: EventTarget | null): boolean => t instanceof HTMLElement && !!t.closest("button, #sfx");
 
 addEventListener("pointerdown", (e) => {
   unlockAudio();
