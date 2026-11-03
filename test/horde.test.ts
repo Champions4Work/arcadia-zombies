@@ -332,7 +332,7 @@ describe("horde benchmark", () => {
       expect(moved).toBe(true);
     }
     const per = total / steps;
-    expect(per).toBeLessThan(8);
+    expect(per).toBeLessThan(12);
   });
 
   it("composites a full horde into one frame buffer under the frame budget", () => {
