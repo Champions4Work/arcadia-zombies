@@ -1,6 +1,7 @@
+import { clock, tierFrac, tierName } from "../sim/difficulty";
 import { xpNeed } from "../sim/progress";
 import {
-  FX_FLASH, FX_PUFF, FX_SPARK, H, MAX_BULLETS, MAX_FX, MAX_ZOMBIES, W,
+  FX_FLASH, FX_PUFF, FX_SPARK, FX_XP, H, MAX_BULLETS, MAX_FX, MAX_ZOMBIES, W,
   Z_BRUTE, Z_GHOUL, type World,
 } from "../sim/types";
 import { drawProgress } from "./progress";
@@ -301,6 +302,15 @@ function fx(c: CanvasRenderingContext2D, w: World): void {
       px(c, x - k * 0.5, y + k, COPPER_HI, 3, 3);
       px(c, x, y - k, "#fff3c0", 2, 2);
       c.globalAlpha = 1;
+    } else if (kind === FX_XP && age < 24) {
+      const rise = age;
+      c.globalAlpha = 1 - age / 24;
+      const n = Math.max(1, w.fxA[i] ?? 1) | 0;
+      const label = `${n} XP`;
+      px(c, x - 2, y - rise, EMBER_HI, 5, 1);
+      px(c, x, y - 2 - rise, EMBER_HI, 1, 5);
+      print(c, x + 6, y - 2 - rise, label, EMBER_HI, 1);
+      c.globalAlpha = 1;
     } else if (kind === FX_PUFF && age < 18) {
       const z = w.fxA[i] ?? 0;
       const s = 5 + age;
@@ -361,8 +371,27 @@ function gauge(c: CanvasRenderingContext2D, x: number, y: number, t: number): vo
   c.restore();
 }
 
+function diffBar(c: CanvasRenderingContext2D, w: World): void {
+  const name = tierName(w.rank);
+  const flash = w.rankFlash > 0 && ((w.tick >> 2) & 1) === 0;
+  print(c, 10, 34, name, flash ? "#fff3c0" : BRASS_HI, 1);
+  const time = clock(w.tick);
+  print(c, W - 14 - time.length * 4, 34, time, flash ? "#fff3c0" : BRASS, 1);
+  const x0 = 8;
+  const y = 42;
+  const bw = W - 16;
+  const bh = 12;
+  const frac = tierFrac(w.tick);
+  px(c, x0, y, "#1a1008", bw, bh);
+  const fill = Math.max(flash ? bw : 0, bw * frac | 0);
+  if (fill > 0) px(c, x0, y, flash ? "#fff3c0" : EMBER, fill, bh);
+  if (fill > 2 && !flash) px(c, x0, y, BRASS_HI, fill, 3);
+  px(c, x0, y, flash ? EMBER_HI : BRASS, bw, 1);
+  px(c, x0, y + bh - 1, flash ? EMBER_HI : BRASS_LO, bw, 1);
+}
+
 function hud(c: CanvasRenderingContext2D, w: World): void {
-  plate(c, 4, 4, W - 8, 32);
+  plate(c, 4, 4, W - 8, 56);
   gauge(c, 26, 20, w.hp / Math.max(1, w.maxHp));
   print(c, 42, 9, "HP", BRASS_HI, 1);
   const pips = Math.min(8, w.maxHp);
@@ -394,19 +423,36 @@ function hud(c: CanvasRenderingContext2D, w: World): void {
   c.arc(0, 0, 4, 0, Math.PI * 2);
   c.fill();
   c.restore();
-  print(c, 348, 14, "WAVE", BRASS, 2);
-  print(c, 388, 14, `${w.wave}`, BRASS_HI, 2);
-  if (w.shield > 0) print(c, 348, 8, `SH ${w.shield}`, BRASS_HI, 1);
+  print(c, 330, 14, `W${w.wave}`, BRASS, 2);
+  if (w.shield > 0) print(c, 330, 8, `SH ${w.shield}`, BRASS_HI, 1);
+  diffBar(c, w);
+}
+
+function drawBanner(c: CanvasRenderingContext2D, w: World): void {
+  if (w.banner <= 0 || w.over) return;
+  const name = tierName(w.rank);
+  const flash = (w.tick >> 2 & 1) === 0;
+  plate(c, 70, 96, 340, 78);
+  const title = "RANK UP";
+  print(c, (W - title.length * 12) / 2, 112, title, flash ? EMBER_HI : BRASS_HI, 3);
+  const scale = name.length > 16 ? 1 : 2;
+  print(c, (W - name.length * 4 * scale) / 2, 140, name, flash ? "#fff3c0" : BRASS, scale);
 }
 
 function overlay(c: CanvasRenderingContext2D, w: World): void {
   if (!w.over) return;
   c.fillStyle = "rgba(8,4,2,0.74)";
   c.fillRect(0, 0, W, H);
-  plate(c, 70, 100, 340, 110);
-  print(c, 98, 122, "THE GEARS STOP", BRASS_HI, 3);
-  print(c, 130, 152, `SCORE ${w.score}  WAVE ${w.wave}`, BRASS, 2);
-  print(c, 150, 178, "TAP OR PRESS R", COPPER_HI, 2);
+  plate(c, 50, 78, 380, 150);
+  print(c, 98, 96, "THE GEARS STOP", BRASS_HI, 3);
+  const name = tierName(w.rank);
+  const scale = name.length > 18 ? 1 : 2;
+  print(c, (W - name.length * 4 * scale) / 2, 122, name, BRASS_HI, scale);
+  const time = clock(w.tick);
+  print(c, (W - time.length * 8) / 2, 146, time, BRASS, 2);
+  const score = `SCORE ${w.score}`;
+  print(c, (W - score.length * 8) / 2, 168, score, BRASS, 2);
+  print(c, 150, 196, "TAP OR PRESS R", COPPER_HI, 2);
 }
 
 function drawZombie(c: CanvasRenderingContext2D, w: World, i: number): void {
@@ -479,7 +525,8 @@ export function draw(c: CanvasRenderingContext2D, w: World, shake = true): void 
     c.globalAlpha = 1;
   }
   c.restore();
-  hud(c, w);
+  drawBanner(c, w);
   drawProgress(c, w);
+  hud(c, w);
   overlay(c, w);
 }

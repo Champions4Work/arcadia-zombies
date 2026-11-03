@@ -1,9 +1,15 @@
-import { applyUpgrade, beginLevel, cardSlot, CARD_H, CARD_W, CARD_X0, CARD_Y, magnetR, moveSpeed, sawAngle, sawRadius, takeXp, teslaRange, tryPick, xpNeed } from "../src/sim/progress";
+import { killXp } from "../src/sim/difficulty";
+import {
+  applyUpgrade, beginLevel, cardSlot, CARD_GAP, CARD_H, CARD_W, CARD_X0, CARD_Y, evolutionReady,
+  moveSpeed, rarityName, rollOffers, sawAngle, sawDamage, sawRadius, summaryText, takeXp, teslaRange,
+  tryPick, UPG_NAMES, UPG_RARITY, xpNeed,
+} from "../src/sim/progress";
 import { step } from "../src/sim/step.hot";
 import {
-  EV_KILL, EV_LEVEL, EV_SHIELD, EV_SHOT, EV_TESLA, MAX_BULLETS, MAX_COGS, MAX_ZOMBIES,
-  UPG_DMG, UPG_FIRE, UPG_HP, UPG_MAGNET, UPG_MAX, UPG_PIERCE, UPG_SAWS, UPG_SHIELD,
-  UPG_SHOTGUN, UPG_SPEED, UPG_TESLA, type Input, type World,
+  EV_HURT, EV_KILL, EV_LEVEL, EV_SHIELD, EV_SHOT, EV_TESLA, EVOL_AEGIS, EVOL_CANNON, EVOL_STORM, MAX_BULLETS,
+  MAX_ZOMBIES, UPG_COOLANT, UPG_COUNT, UPG_DMG, UPG_DYNAMO, UPG_FIRE, UPG_HP, UPG_MAX, UPG_MORTAR,
+  UPG_PIERCE, UPG_RICOCHET, UPG_SAWS, UPG_SHIELD, UPG_SHOTGUN, UPG_SPIKES, UPG_SPEED, UPG_TESLA,
+  UPG_VENT, UPG_WHISTLE, W, Z_SHAMBLER, type Input, type World,
 } from "../src/sim/types";
 import { createWorld } from "../src/sim/world";
 const idle = (pick = 0): Input => ({ dx: 0, dy: 0, pick });
@@ -22,15 +28,6 @@ const addZombie = (w: World, x: number, y: number, hp: number, speed = 0): numbe
   }
   throw new Error("zombies full");
 };
-const addCog = (w: World, x: number, y: number): number => {
-  const c = w.cogs;
-  for (let k = 0; k < MAX_COGS; k++) {
-    if (c.alive[k]) continue;
-    c.x[k] = x; c.y[k] = y; c.alive[k] = 1;
-    return k;
-  }
-  throw new Error("cogs full");
-};
 const addBullet = (w: World, x: number, y: number, vx: number, vy: number): number => {
   const b = w.bullets;
   for (let j = 0; j < MAX_BULLETS; j++) {
@@ -43,54 +40,44 @@ const addBullet = (w: World, x: number, y: number, vx: number, vy: number): numb
   throw new Error("bullets full");
 };
 describe("xp and level-up", () => {
-  it("collecting a brass cog grants one xp", () => {
-    const w = createWorld(1);
-    freeze(w);
-    addCog(w, w.px, w.py);
-    step(w, idle());
-    expect(w.xp).toBe(1);
-    expect(count(w.cogs.alive, MAX_COGS)).toBe(0);
-  });
-  it("killing a zombie drops a cog at its corpse", () => {
+  it("a kill grants xp immediately and leaves no pickup", () => {
     const w = createWorld(2);
     freeze(w);
     const i = addZombie(w, w.px + 20, w.py, 1);
-    const x = w.zombies.x[i];
-    const y = w.zombies.y[i];
     addBullet(w, w.px + 20, w.py, 0, 0);
     step(w, idle());
     expect(w.events[EV_KILL]).toBe(1);
     expect(w.zombies.alive[i]).toBe(0);
-    let found = 0;
-    for (let k = 0; k < MAX_COGS; k++) {
-      if (w.cogs.alive[k] && w.cogs.x[k] === x && w.cogs.y[k] === y) found++;
-    }
-    expect(found).toBe(1);
+    expect(w.xp).toBe(killXp(Z_SHAMBLER, w.rank));
+    expect(w).not.toHaveProperty("cogs");
   });
-  it("enough xp pauses the run and rolls three offers", () => {
+  it("enough xp pauses the run and rolls exactly two offers", () => {
     const w = createWorld(3);
     freeze(w);
-    w.xp = xpNeed(0) - 1;
-    addCog(w, w.px, w.py);
+    w.xp = xpNeed(0) - killXp(Z_SHAMBLER, 0);
+    addZombie(w, w.px + 16, w.py, 1);
+    addBullet(w, w.px + 16, w.py, 0, 0);
     const tick = w.tick;
     step(w, idle());
     expect(w.choosing).toBe(1);
     expect(w.level).toBe(1);
     expect(w.events[EV_LEVEL]).toBe(1);
+    expect(w.offers.length).toBe(2);
     expect(w.offers[0]).toBeGreaterThanOrEqual(0);
     expect(w.offers[1]).toBeGreaterThanOrEqual(0);
-    expect(w.offers[2]).toBeGreaterThanOrEqual(0);
-    expect(new Set([w.offers[0], w.offers[1], w.offers[2]]).size).toBe(3);
+    expect(w.offers[0]).not.toBe(w.offers[1]);
     step(w, idle());
     expect(w.tick).toBe(tick + 1);
     expect(w.choosing).toBe(1);
   });
-  it("keys 1-3 apply the matching offer and resume", () => {
+  it("keys 1-2 apply the matching offer and resume", () => {
     const w = createWorld(4);
     freeze(w);
     takeXp(w, xpNeed(0));
     expect(w.choosing).toBe(1);
     const id = w.offers[1] ?? -1;
+    expect(tryPick(w, 3)).toBe(false);
+    expect(w.choosing).toBe(1);
     expect(tryPick(w, 2)).toBe(true);
     expect(w.choosing).toBe(0);
     expect(w.upgrades[id]).toBe(1);
@@ -124,8 +111,8 @@ describe("xp and level-up", () => {
   });
   it("cardSlot maps each card and misses empty space", () => {
     expect(cardSlot(CARD_X0 + 10, CARD_Y + 10)).toBe(1);
-    expect(cardSlot(CARD_X0 + CARD_W + 20, CARD_Y + 10)).toBe(2);
-    expect(cardSlot(CARD_X0 + (CARD_W + 8) * 2 + 10, CARD_Y + 10)).toBe(3);
+    expect(cardSlot(CARD_X0 + CARD_W + CARD_GAP + 10, CARD_Y + 10)).toBe(2);
+    expect(cardSlot(CARD_X0 + (CARD_W + CARD_GAP) * 2 + 4, CARD_Y + 10)).toBe(0);
     expect(cardSlot(4, 4)).toBe(0);
     expect(cardSlot(CARD_X0 + 10, CARD_Y + CARD_H + 8)).toBe(0);
   });
@@ -228,21 +215,99 @@ describe("upgrade effects", () => {
     applyUpgrade(w, UPG_SPEED);
     expect(moveSpeed(w)).toBeGreaterThan(2);
   });
-  it("magnet pulls distant cogs that a stock boiler cannot", () => {
-    const stock = createWorld(18);
-    freeze(stock);
-    const far = stock.px + 30;
-    addCog(stock, far, stock.py);
-    step(stock, idle());
-    expect(stock.cogs.x[0]).toBe(far);
-    expect(stock.xp).toBe(0);
-    const mag = createWorld(18);
-    freeze(mag);
-    applyUpgrade(mag, UPG_MAGNET);
-    addCog(mag, far, mag.py);
-    expect(magnetR(mag)).toBeGreaterThan(30);
-    step(mag, idle());
-    expect(mag.cogs.x[0]).toBeLessThan(far);
+  it("boiler vent pulses damage around the player", () => {
+    const w = createWorld(18);
+    freeze(w);
+    applyUpgrade(w, UPG_VENT);
+    w.ventCd = 1;
+    const near = addZombie(w, w.px + 20, w.py, 9);
+    const far = addZombie(w, 12, 12, 9);
+    step(w, idle());
+    expect(w.zombies.hp[near]).toBeLessThan(9);
+    expect(w.zombies.hp[far]).toBe(9);
+  });
+  it("spiked plate bites back when a zombie connects", () => {
+    const w = createWorld(22);
+    freeze(w);
+    applyUpgrade(w, UPG_SPIKES);
+    const i = addZombie(w, w.px, w.py, 9);
+    const hp = w.hp;
+    step(w, idle());
+    expect(w.events[EV_HURT] ?? 0).toBe(1);
+    expect(w.hp).toBeLessThan(hp);
+    expect(w.zombies.hp[i]).toBeLessThan(9);
+  });
+  it("coolant restores a missing pip of hp", () => {
+    const w = createWorld(23);
+    freeze(w);
+    applyUpgrade(w, UPG_COOLANT);
+    w.hp = 1;
+    w.healCd = 1;
+    step(w, idle());
+    expect(w.hp).toBe(2);
+  });
+  it("mortar hits the farthest zombie", () => {
+    const w = createWorld(24);
+    freeze(w);
+    applyUpgrade(w, UPG_MORTAR);
+    w.mortarCd = 1;
+    const far = addZombie(w, 12, 12, 20);
+    const near = addZombie(w, w.px + 18, w.py, 20);
+    step(w, idle());
+    expect(w.zombies.hp[far]).toBeLessThan(20);
+    expect(w.zombies.hp[near]).toBe(20);
+  });
+  it("steam whistle slows a zombie inside its aura", () => {
+    const run = (whistle: boolean): number => {
+      const w = createWorld(25);
+      freeze(w);
+      if (whistle) applyUpgrade(w, UPG_WHISTLE);
+      const i = addZombie(w, w.px + 20, w.py, 9, 1);
+      const x0 = w.zombies.x[i] ?? 0;
+      step(w, idle());
+      return (w.zombies.x[i] ?? 0) - x0;
+    };
+    expect(run(true)).toBeGreaterThan(run(false));
+  });
+  it("ricochet sends a rivet back off the arena edge", () => {
+    const w = createWorld(26);
+    freeze(w);
+    applyUpgrade(w, UPG_RICOCHET);
+    const j = addBullet(w, W - 3, 40, 6, 0);
+    w.bullets.kind[j] = 1;
+    step(w, idle());
+    expect(w.bullets.alive[j]).toBe(1);
+    expect(w.bullets.vx[j] ?? 0).toBeLessThan(0);
+  });
+  it("dynamo shortens the next shot after a kill", () => {
+    const bare = createWorld(27);
+    freeze(bare);
+    bare.fireCd = 40;
+    addZombie(bare, bare.px + 16, bare.py, 1);
+    addBullet(bare, bare.px + 16, bare.py, 0, 0);
+    step(bare, idle());
+    const fed = createWorld(27);
+    freeze(fed);
+    applyUpgrade(fed, UPG_DYNAMO);
+    fed.fireCd = 40;
+    addZombie(fed, fed.px + 16, fed.py, 1);
+    addBullet(fed, fed.px + 16, fed.py, 0, 0);
+    step(fed, idle());
+    expect(fed.events[EV_KILL]).toBe(1);
+    expect(fed.fireCd).toBeLessThan(bare.fireCd);
+  });
+  it("storm gear makes the saws cut deeper", () => {
+    const w = createWorld(28);
+    freeze(w);
+    applyUpgrade(w, UPG_SAWS);
+    applyUpgrade(w, EVOL_STORM);
+    w.tick = 3;
+    const r = sawRadius(w);
+    const a = sawAngle(4, 0, 1);
+    const i = addZombie(w, w.px + Math.cos(a) * r, w.py + Math.sin(a) * r, 6);
+    step(w, idle());
+    expect(w.zombies.hp[i]).toBe(6 - sawDamage(w));
+    expect(sawDamage(w)).toBeGreaterThan(1);
   });
   it("piercing rivets keep flying through a first corpse", () => {
     const through = createWorld(19);
@@ -288,5 +353,96 @@ describe("upgrade effects", () => {
     for (let t = 0; t < 300 && !w.over; t++) step(w, idle());
     expect(w.over).toBe(true);
     expect(w.hp).toBeLessThanOrEqual(0);
+  });
+  it("aegis engine bursts when the shield breaks", () => {
+    const w = createWorld(29);
+    freeze(w);
+    applyUpgrade(w, UPG_SHIELD);
+    applyUpgrade(w, EVOL_AEGIS);
+    const i = addZombie(w, w.px, w.py, 9);
+    const hp = w.hp;
+    step(w, idle());
+    expect(w.events[EV_SHIELD]).toBe(1);
+    expect(w.hp).toBe(hp);
+    expect(w.zombies.hp[i]).toBeLessThan(9);
+  });
+  it("cannon adds a spread pellet", () => {
+    const w = createWorld(31);
+    freeze(w);
+    applyUpgrade(w, UPG_SHOTGUN);
+    applyUpgrade(w, EVOL_CANNON);
+    addZombie(w, w.px + 80, w.py, 99);
+    w.fireCd = 0;
+    step(w, idle());
+    expect(count(w.bullets.alive, MAX_BULLETS)).toBe(5);
+  });
+});
+describe("rarity, evolutions, and the run summary", () => {
+  it("names and rarities cover the whole upgrade pool", () => {
+    expect(UPG_NAMES.length).toBe(UPG_COUNT);
+    expect(UPG_RARITY.length).toBe(UPG_COUNT);
+    expect(UPG_NAMES).not.toContain("MAGNET");
+    expect(rarityName(0)).toBe("COMMON");
+    expect(rarityName(1)).toBe("RARE");
+    expect(rarityName(2)).toBe("LEGENDARY");
+  });
+  it("legendary offers become more common as the tier climbs", () => {
+    const tally = (tier: number): number[] => {
+      const counts = [0, 0, 0];
+      const w = createWorld(11);
+      w.rank = tier;
+      for (let i = 0; i < 240; i++) {
+        w.upgrades.fill(0);
+        rollOffers(w);
+        const id = w.offers[0] ?? 0;
+        const r = UPG_RARITY[id] ?? 0;
+        counts[r] = (counts[r] ?? 0) + 1;
+      }
+      return counts;
+    };
+    const calm = tally(0);
+    const hot = tally(10);
+    expect(calm[0] ?? 0).toBeGreaterThan(calm[2] ?? 0);
+    expect(hot[2] ?? 0).toBeGreaterThan(calm[2] ?? 0);
+    expect(calm[0] ?? 0).toBeGreaterThan(hot[0] ?? 0);
+  });
+  it("hides evolutions until both parents are stacked, then offers them", () => {
+    const w = createWorld(4);
+    expect(evolutionReady(w, EVOL_STORM)).toBe(false);
+    expect(evolutionReady(w, EVOL_CANNON)).toBe(false);
+    expect(evolutionReady(w, EVOL_AEGIS)).toBe(false);
+    for (let i = 0; i < 40; i++) {
+      rollOffers(w);
+      expect(w.offers[0] ?? 0).toBeLessThan(EVOL_STORM);
+      expect(w.offers[1] ?? 0).toBeLessThan(EVOL_STORM);
+    }
+    applyUpgrade(w, UPG_TESLA);
+    applyUpgrade(w, UPG_TESLA);
+    expect(evolutionReady(w, EVOL_STORM)).toBe(false);
+    applyUpgrade(w, UPG_SAWS);
+    applyUpgrade(w, UPG_SAWS);
+    expect(evolutionReady(w, EVOL_STORM)).toBe(true);
+    w.upgrades.fill(UPG_MAX);
+    w.upgrades[EVOL_STORM] = 0;
+    w.upgrades[EVOL_CANNON] = 0;
+    w.upgrades[EVOL_AEGIS] = 0;
+    rollOffers(w);
+    expect(w.offers[0] ?? -1).toBeGreaterThanOrEqual(EVOL_STORM);
+    expect(w.offers[1] ?? -1).toBeGreaterThanOrEqual(EVOL_STORM);
+    expect(w.offers[0]).not.toBe(w.offers[1]);
+  });
+  it("summarizes the tier, time, power-ups, and score", () => {
+    const w = createWorld(1);
+    w.tick = 1800 * 4 + 90;
+    w.rank = 4;
+    w.score = 250;
+    w.upgrades[UPG_TESLA] = 2;
+    w.upgrades[UPG_VENT] = 1;
+    const text = summaryText(w);
+    expect(text).toContain("OVERPRESSURE");
+    expect(text).toContain("2:01");
+    expect(text).toContain("SCORE 250");
+    expect(text).toContain("TESLA COIL LV 2");
+    expect(text).toContain("BOILER VENT LV 1");
   });
 });
