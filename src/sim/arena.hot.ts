@@ -1,6 +1,7 @@
 import {
   ARENA_H, ARENA_W, CAM_LERP, EDGE_PAD, HEAL_HP, HEAL_R2, MAX_HEAL, MAX_TELE, MIN_SPAWN_R2,
-  OB_BARREL, PUFF_BARREL, SPAWN_BOT, SPAWN_INSET, SPAWN_MARGIN, SPAWN_TOP, TELE_LIFE, cameraTarget, edgePoint, hitsProp, spawnHidden,
+  OB_BARREL, PROP_CELL, PROP_COLS, PROP_REACH, PROP_ROWS, PUFF_BARREL, SPAWN_BOT, SPAWN_INSET, SPAWN_MARGIN, SPAWN_TOP, TELE_LIFE, cameraTarget, edgePoint, hitsProp, spawnHidden,
+  type Arena,
 } from "./arena";
 import { foeHp, foePack, foeSpeed, Z_ELITE, Z_GAS, Z_KIND, Z_KNIGHT, Z_RAT, Z_SPITTER } from "./foes";
 import { nextFloat } from "./rng";
@@ -26,14 +27,44 @@ function bodyR(kind: number): number {
   return 9;
 }
 
+function propHit(a: Arena, x: number, y: number, rad: number): number {
+  if (a.propOverflow || rad > PROP_REACH) {
+    const n = a.obsN;
+    for (let i = 0; i < n; i++) {
+      if (!a.obsAlive[i]) continue;
+      if (hitsProp(x, y, rad, a.obsX[i] ?? 0, a.obsY[i] ?? 0, a.obsHW[i] ?? 0, a.obsHH[i] ?? 0, a.obsR[i] ?? 0)) return i;
+    }
+    return -1;
+  }
+  let cx = (x / PROP_CELL) | 0;
+  let cy = (y / PROP_CELL) | 0;
+  if (x < 0) cx = 0;
+  else if (cx >= PROP_COLS) cx = PROP_COLS - 1;
+  if (y < 0) cy = 0;
+  else if (cy >= PROP_ROWS) cy = PROP_ROWS - 1;
+  let node = a.propHead[cx + cy * PROP_COLS] ?? -1;
+  let best = -1;
+  while (node >= 0) {
+    const i = a.propNode[node] ?? 0;
+    node = a.propNext[node] ?? -1;
+    if (!a.obsAlive[i]) continue;
+    if (!hitsProp(x, y, rad, a.obsX[i] ?? 0, a.obsY[i] ?? 0, a.obsHW[i] ?? 0, a.obsHH[i] ?? 0, a.obsR[i] ?? 0)) continue;
+    if (best < 0 || i < best) best = i;
+  }
+  return best;
+}
+
 export function blocked(w: World, x: number, y: number, rad: number): boolean {
   const a = w.arena;
-  const n = a.obsN;
-  for (let i = 0; i < n; i++) {
-    if (!a.obsAlive[i]) continue;
-    if (hitsProp(x, y, rad, a.obsX[i] ?? 0, a.obsY[i] ?? 0, a.obsHW[i] ?? 0, a.obsHH[i] ?? 0, a.obsR[i] ?? 0)) return true;
-  }
-  return false;
+  if (a.propOverflow !== 0 || rad > PROP_REACH) return propHit(a, x, y, rad) >= 0;
+  let cx = (x / PROP_CELL) | 0;
+  let cy = (y / PROP_CELL) | 0;
+  if (x < 0) cx = 0;
+  else if (cx >= PROP_COLS) cx = PROP_COLS - 1;
+  if (y < 0) cy = 0;
+  else if (cy >= PROP_ROWS) cy = PROP_ROWS - 1;
+  if ((a.propHead[cx + cy * PROP_COLS] ?? -1) < 0) return false;
+  return propHit(a, x, y, rad) >= 0;
 }
 
 function breakBarrel(w: World, i: number): void {
@@ -61,14 +92,10 @@ function harmProp(w: World, i: number, dmg: number): void {
 }
 
 export function bulletBlocks(w: World, bx: number, by: number, dmg: number): boolean {
-  const a = w.arena;
-  for (let i = 0; i < a.obsN; i++) {
-    if (!a.obsAlive[i]) continue;
-    if (!hitsProp(bx, by, 2, a.obsX[i] ?? 0, a.obsY[i] ?? 0, a.obsHW[i] ?? 0, a.obsHH[i] ?? 0, a.obsR[i] ?? 0)) continue;
-    harmProp(w, i, dmg);
-    return true;
-  }
-  return false;
+  const i = propHit(w.arena, bx, by, 2);
+  if (i < 0) return false;
+  harmProp(w, i, dmg);
+  return true;
 }
 
 export function cutProps(w: World, x: number, y: number): void {
@@ -124,18 +151,20 @@ function slide(w: World, x: number, y: number, tx: number, ty: number, rad: numb
   const a = w.arena;
   let mx = x;
   let my = y;
+  let open = 0;
   const nx = tx < pad ? pad : tx > ARENA_W - pad ? ARENA_W - pad : tx;
   const ny = ty < pad ? pad : ty > ARENA_H - pad ? ARENA_H - pad : ty;
   if (!blocked(w, nx, ny, rad)) {
     mx = nx;
     my = ny;
+    open = 1;
   } else if (!blocked(w, nx, y, rad)) {
     mx = nx;
     if (!blocked(w, mx, ny, rad)) my = ny;
   } else if (!blocked(w, x, ny, rad)) {
     my = ny;
   }
-  if (blocked(w, mx, my, rad)) {
+  if (!open && blocked(w, mx, my, rad)) {
     if (!blocked(w, x, y, rad)) {
       mx = x;
       my = y;

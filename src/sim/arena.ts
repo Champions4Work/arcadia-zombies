@@ -30,6 +30,12 @@ export const MINI_X = 402;
 export const MINI_Y = 260;
 export const MINI_W = 70;
 export const MINI_H = 50;
+export const PROP_CELL = 32;
+export const PROP_COLS = Math.ceil(ARENA_W / PROP_CELL);
+export const PROP_ROWS = Math.ceil(ARENA_H / PROP_CELL);
+export const PROP_CELLS = PROP_COLS * PROP_ROWS;
+export const PROP_REACH = 16;
+export const PROP_NODES = MAX_OBS * 16;
 
 export interface Arena {
   camX: number;
@@ -52,9 +58,52 @@ export interface Arena {
   teleLeft: Int16Array;
   teleAlive: Uint8Array;
   scratch: Float32Array;
+  propHead: Int16Array;
+  propNode: Int16Array;
+  propNext: Int16Array;
+  propOverflow: number;
   lastX: number;
   lastY: number;
   lastN: number;
+}
+
+export function indexProps(a: Arena): void {
+  const head = a.propHead;
+  for (let c = 0; c < PROP_CELLS; c++) head[c] = -1;
+  let n = 0;
+  let overflow = 0;
+  const reach = PROP_REACH;
+  const obsN = a.obsN;
+  for (let i = 0; i < obsN; i++) {
+    if (!a.obsAlive[i]) continue;
+    const rad = a.obsR[i] ?? 0;
+    const hw = (rad > 0 ? rad : (a.obsHW[i] ?? 0)) + reach;
+    const hh = (rad > 0 ? rad : (a.obsHH[i] ?? 0)) + reach;
+    const x = a.obsX[i] ?? 0;
+    const y = a.obsY[i] ?? 0;
+    let x0 = Math.floor((x - hw) / PROP_CELL);
+    let y0 = Math.floor((y - hh) / PROP_CELL);
+    let x1 = Math.floor((x + hw) / PROP_CELL);
+    let y1 = Math.floor((y + hh) / PROP_CELL);
+    if (x0 < 0) x0 = 0;
+    if (y0 < 0) y0 = 0;
+    if (x1 >= PROP_COLS) x1 = PROP_COLS - 1;
+    if (y1 >= PROP_ROWS) y1 = PROP_ROWS - 1;
+    for (let cy = y0; cy <= y1 && !overflow; cy++) {
+      for (let cx = x0; cx <= x1; cx++) {
+        if (n >= PROP_NODES) {
+          overflow = 1;
+          break;
+        }
+        const cell = cx + cy * PROP_COLS;
+        a.propNode[n] = i;
+        a.propNext[n] = head[cell] ?? -1;
+        head[cell] = n;
+        n++;
+      }
+    }
+  }
+  a.propOverflow = overflow;
 }
 
 const PLAN: readonly number[] = [
@@ -241,6 +290,9 @@ export function createArena(seed: number, px: number, py: number): Arena {
   const obsHp = new Int16Array(MAX_OBS);
   const obsAlive = new Uint8Array(MAX_OBS);
   const scratch = new Float32Array(4);
+  const propHead = new Int16Array(PROP_CELLS);
+  const propNode = new Int16Array(PROP_NODES);
+  const propNext = new Int16Array(PROP_NODES);
   cameraTarget(px, py, scratch);
   let n = 0;
   for (let p = 0; p < PLAN.length && n < MAX_OBS; p++) {
@@ -273,7 +325,7 @@ export function createArena(seed: number, px: number, py: number): Arena {
     obsAlive[n] = 1;
     n++;
   }
-  return {
+  const arena: Arena = {
     camX: scratch[0] ?? 0,
     camY: scratch[1] ?? 0,
     obsN: n,
@@ -287,8 +339,14 @@ export function createArena(seed: number, px: number, py: number): Arena {
     teleLeft: new Int16Array(MAX_TELE),
     teleAlive: new Uint8Array(MAX_TELE),
     scratch,
+    propHead,
+    propNode,
+    propNext,
+    propOverflow: 0,
     lastX: 0,
     lastY: 0,
     lastN: 0,
   };
+  indexProps(arena);
+  return arena;
 }

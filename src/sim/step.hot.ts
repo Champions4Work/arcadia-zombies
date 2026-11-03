@@ -1,4 +1,5 @@
 import { JUICE_DT, juiceFrame, juicePlayerHurt, tickJuice } from "../render/juice";
+import { indexProps } from "./arena";
 import {
   chaseZombie, cutProps, pickupHeals, queueSpawn, slidePlayer, teleCount, tickTelegraphs, updateCamera,
 } from "./arena.hot";
@@ -155,6 +156,7 @@ export function step(w: World, input: Input): void {
     tryPick(w, input.pick ?? 0);
     return;
   }
+  indexProps(w.arena);
   w.tick++;
   if (w.rankFlash > 0) w.rankFlash--;
   if (w.banner > 0) w.banner--;

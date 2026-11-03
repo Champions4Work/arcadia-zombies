@@ -1,6 +1,6 @@
 import {
   ARENA_H, ARENA_W, BARREL_HP, CLEAR_R, EDGE_PAD, HEAL_HP, MINI_H, MINI_W, MINI_X, MINI_Y,
-  MIN_SPAWN_R, OB_BARREL, OB_BOILER, OB_CRATE, OB_GEAR, OB_PIPE, SPAWN_BOT, SPAWN_INSET, SPAWN_MARGIN,
+  MIN_SPAWN_R, OB_BARREL, OB_BOILER, OB_CRATE, OB_GEAR, OB_PIPE, PROP_CELL, PROP_COLS, SPAWN_BOT, SPAWN_INSET, SPAWN_MARGIN,
   SPAWN_TOP,
   TELE_LIFE, arrowTip, edgePoint, hitsProp, miniDot, showsArrow,
 } from "../src/sim/arena";
@@ -316,6 +316,47 @@ describe("barrels and steering", () => {
     expect(w.bullets.alive[0]).toBe(0);
     expect(w.zombies.hp[z]).toBe(5);
     expect(w.arena.obsAlive[0]).toBe(1);
+  });
+  it("stops a rivet on a crate that only overlaps the next prop cell by its radius", () => {
+    const w = createWorld(8);
+    freeze(w);
+    clearProps(w);
+    w.arena.obsN = 1;
+    w.arena.obsAlive[0] = 1;
+    w.arena.obsKind[0] = OB_CRATE;
+    w.arena.obsX[0] = PROP_CELL - 10;
+    w.arena.obsY[0] = PROP_CELL * 0.5;
+    w.arena.obsHW[0] = 9;
+    w.arena.obsHH[0] = 9;
+    w.arena.obsR[0] = 0;
+    w.bullets.alive[0] = 1;
+    w.bullets.x[0] = PROP_CELL;
+    w.bullets.y[0] = PROP_CELL * 0.5;
+    w.bullets.vx[0] = 0;
+    w.bullets.vy[0] = 0;
+    w.bHit[0] = -1;
+    w.bullets.alive[1] = 1;
+    w.bullets.x[1] = PROP_CELL + 14;
+    w.bullets.y[1] = PROP_CELL * 0.5;
+    w.bullets.vx[1] = 0;
+    w.bullets.vy[1] = 0;
+    w.bHit[1] = -1;
+    step(w, idle());
+    expect(w.bullets.alive[0]).toBe(0);
+    expect(w.bullets.alive[1]).toBe(1);
+    expect(w.arena.obsAlive[0]).toBe(1);
+    expect(w.arena.propOverflow).toBe(0);
+    const qx = PROP_CELL;
+    const qy = PROP_CELL * 0.5;
+    const cell = (qx / PROP_CELL) | 0;
+    const row = (qy / PROP_CELL) | 0;
+    let node = w.arena.propHead[cell + row * PROP_COLS] ?? -1;
+    let found = 0;
+    while (node >= 0) {
+      if ((w.arena.propNode[node] ?? -1) === 0) found = 1;
+      node = w.arena.propNext[node] ?? -1;
+    }
+    expect(found).toBe(1);
   });
   it("breaks a barrel into a small heal", () => {
     const w = createWorld(9);
