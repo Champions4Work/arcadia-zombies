@@ -1,5 +1,5 @@
 import {
-  BOSS_BEHEMOTH, BOSS_EVERY, BOSS_GEAR, BOSS_WARN, BOSS_WITCH, bossMaxHp, bossName, bossScore, bossSlowFactor,
+  BOSS_BEHEMOTH, BOSS_EVERY, BOSS_GEAR, BOSS_TANK, BOSS_WARN, BOSS_WITCH, bossMaxHp, bossName, bossScore, bossSlowFactor,
   bossTier, bossXp, MAX_CLOUDS, MAX_BOSS_SHOTS, patternCount,
 } from "../src/sim/boss";
 import { FINALE_TICK, lichUp } from "../src/sim/finale";
@@ -86,11 +86,11 @@ describe("boss schedule", () => {
     expect(w.tick).toBe(BOSS_EVERY);
     expect(w.boss.kind).toBe(BOSS_BEHEMOTH);
   });
-  it("rotates behemoth, witch, gearlord, then behemoth again", () => {
+  it("rotates behemoth, witch, gearlord, tank, then behemoth again", () => {
     const w = createWorld(6);
     hold(w);
     const kinds: number[] = [];
-    for (let n = 0; n < 4; n++) {
+    for (let n = 0; n < 5; n++) {
       if (n > 0) w.tick = (w.boss.n + 1) * BOSS_EVERY - BOSS_WARN - 1;
       untilBoss(w, BOSS_EVERY + BOSS_WARN + 30);
       expect(w.boss.on).toBe(1);
@@ -100,17 +100,19 @@ describe("boss schedule", () => {
       step(w, { dx: 0, dy: 0, pick: 1 });
       expect(w.boss.on).toBe(0);
     }
-    expect(kinds).toEqual([BOSS_BEHEMOTH, BOSS_WITCH, BOSS_GEAR, BOSS_BEHEMOTH]);
+    expect(kinds).toEqual([BOSS_BEHEMOTH, BOSS_WITCH, BOSS_GEAR, BOSS_TANK, BOSS_BEHEMOTH]);
   });
 });
 describe("boss attacks", () => {
-  it("names the three bosses and gives each two or three patterns", () => {
+  it("names the bosses and gives each two or three patterns", () => {
     expect(bossName(BOSS_BEHEMOTH)).toBe("IRON BEHEMOTH");
     expect(bossName(BOSS_WITCH)).toBe("STEAM WITCH");
     expect(bossName(BOSS_GEAR)).toBe("GEARLORD");
+    expect(bossName(BOSS_TANK)).toBe("CLOCKWORK TANK");
     expect(patternCount(BOSS_BEHEMOTH)).toBe(2);
     expect(patternCount(BOSS_WITCH)).toBe(3);
     expect(patternCount(BOSS_GEAR)).toBe(3);
+    expect(patternCount(BOSS_TANK)).toBe(3);
   });
   it("the iron behemoth charges and grows a ground-slam shockwave", () => {
     const slow = arm(BOSS_BEHEMOTH, 0, 1, 1, 1);

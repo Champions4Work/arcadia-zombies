@@ -1,4 +1,5 @@
-import { bossName, BOSS_BEHEMOTH, BOSS_GEAR, BOSS_WITCH, MAX_BOSS_SHOTS, MAX_CLOUDS } from "../sim/boss";
+import { bossName, BOSS_BEHEMOTH, BOSS_GEAR, BOSS_TANK, BOSS_WITCH, MAX_BOSS_SHOTS, MAX_CLOUDS } from "../sim/boss";
+import { paintTank } from "./tank";
 import { W, type World } from "../sim/types";
 import { LAYER_HUD, LAYER_MID, registerLayer } from "./plugins";
 const SOOT = "#120c08";
@@ -242,16 +243,28 @@ function hpBar(c: CanvasRenderingContext2D, w: World): void {
 export function drawBoss(c: CanvasRenderingContext2D, w: World, layer: number): void {
   const b = w.boss;
   if (layer === 0) {
+    if (b.kind === BOSS_TANK) {
+      paintTank(c, w, 0);
+      return;
+    }
     clouds(c, w);
     return;
   }
   if (layer === 1) {
     if (!b.on) return;
+    if (b.kind === BOSS_TANK) {
+      paintTank(c, w, 1);
+      return;
+    }
     telegraph(c, w);
     sprite(c, w);
     return;
   }
   if (layer === 2) {
+    if (b.kind === BOSS_TANK) {
+      paintTank(c, w, 2);
+      return;
+    }
     shock(c, w);
     shots(c, w);
     if (b.slow > 0 && b.kind === BOSS_WITCH && b.phase > 0) {

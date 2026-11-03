@@ -1,18 +1,21 @@
 import { xpNeed } from "./progress";
+import { BOSS_TANK, TANK_HP, TANK_NAME, TANK_PATTERNS } from "./tank";
 import { MAX_BULLETS, type Boss, type World } from "./types";
+export { BOSS_TANK } from "./tank";
 export const BOSS_BEHEMOTH = 0;
 export const BOSS_WITCH = 1;
 export const BOSS_GEAR = 2;
-export const BOSS_KINDS = 3;
 export const BOSS_EVERY = 7200;
 export const BOSS_WARN = 180;
 export const MAX_BOSS_SHOTS = 16;
 export const MAX_CLOUDS = 6;
-const NAMES = ["IRON BEHEMOTH", "STEAM WITCH", "GEARLORD"];
+const NAMES = ["IRON BEHEMOTH", "STEAM WITCH", "GEARLORD", TANK_NAME];
+export const BOSS_KINDS = NAMES.length;
 export function bossName(kind: number): string {
   return NAMES[kind] ?? "BOSS";
 }
 export function patternCount(kind: number): number {
+  if (kind === BOSS_TANK) return TANK_PATTERNS;
   if (kind === BOSS_WITCH || kind === BOSS_GEAR) return 3;
   return 2;
 }
@@ -20,7 +23,10 @@ export function bossTier(w: World): number {
   return w.rank | 0;
 }
 export function bossMaxHp(kind: number, rank: number, index: number): number {
-  const base = kind === BOSS_WITCH ? 84 : kind === BOSS_GEAR ? 96 : 120;
+  const base = kind === BOSS_WITCH ? 84
+    : kind === BOSS_GEAR ? 96
+    : kind === BOSS_TANK ? TANK_HP
+    : 120;
   const rk = rank > 0 ? rank : 0;
   const ix = index > 0 ? index : 0;
   return base + rk * 48 + ix * 20;
