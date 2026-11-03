@@ -95,6 +95,17 @@ describe("xp and level-up", () => {
     expect(w.choosing).toBe(0);
     expect(w.upgrades[id]).toBe(1);
   });
+  it("step consumes input.pick while paused and does not advance tick", () => {
+    const w = createWorld(6);
+    freeze(w);
+    takeXp(w, xpNeed(0));
+    const id = w.offers[0] ?? -1;
+    const tick = w.tick;
+    step(w, idle(1));
+    expect(w.choosing).toBe(0);
+    expect(w.upgrades[id]).toBe(1);
+    expect(w.tick).toBe(tick);
+  });
   it("leftover xp queues another pick after a choice", () => {
     const w = createWorld(5);
     freeze(w);
