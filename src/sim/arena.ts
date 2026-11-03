@@ -19,7 +19,7 @@ export const MIN_SPAWN_R2 = MIN_SPAWN_R * MIN_SPAWN_R;
 export const SPAWN_MARGIN = 24;
 export const SPAWN_INSET = 26;
 export const SPAWN_TOP = 58;
-export const SPAWN_BOT = 30;
+export const SPAWN_BOT = 48;
 export const PUFF_BARREL = 32;
 export const CAM_LERP = 0.15;
 export const HEAL_HP = 1;
@@ -117,7 +117,10 @@ export function spawnHidden(camX: number, camY: number, x: number, y: number): b
   const sx = x - camX;
   const sy = y - camY;
   if (sy < SPAWN_TOP - 2) return true;
-  if (sx > MINI_X - 20 && sy > MINI_Y - 16) return true;
+  const rdx = sx - 48;
+  const rdy = sy - 262;
+  if (rdx * rdx + rdy * rdy <= 38 * 38) return true;
+  if (sy >= 278 && sx >= 96 && sx <= 380) return true;
   return false;
 }
 

@@ -33,8 +33,10 @@ const expectInView = (w: World, x: number, y: number): void => {
   expect(sx).toBeLessThanOrEqual(W - SPAWN_INSET + 1);
   expect(sy).toBeGreaterThanOrEqual(SPAWN_TOP - 1);
   expect(sy).toBeLessThanOrEqual(H - SPAWN_BOT + 1);
-  const underMap = sx > MINI_X - 20 && sy > MINI_Y - 16;
-  expect(underMap).toBe(false);
+  const onRadar = (sx - 48) * (sx - 48) + (sy - 262) * (sy - 262) <= 38 * 38;
+  const onRack = sy >= 278 && sx >= 96 && sx <= 380;
+  expect(onRadar).toBe(false);
+  expect(onRack).toBe(false);
   expect(Math.hypot(x - w.px, y - w.py)).toBeGreaterThanOrEqual(MIN_SPAWN_R - 0.05);
 };
 const projectTele = (w: World, buf: Float32Array): number => {
