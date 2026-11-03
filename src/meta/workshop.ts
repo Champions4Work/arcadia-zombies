@@ -143,22 +143,30 @@ export function serializeWorkshop(shop: Workshop): string {
 }
 
 export function loadWorkshop(store: ScrapStore): WorkshopFile {
-  const raw = store.getItem(WORKSHOP_KEY);
-  if (!raw) return { shop: emptyWorkshop(), writable: true };
-  let data: unknown;
-  try { data = JSON.parse(raw); } catch { return { shop: emptyWorkshop(), writable: true }; }
-  if (!isRecord(data)) return { shop: emptyWorkshop(), writable: true };
-  if (typeof data.v === "number" && data.v > WORKSHOP_VERSION) return { shop: emptyWorkshop(), writable: false };
-  if (data.v !== WORKSHOP_VERSION) return { shop: emptyWorkshop(), writable: true };
-  const shop = emptyWorkshop();
-  shop.scrap = clampCount(data.scrap, SCRAP_CAP);
-  if (Array.isArray(data.ranks)) {
-    for (let i = 0; i < META_N; i++) shop.ranks[i] = clampCount(data.ranks[i], META_MAX[i] ?? 0);
+  try {
+    const raw = store.getItem(WORKSHOP_KEY);
+    if (!raw) return { shop: emptyWorkshop(), writable: true };
+    let data: unknown;
+    try { data = JSON.parse(raw); } catch { return { shop: emptyWorkshop(), writable: true }; }
+    if (!isRecord(data)) return { shop: emptyWorkshop(), writable: true };
+    if (typeof data.v === "number" && data.v > WORKSHOP_VERSION) return { shop: emptyWorkshop(), writable: false };
+    if (data.v !== WORKSHOP_VERSION) return { shop: emptyWorkshop(), writable: true };
+    const shop = emptyWorkshop();
+    shop.scrap = clampCount(data.scrap, SCRAP_CAP);
+    if (Array.isArray(data.ranks)) {
+      for (let i = 0; i < META_N; i++) shop.ranks[i] = clampCount(data.ranks[i], META_MAX[i] ?? 0);
+    }
+    return { shop, writable: true };
+  } catch {
+    return { shop: emptyWorkshop(), writable: false };
   }
-  return { shop, writable: true };
 }
 
 export function saveWorkshop(store: ScrapStore, shop: Workshop, writable: boolean): void {
   if (!writable) return;
-  store.setItem(WORKSHOP_KEY, serializeWorkshop(shop));
+  try {
+    store.setItem(WORKSHOP_KEY, serializeWorkshop(shop));
+  } catch {
+    return;
+  }
 }

@@ -29,13 +29,16 @@ import {
   WORKSHOP_VERSION,
   type Workshop,
 } from "../src/meta/workshop";
+import { CHAR_ALCHEMIST, CHAR_BRUTE, CHAR_GUNSLINGER, offerCount, RAGE_DMG } from "../src/sim/characters";
 import { tierAt } from "../src/sim/difficulty";
+import { cannonHit, MOD_FAST, MOD_GEAR, MOD_GLASS, MOD_NOHEAL } from "../src/sim/modifiers";
 import { applyUpgrade, bulletDmg, CARD_H, CARD_Y, fireEvery, maxHpOf, moveSpeed, takeXp, xpNeed } from "../src/sim/progress";
 import { REROLL_H, REROLL_W, REROLL_X, REROLL_Y, rerollHit, tryReroll } from "../src/sim/reroll";
 import { step } from "../src/sim/step.hot";
 import {
-  EV_REVIVE, EV_SHOT, EVOL_CANNON, H, MAX_BULLETS, MAX_ZOMBIES, UPG_DMG, UPG_HP, UPG_MAX, UPG_SPEED, type Input, type World,
+  EV_REVIVE, EV_SHOT, EVOL_CANNON, H, MAX_BULLETS, MAX_ZOMBIES, UPG_DMG, UPG_HP, UPG_MAX, UPG_SPEED, WPN_MORT, type Input, type World,
 } from "../src/sim/types";
+import { weaponEvery } from "../src/sim/weapons";
 import { createWorld } from "../src/sim/world";
 import {
   begin,
@@ -197,6 +200,29 @@ describe("workshop schema", () => {
     expect(store.getItem(WORKSHOP_KEY)).toBe(raw);
   });
 
+  it("keeps the saved bench when storage throws", () => {
+    const store = mem();
+    const shop = emptyWorkshop();
+    shop.scrap = 40;
+    saveWorkshop(store, shop, true);
+    expect(() => saveWorkshop({
+      getItem: (k: string) => store.getItem(k),
+      setItem: () => { throw new Error("quota"); },
+    }, emptyWorkshop(), true)).not.toThrow();
+    expect(loadWorkshop(store).shop.scrap).toBe(40);
+    const broken = loadWorkshop({
+      getItem: () => { throw new Error("quota"); },
+      setItem: () => { throw new Error("quota"); },
+    });
+    expect(broken.writable).toBe(false);
+    expect(broken.shop).toEqual(emptyWorkshop());
+    expect(() => saveWorkshop({
+      getItem: () => { throw new Error("quota"); },
+      setItem: () => { store.setItem(WORKSHOP_KEY, "wiped"); },
+    }, shop, broken.writable)).not.toThrow();
+    expect(store.getItem(WORKSHOP_KEY)).not.toBe("wiped");
+  });
+
   it("refuses a buy the boiler cannot afford and stops at the cap", () => {
     const shop = emptyWorkshop();
     expect(tryBuy(shop, META_SPD)).toBe(false);
@@ -254,6 +280,66 @@ describe("permanent fittings", () => {
     applyUpgrade(w, UPG_HP);
     expect(w.maxHp).toBe(8);
     expect(w.hp).toBe(8);
+  });
+
+  it("stacks fittings with the survivor and the run modifiers", () => {
+    const shop = emptyWorkshop();
+    shop.ranks[META_HP] = 2;
+    shop.ranks[META_DMG] = 1;
+    shop.ranks[META_SPD] = 1;
+    shop.ranks[META_GUN] = 1;
+    const gun = createWorld(1, CHAR_GUNSLINGER);
+    const gunBare = createWorld(1, CHAR_GUNSLINGER);
+    applyWorkshop(gun, shop);
+    expect(gun.maxHp).toBe(6);
+    expect(fireEvery(gun)).toBe(Math.max(3, Math.round((12 - BONUS_GUN * 2) * 100 / 130)));
+    expect(fireEvery(gun)).toBeLessThan(fireEvery(gunBare));
+    expect(weaponEvery(gun, WPN_MORT, 1)).toBeLessThan(weaponEvery(gunBare, WPN_MORT, 1));
+    const brute = createWorld(1, CHAR_BRUTE, MOD_FAST);
+    const bruteBare = createWorld(1, CHAR_BRUTE);
+    applyWorkshop(brute, shop);
+    expect(brute.maxHp).toBe(10);
+    expect(moveSpeed(brute)).toBeCloseTo(1.5 + BONUS_SPD);
+    expect(moveSpeed(brute)).toBeCloseTo(moveSpeed(bruteBare) + BONUS_SPD);
+    expect(bulletDmg(brute)).toBe(1 + BONUS_DMG);
+    brute.hp = 5;
+    expect(bulletDmg(brute)).toBe(1 + BONUS_DMG + RAGE_DMG);
+    brute.hp = 6;
+    expect(bulletDmg(brute)).toBe(1 + BONUS_DMG);
+    const glass = createWorld(1, CHAR_BRUTE, MOD_GLASS);
+    applyWorkshop(glass, shop);
+    expect(glass.maxHp).toBe(3);
+    expect(glass.hp).toBe(3);
+    expect(bulletDmg(glass)).toBe(1 + BONUS_DMG);
+    glass.hp = 1;
+    expect(bulletDmg(glass)).toBe(1 + BONUS_DMG + RAGE_DMG);
+    expect(cannonHit(bulletDmg(glass), MOD_GLASS)).toBe((1 + BONUS_DMG + RAGE_DMG) * 2);
+    const dry = createWorld(1, 0, MOD_NOHEAL);
+    applyWorkshop(dry, shop);
+    expect(dry.maxHp).toBe(7);
+    dry.hp = 2;
+    applyUpgrade(dry, UPG_HP);
+    expect(dry.maxHp).toBe(8);
+    expect(dry.hp).toBe(2);
+    const rush = createWorld(1, 0, MOD_GEAR);
+    const plain = createWorld(1);
+    rush.tick = 1800;
+    plain.tick = 1800;
+    rush.rank = 1;
+    plain.rank = 1;
+    rush.kills = 4;
+    plain.kills = 4;
+    rush.over = true;
+    plain.over = true;
+    expect(awardRun(emptyWorkshop(), rush)).toBe(awardRun(emptyWorkshop(), plain));
+    const alch = createWorld(4, CHAR_ALCHEMIST);
+    alch.meta.reroll = 1;
+    takeXp(alch, xpNeed(0));
+    expect(offerCount(alch)).toBe(3);
+    expect(alch.meta.rerollLeft).toBe(1);
+    expect(tryReroll(alch)).toBe(true);
+    expect(alch.choosing).toBe(1);
+    expect(alch.meta.rerollLeft).toBe(0);
   });
 
   it("adds rivet damage on top of the in-run track", () => {
