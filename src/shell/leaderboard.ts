@@ -1,3 +1,4 @@
+import { CHAR_TINKER, characterAt, characterIndex } from "../sim/characters";
 import { tierName } from "../sim/difficulty";
 
 export const LEADERBOARD_KEY = "arcadia.leaderboard";
@@ -20,6 +21,7 @@ export interface RunRecord {
   tier: number;
   kills: number;
   build: string;
+  character: string;
 }
 
 export interface Life {
@@ -40,6 +42,7 @@ export interface RunInput {
   tier: number;
   kills: number;
   upgrades: ArrayLike<number>;
+  character?: string;
 }
 
 export interface KillTracker {
@@ -128,6 +131,7 @@ export function captureRun(input: RunInput): RunRecord {
     tier: input.tier,
     kills: input.kills,
     build: buildLabel(input.upgrades),
+    character: input.character ?? characterAt(CHAR_TINKER).id,
   });
 }
 
@@ -140,12 +144,13 @@ export function formatTime(ticks: number): string {
 
 export function runLine(run: RunRecord): string {
   const row = sanitize(run);
-  return `${formatTime(row.time)} · ${tierName(row.tier)} · ${row.kills} kills · ${row.build}`;
+  return `${formatTime(row.time)} · ${tierName(row.tier)} · ${row.kills} kills · ${row.build} · ${characterAt(characterIndex(row.character)).name}`;
 }
 
 export function shareText(run: RunRecord): string {
   const row = sanitize(run);
-  return `Arcadia: Gears of the Dead — Score ${row.score} · ${formatTime(row.time)} · ${tierName(row.tier)} · ${row.kills} kills · ${row.build}`;
+  const who = characterAt(characterIndex(row.character)).name;
+  return `Arcadia: Gears of the Dead — Score ${row.score} · ${formatTime(row.time)} · ${tierName(row.tier)} · ${row.kills} kills · ${row.build} · ${who}`;
 }
 
 export function toastText(name: string): string {
@@ -235,7 +240,9 @@ export function saveLeaderboard(store: Store, saved: SavedRecords): void {
   try {
     store.setItem(LEADERBOARD_KEY, JSON.stringify({
       v: 1,
-      board: saved.board.map((r) => ({ score: r.score, time: r.time, tier: r.tier, kills: r.kills, build: r.build })),
+      board: saved.board.map((r) => ({
+        score: r.score, time: r.time, tier: r.tier, kills: r.kills, build: r.build, character: r.character,
+      })),
       life: { kills: saved.life.kills, bestTime: saved.life.bestTime, runs: saved.life.runs },
       unlocked: saved.unlocked.slice(),
     }));
@@ -251,6 +258,11 @@ function compareRuns(a: RunRecord, b: RunRecord): number {
   return b.tier - a.tier;
 }
 
+function cleanCharacter(id: string): string {
+  const index = characterIndex(id);
+  return characterAt(index < 0 ? CHAR_TINKER : index).id;
+}
+
 function sanitize(run: RunRecord): RunRecord {
   return {
     score: clampInt(run.score),
@@ -258,6 +270,7 @@ function sanitize(run: RunRecord): RunRecord {
     tier: clampInt(run.tier, 9999),
     kills: clampInt(run.kills),
     build: cleanBuild(run.build),
+    character: cleanCharacter(run.character),
   };
 }
 
@@ -304,6 +317,7 @@ function decode(v: unknown): SavedRecords {
         tier: item.tier as number,
         kills: item.kills as number,
         build: typeof item.build === "string" ? item.build : "",
+        character: typeof item.character === "string" ? item.character : "",
       }));
     }
     saved.board.sort(compareRuns);

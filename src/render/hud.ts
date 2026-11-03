@@ -1,9 +1,10 @@
 import { tierFrac, tierName } from "../sim/difficulty";
 import { runLabel } from "../sim/finale";
 import { Z_GAS, Z_KIND, Z_KNIGHT, Z_RAT, Z_SPITTER } from "../sim/foes";
-import { CARD_GAP, CARD_H, CARD_W, CARD_X0, CARD_Y, rarityName, UPG_RARITY, upgName, xpNeed } from "../sim/progress";
+import { offerCount } from "../sim/characters";
+import { CARD_Y, cardFrame, offerId, rarityName, UPG_RARITY, upgName, xpNeed } from "../sim/progress";
 import {
-  EVOL_AEGIS, EVOL_CANNON, EVOL_STORM, H, OFFER_N, UPG_DMG, UPG_FIRE, UPG_HP, UPG_MAX, UPG_MORTAR,
+  EVOL_AEGIS, EVOL_CANNON, EVOL_STORM, H, UPG_DMG, UPG_FIRE, UPG_HP, UPG_MAX, UPG_MORTAR,
   UPG_PIERCE, UPG_SAWS, UPG_SHIELD, UPG_SHOTGUN, UPG_SPEED, UPG_TESLA, UPG_VENT, W, Z_BRUTE, Z_GHOUL, type World,
 } from "../sim/types";
 import { BRASS, cog, flame, font, heart, lit, OUTLINE, roundRect } from "./paint";
@@ -615,7 +616,11 @@ export function drawCards(ctx: CanvasRenderingContext2D, w: World): void {
   ctx.strokeStyle = OUTLINE;
   ctx.stroke();
   ink(ctx, "CHOOSE YOUR UPGRADE", W / 2, by + 4, 10, "#fff8ee", "center");
-  for (let i = 0; i < OFFER_N; i++) drawCard(ctx, CARD_X0 + i * (CARD_W + CARD_GAP), CARD_Y, CARD_W, CARD_H, w.offers[i] ?? -1, i, w);
+  const slots = offerCount(w);
+  for (let i = 0; i < slots; i++) {
+    const f = cardFrame(i, slots);
+    drawCard(ctx, f.x, f.y, f.w, f.h, offerId(w, i), i, w);
+  }
   ctx.textAlign = "left";
   ctx.textBaseline = "alphabetic";
 }

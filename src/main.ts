@@ -7,6 +7,7 @@ import { bootSfx, persistSfx, playSfxCue, playUiClick, playWorldSfx, resetSfxPla
 import { CUE_BOSS, sfxMuteLabel, sfxVolumePercent } from "./render/sfx-cues";
 import { setMuted, unlockAudio } from "./render/sound";
 import { applyCanvas, screenToGame, type Fit } from "./shell/fit";
+import { mountPicker, paintPicker } from "./shell/picker";
 import {
   captureRun,
   createTracker,
@@ -39,12 +40,21 @@ import {
 import { resetShake } from "./render/shake";
 import { devSeconds, loadCrown, markWon, saveCrown, toggleEndless } from "./shell/crown";
 import { createStick, liftStick, moveStick, pressStick, showRestStick } from "./shell/stick";
+import {
+  CHAR_TINKER,
+  characterAt,
+  isUnlocked,
+  loadRoster,
+  noteWave,
+  offerCount,
+  saveRoster,
+} from "./sim/characters";
 import { clock } from "./sim/difficulty";
 import { armDevJump, isWon, killCount, setRunEndless, takeCue, victoryText } from "./sim/finale";
 import { fillHorde, HORDE_BULLETS, HORDE_ZOMBIES } from "./sim/horde";
 import { cardSlot, summaryText } from "./sim/progress";
 import { step } from "./sim/step.hot";
-import { EV_KILL, H, OFFER_N, W, type Input } from "./sim/types";
+import { EV_KILL, H, W, type Input } from "./sim/types";
 import { createWorld } from "./sim/world";
 
 function tryStore(): { getItem(k: string): string | null; setItem(k: string, v: string): void } | null {
@@ -53,6 +63,7 @@ function tryStore(): { getItem(k: string): string | null; setItem(k: string, v: 
 
 const store = tryStore();
 const saved = store ? loadStore(store) : { best: 0, muted: false, shake: true, numbers: true };
+const roster = store ? loadRoster(store) : { index: CHAR_TINKER, bestWave: 0 };
 const session = createSession(saved.best, saved.muted, saved.shake, saved.numbers);
 let crown = store ? loadCrown(store) : { won: false, endless: false };
 const records = store ? loadLeaderboard(store) : emptyLeaderboard();
@@ -61,6 +72,8 @@ let runLineText = "";
 let runShare: string | null = null;
 setMuted(session.muted);
 bootSfx(store);
+let survivor = roster.index;
+let bestWave = roster.bestWave;
 
 const canvas = document.getElementById("game") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
@@ -74,6 +87,7 @@ const shakeBtn = document.getElementById("shake") as HTMLButtonElement;
 const endlessBtn = document.getElementById("endless") as HTMLButtonElement;
 const numbersBtn = document.getElementById("numbers") as HTMLButtonElement;
 const summary = document.getElementById("summary") as HTMLElement;
+const rosterEl = document.getElementById("roster") as HTMLElement;
 const sfxMuteBtn = document.getElementById("sfx-mute") as HTMLButtonElement;
 const sfxVol = document.getElementById("sfx-vol") as HTMLInputElement;
 const panel = document.getElementById("panel") as HTMLElement;
@@ -82,7 +96,7 @@ const joy = document.getElementById("joy") as HTMLElement;
 const knob = document.getElementById("knob") as HTMLElement;
 
 function makeWorld(seed: number) {
-  const next = createWorld(seed);
+  const next = createWorld(seed, survivor);
   if (location.hash === "#horde") fillHorde(next, HORDE_ZOMBIES, HORDE_BULLETS);
   return next;
 }
@@ -102,6 +116,7 @@ function persist(): void {
   if (!store) return;
   syncStore(session, store);
   saveCrown(store, crown);
+  saveRoster(store, survivor, bestWave);
 }
 
 function paint(): void {
@@ -128,6 +143,9 @@ function paint(): void {
   const over = session.phase === PHASE_OVER ? (isWon(world) ? victoryText(world) : summaryText(world)) : "";
   summary.hidden = over.length === 0;
   summary.textContent = over;
+  const showRoster = session.phase === PHASE_TITLE || session.phase === PHASE_OVER;
+  rosterEl.hidden = !showRoster;
+  if (showRoster) paintPicker(rosterEl, survivor, bestWave);
   muteBtn.textContent = session.muted ? "Muted" : "Sound";
   muteBtn.setAttribute("aria-pressed", session.muted ? "true" : "false");
   shakeBtn.textContent = session.shake ? "Screen shake: On" : "Screen shake: Off";
@@ -281,6 +299,8 @@ addEventListener("keydown", (e) => {
   }
   if (k === " " || k === "enter") {
     if (session.phase !== PHASE_PLAY) {
+      const target = e.target;
+      if (target instanceof HTMLElement && target.closest("#roster")) return;
       e.preventDefault();
       startRun();
     }
@@ -298,7 +318,7 @@ addEventListener("keydown", (e) => {
     });
     return;
   }
-  if (session.phase === PHASE_PLAY && world.choosing && e.key >= "1" && e.key <= String(OFFER_N)) {
+  if (session.phase === PHASE_PLAY && world.choosing && e.key >= "1" && e.key <= String(offerCount(world))) {
     pendingPick = e.key.charCodeAt(0) - 48;
     return;
   }
@@ -323,7 +343,7 @@ addEventListener("pointerdown", (e) => {
     return;
   }
   if (world.choosing) {
-    pendingPick = cardSlot(p.x, p.y);
+    pendingPick = cardSlot(p.x, p.y, offerCount(world));
     return;
   }
   stickId = e.pointerId;
@@ -377,6 +397,9 @@ function frame(now: number): void {
       pendingPick = 0;
       input.pick = 0;
       acc -= STEP_MS;
+      const reached = noteWave(bestWave, world.wave);
+      const waveUp = reached !== bestWave;
+      if (waveUp) bestWave = reached;
       sfx();
       if (isWon(world) && !crown.won) {
         crown = markWon(crown);
@@ -391,6 +414,7 @@ function frame(now: number): void {
           tier: world.rank,
           kills: tracker.kills,
           upgrades: world.upgrades,
+          character: characterAt(world.charId).id,
         }));
         runLineText = settled.line;
         runShare = settled.share;
@@ -401,6 +425,7 @@ function frame(now: number): void {
         acc = 0;
         break;
       }
+      if (waveUp) persist();
       if (stopRemaining() > 0) {
         acc = 0;
         break;
@@ -421,5 +446,12 @@ if (location.hash === "#horde") {
   begin(session);
   setRunEndless(world, crown.endless);
 }
+mountPicker(rosterEl, (index) => {
+  if (session.phase !== PHASE_TITLE && session.phase !== PHASE_OVER) return;
+  if (!isUnlocked(index, bestWave)) return;
+  survivor = index;
+  persist();
+  paint();
+});
 paint();
 requestAnimationFrame(frame);

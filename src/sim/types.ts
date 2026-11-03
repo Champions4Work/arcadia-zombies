@@ -58,6 +58,7 @@ export interface World {
   aimX: number; aimY: number;
   rank: number; rankFlash: number; banner: number;
   ventCd: number; healCd: number; mortarCd: number;
+  charId: number; offerExtra: number;
   zombies: Pool; bullets: Pool; events: Uint8Array;
   upgrades: Uint8Array; offers: Int8Array; scratch: Uint8Array;
   bHit: Int16Array; bPierce: Uint8Array; bLife: Uint8Array; bGun: Uint8Array; bRad: Uint8Array;

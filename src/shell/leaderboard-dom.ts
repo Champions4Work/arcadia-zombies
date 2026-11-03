@@ -59,7 +59,7 @@ export function mountLeaderboard(panel: HTMLElement, present: () => BoardView): 
   board.setAttribute("aria-label", "Leaderboard");
   const life = el("p", "lb-life");
   const cols = el("p", "lb-cols");
-  cols.textContent = "Score · Time · Tier · Kills · Build";
+  cols.textContent = "Score · Time · Tier · Kills · Build · Survivor";
   const ranks = el("ol", "lb-ranks");
   const achHead = el("h2", "");
   achHead.textContent = "Achievements";

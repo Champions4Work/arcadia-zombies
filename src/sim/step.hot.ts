@@ -5,7 +5,7 @@ import {
 } from "./foes";
 import { spawnWaveFoe, tickKnight, tickSpitter } from "./foes.hot";
 import {
-  healEvery, mortarEvery, moveSpeed, SAW_HIT_R2, sawAngle, sawDamage,
+  healEvery, mortarEvery, moveSpeed, SAW_HIT_R2, sawAngle, sawDamage, sawSpin,
   sawRadius, shieldReload, teslaChain, teslaEvery, teslaPower, teslaRange, tryPick,
   ventEvery, ventRange, whistleRange,
 } from "./progress";
@@ -76,7 +76,7 @@ function spinSaws(w: World): void {
   const r = sawRadius(w);
   const dmg = sawDamage(w);
   for (let s = 0; s < n; s++) {
-    const a = sawAngle(w.tick, s, n);
+    const a = sawAngle(w.tick, s, n, sawSpin(w));
     const sx = w.px + Math.cos(a) * r;
     const sy = w.py + Math.sin(a) * r;
     beginQuery(sx, sy);
