@@ -200,6 +200,14 @@ addEventListener("keydown", (e) => {
     startRun();
     return;
   }
+  if (import.meta.env.DEV && session.phase === PHASE_PLAY && !e.repeat && (k === "b" || k === "n")) {
+    const key = k;
+    void import("./dev/lineup").then((m) => {
+      if (key === "b") m.lineup(world);
+      else m.rush(world);
+    });
+    return;
+  }
   if (session.phase === PHASE_PLAY && world.choosing && e.key >= "1" && e.key <= "2") {
     pendingPick = e.key.charCodeAt(0) - 48;
     return;

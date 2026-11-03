@@ -1,17 +1,19 @@
+import { scaledDmg, spawnEvery, tierAt } from "./difficulty";
 import {
-  killXp, mixWeight, scaledDmg, scaledHp, scoreMul, spawnEvery, speedScale, tierAt,
-} from "./difficulty";
+  B_ACID, foeContact, foeHitR2, foeKillXp, foeScore, foeTouchR2, GAS_FUSE_R2, knightBlocks,
+  Z_ELITE, Z_GAS, Z_KIND, Z_KNIGHT, Z_SPITTER,
+} from "./foes";
+import { acidTouch, detonateGas, spawnWaveFoe, tickKnight, tickSpitter } from "./foes.hot";
 import {
   bulletDmg, fireEvery, healEvery, mortarEvery, moveSpeed, SAW_HIT_R2, sawAngle, sawDamage,
   sawRadius, shieldReload, takeXp, teslaChain, teslaEvery, teslaPower, teslaRange, tryPick,
   ventEvery, ventRange, whistleRange,
 } from "./progress";
-import { nextFloat } from "./rng";
 import {
   EV_HURT, EV_KILL, EV_RANK, EV_SAW, EV_SHIELD, EV_SHOT, EV_TESLA, EV_WAVE, FX_FLASH, FX_PUFF, FX_SPARK,
   FX_XP, H, MAX_BULLETS, MAX_FX, MAX_ZOMBIES, UPG_COOLANT, UPG_DYNAMO, UPG_MORTAR, UPG_PIERCE, UPG_RICOCHET,
-  UPG_SAWS, UPG_SHIELD, UPG_SHOTGUN, UPG_SPIKES, UPG_TESLA, UPG_VENT, UPG_WHISTLE, W, Z_BRUTE,
-  Z_GHOUL, Z_SHAMBLER, EVOL_AEGIS, EVOL_CANNON, type Input, type World,
+  UPG_SAWS, UPG_SHIELD, UPG_SHOTGUN, UPG_SPIKES, UPG_TESLA, UPG_VENT, UPG_WHISTLE, W,
+  EVOL_AEGIS, EVOL_CANNON, type Input, type World,
 } from "./types";
 const BULLET_SPEED = 5;
 function emitFx(w: World, kind: number, x: number, y: number, a: number): void {
@@ -23,43 +25,21 @@ function emitFx(w: World, kind: number, x: number, y: number, a: number): void {
   w.fxTick[i] = w.tick;
   w.fxHead = i + 1 < MAX_FX ? i + 1 : 0;
 }
-function pickKind(w: World): number {
-  const shambler = mixWeight(w.rank, Z_SHAMBLER);
-  const ghoul = mixWeight(w.rank, Z_GHOUL);
-  const total = shambler + ghoul + mixWeight(w.rank, Z_BRUTE);
-  const r = nextFloat(w.rng) * total;
-  if (r < shambler) return Z_SHAMBLER;
-  if (r < shambler + ghoul) return Z_GHOUL;
-  return Z_BRUTE;
-}
-function hitR2(kind: number): number {
-  if (kind === Z_BRUTE) return 220;
-  if (kind === Z_GHOUL) return 72;
-  return 100;
-}
-function touchR2(kind: number): number {
-  if (kind === Z_BRUTE) return 280;
-  if (kind === Z_GHOUL) return 110;
-  return 150;
-}
-function killScore(kind: number, wave: number, tier: number): number {
-  const base = kind === Z_GHOUL ? 20 : kind === Z_BRUTE ? 40 : 10;
-  return base * wave * scoreMul(tier);
-}
 function killZombie(w: World, i: number): void {
   const z = w.zombies;
-  const kind = z.kind[i] ?? 0;
+  const raw = z.kind[i] ?? 0;
   const x = z.x[i] ?? 0;
   const y = z.y[i] ?? 0;
   z.alive[i] = 0;
-  w.score += killScore(kind, w.wave, w.rank);
+  w.score += foeScore(raw, w.wave, w.rank);
   w.events[EV_KILL] = 1;
-  emitFx(w, FX_PUFF, x, y, kind);
-  const xp = killXp(kind, w.rank);
+  emitFx(w, FX_PUFF, x, y, raw & Z_KIND);
+  const xp = foeKillXp(raw, w.rank);
   emitFx(w, FX_XP, x, y - 8, xp);
   const dyn = w.upgrades[UPG_DYNAMO] ?? 0;
   if (dyn > 0) w.fireCd = Math.max(0, w.fireCd - dyn * 3);
   takeXp(w, xp);
+  if ((raw & Z_KIND) === Z_GAS) detonateGas(w, x, y, (raw & Z_ELITE) !== 0 ? 1 : 0);
 }
 function hurtZombie(w: World, i: number, dmg: number): void {
   const z = w.zombies;
@@ -74,26 +54,10 @@ function pulseAt(w: World, x: number, y: number, r: number, dmg: number): void {
     if (!z.alive[i]) continue;
     const dx = (z.x[i] ?? 0) - x;
     const dy = (z.y[i] ?? 0) - y;
-    if (dx * dx + dy * dy < r2) hurtZombie(w, i, dmg);
-  }
-}
-function spawnZombie(w: World): void {
-  const z = w.zombies;
-  for (let i = 0; i < MAX_ZOMBIES; i++) {
-    if (z.alive[i]) continue;
-    const t = nextFloat(w.rng) * 4;
-    const u = nextFloat(w.rng);
-    z.x[i] = t < 1 ? u * W : t < 2 ? W + 8 : t < 3 ? u * W : -8;
-    z.y[i] = t < 1 ? -8 : t < 2 ? u * H : t < 3 ? H + 8 : u * H;
-    const kind = pickKind(w);
-    z.kind[i] = kind;
-    const baseHp = kind === Z_BRUTE ? 3 : 1;
-    z.hp[i] = scaledHp(baseHp, w.rank);
-    const baseSp = kind === Z_GHOUL ? 1.22 : kind === Z_BRUTE ? 0.22 : 0.46;
-    const jitter = kind === Z_GHOUL ? 0.2 : kind === Z_BRUTE ? 0.05 : 0.1;
-    z.vx[i] = (baseSp + nextFloat(w.rng) * jitter) * speedScale(w.rank);
-    z.alive[i] = 1;
-    return;
+    if (dx * dx + dy * dy < r2) {
+      hurtZombie(w, i, dmg);
+      if (w.over) return;
+    }
   }
 }
 function shootDir(w: World, ux: number, uy: number): void {
@@ -107,6 +71,7 @@ function shootDir(w: World, ux: number, uy: number): void {
     b.vx[j] = ux * BULLET_SPEED;
     b.vy[j] = uy * BULLET_SPEED;
     b.alive[j] = 1;
+    b.hp[j] = 0;
     b.kind[j] = w.upgrades[UPG_RICOCHET] ?? 0;
     w.bHit[j] = -1;
     w.bPierce[j] = (w.upgrades[UPG_PIERCE] ?? 0) + (w.upgrades[EVOL_CANNON] ?? 0);
@@ -169,6 +134,7 @@ function zap(w: World): void {
       w.teslaN++;
     }
     hurtZombie(w, best, power);
+    if (w.over) return;
     cx = z.x[best] ?? 0;
     cy = z.y[best] ?? 0;
     lim = hopR2;
@@ -195,6 +161,7 @@ function spinSaws(w: World): void {
       if (dx * dx + dy * dy < SAW_HIT_R2) {
         w.events[EV_SAW] = 1;
         hurtZombie(w, i, dmg);
+        if (w.over) return;
       }
     }
   }
@@ -220,6 +187,7 @@ function mortarShot(w: World): void {
   }
   if (best < 0) return;
   hurtZombie(w, best, 2 + lvl);
+  if (w.over) return;
   emitFx(w, FX_SPARK, z.x[best] ?? 0, z.y[best] ?? 0, 0);
 }
 function thorns(w: World, dmg: number): void {
@@ -229,7 +197,10 @@ function thorns(w: World, dmg: number): void {
     if (!z.alive[i]) continue;
     const dx = (z.x[i] ?? 0) - w.px;
     const dy = (z.y[i] ?? 0) - w.py;
-    if (dx * dx + dy * dy < r2) hurtZombie(w, i, dmg);
+    if (dx * dx + dy * dy < r2) {
+      hurtZombie(w, i, dmg);
+      if (w.over) return;
+    }
   }
 }
 export function step(w: World, input: Input): void {
@@ -267,7 +238,7 @@ export function step(w: World, input: Input): void {
     w.events[EV_WAVE] = 1;
   }
   if (w.toSpawn > 0 && --w.spawnCd <= 0) {
-    spawnZombie(w);
+    spawnWaveFoe(w);
     w.toSpawn--;
     w.spawnCd = spawnEvery(w.rank);
   }
@@ -288,28 +259,47 @@ export function step(w: World, input: Input): void {
   const wr2 = wr * wr;
   for (let i = 0; i < MAX_ZOMBIES; i++) {
     if (!z.alive[i]) continue;
-    const kind = z.kind[i] ?? 0;
-    const dx = w.px - (z.x[i] ?? 0);
-    const dy = w.py - (z.y[i] ?? 0);
-    const d2 = dx * dx + dy * dy;
-    const d = Math.sqrt(d2) || 1;
-    let zsp = z.vx[i] ?? 0;
-    if (whistle > 0 && d2 < wr2) zsp *= 0.62;
-    z.x[i] = (z.x[i] ?? 0) + (dx / d) * zsp;
-    z.y[i] = (z.y[i] ?? 0) + (dy / d) * zsp;
-    if (d2 < touchR2(kind) && w.hurtCd === 0) {
+    const raw = z.kind[i] ?? 0;
+    const kind = raw & Z_KIND;
+    if (kind === Z_SPITTER) tickSpitter(w, i);
+    else {
+      const dx = w.px - (z.x[i] ?? 0);
+      const dy = w.py - (z.y[i] ?? 0);
+      const d2 = dx * dx + dy * dy;
+      const d = Math.sqrt(d2) || 1;
+      let zsp = z.vx[i] ?? 0;
+      if (whistle > 0 && d2 < wr2) zsp *= 0.62;
+      z.x[i] = (z.x[i] ?? 0) + (dx / d) * zsp;
+      z.y[i] = (z.y[i] ?? 0) + (dy / d) * zsp;
+      if (kind === Z_KNIGHT) tickKnight(w, i);
+    }
+    const tx = w.px - (z.x[i] ?? 0);
+    const ty = w.py - (z.y[i] ?? 0);
+    const td2 = tx * tx + ty * ty;
+    if (kind === Z_GAS && td2 < GAS_FUSE_R2) {
+      killZombie(w, i);
+      if (w.over) return;
+      continue;
+    }
+    if (td2 < foeTouchR2(raw) && w.hurtCd === 0) {
       w.hurtCd = 45;
       if (w.shield > 0) {
         w.shield--;
         w.shieldCd = shieldReload(w);
         w.events[EV_SHIELD] = 1;
         const aegis = w.upgrades[EVOL_AEGIS] ?? 0;
-        if (aegis > 0) pulseAt(w, w.px, w.py, 52 + aegis * 8, aegis + 1);
+        if (aegis > 0) {
+          pulseAt(w, w.px, w.py, 52 + aegis * 8, aegis + 1);
+          if (w.over) return;
+        }
       } else {
-        w.hp -= scaledDmg(kind === Z_BRUTE ? 2 : 1, w.rank);
+        w.hp -= scaledDmg(foeContact(raw), w.rank);
         w.events[EV_HURT] = 1;
         const spikes = w.upgrades[UPG_SPIKES] ?? 0;
-        if (spikes > 0) thorns(w, spikes);
+        if (spikes > 0) {
+          thorns(w, spikes);
+          if (w.over) return;
+        }
         if (w.hp <= 0) { w.over = true; return; }
       }
     }
@@ -335,15 +325,29 @@ export function step(w: World, input: Input): void {
     b.x[j] = bx;
     b.y[j] = by;
     if (bx < -10 || by < -10 || bx > W + 10 || by > H + 10) { b.alive[j] = 0; continue; }
+    if ((b.hp[j] ?? 0) === B_ACID) {
+      const hit = acidTouch(w, bx, by);
+      if (hit > 0) b.alive[j] = 0;
+      if (hit === 2) return;
+      continue;
+    }
     for (let i = 0; i < MAX_ZOMBIES; i++) {
       if (!z.alive[i]) continue;
       if (w.bHit[j] === i) continue;
-      const kind = z.kind[i] ?? 0;
-      const dx = (z.x[i] ?? 0) - bx;
-      const dy = (z.y[i] ?? 0) - by;
-      if (dx * dx + dy * dy < hitR2(kind)) {
+      const raw = z.kind[i] ?? 0;
+      const zx = z.x[i] ?? 0;
+      const zy = z.y[i] ?? 0;
+      const dx = zx - bx;
+      const dy = zy - by;
+      if (dx * dx + dy * dy < foeHitR2(raw)) {
+        if ((raw & Z_KIND) === Z_KNIGHT && knightBlocks(z.vy[i] ?? 0, zx, zy, bx, by)) {
+          b.alive[j] = 0;
+          emitFx(w, FX_SPARK, bx, by, 0);
+          break;
+        }
         w.bHit[j] = i;
         hurtZombie(w, i, dmg);
+        if (w.over) return;
         if ((w.bPierce[j] ?? 0) > 0) w.bPierce[j] = (w.bPierce[j] ?? 1) - 1;
         else { b.alive[j] = 0; break; }
       }
@@ -351,14 +355,17 @@ export function step(w: World, input: Input): void {
   }
   if ((w.upgrades[UPG_TESLA] ?? 0) > 0 && --w.teslaCd <= 0) {
     zap(w);
+    if (w.over) return;
     w.teslaCd = teslaEvery(w);
   }
   if ((w.upgrades[UPG_VENT] ?? 0) > 0 && --w.ventCd <= 0) {
     ventPulse(w);
+    if (w.over) return;
     w.ventCd = ventEvery(w);
   }
   if ((w.upgrades[UPG_MORTAR] ?? 0) > 0 && --w.mortarCd <= 0) {
     mortarShot(w);
+    if (w.over) return;
     w.mortarCd = mortarEvery(w);
   }
   spinSaws(w);
