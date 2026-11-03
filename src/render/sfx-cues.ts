@@ -1,7 +1,6 @@
-import { SAW_HIT_R2, sawAngle, sawRadius } from "../sim/progress";
 import {
-  EV_HURT, EV_KILL, EV_LEVEL, EV_SHIELD, EV_SHOT, EV_TESLA, FX_SPARK,
-  MAX_FX, MAX_ZOMBIES, UPG_PIERCE, UPG_SAWS, UPG_SHOTGUN, type World,
+  EV_HURT, EV_KILL, EV_LEVEL, EV_RANK, EV_SAW, EV_SHIELD, EV_SHOT, EV_TESLA, FX_SPARK,
+  MAX_FX, UPG_PIERCE, UPG_SHOTGUN, type World,
 } from "../sim/types";
 
 export const SFX_MUTE_KEY = "arcadia.sfx.muted";
@@ -55,6 +54,7 @@ export interface SfxTrack {
 export interface SfxGate {
   last: Float64Array;
   until: Float64Array;
+  owner: Int8Array;
 }
 
 export function sfxMuteLabel(muted: boolean): string {
@@ -128,7 +128,11 @@ export function createSfxTrack(): SfxTrack {
 }
 
 export function createSfxGate(): SfxGate {
-  const gate: SfxGate = { last: new Float64Array(CUE_N), until: new Float64Array(VOICE_CAP) };
+  const gate: SfxGate = {
+    last: new Float64Array(CUE_N),
+    until: new Float64Array(VOICE_CAP),
+    owner: new Int8Array(VOICE_CAP),
+  };
   resetSfxGate(gate);
   return gate;
 }
@@ -136,6 +140,11 @@ export function createSfxGate(): SfxGate {
 export function resetSfxGate(gate: SfxGate): void {
   gate.last.fill(-1e9);
   gate.until.fill(0);
+  gate.owner.fill(-1);
+}
+
+export function cuePreempts(id: number): boolean {
+  return id === CUE_BOSS || id === CUE_RANK || id === CUE_PICK;
 }
 
 export function voicesAt(gate: SfxGate, now: number): number {
@@ -150,35 +159,27 @@ export function admitCue(gate: SfxGate, id: number, now: number, dur: number): b
   const gap = GAP[id] ?? 0;
   if (now - (gate.last[id] ?? 0) < gap) return false;
   const until = gate.until;
+  const owner = gate.owner;
   let slot = -1;
-  let active = 0;
+  let victim = -1;
+  let victimEnd = Number.POSITIVE_INFINITY;
   for (let i = 0; i < until.length; i++) {
-    if ((until[i] ?? 0) > now) active++;
-    else if (slot < 0) slot = i;
+    const end = until[i] ?? 0;
+    if (end > now) {
+      if (!cuePreempts(owner[i] ?? -1) && end < victimEnd) {
+        victimEnd = end;
+        victim = i;
+      }
+    } else if (slot < 0) slot = i;
   }
-  if (slot < 0 || active >= until.length) return false;
+  if (slot < 0) {
+    if (!cuePreempts(id) || victim < 0) return false;
+    slot = victim;
+  }
   gate.last[id] = now;
   until[slot] = now + (dur > 0 ? dur : 0.01);
+  owner[slot] = id;
   return true;
-}
-
-function sawStriking(w: World): boolean {
-  const n = w.upgrades[UPG_SAWS] ?? 0;
-  if (n <= 0 || (w.tick & 3) !== 0) return false;
-  const z = w.zombies;
-  const r = sawRadius(w);
-  for (let s = 0; s < n; s++) {
-    const a = sawAngle(w.tick, s, n);
-    const sx = w.px + Math.cos(a) * r;
-    const sy = w.py + Math.sin(a) * r;
-    for (let i = 0; i < MAX_ZOMBIES; i++) {
-      if (!z.alive[i]) continue;
-      const dx = (z.x[i] ?? 0) - sx;
-      const dy = (z.y[i] ?? 0) - sy;
-      if (dx * dx + dy * dy < SAW_HIT_R2) return true;
-    }
-  }
-  return false;
 }
 
 function zombieStruck(w: World): boolean {
@@ -201,7 +202,7 @@ export function collectCues(w: World, track: SfxTrack, out: Uint8Array): number 
   const rank = difficultyRank(w.wave);
   if (track.primed) {
     if (isBossWave(w.wave) && w.wave !== track.bossWave) n = put(out, n, CUE_BOSS);
-    if (rank > track.rank) n = put(out, n, CUE_RANK);
+    if (rank > track.rank || w.events[EV_RANK]) n = put(out, n, CUE_RANK);
     if (track.choosing > 0 && w.choosing === 0) n = put(out, n, CUE_PICK);
   }
   track.rank = rank;
@@ -213,7 +214,7 @@ export function collectCues(w: World, track: SfxTrack, out: Uint8Array): number 
   if (w.events[EV_SHOT]) n = put(out, n, shotCue(w));
   if (w.events[EV_TESLA]) n = put(out, n, CUE_TESLA);
   if (w.events[EV_SHIELD]) n = put(out, n, CUE_SHIELD);
-  const saw = sawStriking(w);
+  const saw = (w.events[EV_SAW] ?? 0) > 0;
   if (saw) n = put(out, n, CUE_SAW);
   if (w.events[EV_KILL]) n = put(out, n, CUE_DEATH);
   if (zombieStruck(w) && (!saw || w.events[EV_SHOT] || w.events[EV_TESLA])) n = put(out, n, CUE_HIT);

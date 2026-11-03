@@ -27,16 +27,3 @@ export function setMuted(on: boolean): void {
 export function isMuted(): boolean {
   return muted;
 }
-
-export function blip(freq: number, dur: number, type: OscillatorType): void {
-  if (!ctx || !master) return;
-  const o = ctx.createOscillator();
-  const g = ctx.createGain();
-  o.type = type;
-  o.frequency.value = freq;
-  g.gain.value = 0.05;
-  g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
-  o.connect(g).connect(master);
-  o.start();
-  o.stop(ctx.currentTime + dur);
-}

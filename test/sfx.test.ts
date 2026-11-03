@@ -1,7 +1,7 @@
 import { applyUpgrade, sawAngle, sawRadius, takeXp, xpNeed } from "../src/sim/progress";
 import { step } from "../src/sim/step.hot";
 import {
-  EV_HURT, EV_KILL, EV_LEVEL, EV_SHIELD, EV_SHOT, EV_TESLA, FX_SPARK,
+  EV_HURT, EV_KILL, EV_LEVEL, EV_SAW, EV_SHIELD, EV_SHOT, EV_TESLA, FX_SPARK,
   UPG_PIERCE, UPG_SAWS, UPG_SHIELD, UPG_SHOTGUN, UPG_TESLA, type Input, type World,
 } from "../src/sim/types";
 import { createWorld } from "../src/sim/world";
@@ -147,11 +147,24 @@ describe("rate limit", () => {
     expect(admitCue(gate, CUE_HIT, cueGap(CUE_HIT), 0.05)).toBe(true);
     const packed = createSfxGate();
     let admitted = 0;
-    for (let id = 0; id < CUE_N; id++) if (admitCue(packed, id, 5, 1)) admitted++;
+    for (let id = 0; id < VOICE_CAP; id++) if (admitCue(packed, id, 5, 1)) admitted++;
     expect(admitted).toBe(VOICE_CAP);
     expect(voicesAt(packed, 5)).toBe(VOICE_CAP);
+    expect(admitCue(packed, CUE_LEVEL, 5, 1)).toBe(false);
     expect(admitCue(packed, CUE_CLICK, 5.05, 0.2)).toBe(false);
     expect(admitCue(packed, CUE_CLICK, 7, 0.2)).toBe(true);
+  });
+
+  it("lets the siren, rank horn, and power-up pick preempt a full voice cap", () => {
+    const gate = createSfxGate();
+    for (let id = 0; id < VOICE_CAP; id++) expect(admitCue(gate, id, 2, 4)).toBe(true);
+    expect(admitCue(gate, CUE_HIT, 2, 1)).toBe(false);
+    expect(admitCue(gate, CUE_BOSS, 2, 0.72)).toBe(true);
+    expect(admitCue(gate, CUE_RANK, 2, 0.42)).toBe(true);
+    expect(admitCue(gate, CUE_PICK, 2, 0.16)).toBe(true);
+    expect(voicesAt(gate, 2)).toBe(VOICE_CAP);
+    expect(Array.from(gate.owner)).toEqual(expect.arrayContaining([CUE_BOSS, CUE_RANK, CUE_PICK]));
+    expect(admitCue(gate, CUE_CLICK, 2, 0.03)).toBe(false);
   });
 
   it("keeps a horde from retriggering hits, deaths, and shots every frame", () => {
@@ -273,8 +286,30 @@ describe("world cues", () => {
     const before = heard.length;
     playWorldSfx(saw, sink);
     const sawHeard = heard.slice(before);
+    expect(saw.events[EV_SAW]).toBe(1);
     expect(sawHeard).toContain(CUE_SAW);
     expect(sawHeard).not.toContain(CUE_HIT);
+
+    const slain = createWorld(15);
+    quiet(slain);
+    applyUpgrade(slain, UPG_SAWS);
+    slain.tick = 3;
+    const killAngle = sawAngle(4, 0, 1);
+    const killRadius = sawRadius(slain);
+    slain.zombies.alive[0] = 1;
+    slain.zombies.hp[0] = 1;
+    slain.zombies.x[0] = slain.px + Math.cos(killAngle) * killRadius;
+    slain.zombies.y[0] = slain.py + Math.sin(killAngle) * killRadius;
+    step(slain, idle());
+    t = 2.5;
+    const slainBefore = heard.length;
+    playWorldSfx(slain, sink);
+    const slainHeard = heard.slice(slainBefore);
+    expect(slain.zombies.alive[0]).toBe(0);
+    expect(slain.events[EV_SAW]).toBe(1);
+    expect(slain.events[EV_KILL]).toBe(1);
+    expect(slainHeard).toContain(CUE_SAW);
+    expect(slainHeard).not.toContain(CUE_HIT);
 
     const kill = createWorld(14);
     quiet(kill);
@@ -355,13 +390,7 @@ describe("world cues", () => {
     w.events[EV_SHIELD] = 1;
     w.events[EV_KILL] = 1;
     w.upgrades[UPG_SHOTGUN] = 1;
-    w.upgrades[UPG_SAWS] = 1;
-    w.tick = 4;
-    const angle = sawAngle(4, 0, 1);
-    const radius = sawRadius(w);
-    w.zombies.alive[0] = 1;
-    w.zombies.x[0] = w.px + Math.cos(angle) * radius;
-    w.zombies.y[0] = w.py + Math.sin(angle) * radius;
+    w.events[EV_SAW] = 1;
     w.fxKind[0] = FX_SPARK;
     w.fxTick[0] = w.tick;
     t = 4;
@@ -372,6 +401,25 @@ describe("world cues", () => {
     expect(heard).toHaveLength(VOICE_CAP);
     expect(vols[vols.length - 1] ?? 1).toBeLessThan(vols[0] ?? 0);
     expect(vols.reduce((sum, vol) => sum + vol, 0)).toBeLessThan(1);
+  });
+
+  it("still plays a boss siren, rank horn, and pick when every voice is busy", () => {
+    const w = createWorld(1);
+    w.wave = 1;
+    w.choosing = 1;
+    t = 3;
+    playWorldSfx(w, sink);
+    heard.length = 0;
+    for (let id = 0; id < VOICE_CAP; id++) expect(playSfxCue(id, sink)).toBe(true);
+    w.wave = 5;
+    w.choosing = 0;
+    playWorldSfx(w, sink);
+    expect(heard).toContain(CUE_BOSS);
+    expect(heard).toContain(CUE_RANK);
+    expect(heard).toContain(CUE_PICK);
+    const bosses = heard.filter((id) => id === CUE_BOSS).length;
+    playWorldSfx(w, sink);
+    expect(heard.filter((id) => id === CUE_BOSS)).toHaveLength(bosses);
   });
 
   it("drops sound while sfx or master mute is on and does not replay a passed siren", () => {

@@ -59,4 +59,5 @@ export const EV_LEVEL = 4;
 export const EV_TESLA = 5;
 export const EV_SHIELD = 6;
 export const EV_RANK = 7;
-export const EV_N = 8;
+export const EV_SAW = 8;
+export const EV_N = 9;
