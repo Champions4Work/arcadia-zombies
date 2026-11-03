@@ -17,7 +17,7 @@ describe("how to play", () => {
     expect(body).toContain("WASD");
     expect(body).toContain("fires on its own");
     expect(body).toContain("two cards");
-    expect(body).toContain("forges a union");
+    expect(body).toContain("forge a union");
   });
 
   it("treats only the stored flag as seen", () => {
