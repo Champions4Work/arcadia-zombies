@@ -1,3 +1,4 @@
+import { juicePlayerHurt } from "../render/juice";
 import { ARENA_H, ARENA_W, TELE_LIFE } from "./arena";
 import { queueSpawn } from "./arena.hot";
 import {
@@ -7,7 +8,7 @@ import {
 import { finaleBlocksBoss, FINALE_TICK } from "./finale";
 import { applyScore, pacedSpeed } from "./modifiers";
 import {
-  bulletDmg, canUpgrade, rollOffers, sawAngle, sawCount, sawRadius, shieldReload, takeXp,
+  bulletDmg, canUpgrade, rollOffers, sawAngle, sawCount, sawDamage, sawRadius, sawSpin, shieldReload, takeXp,
 } from "./progress";
 import { nextFloat } from "./rng";
 import {
@@ -81,6 +82,7 @@ function hurtPlayer(w: World, dmg: number): void {
   }
   w.hp -= dmg;
   w.events[EV_HURT] = 1;
+  juicePlayerHurt();
   if (w.hp <= 0) w.over = true;
 }
 function touchBoss(w: World, dmg: number, r2: number): void {
@@ -373,12 +375,13 @@ function soakSaws(w: World): void {
   if (!b.on || n <= 0 || (w.tick & 3) !== 0) return;
   const r = sawRadius(w);
   const hit = bossHurtR2(b.kind);
+  const dmg = sawDamage(w);
   for (let s = 0; s < n; s++) {
     if (!b.on) return;
-    const a = sawAngle(w.tick, s, n);
+    const a = sawAngle(w.tick, s, n, sawSpin(w));
     const dx = b.x - (w.px + Math.cos(a) * r);
     const dy = b.y - (w.py + Math.sin(a) * r);
-    if (dx * dx + dy * dy < hit) hurtBoss(w, 1);
+    if (dx * dx + dy * dy < hit) hurtBoss(w, dmg);
   }
 }
 function stepShots(w: World): void {

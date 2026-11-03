@@ -4,11 +4,12 @@ import {
 } from "../src/sim/boss";
 import { FINALE_TICK, lichUp } from "../src/sim/finale";
 import { applyScore, MOD_FAST, MOD_GEAR } from "../src/sim/modifiers";
-import { bulletDmg, teslaPower, xpNeed } from "../src/sim/progress";
+import { bulletDmg, SAW_SPIN, sawAngle, sawCount, sawDamage, sawRadius, sawSpin, teslaPower, xpNeed } from "../src/sim/progress";
 import { drawTesla } from "../src/render/progress";
+import { drawBoss } from "../src/render/boss";
 import { step } from "../src/sim/step.hot";
 import {
-  EV_SIREN, EV_TESLA, MAX_ZOMBIES, TELE_BOSS, TESLA_BOSS, UPG_COUNT, UPG_TESLA, Z_GHOUL, type Input, type World,
+  EV_SIREN, EV_TESLA, EVOL_STORM, MAX_ZOMBIES, TELE_BOSS, TESLA_BOSS, UNION_HALO, UPG_COUNT, UPG_SAWS, UPG_TESLA, Z_GHOUL, type Input, type World,
 } from "../src/sim/types";
 import { createWorld } from "../src/sim/world";
 const idle: Input = { dx: 0, dy: 0, pick: 0 };
@@ -353,6 +354,101 @@ describe("boss attacks", () => {
     expect(w.boss.slam).toBeCloseTo(prev + growth);
     expect(w.boss.slamHit).toBe(1);
     expect(w.hp).toBeLessThan(5);
+  });
+  it("tinker-spun saws hit the boss at the spun angle and storm or halo pay saw damage", () => {
+    const gap = (w: World): number => {
+      const n = sawCount(w);
+      const r = sawRadius(w);
+      for (let tick = 4; tick < 800; tick += 4) {
+        const spun = sawAngle(tick, 0, n, sawSpin(w));
+        const plain = sawAngle(tick, 0, n);
+        const dx = (Math.cos(spun) - Math.cos(plain)) * r;
+        const dy = (Math.sin(spun) - Math.sin(plain)) * r;
+        if (dx * dx + dy * dy >= 1100) return tick;
+      }
+      return 0;
+    };
+    const park = (w: World, tick: number, spun: boolean): void => {
+      const n = sawCount(w);
+      const r = sawRadius(w);
+      const a = spun ? sawAngle(tick, 0, n, sawSpin(w)) : sawAngle(tick, 0, n);
+      w.boss.x = w.px + Math.cos(a) * r;
+      w.boss.y = w.py + Math.sin(a) * r;
+      w.boss.vx = 0;
+      w.boss.vy = 0;
+      w.tick = tick - 1;
+    };
+    const lost = (w: World): number => {
+      const before = w.boss.hp;
+      step(w, idle);
+      return before - w.boss.hp;
+    };
+    const hit = arm(BOSS_BEHEMOTH, 0, 2, 80);
+    hit.upgrades[UPG_SAWS] = 1;
+    const tick = gap(hit);
+    expect(tick).toBeGreaterThan(0);
+    expect(sawSpin(hit)).toBeGreaterThan(SAW_SPIN);
+    park(hit, tick, true);
+    expect(lost(hit)).toBe(sawDamage(hit));
+    expect(sawDamage(hit)).toBe(1);
+    const miss = arm(BOSS_BEHEMOTH, 0, 2, 80);
+    miss.upgrades[UPG_SAWS] = 1;
+    park(miss, tick, false);
+    expect(lost(miss)).toBe(0);
+    const storm = arm(BOSS_BEHEMOTH, 0, 2, 80);
+    storm.upgrades[UPG_SAWS] = 1;
+    storm.upgrades[EVOL_STORM] = 1;
+    storm.upgrades[UNION_HALO] = 1;
+    park(storm, gap(storm), true);
+    expect(sawDamage(storm)).toBe(5);
+    expect(lost(storm)).toBe(sawDamage(storm));
+  });
+  it("draws the boss warning and hp bar below the hud cluster", () => {
+    const ys: number[] = [];
+    const ctx = new Proxy({}, {
+      get(_t, prop) {
+        if (prop === "fillRect" || prop === "strokeRect") {
+          return (_x: number, y: number) => { ys.push(y); };
+        }
+        return () => undefined;
+      },
+      set() { return true; },
+    }) as CanvasRenderingContext2D;
+    const warn = createWorld(1);
+    warn.boss.pending = 1;
+    warn.boss.warn = 40;
+    warn.boss.on = 0;
+    warn.boss.kind = BOSS_WITCH;
+    drawBoss(ctx, warn, 3);
+    expect(ys.length).toBeGreaterThan(0);
+    expect(Math.min(...ys)).toBeGreaterThanOrEqual(56);
+    ys.length = 0;
+    const live = arm(BOSS_BEHEMOTH, 0, 0, 10);
+    drawBoss(ctx, live, 3);
+    expect(ys.length).toBeGreaterThan(0);
+    expect(Math.min(...ys)).toBeGreaterThanOrEqual(56);
+  });
+  it("paints witch steam only on a steam phase", () => {
+    let style = "";
+    let steam = 0;
+    const ctx = new Proxy({}, {
+      get(_t, prop) {
+        if (prop === "fillStyle") return style;
+        if (prop === "fill" || prop === "fillRect") return () => { if (style === "#d5e4ea") steam++; };
+        return () => undefined;
+      },
+      set(_t, prop, value) {
+        if (prop === "fillStyle") style = String(value);
+        return true;
+      },
+    }) as CanvasRenderingContext2D;
+    const summon = arm(BOSS_WITCH, 0, 1, 20);
+    drawBoss(ctx, summon, 1);
+    expect(steam).toBe(0);
+    steam = 0;
+    const cloud = arm(BOSS_WITCH, 1, 1, 20);
+    drawBoss(ctx, cloud, 1);
+    expect(steam).toBeGreaterThan(0);
   });
 });
 describe("boss rewards and tier", () => {

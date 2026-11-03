@@ -1,5 +1,5 @@
 import { bossName, BOSS_BEHEMOTH, BOSS_GEAR, BOSS_WITCH, MAX_BOSS_SHOTS, MAX_CLOUDS } from "../sim/boss";
-import { H, W, type World } from "../sim/types";
+import { W, type World } from "../sim/types";
 import { LAYER_HUD, LAYER_MID, registerLayer } from "./plugins";
 const SOOT = "#120c08";
 const BRASS = "#c8963e";
@@ -53,17 +53,13 @@ function behemoth(c: CanvasRenderingContext2D, x: number, y: number, tick: numbe
   px(c, ix + 18, iy - 48 + bob, IRON_LO, 8, 18);
   px(c, ix - 24, iy - 50 + bob, COPPER, 4, 4);
   px(c, ix + 20, iy - 50 + bob, COPPER, 4, 4);
-  c.globalAlpha = 0.45;
-  px(c, ix - 24 + (tick >> 2 & 1), iy - 58 - (tick % 14), STEAM, 6, 6);
-  px(c, ix + 18 + (tick >> 3 & 1), iy - 60 - (tick % 12), STEAM, 7, 5);
-  c.globalAlpha = 1;
   px(c, ix - 30, iy - 24 + bob, IRON, 8, 16);
   px(c, ix + 22, iy - 24 + bob, IRON, 8, 16);
   px(c, ix - 32, iy - 12 + bob, BRASS, 10, 6);
   px(c, ix + 22, iy - 12 + bob, BRASS, 10, 6);
   for (let r = -18; r <= 16; r += 8) rivet(c, ix + r, iy - 30 + bob);
 }
-function witch(c: CanvasRenderingContext2D, x: number, y: number, tick: number): void {
+function witch(c: CanvasRenderingContext2D, x: number, y: number, tick: number, phase: number): void {
   const ix = x | 0;
   const iy = y | 0;
   const bob = tick >> 3 & 1;
@@ -84,11 +80,13 @@ function witch(c: CanvasRenderingContext2D, x: number, y: number, tick: number):
   px(c, ix + 3, iy - 37 + bob, "#9ee7ff", 2, 2);
   px(c, ix + 10, iy - 46 + bob, BRASS_LO, 3, 28);
   px(c, ix + 6, iy - 48 + bob, COPPER, 11, 4);
-  c.globalAlpha = 0.55;
-  const puffY = tick % 18;
-  px(c, ix + 8, iy - 54 - puffY + bob, STEAM, 8, 6);
-  px(c, ix + 4, iy - 62 - (puffY >> 1) + bob, STEAM, 6, 5);
-  c.globalAlpha = 1;
+  if (phase > 0) {
+    c.globalAlpha = 0.55;
+    const puffY = tick % 18;
+    px(c, ix + 8, iy - 54 - puffY + bob, STEAM, 8, 6);
+    px(c, ix + 4, iy - 62 - (puffY >> 1) + bob, STEAM, 6, 5);
+    c.globalAlpha = 1;
+  }
   px(c, ix - 16, iy - 20 + bob, CLOTH_HI, 4, 14);
   px(c, ix - 18, iy - 8 + bob, BRASS, 6, 4);
 }
@@ -147,13 +145,13 @@ function telegraph(c: CanvasRenderingContext2D, w: World): void {
     c.beginPath();
     c.arc(b.x, b.y, 18 + (w.tick % 12), 0, Math.PI * 2);
     c.stroke();
-  } else if (b.kind === BOSS_WITCH) {
+  } else if (b.kind === BOSS_WITCH && b.phase > 0) {
     c.globalAlpha = 0.35;
     c.fillStyle = STEAM;
     c.beginPath();
     c.arc(w.px, w.py, 10 + (w.tick % 8), 0, Math.PI * 2);
     c.fill();
-  } else {
+  } else if (b.kind !== BOSS_WITCH) {
     c.strokeStyle = "rgba(228,231,238,0.7)";
     c.beginPath();
     c.arc(b.x, b.y, 22, 0, Math.PI * 2);
@@ -163,7 +161,7 @@ function telegraph(c: CanvasRenderingContext2D, w: World): void {
 }
 function sprite(c: CanvasRenderingContext2D, w: World): void {
   const b = w.boss;
-  if (b.kind === BOSS_WITCH) witch(c, b.x, b.y, w.tick);
+  if (b.kind === BOSS_WITCH) witch(c, b.x, b.y, w.tick, b.phase);
   else if (b.kind === BOSS_GEAR) gearlord(c, b.x, b.y, w.tick);
   else behemoth(c, b.x, b.y, w.tick, b.mode);
 }
@@ -189,23 +187,11 @@ function clouds(c: CanvasRenderingContext2D, w: World): void {
 function shock(c: CanvasRenderingContext2D, w: World): void {
   const b = w.boss;
   if (b.slam <= 1) return;
-  c.save();
   c.strokeStyle = BRASS_HI;
   c.lineWidth = 3;
   c.beginPath();
   c.arc(b.x, b.y, b.slam, 0, Math.PI * 2);
   c.stroke();
-  c.strokeStyle = FURNACE;
-  c.lineWidth = 1;
-  c.beginPath();
-  c.arc(b.x, b.y, Math.max(2, b.slam - 6), 0, Math.PI * 2);
-  c.stroke();
-  c.restore();
-  const n = 8;
-  for (let k = 0; k < n; k++) {
-    const a = (Math.PI * 2 * k) / n;
-    px(c, b.x + Math.cos(a) * b.slam - 2, b.y + Math.sin(a) * b.slam - 2, BRASS, 4, 4);
-  }
 }
 function shots(c: CanvasRenderingContext2D, w: World): void {
   const b = w.boss;
@@ -218,27 +204,20 @@ function banner(c: CanvasRenderingContext2D, w: World): void {
   const b = w.boss;
   const flash = (w.tick >> 3) & 1;
   c.fillStyle = flash ? "rgba(90,16,8,0.92)" : "rgba(28,16,8,0.92)";
-  c.fillRect(16, 40, W - 32, 26);
+  c.fillRect(16, 56, W - 32, 26);
   c.strokeStyle = flash ? FURNACE : BRASS;
   c.lineWidth = 2;
-  c.strokeRect(16, 40, W - 32, 26);
-  px(c, 22, 46, flash ? FURNACE : BRASS_LO, 8, 8);
-  px(c, W - 30, 46, flash ? EMBER : BRASS, 8, 8);
-  px(c, 24, 48, flash ? EMBER : FURNACE, 4, 4);
-  px(c, W - 28, 48, flash ? "#fff1c4" : FURNACE, 4, 4);
+  c.strokeRect(16, 56, W - 32, 26);
   c.fillStyle = flash ? EMBER : BRASS_HI;
   c.font = "bold 13px monospace";
   c.textAlign = "center";
-  c.fillText(`WARNING  ${bossName(b.kind)}`, W / 2, 58);
+  c.fillText(`WARNING  ${bossName(b.kind)}`, W / 2, 74);
   c.textAlign = "left";
-  c.strokeStyle = flash ? "rgba(255,90,26,0.9)" : "rgba(200,150,62,0.5)";
-  c.lineWidth = 3;
-  c.strokeRect(2, 2, W - 4, H - 4);
 }
 function hpBar(c: CanvasRenderingContext2D, w: World): void {
   const b = w.boss;
   const x = 20;
-  const y = 40;
+  const y = 56;
   const bw = W - 40;
   const bh = 18;
   c.fillStyle = SOOT;
@@ -250,13 +229,9 @@ function hpBar(c: CanvasRenderingContext2D, w: World): void {
   c.fillRect(x + 3, y + 3, bw - 6, bh - 6);
   c.fillStyle = t > 0.35 ? FURNACE : "#ff2a1a";
   c.fillRect(x + 3, y + 3, Math.max(0, (bw - 6) * t), bh - 6);
-  c.fillStyle = "rgba(255,255,255,0.28)";
-  c.fillRect(x + 3, y + 3, Math.max(0, (bw - 6) * t), 3);
   c.strokeStyle = BRASS_HI;
   c.lineWidth = 2;
   c.strokeRect(x + 0.5, y + 0.5, bw - 1, bh - 1);
-  rivet(c, x + 2, y + 2);
-  rivet(c, x + bw - 6, y + 2);
   c.fillStyle = BRASS_HI;
   c.font = "bold 11px monospace";
   c.textAlign = "center";
@@ -279,7 +254,7 @@ export function drawBoss(c: CanvasRenderingContext2D, w: World, layer: number): 
   if (layer === 2) {
     shock(c, w);
     shots(c, w);
-    if (b.slow > 0) {
+    if (b.slow > 0 && b.kind === BOSS_WITCH && b.phase > 0) {
       c.globalAlpha = 0.4;
       px(c, w.px - 8, w.py - 28, STEAM, 16, 10);
       px(c, w.px - 4, w.py - 36, STEAM, 10, 8);
