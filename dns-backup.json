@@ -1,0 +1,3 @@
+{"zone":"arcadiaworlds.com","zone_id":"c626f036eb614f983b58edb87faed7d6","backed_up_at":"2026-11-03T05:38:00+05:00","records":[
+{"id":"fc4e2a76b3a526b9675f532380604dea","name":"arcadiaworlds.com","type":"A","content":"178.128.111.238","proxied":false,"ttl":1,"comment":null,"tags":[],"created_on":"2026-08-10T00:42:39.882905Z"},
+{"id":"cf1565d5e0cf0fd3cf30451370fa0240","name":"www.arcadiaworlds.com","type":"A","content":"178.128.111.238","proxied":false,"ttl":1,"comment":null,"tags":[],"created_on":"2026-08-10T00:43:17.40872Z"}]}

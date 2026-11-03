@@ -1,6 +1,10 @@
 {
   "name": "arcadia-zombies",
   "compatibility_date": "2026-10-01",
-  "assets": { "directory": "./dist" },
-  "routes": [{ "pattern": "zombies.arcadiaworlds.com", "custom_domain": true }]
+  "assets": { "directory": "./dist", "not_found_handling": "single-page-application" },
+  "routes": [
+    { "pattern": "arcadiaworlds.com", "custom_domain": true },
+    { "pattern": "www.arcadiaworlds.com", "custom_domain": true },
+    { "pattern": "zombies.arcadiaworlds.com", "custom_domain": true }
+  ]
 }
