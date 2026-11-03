@@ -1,13 +1,19 @@
-import { CARD_GAP, CARD_H, CARD_W, CARD_X0, CARD_Y, sawAngle, sawRadius, upgName, xpNeed } from "../sim/progress";
+import { CARD_GAP, CARD_H, CARD_W, CARD_X0, CARD_Y, sawAngle, sawRadius, upgName } from "../sim/progress";
 import { H, MAX_COGS, MAX_ZOMBIES, OFFER_N, UPG_SAWS, W, type World } from "../sim/types";
 const BRASS = "#c8963e";
+const BRASS_HI = "#e8c878";
 const COPPER = "#b5562f";
 function drawCogs(c: CanvasRenderingContext2D, w: World): void {
   const g = w.cogs;
-  c.fillStyle = BRASS;
   for (let k = 0; k < MAX_COGS; k++) {
     if (!g.alive[k]) continue;
-    c.fillRect((g.x[k] ?? 0) - 2, (g.y[k] ?? 0) - 2, 4, 4);
+    const x = (g.x[k] ?? 0) | 0;
+    const y = (g.y[k] ?? 0) | 0;
+    c.fillStyle = BRASS;
+    c.fillRect(x - 3, y - 1, 6, 2);
+    c.fillRect(x - 1, y - 3, 2, 6);
+    c.fillStyle = BRASS_HI;
+    c.fillRect(x - 1, y - 1, 2, 2);
   }
 }
 function drawSaws(c: CanvasRenderingContext2D, w: World): void {
@@ -40,20 +46,6 @@ function drawShield(c: CanvasRenderingContext2D, w: World): void {
   c.beginPath();
   c.arc(w.px, w.py, 12, 0, Math.PI * 2);
   c.stroke();
-}
-function drawXp(c: CanvasRenderingContext2D, w: World): void {
-  const need = xpNeed(w.level);
-  const t = need <= 0 ? 0 : Math.min(1, w.xp / need);
-  c.fillStyle = "#1a120b";
-  c.fillRect(8, 22, 200, 5);
-  c.fillStyle = BRASS;
-  c.fillRect(8, 22, 200 * t, 5);
-  c.fillStyle = "#24180e";
-  c.fillRect(328, 4, 148, 16);
-  c.fillStyle = BRASS;
-  c.font = "bold 12px monospace";
-  const sh = w.shield > 0 ? ` ⬡${w.shield}` : "";
-  c.fillText(`LV ${w.level} ${w.xp}/${need}${sh}`, 332, 16);
 }
 function drawCards(c: CanvasRenderingContext2D, w: World): void {
   if (!w.choosing) return;
@@ -91,6 +83,5 @@ export function drawProgress(c: CanvasRenderingContext2D, w: World): void {
   drawSaws(c, w);
   drawTesla(c, w);
   drawShield(c, w);
-  drawXp(c, w);
   drawCards(c, w);
 }

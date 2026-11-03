@@ -6,6 +6,7 @@ import { EV_HURT, EV_KILL, EV_LEVEL, EV_SHIELD, EV_SHOT, EV_TESLA, EV_WAVE, H, W
 import { createWorld } from "./sim/world";
 const canvas = document.getElementById("game") as HTMLCanvasElement;
 const c = canvas.getContext("2d") as CanvasRenderingContext2D;
+c.imageSmoothingEnabled = false;
 const fit = () => { const s = Math.max(1, Math.min(innerWidth / W, innerHeight / H)); canvas.style.width = `${W * s}px`; canvas.style.height = `${H * s}px`; };
 addEventListener("resize", fit); fit();
 let world = createWorld(Date.now() >>> 0);
@@ -46,10 +47,10 @@ function frame(now: number): void {
     step(world, input);
     pendingPick = 0;
     input.pick = 0;
-    if (world.events[EV_SHOT]) blip(660, 0.05, "square");
-    if (world.events[EV_KILL]) blip(120, 0.15, "sawtooth");
-    if (world.events[EV_HURT]) blip(80, 0.3, "triangle");
-    if (world.events[EV_WAVE]) blip(440, 0.4, "sine");
+    if (world.events[EV_SHOT]) blip(720, 0.04, "square");
+    if (world.events[EV_KILL]) blip(110, 0.16, "sawtooth");
+    if (world.events[EV_HURT]) blip(70, 0.28, "triangle");
+    if (world.events[EV_WAVE]) blip(360, 0.35, "sine");
     if (world.events[EV_LEVEL]) blip(880, 0.25, "triangle");
     if (world.events[EV_TESLA]) blip(980, 0.08, "square");
     if (world.events[EV_SHIELD]) blip(300, 0.12, "sine");

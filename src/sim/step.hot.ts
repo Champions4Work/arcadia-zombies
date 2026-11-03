@@ -5,13 +5,51 @@ import {
 } from "./progress";
 import { nextFloat } from "./rng";
 import {
-  EV_HURT, EV_KILL, EV_SHIELD, EV_SHOT, EV_TESLA, EV_WAVE, H, MAX_BULLETS, MAX_COGS,
-  MAX_ZOMBIES, UPG_PIERCE, UPG_SAWS, UPG_SHIELD, UPG_SHOTGUN, UPG_TESLA, W,
-  type Input, type World,
+  EV_HURT, EV_KILL, EV_SHIELD, EV_SHOT, EV_TESLA, EV_WAVE, FX_FLASH, FX_PUFF, FX_SPARK,
+  H, MAX_BULLETS, MAX_COGS, MAX_FX, MAX_ZOMBIES, UPG_PIERCE, UPG_SAWS, UPG_SHIELD,
+  UPG_SHOTGUN, UPG_TESLA, W, Z_BRUTE, Z_GHOUL, type Input, type World,
 } from "./types";
 const BULLET_SPEED = 5;
-const HIT_R2 = 100;
-const TOUCH_R2 = 144;
+function emitFx(w: World, kind: number, x: number, y: number, a: number): void {
+  const i = w.fxHead;
+  w.fxKind[i] = kind;
+  w.fxX[i] = x;
+  w.fxY[i] = y;
+  w.fxA[i] = a;
+  w.fxTick[i] = w.tick;
+  w.fxHead = i + 1 < MAX_FX ? i + 1 : 0;
+}
+function pickKind(w: World): number {
+  const r = nextFloat(w.rng);
+  if (w.wave <= 1) {
+    if (r < 0.7) return 0;
+    if (r < 0.92) return 1;
+    return 2;
+  }
+  if (w.wave <= 3) {
+    if (r < 0.5) return 0;
+    if (r < 0.82) return 1;
+    return 2;
+  }
+  if (r < 0.35) return 0;
+  if (r < 0.75) return 1;
+  return 2;
+}
+function hitR2(kind: number): number {
+  if (kind === Z_BRUTE) return 220;
+  if (kind === Z_GHOUL) return 72;
+  return 100;
+}
+function touchR2(kind: number): number {
+  if (kind === Z_BRUTE) return 280;
+  if (kind === Z_GHOUL) return 110;
+  return 150;
+}
+function killScore(kind: number, wave: number): number {
+  if (kind === Z_GHOUL) return 20 * wave;
+  if (kind === Z_BRUTE) return 40 * wave;
+  return 10 * wave;
+}
 function dropCog(w: World, x: number, y: number): void {
   const c = w.cogs;
   for (let k = 0; k < MAX_COGS; k++) {
@@ -25,14 +63,17 @@ function dropCog(w: World, x: number, y: number): void {
 }
 function killZombie(w: World, i: number): void {
   const z = w.zombies;
+  const kind = z.kind[i] ?? 0;
   z.alive[i] = 0;
-  w.score += 10 * w.wave;
+  w.score += killScore(kind, w.wave);
   w.events[EV_KILL] = 1;
+  emitFx(w, FX_PUFF, z.x[i] ?? 0, z.y[i] ?? 0, kind);
   dropCog(w, z.x[i] ?? 0, z.y[i] ?? 0);
 }
 function hurtZombie(w: World, i: number, dmg: number): void {
   const z = w.zombies;
   z.hp[i] = (z.hp[i] ?? 1) - dmg;
+  emitFx(w, FX_SPARK, z.x[i] ?? 0, z.y[i] ?? 0, 0);
   if ((z.hp[i] ?? 0) <= 0) killZombie(w, i);
 }
 function spawnZombie(w: World): void {
@@ -43,8 +84,18 @@ function spawnZombie(w: World): void {
     const u = nextFloat(w.rng);
     z.x[i] = t < 1 ? u * W : t < 2 ? W + 8 : t < 3 ? u * W : -8;
     z.y[i] = t < 1 ? -8 : t < 2 ? u * H : t < 3 ? H + 8 : u * H;
-    z.hp[i] = 1 + (w.wave >> 2);
-    z.vx[i] = 0.4 + w.wave * 0.05 + nextFloat(w.rng) * 0.3;
+    const kind = pickKind(w);
+    z.kind[i] = kind;
+    if (kind === Z_GHOUL) {
+      z.hp[i] = 1;
+      z.vx[i] = 1.15 + w.wave * 0.05 + nextFloat(w.rng) * 0.25;
+    } else if (kind === Z_BRUTE) {
+      z.hp[i] = 3 + (w.wave >> 1);
+      z.vx[i] = 0.2 + w.wave * 0.015 + nextFloat(w.rng) * 0.06;
+    } else {
+      z.hp[i] = 1 + (w.wave >> 2);
+      z.vx[i] = 0.38 + w.wave * 0.03 + nextFloat(w.rng) * 0.12;
+    }
     z.alive[i] = 1;
     return;
   }
@@ -53,6 +104,8 @@ function shootDir(w: World, ux: number, uy: number): void {
   const b = w.bullets;
   for (let j = 0; j < MAX_BULLETS; j++) {
     if (b.alive[j]) continue;
+    w.aimX = ux;
+    w.aimY = uy;
     b.x[j] = w.px;
     b.y[j] = w.py;
     b.vx[j] = ux * BULLET_SPEED;
@@ -61,6 +114,7 @@ function shootDir(w: World, ux: number, uy: number): void {
     w.bHit[j] = -1;
     w.bPierce[j] = w.upgrades[UPG_PIERCE] ?? 0;
     w.events[EV_SHOT] = 1;
+    emitFx(w, FX_FLASH, w.px + ux * 11, w.py + uy * 7, Math.atan2(uy, ux));
     return;
   }
 }
@@ -180,8 +234,8 @@ export function step(w: World, input: Input): void {
     w.px += (input.dx / Math.max(1, len)) * sp;
     w.py += (input.dy / Math.max(1, len)) * sp;
   }
-  w.px = Math.min(W - 6, Math.max(6, w.px));
-  w.py = Math.min(H - 6, Math.max(6, w.py));
+  w.px = Math.min(W - 10, Math.max(10, w.px));
+  w.py = Math.min(H - 10, Math.max(18, w.py));
   const z = w.zombies;
   let alive = 0;
   for (let i = 0; i < MAX_ZOMBIES; i++) if (z.alive[i]) alive++;
@@ -196,6 +250,7 @@ export function step(w: World, input: Input): void {
   }
   for (let i = 0; i < MAX_ZOMBIES; i++) {
     if (!z.alive[i]) continue;
+    const kind = z.kind[i] ?? 0;
     const dx = w.px - (z.x[i] ?? 0);
     const dy = w.py - (z.y[i] ?? 0);
     const d2 = dx * dx + dy * dy;
@@ -203,14 +258,14 @@ export function step(w: World, input: Input): void {
     const zsp = z.vx[i] ?? 0;
     z.x[i] = (z.x[i] ?? 0) + (dx / d) * zsp;
     z.y[i] = (z.y[i] ?? 0) + (dy / d) * zsp;
-    if (d2 < TOUCH_R2 && w.hurtCd === 0) {
+    if (d2 < touchR2(kind) && w.hurtCd === 0) {
       w.hurtCd = 45;
       if (w.shield > 0) {
         w.shield--;
         w.shieldCd = shieldReload(w);
         w.events[EV_SHIELD] = 1;
       } else {
-        w.hp--;
+        w.hp -= kind === Z_BRUTE ? 2 : 1;
         w.events[EV_HURT] = 1;
         if (w.hp <= 0) { w.over = true; return; }
       }
@@ -228,9 +283,10 @@ export function step(w: World, input: Input): void {
     for (let i = 0; i < MAX_ZOMBIES; i++) {
       if (!z.alive[i]) continue;
       if (w.bHit[j] === i) continue;
+      const kind = z.kind[i] ?? 0;
       const dx = (z.x[i] ?? 0) - bx;
       const dy = (z.y[i] ?? 0) - by;
-      if (dx * dx + dy * dy < HIT_R2) {
+      if (dx * dx + dy * dy < hitR2(kind)) {
         w.bHit[j] = i;
         hurtZombie(w, i, dmg);
         if ((w.bPierce[j] ?? 0) > 0) w.bPierce[j] = (w.bPierce[j] ?? 1) - 1;
