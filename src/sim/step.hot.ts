@@ -3,6 +3,7 @@ import { indexProps } from "./arena";
 import {
   chaseZombie, cutProps, pickupHeals, queueSpawn, slidePlayer, teleCount, tickTelegraphs, updateCamera,
 } from "./arena.hot";
+import { openTouchedChest, stepChest } from "./chest";
 import { emitFx, hurtZombie, killZombie } from "./combat.hot";
 import { scaledDmg, spawnEvery, tierAt } from "./difficulty";
 import { holdSpawns, lichMinion, stepFinale, watchFinale } from "./finale";
@@ -153,6 +154,7 @@ function thorns(w: World, dmg: number): void {
 }
 export function step(w: World, input: Input): void {
   w.events.fill(0);
+  if (stepChest(w, input)) return;
   if (w.over) return;
   if (juiceFrame(JUICE_DT)) return;
   if (w.choosing) {
@@ -287,7 +289,9 @@ export function step(w: World, input: Input): void {
     if (w.over) return;
   }
   stepFinale(w);
+  if (w.chestOpen) return;
   tickTelegraphs(w);
   if (!hasMod(w.mods, MOD_NOHEAL)) pickupHeals(w);
   tickJuice(JUICE_DT);
+  openTouchedChest(w);
 }

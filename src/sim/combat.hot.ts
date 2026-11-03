@@ -1,4 +1,5 @@
 import { juiceHit } from "../render/juice";
+import { eliteChest } from "./chest";
 import { tallyKill } from "./finale";
 import { foeKillXp, foeScore, Z_ELITE, Z_GAS, Z_KIND } from "./foes";
 import { detonateGas } from "./foes.hot";
@@ -34,6 +35,7 @@ export function killZombie(w: World, i: number): void {
   const dyn = w.upgrades[UPG_DYNAMO] ?? 0;
   if (dyn > 0) w.fireCd = Math.max(0, w.fireCd - dyn * 3);
   takeXp(w, xp);
+  eliteChest(w, raw, x, y);
   if ((raw & Z_KIND) === Z_GAS) detonateGas(w, x, y, (raw & Z_ELITE) !== 0 ? 1 : 0);
 }
 

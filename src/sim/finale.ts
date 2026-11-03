@@ -1,4 +1,5 @@
 import { juicePlayerHurt } from "../render/juice";
+import { openBossChest } from "./chest";
 import { fell } from "./revive";
 import { ARENA_H, ARENA_W } from "./arena";
 import { clock, scoreMul, tierAt } from "./difficulty";
@@ -421,7 +422,7 @@ function defeat(w: World, f: Lich): void {
   w.kills += 1;
   w.score += applyScore(500 * scoreMul(w.rank), w.mods);
   w.events[EV_KILL] = (w.events[EV_KILL] ?? 0) + 1;
-  if (f.endless !== 1) w.over = true;
+  openBossChest(w, f.x, f.y, f.endless !== 1);
 }
 
 export function stepFinale(w: World): void {

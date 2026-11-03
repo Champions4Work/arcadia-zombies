@@ -1,5 +1,6 @@
 import { resetJuice } from "../render/juice";
 import { ARENA_H, ARENA_W, createArena } from "./arena";
+import { CHEST_SLOTS, MAX_CHESTS } from "./chest";
 import { CHAR_TINKER, CHARACTERS, characterAt } from "./characters";
 import { attachFinale } from "./finale";
 import { attachMapEvents } from "./map-events";
@@ -34,6 +35,8 @@ export const createWorld = (seed: number, charId = CHAR_TINKER, mods = 0): World
   bHit.fill(-1);
   const upgrades = new Uint8Array(UPG_COUNT);
   upgrades[UPG_WPN_RIVET] = 1;
+  const chestPrize = new Int8Array(CHEST_SLOTS);
+  chestPrize.fill(-1);
   const world: World = {
     rng: createRng(seed), tick: 0, px: ARENA_W / 2, py: ARENA_H / 2, hp: 5, maxHp: 5,
     score: 0, mods: bits, wave: 0, toSpawn: 0, spawnCd: 0, fireCd: 0, hurtCd: 0, over: false, kills: 0,
@@ -53,6 +56,10 @@ export const createWorld = (seed: number, charId = CHAR_TINKER, mods = 0): World
     arena: createArena(seed, ARENA_W / 2, ARENA_H / 2),
     meta: { hp: 0, dmg: 0, spd: 0, gun: 0, revive: 0, reroll: 0, rerollLeft: 0, banked: 0 },
     workshop: "",
+    chestX: new Float32Array(MAX_CHESTS), chestY: new Float32Array(MAX_CHESTS),
+    chestOn: new Uint8Array(MAX_CHESTS), chestPrize,
+    chestOpen: 0, chestCount: 0, chestT: 0, chestDur: 0, chestGold: 0, chestLinger: 0, chestCursor: 0,
+    chestSeal: 0,
   };
   attachFinale(world);
   attachMapEvents(world);
