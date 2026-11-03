@@ -1,12 +1,13 @@
-import { applyUpgrade, takeXp, tryPick, upgName, xpNeed } from "../src/sim/progress";
+import { CHAR_BRUTE, CHAR_GUNSLINGER, CHAR_TINKER, RAGE_DMG } from "../src/sim/characters";
+import { bulletDmg, fireEvery, applyUpgrade, takeXp, tryPick, upgName, xpNeed } from "../src/sim/progress";
 import { step } from "../src/sim/step.hot";
 import {
-  EV_BOOM, EV_SHOT, MAX_BULLETS, MAX_ZOMBIES, OFFER_N, UPG_COUNT, UPG_MAX, UPG_MORTAR, UPG_SHOTGUN,
-  UPG_WPN_FLAME, UPG_WPN_HARP, UPG_WPN_MORT, UPG_WPN_RIVET, UPG_WPN_SHOT, WPN_FLAME, WPN_MORT,
+  EV_BOOM, EV_SHOT, MAX_BULLETS, MAX_ZOMBIES, OFFER_N, UPG_COUNT, UPG_DMG, UPG_FIRE, UPG_MAX, UPG_MORTAR, UPG_SHOTGUN,
+  UPG_WPN_FLAME, UPG_WPN_HARP, UPG_WPN_MORT, UPG_WPN_RIVET, UPG_WPN_SHOT, WPN_FLAME, WPN_HARP, WPN_MORT,
   WPN_RIVET, WPN_SHOT, type Input, type World,
 } from "../src/sim/types";
 import {
-  mortarRadius, pelletCount, pelletLife, upgDetail, weaponEvery,
+  flameHit, mortarRadius, pelletCount, pelletLife, upgDetail, weaponEvery,
 } from "../src/sim/weapons";
 import { createWorld } from "../src/sim/world";
 
@@ -180,7 +181,8 @@ describe("steam shotgun", () => {
     for (let t = 0; t < 20; t++) step(w, idle());
     expect(countKind(w, WPN_SHOT)).toBe(0);
     expect(w.zombies.hp[i]).toBe(hp);
-    expect(weaponEvery(WPN_SHOT, 5)).toBeLessThan(weaponEvery(WPN_SHOT, 1));
+    const stock = createWorld(8);
+    expect(weaponEvery(stock, WPN_SHOT, 5)).toBeLessThan(weaponEvery(stock, WPN_SHOT, 1));
   });
 
   it("a picked steam shotgun fires beside the rivet gun", () => {
@@ -331,5 +333,80 @@ describe("armed runs", () => {
       return { score: w.score, tick: w.tick, px: w.px, hp: w.hp, gun: w.gun, wave: w.wave };
     };
     expect(run()).toEqual(run());
+  });
+});
+
+describe("bonuses on every weapon", () => {
+  const sides = [
+    [UPG_WPN_SHOT, WPN_SHOT],
+    [UPG_WPN_FLAME, WPN_FLAME],
+    [UPG_WPN_HARP, WPN_HARP],
+    [UPG_WPN_MORT, WPN_MORT],
+  ] as const;
+
+  function armedCd(id: number, fire: number, upg: number, slot: number): number {
+    const w = createWorld(30, id);
+    quiet(w);
+    arm(w, upg, 1);
+    w.upgrades[UPG_FIRE] = fire;
+    addZombie(w, w.px + 90, w.py, 80);
+    step(w, idle());
+    return w.wpnCd[slot] ?? 0;
+  }
+
+  it("speeds shotgun, flame, harpoon, and mortar with gunslinger and overdrive", () => {
+    const stock = createWorld(1, CHAR_TINKER);
+    const gun = createWorld(1, CHAR_GUNSLINGER);
+    const hot = createWorld(1, CHAR_TINKER);
+    hot.upgrades[UPG_FIRE] = 1;
+    expect(fireEvery(gun)).toBeLessThan(fireEvery(stock));
+    expect(fireEvery(hot)).toBeLessThan(fireEvery(stock));
+    for (const [upg, slot] of sides) {
+      const base = weaponEvery(stock, slot, 1);
+      expect(base).toBeGreaterThan(1);
+      expect(weaponEvery(gun, slot, 1)).toBeLessThan(base);
+      expect(weaponEvery(hot, slot, 1)).toBeLessThan(base);
+      const both = createWorld(1, CHAR_GUNSLINGER);
+      both.upgrades[UPG_FIRE] = 2;
+      expect(weaponEvery(both, slot, 1)).toBeLessThan(weaponEvery(gun, slot, 1));
+      expect(armedCd(CHAR_TINKER, 0, upg, slot)).toBe(base);
+      expect(armedCd(CHAR_GUNSLINGER, 0, upg, slot)).toBe(weaponEvery(gun, slot, 1));
+      expect(armedCd(CHAR_TINKER, 1, upg, slot)).toBe(weaponEvery(hot, slot, 1));
+    }
+  });
+
+  it("puts the brute rage bonus on the flame stream", () => {
+    const stream = (hp: number, dmgLv = 0): number => {
+      const w = createWorld(31, CHAR_BRUTE);
+      quiet(w);
+      w.hp = hp;
+      w.upgrades[UPG_DMG] = dmgLv;
+      arm(w, UPG_WPN_FLAME, 1);
+      expect(flameHit(w)).toBe(bulletDmg(w));
+      const i = addZombie(w, w.px + 14, w.py, 240);
+      step(w, idle());
+      let dealt = 0;
+      for (let j = 0; j < MAX_BULLETS; j++) {
+        if (!w.bullets.alive[j] || (w.bGun[j] ?? 0) !== WPN_FLAME) continue;
+        dealt = w.bullets.hp[j] ?? 0;
+      }
+      for (let t = 0; t < 16; t++) step(w, idle());
+      const lost = 240 - (w.zombies.hp[i] ?? 0);
+      expect(lost).toBeGreaterThan(0);
+      return dealt;
+    };
+    expect(stream(8)).toBe(1);
+    expect(stream(4)).toBe(1 + RAGE_DMG);
+    expect(stream(8, 2)).toBe(3);
+    const burned = (hp: number): number => {
+      const w = createWorld(32, CHAR_BRUTE);
+      quiet(w);
+      w.hp = hp;
+      arm(w, UPG_WPN_FLAME, 1);
+      const i = addZombie(w, w.px + 14, w.py, 240);
+      for (let t = 0; t < 24; t++) step(w, idle());
+      return 240 - (w.zombies.hp[i] ?? 0);
+    };
+    expect(burned(4)).toBeGreaterThan(burned(8));
   });
 });

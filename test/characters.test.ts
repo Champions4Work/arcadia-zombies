@@ -294,4 +294,24 @@ describe("unlock persistence", () => {
     expect(noteWave(12, 3)).toBe(12);
     expect(noteWave(0, -2)).toBe(0);
   });
+
+  it("keeps the last roster when localStorage throws a quota error", () => {
+    const store = mem();
+    saveRoster(store, CHAR_GUNSLINGER, 5);
+    const quota = {
+      getItem: (k: string) => store.getItem(k),
+      setItem: () => { throw new Error("quota"); },
+    };
+    expect(() => saveRoster(quota, CHAR_BRUTE, 12)).not.toThrow();
+    expect(loadRoster(store)).toEqual({ index: CHAR_GUNSLINGER, bestWave: 5 });
+    expect(loadRoster({
+      getItem: () => { throw new Error("quota"); },
+      setItem: () => undefined,
+    })).toEqual({ index: CHAR_TINKER, bestWave: 0 });
+    expect(() => saveRoster({
+      getItem: () => { throw new Error("quota"); },
+      setItem: (k: string, v: string) => { store.setItem(k, v); },
+    }, CHAR_TINKER, 0)).not.toThrow();
+    expect(loadRoster(store)).toEqual({ index: CHAR_GUNSLINGER, bestWave: 5 });
+  });
 });

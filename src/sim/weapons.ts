@@ -16,11 +16,12 @@ export function rivetHit(w: World): number {
   return bulletDmg(w) + (lv >= 4 ? 1 : 0);
 }
 
-export function weaponEvery(kind: number, lv: number): number {
-  if (kind === WPN_SHOT) return Math.max(8, 26 - lv * 3);
-  if (kind === WPN_FLAME) return Math.max(4, 12 - lv);
-  if (kind === WPN_HARP) return Math.max(14, 36 - lv * 4);
-  return Math.max(20, 48 - lv * 4);
+export function weaponEvery(w: World, kind: number, lv: number): number {
+  const raw = kind === WPN_SHOT ? Math.max(8, 26 - lv * 3)
+    : kind === WPN_FLAME ? Math.max(4, 12 - lv)
+    : kind === WPN_HARP ? Math.max(14, 36 - lv * 4)
+    : Math.max(20, 48 - lv * 4);
+  return Math.max(1, Math.round(raw * fireEvery(w) / 12));
 }
 
 export function pelletCount(lv: number): number {
@@ -37,6 +38,10 @@ export function pelletHit(w: World): number {
 
 export function flameJets(lv: number): number {
   return lv;
+}
+
+export function flameHit(w: World): number {
+  return bulletDmg(w);
 }
 
 export function flameLife(lv: number): number {
