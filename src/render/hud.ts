@@ -1,10 +1,12 @@
 import { tierFrac, tierName } from "../sim/difficulty";
+import { isUnion, unionHint, unionSpec } from "../sim/evolve";
 import { runLabel } from "../sim/finale";
 import { Z_GAS, Z_KIND, Z_KNIGHT, Z_RAT, Z_SPITTER } from "../sim/foes";
 import { offerCount } from "../sim/characters";
 import { CARD_Y, cardFrame, offerId, rarityName, UPG_RARITY, upgName, xpNeed } from "../sim/progress";
 import {
-  EVOL_AEGIS, EVOL_CANNON, EVOL_STORM, H, UPG_DMG, UPG_FIRE, UPG_HP, UPG_MAX, UPG_MORTAR,
+  EVOL_AEGIS, EVOL_CANNON, EVOL_STORM, H, UNION_BELLOWS, UNION_BRIAR, UNION_CALLIOPE,
+  UNION_CROWN, UNION_HALO, UNION_HEART, UNION_HOWITZER, UPG_DMG, UPG_FIRE, UPG_HP, UPG_MAX, UPG_MORTAR,
   UPG_PIERCE, UPG_SAWS, UPG_SHIELD, UPG_SHOTGUN, UPG_SPEED, UPG_TESLA, UPG_VENT, W, Z_BRUTE, Z_GHOUL, type World,
 } from "../sim/types";
 import { BRASS, cog, flame, font, heart, lit, OUTLINE, roundRect } from "./paint";
@@ -71,6 +73,13 @@ export function weaponBadge(w: World): { name: string; pips: number; kind: numbe
   const fire = w.upgrades[UPG_FIRE] ?? 0;
   const mortar = w.upgrades[UPG_MORTAR] ?? 0;
   const vent = w.upgrades[UPG_VENT] ?? 0;
+  if ((w.upgrades[UNION_CROWN] ?? 0) > 0) return { name: "CROWN", pips: 1, kind: UNION_CROWN };
+  if ((w.upgrades[UNION_BELLOWS] ?? 0) > 0) return { name: "GATLING", pips: 1, kind: UNION_BELLOWS };
+  if ((w.upgrades[UNION_HALO] ?? 0) > 0) return { name: "HALO", pips: 1, kind: UNION_HALO };
+  if ((w.upgrades[UNION_HEART] ?? 0) > 0) return { name: "HEART", pips: 1, kind: UNION_HEART };
+  if ((w.upgrades[UNION_BRIAR] ?? 0) > 0) return { name: "BRIAR", pips: 1, kind: UNION_BRIAR };
+  if ((w.upgrades[UNION_HOWITZER] ?? 0) > 0) return { name: "HOWITZER", pips: 1, kind: UNION_HOWITZER };
+  if ((w.upgrades[UNION_CALLIOPE] ?? 0) > 0) return { name: "CALLIOPE", pips: 1, kind: UNION_CALLIOPE };
   if (storm > 0) return { name: "STORM", pips: storm, kind: EVOL_STORM };
   if (cannon > 0) return { name: "CANNON", pips: cannon, kind: EVOL_CANNON };
   if (aegis > 0) return { name: "AEGIS", pips: aegis, kind: EVOL_AEGIS };
@@ -573,9 +582,16 @@ function drawCard(ctx: CanvasRenderingContext2D, x: number, y: number, w: number
     ink(ctx, "—", x + w / 2, y + h / 2, 16, "#f0c86a", "center");
     return;
   }
+  const union = isUnion(id);
   const rarity = UPG_RARITY[id] ?? 0;
-  const tag = rarityName(rarity);
-  const tagColor = rarity >= 2 ? "#ff9a1e" : rarity === 1 ? "#7ad0ff" : "#f0c86a";
+  const tag = union ? "EVOLVE" : rarityName(rarity);
+  const tagColor = union ? "#ffe14a" : rarity >= 2 ? "#ff9a1e" : rarity === 1 ? "#7ad0ff" : "#f0c86a";
+  if (union) {
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = "#ffe14a";
+    roundRect(ctx, x + 6, y + 6, w - 12, h - 12, 8);
+    ctx.stroke();
+  }
   ink(ctx, tag, x + w / 2, y + 26, 8, tagColor, "center");
   iconFor(ctx, id, x + w / 2, y + 52);
   const name = upgName(id) || "GEAR";
@@ -587,8 +603,14 @@ function drawCard(ctx: CanvasRenderingContext2D, x: number, y: number, w: number
   }
   ink(ctx, name, x + w / 2, y + 74, size, "#ffe7ad", "center", 800);
   ctx.font = font(9, 600);
-  const lines = wrap(ctx, blurbFor(id), w - 22);
+  const spec = union ? unionSpec(id) : null;
+  const blurb = spec ? `${unionHint(id)}. ${spec.effect}` : blurbFor(id);
+  const lines = wrap(ctx, blurb, w - 22);
   for (let i = 0; i < lines.length && i < 3; i++) ink(ctx, lines[i] ?? "", x + w / 2, y + 94 + i * 12, 9, "#f4f8fc", "center", 600);
+  if (union) {
+    ink(ctx, "ONE UNION", x + w / 2, y + h - 28, 9, "#ffe14a", "center");
+    return;
+  }
   const lv = world.upgrades[id] ?? 0;
   for (let p = 0; p < UPG_MAX; p++) {
     ctx.beginPath();

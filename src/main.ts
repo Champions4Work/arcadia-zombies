@@ -6,6 +6,7 @@ import { pauseHit } from "./render/hud";
 import { bootSfx, persistSfx, playSfxCue, playUiClick, playWorldSfx, resetSfxPlayback, setSfxVolume, sfxMuted, sfxVolume, toggleSfxMuted } from "./render/sfx";
 import { CUE_BOSS, sfxMuteLabel, sfxVolumePercent } from "./render/sfx-cues";
 import { setMuted, unlockAudio } from "./render/sound";
+import { codexStamp, emptyCodex, loadCodex, observe, renderBook, saveCodex } from "./shell/codex";
 import { applyCanvas, screenToGame, type Fit } from "./shell/fit";
 import { mountPicker, paintPicker } from "./shell/picker";
 import {
@@ -22,10 +23,12 @@ import {
 import { mountLeaderboard } from "./shell/leaderboard-dom";
 import {
   begin,
+  closeCodex,
   createSession,
   finish,
   loadStore,
   onBlur,
+  openCodex,
   PHASE_OVER,
   PHASE_PAUSE,
   PHASE_PLAY,
@@ -70,6 +73,8 @@ const records = store ? loadLeaderboard(store) : emptyLeaderboard();
 const tracker = createTracker();
 let runLineText = "";
 let runShare: string | null = null;
+const codex = store ? loadCodex(store) : emptyCodex();
+let codexDrawn = "";
 setMuted(session.muted);
 bootSfx(store);
 let survivor = roster.index;
@@ -88,6 +93,8 @@ const endlessBtn = document.getElementById("endless") as HTMLButtonElement;
 const numbersBtn = document.getElementById("numbers") as HTMLButtonElement;
 const summary = document.getElementById("summary") as HTMLElement;
 const rosterEl = document.getElementById("roster") as HTMLElement;
+const codexBtn = document.getElementById("codex") as HTMLButtonElement;
+const book = document.getElementById("book") as HTMLElement;
 const sfxMuteBtn = document.getElementById("sfx-mute") as HTMLButtonElement;
 const sfxVol = document.getElementById("sfx-vol") as HTMLInputElement;
 const panel = document.getElementById("panel") as HTMLElement;
@@ -119,6 +126,11 @@ function persist(): void {
   saveRoster(store, survivor, bestWave);
 }
 
+function noteCodex(): void {
+  if (!observe(codex, world)) return;
+  if (store) saveCodex(store, codex);
+}
+
 function paint(): void {
   const playing = session.phase === PHASE_PLAY;
   veil.classList.toggle("on", !playing);
@@ -140,12 +152,31 @@ function paint(): void {
     }
     goBtn.textContent = "Play";
   }
-  const over = session.phase === PHASE_OVER ? (isWon(world) ? victoryText(world) : summaryText(world)) : "";
+  if (session.codex && (session.phase === PHASE_TITLE || session.phase === PHASE_OVER)) {
+    headline.textContent = "Codex";
+    sub.textContent = "Unions stay sealed until you forge them";
+  }
+  const menu = session.phase === PHASE_TITLE || session.phase === PHASE_OVER;
+  const over = session.phase === PHASE_OVER && !session.codex
+    ? (isWon(world) ? victoryText(world) : summaryText(world))
+    : "";
   summary.hidden = over.length === 0;
   summary.textContent = over;
-  const showRoster = session.phase === PHASE_TITLE || session.phase === PHASE_OVER;
+  const showRoster = menu && !session.codex;
   rosterEl.hidden = !showRoster;
   if (showRoster) paintPicker(rosterEl, survivor, bestWave);
+  codexBtn.hidden = !menu;
+  codexBtn.textContent = session.codex ? "Back" : "Codex";
+  codexBtn.setAttribute("aria-expanded", session.codex ? "true" : "false");
+  const showBook = menu && session.codex;
+  book.hidden = !showBook;
+  if (showBook) {
+    const stamp = codexStamp(codex);
+    if (stamp !== codexDrawn) {
+      renderBook(book, codex);
+      codexDrawn = stamp;
+    }
+  }
   muteBtn.textContent = session.muted ? "Muted" : "Sound";
   muteBtn.setAttribute("aria-pressed", session.muted ? "true" : "false");
   shakeBtn.textContent = session.shake ? "Screen shake: On" : "Screen shake: Off";
@@ -171,6 +202,7 @@ function paint(): void {
 function startRun(): void {
   unlockAudio();
   leader.close();
+  closeCodex(session);
   const reset = begin(session);
   if (reset) {
     world = makeWorld(Date.now() >>> 0);
@@ -225,6 +257,14 @@ function sfxMute(): void {
   paint();
 }
 
+function codexToggle(): void {
+  unlockAudio();
+  if (session.codex) closeCodex(session);
+  else openCodex(session);
+  playUiClick();
+  paint();
+}
+
 function sfxVolInput(): void {
   unlockAudio();
   setSfxVolume(Number(sfxVol.value) / 100);
@@ -261,6 +301,7 @@ function sfx(): void {
 }
 
 goBtn.addEventListener("click", startRun);
+codexBtn.addEventListener("click", codexToggle);
 muteBtn.addEventListener("click", mute);
 shakeBtn.addEventListener("click", shake);
 numbersBtn.addEventListener("click", numbers);
@@ -277,6 +318,12 @@ addEventListener("keydown", (e) => {
   if (k === "escape") {
     e.preventDefault();
     if (e.repeat) return;
+    if (session.codex) {
+      closeCodex(session);
+      playUiClick();
+      paint();
+      return;
+    }
     if (leader.isOpen()) {
       leader.close();
       paint();
@@ -297,6 +344,10 @@ addEventListener("keydown", (e) => {
     toggleFps();
     return;
   }
+  if (k === "c" && (session.phase === PHASE_TITLE || session.phase === PHASE_OVER)) {
+    codexToggle();
+    return;
+  }
   if (k === " " || k === "enter") {
     if (session.phase !== PHASE_PLAY) {
       const target = e.target;
@@ -310,11 +361,13 @@ addEventListener("keydown", (e) => {
     startRun();
     return;
   }
-  if (import.meta.env.DEV && session.phase === PHASE_PLAY && !e.repeat && (k === "b" || k === "n")) {
+  if (import.meta.env.DEV && session.phase === PHASE_PLAY && !e.repeat && (k === "b" || k === "n" || k === "e" || k === "v")) {
     const key = k;
     void import("./dev/lineup").then((m) => {
       if (key === "b") m.lineup(world);
-      else m.rush(world);
+      else if (key === "n") m.rush(world);
+      else if (key === "e") m.stageOffer(world);
+      else m.stageArmed(world);
     });
     return;
   }
@@ -327,7 +380,7 @@ addEventListener("keydown", (e) => {
 });
 addEventListener("keyup", (e) => keys.delete(e.key.toLowerCase()));
 
-const fromHud = (t: EventTarget | null): boolean => t instanceof HTMLElement && !!t.closest("button, #sfx");
+const fromHud = (t: EventTarget | null): boolean => t instanceof HTMLElement && !!t.closest("button, #sfx, #book");
 
 addEventListener("pointerdown", (e) => {
   unlockAudio();
@@ -406,6 +459,7 @@ function frame(now: number): void {
         persist();
         paint();
       }
+      noteCodex();
       if (world.over) {
         finish(session, world.score);
         const settled = settleRun(records, captureRun({

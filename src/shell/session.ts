@@ -16,6 +16,7 @@ export interface Session {
   muted: boolean;
   shake: boolean;
   numbers: boolean;
+  codex: boolean;
 }
 
 export interface Store {
@@ -24,14 +25,23 @@ export interface Store {
 }
 
 export function createSession(best = 0, muted = false, shake = true, numbers = true): Session {
-  return { phase: PHASE_TITLE, best: Math.max(0, best | 0), last: 0, muted, shake, numbers };
+  return { phase: PHASE_TITLE, best: Math.max(0, best | 0), last: 0, muted, shake, numbers, codex: false };
 }
 
 export function shouldStep(s: Session): boolean {
   return s.phase === PHASE_PLAY;
 }
 
+export function openCodex(s: Session): void {
+  if (s.phase === PHASE_TITLE || s.phase === PHASE_OVER) s.codex = true;
+}
+
+export function closeCodex(s: Session): void {
+  s.codex = false;
+}
+
 export function begin(s: Session): boolean {
+  s.codex = false;
   if (s.phase === PHASE_TITLE || s.phase === PHASE_OVER) {
     s.phase = PHASE_PLAY;
     return true;
