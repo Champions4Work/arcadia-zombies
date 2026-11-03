@@ -22,7 +22,7 @@ import {
   toggleShake,
 } from "./shell/session";
 import { resetShake } from "./render/shake";
-import { jumpSeconds, loadCrown, markWon, saveCrown, toggleEndless } from "./shell/crown";
+import { devSeconds, loadCrown, markWon, saveCrown, toggleEndless } from "./shell/crown";
 import { createStick, liftStick, moveStick, pressStick, showRestStick } from "./shell/stick";
 import { clock } from "./sim/difficulty";
 import { armDevJump, isWon, killCount, setRunEndless, takeCue, victoryText } from "./sim/finale";
@@ -118,7 +118,7 @@ function startRun(): void {
   const reset = begin(session);
   if (reset) {
     world = createWorld(Date.now() >>> 0);
-    const jump = jumpSeconds(location.search);
+    const jump = devSeconds(location.search, import.meta.env.DEV);
     if (jump > 0) armDevJump(world, jump);
     setRunEndless(world, crown.endless);
     resetShake();

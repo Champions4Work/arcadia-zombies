@@ -1,8 +1,9 @@
+import { ARENA_H, ARENA_W } from "./arena";
 import { clock, scoreMul, tierAt } from "./difficulty";
 import { bulletDmg, sawAngle, sawDamage, sawRadius, shieldReload, teslaPower, teslaRange, upgName } from "./progress";
 import {
-  EV_HURT, EV_KILL, EV_SHIELD, EV_TESLA, H, MAX_BULLETS, MAX_ZOMBIES, UPG_COUNT, UPG_SAWS,
-  W, Z_GHOUL, type World,
+  EV_HURT, EV_KILL, EV_SHIELD, EV_TESLA, MAX_BULLETS, MAX_ZOMBIES, UPG_COUNT, UPG_SAWS,
+  Z_GHOUL, type World,
 } from "./types";
 
 export const FINALE_SEC = 1200;
@@ -38,6 +39,7 @@ interface Lich {
   shotVy: Float32Array;
   shotLife: Int16Array;
   minion: Uint8Array;
+  mark: Uint8Array;
 }
 
 const bag = new WeakMap<World, Lich>();
@@ -49,6 +51,7 @@ function createLich(): Lich {
     shotX: new Float32Array(RING_N), shotY: new Float32Array(RING_N),
     shotVx: new Float32Array(RING_N), shotVy: new Float32Array(RING_N),
     shotLife: new Int16Array(RING_N), minion: new Uint8Array(MAX_ZOMBIES),
+    mark: new Uint8Array(MAX_BULLETS),
   };
 }
 
@@ -88,8 +91,15 @@ export function seekSeconds(w: World, seconds: number): void {
   w.spawnCd = 8;
 }
 
+export function freshShot(w: World, index: number): void {
+  const f = of(w);
+  if (index >= 0 && index < f.mark.length) f.mark[index] = 0;
+}
+
 export function armDevJump(w: World, seconds: number): void {
-  seekSeconds(w, seconds);
+  const sec = Number.isFinite(seconds) ? Math.floor(seconds) : 0;
+  if (sec <= 0) return;
+  seekSeconds(w, sec > FINALE_SEC ? FINALE_SEC : sec);
   const f = of(w);
   f.preview = w.tick < FINALE_TICK ? 1 : 0;
 }
@@ -239,8 +249,8 @@ function arrive(w: World): void {
   f.phase = 0;
   f.maxHp = lichMaxHp();
   f.hp = f.maxHp;
-  f.x = W / 2;
-  f.y = 214;
+  f.x = ARENA_W / 2;
+  f.y = (ARENA_H * 107) / 160;
   f.timer = 36;
   f.spin = 0;
   f.summoned = 0;
@@ -286,9 +296,9 @@ function hurtPlayer(w: World, dmg: number): void {
 
 function clampLich(f: Lich): void {
   if (f.x < 28) f.x = 28;
-  if (f.x > W - 28) f.x = W - 28;
+  if (f.x > ARENA_W - 28) f.x = ARENA_W - 28;
   if (f.y < 110) f.y = 110;
-  if (f.y > H - 24) f.y = H - 24;
+  if (f.y > ARENA_H - 24) f.y = ARENA_H - 24;
 }
 
 function moveLich(w: World, f: Lich): void {
@@ -311,7 +321,7 @@ function stepShots(w: World, f: Lich): void {
     f.shotY[i] = y;
     life--;
     f.shotLife[i] = life;
-    if (life <= 0 || x < -20 || y < -20 || x > W + 20 || y > H + 20) {
+    if (life <= 0 || x < -20 || y < -20 || x > ARENA_W + 20 || y > ARENA_H + 20) {
       f.shotLife[i] = 0;
       continue;
     }
@@ -327,8 +337,8 @@ function spawnAdd(w: World, x: number, y: number): void {
     if (z.alive[i]) continue;
     z.alive[i] = 1;
     z.kind[i] = Z_GHOUL;
-    z.x[i] = x < 16 ? 16 : x > W - 16 ? W - 16 : x;
-    z.y[i] = y < 48 ? 48 : y > H - 16 ? H - 16 : y;
+    z.x[i] = x < 16 ? 16 : x > ARENA_W - 16 ? ARENA_W - 16 : x;
+    z.y[i] = y < 48 ? 48 : y > ARENA_H - 16 ? ARENA_H - 16 : y;
     z.vx[i] = 0.85;
     z.vy[i] = 0;
     z.hp[i] = 2;
@@ -350,10 +360,15 @@ function soakBullets(w: World, f: Lich): void {
   const dmg = bulletDmg(w);
   const b = w.bullets;
   for (let j = 0; j < MAX_BULLETS; j++) {
-    if (f.on !== 1 || !b.alive[j]) continue;
+    if (!b.alive[j]) {
+      f.mark[j] = 0;
+      continue;
+    }
+    if (f.on !== 1 || (f.mark[j] ?? 0) !== 0) continue;
     const dx = f.x - (b.x[j] ?? 0);
     const dy = (f.y - 12) - (b.y[j] ?? 0);
     if (dx * dx + dy * dy >= LICH_R2) continue;
+    f.mark[j] = 1;
     harmLich(w, dmg);
     if ((w.bPierce[j] ?? 0) > 0) w.bPierce[j] = (w.bPierce[j] ?? 1) - 1;
     else b.alive[j] = 0;
@@ -383,11 +398,21 @@ function soakTesla(w: World, f: Lich): void {
   harmLich(w, teslaPower(w));
 }
 
+function dropMinions(w: World, f: Lich): void {
+  const z = w.zombies;
+  for (let i = 0; i < MAX_ZOMBIES; i++) {
+    if ((f.minion[i] ?? 0) === 0) continue;
+    z.alive[i] = 0;
+    f.minion[i] = 0;
+  }
+}
+
 function defeat(w: World, f: Lich): void {
   f.on = 0;
   f.won = 1;
   f.hp = 0;
   clearShots(f);
+  dropMinions(w, f);
   tallyKill(w);
   w.score += 500 * scoreMul(w.rank);
   w.events[EV_KILL] = 1;

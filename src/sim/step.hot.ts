@@ -9,7 +9,7 @@ import {
   sawRadius, shieldReload, takeXp, teslaChain, teslaEvery, teslaPower, teslaRange, tryPick,
   ventEvery, ventRange, whistleRange,
 } from "./progress";
-import { holdSpawns, lichMinion, lichUp, lichX, lichY, stepFinale, tallyKill, watchFinale } from "./finale";
+import { freshShot, holdSpawns, lichMinion, lichUp, lichX, lichY, stepFinale, tallyKill, watchFinale } from "./finale";
 import {
   EV_HURT, EV_KILL, EV_RANK, EV_SAW, EV_SHIELD, EV_SHOT, EV_TESLA, EV_WAVE, FX_FLASH, FX_PUFF, FX_SPARK,
   FX_XP, H, MAX_BULLETS, MAX_FX, MAX_ZOMBIES, UPG_COOLANT, UPG_DYNAMO, UPG_MORTAR, UPG_PIERCE, UPG_RICOCHET,
@@ -76,6 +76,7 @@ function shootDir(w: World, ux: number, uy: number): void {
     b.hp[j] = 0;
     b.kind[j] = w.upgrades[UPG_RICOCHET] ?? 0;
     w.bHit[j] = -1;
+    freshShot(w, j);
     w.bPierce[j] = (w.upgrades[UPG_PIERCE] ?? 0) + (w.upgrades[EVOL_CANNON] ?? 0);
     w.events[EV_SHOT] = 1;
     emitFx(w, FX_FLASH, w.px + ux * 11, w.py + uy * 7, Math.atan2(uy, ux));

@@ -6,10 +6,10 @@ import {
 } from "../src/sim/finale";
 import { applyUpgrade } from "../src/sim/progress";
 import { step } from "../src/sim/step.hot";
-import { UPG_DMG, UPG_TESLA, type Input, type World } from "../src/sim/types";
+import { UPG_DMG, UPG_PIERCE, UPG_TESLA, type Input, type World } from "../src/sim/types";
 import { createWorld } from "../src/sim/world";
 import {
-  ENDLESS_KEY, jumpSeconds, loadCrown, markWon, saveCrown, toggleEndless, WON_KEY,
+  devSeconds, ENDLESS_KEY, jumpSeconds, loadCrown, markWon, saveCrown, toggleEndless, WON_KEY,
 } from "../src/shell/crown";
 
 const idle = (): Input => ({ dx: 0, dy: 0, pick: 0 });
@@ -179,6 +179,42 @@ describe("clockwork lich", () => {
     expect(w.over).toBe(false);
   });
 
+  it("a piercing rivet wounds the lich once", () => {
+    const w = createWorld(4);
+    tank(w);
+    w.upgrades[UPG_PIERCE] = 4;
+    w.fireCd = 99999;
+    seekSeconds(w, 1200);
+    step(w, idle());
+    w.px = lichX(w);
+    w.py = lichY(w);
+    w.fireCd = 0;
+    const before = lichHp(w);
+    step(w, idle());
+    const once = before - lichHp(w);
+    expect(once).toBe(1);
+    w.fireCd = 99999;
+    for (let t = 0; t < 12; t++) step(w, idle());
+    expect(before - lichHp(w)).toBe(once);
+  });
+
+  it("drops summoned ghouls when the lich falls", () => {
+    const w = createWorld(9);
+    tank(w);
+    w.fireCd = 99999;
+    setRunEndless(w, true);
+    seekSeconds(w, 1200);
+    step(w, idle());
+    harmLich(w, lichMaxHp() - Math.floor(lichMaxHp() / 2) + 1);
+    step(w, idle());
+    expect(countZ(w)).toBeGreaterThanOrEqual(6);
+    harmLich(w, lichHp(w));
+    step(w, idle());
+    expect(isWon(w)).toBe(true);
+    expect(w.over).toBe(false);
+    expect(countZ(w)).toBe(0);
+  });
+
   it("endless keeps the run and the difficulty ranks going", () => {
     const w = createWorld(9);
     tank(w);
@@ -212,9 +248,16 @@ describe("clockwork lich", () => {
     expect(run(1)).toEqual(run(99));
     expect(jumpSeconds("?t=1190")).toBe(1190);
     expect(jumpSeconds("?t=1190&x=1")).toBe(1190);
+    expect(jumpSeconds("?t=1190.8")).toBe(1190);
+    expect(jumpSeconds("?t=9000")).toBe(1200);
     expect(jumpSeconds("")).toBe(0);
+    expect(jumpSeconds("?t=")).toBe(0);
     expect(jumpSeconds("?t=0")).toBe(0);
+    expect(jumpSeconds("?t=-4")).toBe(0);
     expect(jumpSeconds("?t=no")).toBe(0);
+    expect(jumpSeconds("?t=Infinity")).toBe(0);
+    expect(devSeconds("?t=1190", false)).toBe(0);
+    expect(devSeconds("?t=1190", true)).toBe(1190);
     const w = createWorld(2);
     tank(w);
     armDevJump(w, jumpSeconds("?t=1190"));
