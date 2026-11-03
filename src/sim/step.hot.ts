@@ -14,6 +14,8 @@ import {
 } from "./progress";
 import { holdSpawns, lichMinion, stepFinale, watchFinale } from "./finale";
 import { beginQuery, nextQuery } from "./grid.hot";
+import { stepMapEvents } from "./map-events.hot";
+import { clearMapStrike, mapStrikeDmg, mapStrikeOn, mapStrikeR, mapStrikeX, mapStrikeY } from "./map-events";
 import {
   EV_HURT, EV_RANK, EV_SAW, EV_SHIELD, EV_TESLA, EV_WAVE, FX_FLASH, FX_SPARK,
   H, MAX_ZOMBIES, UPG_COOLANT, UPG_MORTAR, UPG_SPIKES, UPG_TESLA,
@@ -275,6 +277,12 @@ export function step(w: World, input: Input): void {
     w.mortarCd = mortarEvery(w);
   }
   spinSaws(w);
+  stepMapEvents(w);
+  if (mapStrikeOn(w) !== 0) {
+    pulseAt(w, mapStrikeX(w), mapStrikeY(w), mapStrikeR(w), mapStrikeDmg(w));
+    clearMapStrike(w);
+    if (w.over) return;
+  }
   stepFinale(w);
   tickJuice(JUICE_DT);
 }

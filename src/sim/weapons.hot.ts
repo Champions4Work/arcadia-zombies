@@ -1,4 +1,5 @@
 import { emitFx, hurtZombie } from "./combat.hot";
+import { fogSight } from "./map-events";
 import { freshShot, lichUp, lichX, lichY } from "./finale";
 import { bounceBonus, pelletBonus, pierceBonus } from "./evolve";
 import { B_ACID, foeHitR2, knightBlocks, Z_KIND, Z_KNIGHT } from "./foes";
@@ -27,8 +28,9 @@ function aimAt(w: World): number {
     return 1;
   }
   const z = w.zombies;
+  const sight = fogSight(w);
   let best = -1;
-  let bd = 1e12;
+  let bd = sight * sight;
   for (let i = 0; i < MAX_ZOMBIES; i++) {
     if (!z.alive[i]) continue;
     const dx = (z.x[i] ?? 0) - w.px;
