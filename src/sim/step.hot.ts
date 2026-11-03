@@ -5,7 +5,10 @@ import {
 } from "./foes";
 import { spawnWaveFoe, tickKnight, tickSpitter } from "./foes.hot";
 import {
-  healEvery, mortarEvery, moveSpeed, SAW_HIT_R2, sawAngle, sawDamage, sawSpin,
+  briarOn, calliopeBite, calliopeOn, heartBite, heartOn, howitzerBite, howitzerShells, shieldCap,
+} from "./evolve";
+import {
+  healEvery, mortarEvery, moveSpeed, SAW_HIT_R2, sawAngle, sawCount, sawDamage, sawSpin,
   sawRadius, shieldReload, teslaChain, teslaEvery, teslaPower, teslaRange, tryPick,
   ventEvery, ventRange, whistleRange,
 } from "./progress";
@@ -15,7 +18,7 @@ import { stepMapEvents } from "./map-events.hot";
 import { clearMapStrike, mapStrikeDmg, mapStrikeOn, mapStrikeR, mapStrikeX, mapStrikeY } from "./map-events";
 import {
   EV_HURT, EV_RANK, EV_SAW, EV_SHIELD, EV_TESLA, EV_WAVE, FX_FLASH, FX_SPARK,
-  H, MAX_ZOMBIES, UPG_COOLANT, UPG_MORTAR, UPG_SAWS, UPG_SHIELD, UPG_SPIKES, UPG_TESLA,
+  H, MAX_ZOMBIES, UPG_COOLANT, UPG_MORTAR, UPG_SPIKES, UPG_TESLA,
   UPG_VENT, UPG_WHISTLE, W, EVOL_AEGIS, type Input, type World,
 } from "./types";
 import { JUICE_DT, juiceFrame, juicePlayerHurt, tickJuice } from "../render/juice";
@@ -72,7 +75,7 @@ function zap(w: World): void {
   }
 }
 function spinSaws(w: World): void {
-  const n = w.upgrades[UPG_SAWS] ?? 0;
+  const n = sawCount(w);
   if (n <= 0 || (w.tick & 3) !== 0) return;
   const z = w.zombies;
   const r = sawRadius(w);
@@ -99,26 +102,33 @@ function spinSaws(w: World): void {
 function ventPulse(w: World): void {
   const lvl = w.upgrades[UPG_VENT] ?? 0;
   if (lvl <= 0) return;
-  pulseAt(w, w.px, w.py, ventRange(w), lvl + (w.upgrades[EVOL_AEGIS] ?? 0));
+  pulseAt(w, w.px, w.py, ventRange(w), lvl + (w.upgrades[EVOL_AEGIS] ?? 0) + heartBite(w));
+  if (heartOn(w) && w.hp < w.maxHp) w.hp++;
   emitFx(w, FX_FLASH, w.px, w.py, 0);
 }
 function mortarShot(w: World): void {
   const lvl = w.upgrades[UPG_MORTAR] ?? 0;
   if (lvl <= 0) return;
+  const volley = 1 + howitzerShells(w);
+  const bite = 2 + lvl + howitzerBite(w);
   const z = w.zombies;
-  let best = -1;
-  let bd = -1;
-  for (let i = 0; i < MAX_ZOMBIES; i++) {
-    if (!z.alive[i]) continue;
-    const dx = (z.x[i] ?? 0) - w.px;
-    const dy = (z.y[i] ?? 0) - w.py;
-    const d = dx * dx + dy * dy;
-    if (d > bd) { bd = d; best = i; }
+  for (let i = 0; i < MAX_ZOMBIES; i++) w.zMark[i] = 0;
+  for (let s = 0; s < volley; s++) {
+    let best = -1;
+    let bd = -1;
+    for (let i = 0; i < MAX_ZOMBIES; i++) {
+      if (!z.alive[i] || w.zMark[i]) continue;
+      const dx = (z.x[i] ?? 0) - w.px;
+      const dy = (z.y[i] ?? 0) - w.py;
+      const d = dx * dx + dy * dy;
+      if (d > bd) { bd = d; best = i; }
+    }
+    if (best < 0) break;
+    w.zMark[best] = 1;
+    hurtZombie(w, best, bite);
+    if (w.over) return;
+    emitFx(w, FX_SPARK, z.x[best] ?? 0, z.y[best] ?? 0, 0);
   }
-  if (best < 0) return;
-  hurtZombie(w, best, 2 + lvl);
-  if (w.over) return;
-  emitFx(w, FX_SPARK, z.x[best] ?? 0, z.y[best] ?? 0, 0);
 }
 function thorns(w: World, dmg: number): void {
   const z = w.zombies;
@@ -184,7 +194,7 @@ export function step(w: World, input: Input): void {
     w.hp++;
     w.healCd = healEvery(w);
   }
-  const cap = w.upgrades[UPG_SHIELD] ?? 0;
+  const cap = shieldCap(w);
   if (cap > 0 && w.shield < cap && --w.shieldCd <= 0) {
     w.shield++;
     w.shieldCd = shieldReload(w);
@@ -203,7 +213,13 @@ export function step(w: World, input: Input): void {
       const d2 = dx * dx + dy * dy;
       const d = Math.sqrt(d2) || 1;
       let zsp = z.vx[i] ?? 0;
-      if (whistle > 0 && d2 < wr2) zsp *= 0.62;
+      if (whistle > 0 && d2 < wr2) {
+        zsp *= 0.62;
+        if (calliopeOn(w) && (w.tick % 10) === 0) {
+          hurtZombie(w, i, calliopeBite(w));
+          if (w.over) return;
+        }
+      }
       z.x[i] = (z.x[i] ?? 0) + (dx / d) * zsp;
       z.y[i] = (z.y[i] ?? 0) + (dy / d) * zsp;
       if (kind === Z_KNIGHT) tickKnight(w, i);
@@ -225,6 +241,10 @@ export function step(w: World, input: Input): void {
         const aegis = w.upgrades[EVOL_AEGIS] ?? 0;
         if (aegis > 0) {
           pulseAt(w, w.px, w.py, 52 + aegis * 8, aegis + 1);
+          if (w.over) return;
+        }
+        if (briarOn(w)) {
+          thorns(w, 3);
           if (w.over) return;
         }
       } else {

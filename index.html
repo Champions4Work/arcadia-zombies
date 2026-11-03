@@ -41,7 +41,11 @@ canvas{position:fixed;inset:0;display:block;width:100%;height:100%}
 #summary{margin:0;max-height:42vh;overflow:auto;font:700 13px/1.45 Inter,Cantarell,sans-serif;color:#fff1c2;letter-spacing:.06em;text-align:center;white-space:pre-line}
 #go{font:800 18px Inter,Cantarell,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#1c120c;background:linear-gradient(#fff1c2,#f0b03a);border:3px solid #1c120c;border-radius:14px;padding:12px 36px;cursor:pointer}
 #opts{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
-#shake,#numbers,#endless{font:800 13px/1 Inter,Cantarell,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#fff1c2;background:transparent;border:3px solid #f0b03a;border-radius:12px;padding:10px 14px;cursor:pointer}
+#shake,#numbers,#codex,#endless{font:800 13px/1 Inter,Cantarell,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#fff1c2;background:transparent;border:3px solid #f0b03a;border-radius:12px;padding:10px 14px;cursor:pointer}
+#book{margin:0;max-height:42vh;overflow:auto;width:min(440px,86vw);font:700 12px/1.45 Inter,Cantarell,sans-serif;color:#fff1c2;letter-spacing:.03em;text-align:left;touch-action:auto}
+#book h2{margin:12px 0 4px;font:800 11px/1 Inter,Cantarell,sans-serif;letter-spacing:.16em;color:#f0b03a}
+#book p{margin:0 0 6px}
+#book .lock{color:#a88858}
 #sfx{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;touch-action:auto}
 #sfx-mute{font:800 12px/1 Inter,Cantarell,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#fff1c2;background:#1c120c;border:3px solid #f0b03a;border-radius:999px;padding:8px 12px;cursor:pointer;touch-action:auto}
 #sfx label{font:700 12px/1 Inter,Cantarell,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#f0c86a;display:flex;align-items:center;gap:8px}
@@ -61,6 +65,8 @@ canvas{position:fixed;inset:0;display:block;width:100%;height:100%}
     <pre id="summary" hidden></pre>
     <div id="roster" role="group" aria-label="Choose survivor"></div>
     <button id="go" type="button">Play</button>
+    <button id="codex" type="button" aria-expanded="false">Codex</button>
+    <div id="book" hidden></div>
     <div id="opts">
       <button id="shake" type="button" aria-label="Screen shake" aria-pressed="true">Screen shake: On</button>
       <button id="numbers" type="button" aria-label="Damage numbers" aria-pressed="true">Damage numbers: On</button>

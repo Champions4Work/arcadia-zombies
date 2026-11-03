@@ -1,6 +1,7 @@
 import { emitFx, hurtZombie } from "./combat.hot";
 import { fogSight } from "./map-events";
 import { freshShot, lichUp, lichX, lichY } from "./finale";
+import { bounceBonus, pelletBonus, pierceBonus } from "./evolve";
 import { B_ACID, foeHitR2, knightBlocks, Z_KIND, Z_KNIGHT } from "./foes";
 import { acidTouch } from "./foes.hot";
 import { beginQuery, beginRadiusQuery, nextQuery, rebuildZombieGrid } from "./grid.hot";
@@ -84,8 +85,8 @@ function spray(w: World, ux: number, uy: number, n: number, step: number, speed:
 export function fireRivet(w: World): void {
   if (!aimAt(w)) return;
   const lv = w.upgrades[UPG_WPN_RIVET] ?? 1;
-  const pierce = (w.upgrades[UPG_PIERCE] ?? 0) + (w.upgrades[EVOL_CANNON] ?? 0);
-  const bounce = w.upgrades[UPG_RICOCHET] ?? 0;
+  const pierce = (w.upgrades[UPG_PIERCE] ?? 0) + (w.upgrades[EVOL_CANNON] ?? 0) + pierceBonus(w);
+  const bounce = (w.upgrades[UPG_RICOCHET] ?? 0) + bounceBonus(w);
   const ux = w.aimX;
   const uy = w.aimY;
   spawnShot(w, ux, uy, 5, 0, pierce, WPN_RIVET, 0, bounce);
@@ -94,7 +95,7 @@ export function fireRivet(w: World): void {
     const sa = Math.sin(0.12);
     spawnShot(w, ux * ca - uy * sa, ux * sa + uy * ca, 5, 0, pierce, WPN_RIVET, 0, bounce);
   }
-  const n = (w.upgrades[UPG_SHOTGUN] ?? 0) + (w.upgrades[EVOL_CANNON] ?? 0);
+  const n = (w.upgrades[UPG_SHOTGUN] ?? 0) + (w.upgrades[EVOL_CANNON] ?? 0) + pelletBonus(w);
   for (let s = 1; s <= n; s++) {
     const a = s * 0.28;
     const ca = Math.cos(a);

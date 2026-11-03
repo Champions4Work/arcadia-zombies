@@ -1,19 +1,31 @@
-import { sawAngle, sawRadius, sawSpin } from "../sim/progress";
-import { UPG_SAWS, type World } from "../sim/types";
+import { briarOn, crownOn, haloOn } from "../sim/evolve";
+import { sawAngle, sawCount, sawRadius, sawSpin } from "../sim/progress";
+import type { World } from "../sim/types";
 import { drawCards } from "./hud";
+import "./evolve";
 import { sawSprite } from "./sprites";
 
 export function drawSaws(c: CanvasRenderingContext2D, w: World): void {
-  const n = w.upgrades[UPG_SAWS] ?? 0;
+  const n = sawCount(w);
   if (n <= 0) return;
   const spr = sawSprite();
   const rad = sawRadius(w);
+  const halo = haloOn(w);
+  const size = halo ? 34 : 24;
   for (let s = 0; s < n; s++) {
     const a = sawAngle(w.tick, s, n, sawSpin(w));
+    const x = w.px + Math.cos(a) * rad;
+    const y = w.py + Math.sin(a) * rad;
     c.save();
-    c.translate(w.px + Math.cos(a) * rad, w.py + Math.sin(a) * rad);
-    c.rotate(w.tick * 0.18 + s);
-    c.drawImage(spr, -12, -12, 24, 24);
+    c.translate(x, y);
+    c.rotate(w.tick * (halo ? 0.35 : 0.18) + s);
+    if (halo) {
+      c.fillStyle = "rgba(255,120,30,0.45)";
+      c.beginPath();
+      c.arc(0, 0, 18, 0, Math.PI * 2);
+      c.fill();
+    }
+    c.drawImage(spr, -size / 2, -size / 2, size, size);
     c.restore();
   }
 }
@@ -37,17 +49,18 @@ export function drawTesla(c: CanvasRenderingContext2D, w: World): void {
     px = x;
     py = y;
   }
-  c.strokeStyle = "rgba(170,230,255,0.45)";
-  c.lineWidth = 5;
+  const crown = crownOn(w);
+  c.strokeStyle = crown ? "rgba(255,214,70,0.7)" : "rgba(170,230,255,0.45)";
+  c.lineWidth = crown ? 9 : 5;
   c.stroke();
-  c.strokeStyle = "#f7fdff";
-  c.lineWidth = 1.7;
+  c.strokeStyle = crown ? "#fff6c0" : "#f7fdff";
+  c.lineWidth = crown ? 3 : 1.7;
   c.stroke();
   c.restore();
 }
 
 export function drawShield(c: CanvasRenderingContext2D, w: World): void {
-  if (w.shield <= 0) return;
+  if (briarOn(w) || w.shield <= 0) return;
   c.save();
   c.translate(w.px, w.py - 16);
   c.rotate(w.tick * 0.02);

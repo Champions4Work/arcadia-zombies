@@ -1,5 +1,9 @@
 import { characterAt, offerCount, PASSIVE_FIRE, PASSIVE_RAGE, PASSIVE_SAW, RAGE_DMG } from "./characters";
 import { clock, rarityWeight, tierName } from "./difficulty";
+import {
+  briarRate, calliopeReach, crownHops, crownOn, crownRate, grantUnion, haloBite, haloBlades,
+  haloReach, heartReach, howitzerRate, isUnion, slugBonus, unionReady,
+} from "./evolve";
 import { nextFloat } from "./rng";
 import {
   EV_LEVEL, EVOL_AEGIS, EVOL_CANNON, EVOL_STORM, OFFER_N, UPG_COOLANT, UPG_COUNT, UPG_DMG,
@@ -31,6 +35,13 @@ export const UPG_NAMES: readonly string[] = [
   "STORM GEAR",
   "CANNON",
   "AEGIS ENGINE",
+  "THUNDER CROWN",
+  "GATLING BELLOWS",
+  "BUZZSAW HALO",
+  "BOILER HEART",
+  "BRIAR AEGIS",
+  "SIEGE HOWITZER",
+  "STEAM CALLIOPE",
   "RIVET GUN",
   "STEAM SHOTGUN",
   "FLAME BOILER",
@@ -54,6 +65,13 @@ export const UPG_RARITY: readonly number[] = [
   RARITY_LEGENDARY,
   RARITY_COMMON,
   RARITY_RARE,
+  RARITY_LEGENDARY,
+  RARITY_LEGENDARY,
+  RARITY_LEGENDARY,
+  RARITY_LEGENDARY,
+  RARITY_LEGENDARY,
+  RARITY_LEGENDARY,
+  RARITY_LEGENDARY,
   RARITY_LEGENDARY,
   RARITY_LEGENDARY,
   RARITY_LEGENDARY,
@@ -89,17 +107,21 @@ export function moveSpeed(w: World): number {
 
 export function bulletDmg(w: World): number {
   const row = characterAt(w.charId);
-  let dmg = 1 + (w.upgrades[UPG_DMG] ?? 0) + (w.upgrades[EVOL_CANNON] ?? 0) + row.dmg;
+  let dmg = 1 + (w.upgrades[UPG_DMG] ?? 0) + (w.upgrades[EVOL_CANNON] ?? 0) + row.dmg + slugBonus(w);
   if (row.passive === PASSIVE_RAGE && w.hp * 2 <= w.maxHp) dmg += RAGE_DMG;
   return dmg;
 }
 
 export function sawRadius(w: World): number {
-  return 26 + (w.upgrades[UPG_SAWS] ?? 0) * 8;
+  return 26 + (w.upgrades[UPG_SAWS] ?? 0) * 8 + haloReach(w);
+}
+
+export function sawCount(w: World): number {
+  return (w.upgrades[UPG_SAWS] ?? 0) + haloBlades(w);
 }
 
 export function sawDamage(w: World): number {
-  return 1 + (w.upgrades[EVOL_STORM] ?? 0);
+  return 1 + (w.upgrades[EVOL_STORM] ?? 0) + haloBite(w);
 }
 
 export function sawSpin(w: World): number {
@@ -128,7 +150,8 @@ export function offerId(w: World, slot: number): number {
 }
 
 export function teslaEvery(w: World): number {
-  return Math.max(18, 54 - (w.upgrades[UPG_TESLA] ?? 0) * 6);
+  const base = 54 - (w.upgrades[UPG_TESLA] ?? 0) * 6 - crownRate(w);
+  return Math.max(crownOn(w) ? 8 : 18, base);
 }
 
 export function teslaRange(w: World): number {
@@ -140,11 +163,11 @@ export function teslaChain(w: World): number {
 }
 
 export function teslaPower(w: World): number {
-  return (w.upgrades[UPG_TESLA] ?? 0) + (w.upgrades[EVOL_STORM] ?? 0);
+  return (w.upgrades[UPG_TESLA] ?? 0) + (w.upgrades[EVOL_STORM] ?? 0) + crownHops(w);
 }
 
 export function shieldReload(w: World): number {
-  return Math.max(40, 180 - (w.upgrades[UPG_SHIELD] ?? 0) * 20 - (w.upgrades[EVOL_AEGIS] ?? 0) * 24);
+  return Math.max(40, 180 - (w.upgrades[UPG_SHIELD] ?? 0) * 20 - (w.upgrades[EVOL_AEGIS] ?? 0) * 24 - briarRate(w));
 }
 
 export function ventEvery(w: World): number {
@@ -152,11 +175,11 @@ export function ventEvery(w: World): number {
 }
 
 export function ventRange(w: World): number {
-  return 32 + (w.upgrades[UPG_VENT] ?? 0) * 14 + (w.upgrades[EVOL_AEGIS] ?? 0) * 8;
+  return 32 + (w.upgrades[UPG_VENT] ?? 0) * 14 + (w.upgrades[EVOL_AEGIS] ?? 0) * 8 + heartReach(w);
 }
 
 export function mortarEvery(w: World): number {
-  return Math.max(28, 96 - (w.upgrades[UPG_MORTAR] ?? 0) * 12);
+  return Math.max(16, 96 - (w.upgrades[UPG_MORTAR] ?? 0) * 12 - howitzerRate(w));
 }
 
 export function healEvery(w: World): number {
@@ -164,7 +187,7 @@ export function healEvery(w: World): number {
 }
 
 export function whistleRange(w: World): number {
-  return 34 + (w.upgrades[UPG_WHISTLE] ?? 0) * 16;
+  return 34 + (w.upgrades[UPG_WHISTLE] ?? 0) * 16 + calliopeReach(w);
 }
 
 export function upgName(id: number): string {
@@ -196,8 +219,10 @@ export function evolutionReady(w: World, id: number): boolean {
 
 export function offerable(w: World, id: number): boolean {
   if (id < 0 || id >= UPG_COUNT) return false;
+  const legacy = evolutionReady(w, id);
+  if (isUnion(id)) return unionReady(w, id, legacy);
   if ((w.upgrades[id] ?? 0) >= UPG_MAX) return false;
-  return evolutionReady(w, id);
+  return legacy;
 }
 
 export function canUpgrade(w: World): boolean {
@@ -209,6 +234,7 @@ export function canUpgrade(w: World): boolean {
 
 export function applyUpgrade(w: World, id: number): void {
   if (id < 0 || id >= UPG_COUNT) return;
+  if (grantUnion(w, id, evolutionReady(w, id))) return;
   const lv = w.upgrades[id] ?? 0;
   if (lv >= UPG_MAX) return;
   w.upgrades[id] = lv + 1;
@@ -268,7 +294,21 @@ export function rollOffers(w: World): void {
     if (!offerable(w, i)) continue;
     s[n++] = i;
   }
+  let unions = 0;
+  for (let i = 0; i < n; i++) {
+    if (!isUnion(s[i] ?? -1)) continue;
+    const t = s[unions] ?? 0;
+    s[unions] = s[i] ?? 0;
+    s[i] = t;
+    unions++;
+  }
   for (let i = 0; i < OFFER_N; i++) w.offers[i] = -1;
+  if (unions > 0) {
+    const take = unions < OFFER_N ? unions : OFFER_N;
+    for (let i = 0; i < take; i++) w.offers[i] = s[i] ?? -1;
+    if (take < OFFER_N) w.offers[take] = pickOffer(w, n, w.offers[0] ?? -1);
+    return;
+  }
   const first = pickOffer(w, n, -1);
   w.offers[0] = first;
   if (OFFER_N > 1) w.offers[1] = pickOffer(w, n, first);
