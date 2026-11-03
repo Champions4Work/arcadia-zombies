@@ -622,7 +622,7 @@ addEventListener("pointerdown", (e) => {
 addEventListener("pointermove", (e) => {
   if (session.phase === PHASE_PLAY && e.cancelable && !fromHud(e.target)) e.preventDefault();
   if (!stick.on || e.pointerId !== stickId) return;
-  moveStick(stick, e.clientX, e.clientY);
+  moveStick(stick, e.clientX, e.clientY, phoneChrome(innerWidth, innerHeight, envSafe("l"), envSafe("b")).joyR);
   input.dx = stick.dx;
   input.dy = stick.dy;
 });

@@ -1,4 +1,4 @@
-import { aimStick, STICK_DEAD, STICK_R } from "../src/shell/stick";
+import { aimStick, createStick, moveStick, pressStick, STICK_DEAD, STICK_R } from "../src/shell/stick";
 import {
   DESK_JOY_R,
   isPhone,
@@ -33,6 +33,18 @@ describe("phone chrome", () => {
 });
 
 describe("stick deadzone", () => {
+  it("maps full throw to the drawn radius, not the old 56px handle", () => {
+    const s = createStick();
+    pressStick(s, 0, 0);
+    moveStick(s, PHONE_JOY_R * 0.5, 0, PHONE_JOY_R);
+    expect(s.dx).toBeCloseTo(0.5);
+    moveStick(s, PHONE_JOY_R, 0, PHONE_JOY_R);
+    expect(s.dx).toBe(1);
+    moveStick(s, STICK_R, 0, PHONE_JOY_R);
+    expect(s.dx).toBeCloseTo(STICK_R / PHONE_JOY_R);
+    expect(s.dx).toBeLessThan(1);
+  });
+
   it("ignores a nudge inside the deadzone and still maps the rim", () => {
     const quiet = aimStick(0, 0, STICK_R * STICK_DEAD * 0.5, 0, STICK_R);
     expect(quiet.dx).toBe(0);
