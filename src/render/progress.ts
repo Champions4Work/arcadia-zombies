@@ -1,6 +1,6 @@
 import { briarOn, crownOn, haloOn } from "../sim/evolve";
 import { sawAngle, sawCount, sawRadius, sawSpin } from "../sim/progress";
-import type { World } from "../sim/types";
+import { TESLA_BOSS, type World } from "../sim/types";
 import { drawCards } from "./hud";
 import "./evolve";
 import { sawSprite } from "./sprites";
@@ -41,9 +41,10 @@ export function drawTesla(c: CanvasRenderingContext2D, w: World): void {
   c.moveTo(px, py);
   for (let i = 0; i < w.teslaN; i++) {
     const zi = w.teslaHit[i] ?? -1;
-    if (zi < 0 || zi >= w.zombies.x.length) continue;
-    const x = w.zombies.x[zi] ?? px;
-    const y = (w.zombies.y[zi] ?? py) - 16;
+    const bossHop = zi === TESLA_BOSS;
+    if (!bossHop && (zi < 0 || zi >= w.zombies.x.length)) continue;
+    const x = bossHop ? w.boss.x : (w.zombies.x[zi] ?? px);
+    const y = (bossHop ? w.boss.y : (w.zombies.y[zi] ?? py)) - 16;
     c.lineTo((px + x) / 2 + Math.sin(w.tick * 1.7 + i * 2) * 8, (py + y) / 2 + Math.cos(w.tick * 1.3 + i) * 6);
     c.lineTo(x, y);
     px = x;

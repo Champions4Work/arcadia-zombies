@@ -62,6 +62,16 @@ export interface Pool {
   x: Float32Array; y: Float32Array; vx: Float32Array; vy: Float32Array;
   hp: Int16Array; alive: Uint8Array; kind: Uint8Array;
 }
+export interface Boss {
+  on: number; pending: number; tele: number; kind: number; n: number; hp: number; maxHp: number;
+  x: number; y: number; vx: number; vy: number; phase: number; mode: number;
+  timer: number; warn: number; aimX: number; aimY: number; slam: number; slamHit: number;
+  slow: number; tier: number;
+  shotX: Float32Array; shotY: Float32Array; shotVx: Float32Array; shotVy: Float32Array;
+  shotR: Float32Array; shotLife: Int16Array; shotKind: Uint8Array;
+  cloudX: Float32Array; cloudY: Float32Array; cloudR: Float32Array; cloudLife: Int16Array;
+  bulletMark: Uint8Array;
+}
 export interface World {
   rng: Rng; tick: number; px: number; py: number; hp: number; maxHp: number;
   score: number; mods: number; wave: number; toSpawn: number; spawnCd: number; fireCd: number;
@@ -83,6 +93,7 @@ export interface World {
   chestX: Float32Array; chestY: Float32Array; chestOn: Uint8Array; chestPrize: Int8Array;
   chestOpen: number; chestCount: number; chestT: number; chestDur: number;
   chestGold: number; chestLinger: number; chestCursor: number; chestSeal: number;
+  boss: Boss;
 }
 export const EV_SHOT = 0;
 export const EV_KILL = 1;
@@ -97,4 +108,7 @@ export const EV_BOOM = 9;
 export const EV_REVIVE = 10;
 export const EV_CHEST = 11;
 export const EV_CHEST_END = 12;
-export const EV_N = 13;
+export const EV_SIREN = 13;
+export const EV_N = 14;
+export const TESLA_BOSS = -2;
+export const TELE_BOSS = 0x40;

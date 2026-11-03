@@ -144,6 +144,13 @@ export function lichPhase(w: World): number {
   return of(w).phase;
 }
 
+export function finaleBlocksBoss(w: World): boolean {
+  const f = of(w);
+  if (f.on === 1) return true;
+  if (f.endless === 1) return false;
+  return w.tick >= FINALE_TICK;
+}
+
 export function holdSpawns(w: World): boolean {
   const f = of(w);
   if (f.on === 1) return true;

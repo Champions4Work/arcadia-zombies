@@ -1,5 +1,5 @@
 import {
-  EV_HURT, EV_KILL, EV_LEVEL, EV_RANK, EV_SAW, EV_SHIELD, EV_SHOT, EV_TESLA, FX_SPARK,
+  EV_HURT, EV_KILL, EV_LEVEL, EV_RANK, EV_SAW, EV_SHIELD, EV_SHOT, EV_SIREN, EV_TESLA, FX_SPARK,
   MAX_FX, UPG_PIERCE, UPG_SHOTGUN, WPN_FLAME, WPN_HARP, WPN_MORT, WPN_SHOT, type World,
 } from "../sim/types";
 
@@ -206,6 +206,7 @@ export function collectCues(w: World, track: SfxTrack, out: Uint8Array): number 
   if (w.events[EV_SHOT]) n = put(out, n, shotCue(w));
   if (w.events[EV_TESLA]) n = put(out, n, CUE_TESLA);
   if (w.events[EV_SHIELD]) n = put(out, n, CUE_SHIELD);
+  if (w.events[EV_SIREN]) n = put(out, n, CUE_BOSS);
   const saw = (w.events[EV_SAW] ?? 0) > 0;
   if (saw) n = put(out, n, CUE_SAW);
   if (w.events[EV_KILL]) n = put(out, n, CUE_DEATH);

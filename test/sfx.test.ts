@@ -1,7 +1,7 @@
 import { applyUpgrade, sawAngle, sawRadius, takeXp, xpNeed } from "../src/sim/progress";
 import { step } from "../src/sim/step.hot";
 import {
-  EV_HURT, EV_KILL, EV_LEVEL, EV_RANK, EV_SAW, EV_SHIELD, EV_SHOT, EV_TESLA, FX_SPARK,
+  EV_HURT, EV_KILL, EV_LEVEL, EV_RANK, EV_SAW, EV_SHIELD, EV_SHOT, EV_SIREN, EV_TESLA, FX_SPARK,
   UPG_PIERCE, UPG_SAWS, UPG_SHIELD, UPG_SHOTGUN, UPG_TESLA, type Input, type World,
 } from "../src/sim/types";
 import { createWorld } from "../src/sim/world";
@@ -11,7 +11,7 @@ import {
   sfxMuted, sfxVolume, type SfxSink,
 } from "../src/render/sfx";
 import {
-  admitCue, clampSfxVolume, CUE_BOSS, CUE_CLICK, CUE_DEATH, CUE_HIT, CUE_HURT, CUE_LEVEL,
+  admitCue, clampSfxVolume, collectCues, createSfxTrack, CUE_BOSS, CUE_CLICK, CUE_DEATH, CUE_HIT, CUE_HURT, CUE_LEVEL,
   CUE_N, CUE_PICK, CUE_RANK, CUE_RIFLE, CUE_RIVET, CUE_SAW, CUE_SHIELD, CUE_SHOTGUN, CUE_TESLA,
   cueBase, cueDur, cueGap, createSfxGate, isBossWave, loadSfxPrefs, mixGain,
   saveSfxPrefs, SFX_MUTE_KEY, SFX_VOL_DEFAULT, SFX_VOL_KEY, sfxMuteLabel,
@@ -198,6 +198,14 @@ describe("world cues", () => {
     heard.length = 0;
     vols.length = 0;
     t = 0;
+  });
+
+  it("sirens when a boss warning is up", () => {
+    const w = createWorld(1);
+    const out = new Uint8Array(CUE_N);
+    w.events[EV_SIREN] = 1;
+    const n = collectCues(w, createSfxTrack(), out);
+    expect(Array.from(out.subarray(0, n))).toContain(CUE_BOSS);
   });
 
   it("horns on a rank change and sirens once on a boss wave", () => {
