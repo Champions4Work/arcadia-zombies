@@ -8,6 +8,7 @@ import {
   loadStore,
   MUTE_KEY,
   onBlur,
+  SHAKE_KEY,
   PHASE_OVER,
   PHASE_PAUSE,
   PHASE_PLAY,
@@ -119,7 +120,8 @@ describe("session phases", () => {
     syncStore(s, store);
     expect(store.getItem(BEST_KEY)).toBe("7");
     expect(store.getItem(MUTE_KEY)).toBe("1");
-    expect(loadStore(store)).toEqual({ best: 7, muted: true });
+    expect(loadStore(store)).toEqual({ best: 7, muted: true, shake: true });
+    expect(store.getItem(SHAKE_KEY)).toBe("1");
     store.setItem(BEST_KEY, "nope");
     expect(loadStore(store).best).toBe(0);
   });

@@ -6,12 +6,14 @@ export type Phase = typeof PHASE_TITLE | typeof PHASE_PLAY | typeof PHASE_PAUSE 
 
 export const BEST_KEY = "arcadia.best";
 export const MUTE_KEY = "arcadia.muted";
+export const SHAKE_KEY = "arcadia.shake";
 
 export interface Session {
   phase: Phase;
   best: number;
   last: number;
   muted: boolean;
+  shake: boolean;
 }
 
 export interface Store {
@@ -19,8 +21,8 @@ export interface Store {
   setItem(key: string, value: string): void;
 }
 
-export function createSession(best = 0, muted = false): Session {
-  return { phase: PHASE_TITLE, best: Math.max(0, best | 0), last: 0, muted };
+export function createSession(best = 0, muted = false, shake = true): Session {
+  return { phase: PHASE_TITLE, best: Math.max(0, best | 0), last: 0, muted, shake };
 }
 
 export function shouldStep(s: Session): boolean {
@@ -63,12 +65,18 @@ export function toggleMute(s: Session): void {
   s.muted = !s.muted;
 }
 
-export function loadStore(store: Store): { best: number; muted: boolean } {
+export function toggleShake(s: Session): void {
+  s.shake = !s.shake;
+}
+
+export function loadStore(store: Store): { best: number; muted: boolean; shake: boolean } {
   const best = Math.max(0, Math.floor(Number(store.getItem(BEST_KEY)) || 0));
-  return { best, muted: store.getItem(MUTE_KEY) === "1" };
+  const raw = store.getItem(SHAKE_KEY);
+  return { best, muted: store.getItem(MUTE_KEY) === "1", shake: raw !== "0" };
 }
 
 export function syncStore(s: Session, store: Store): void {
   store.setItem(BEST_KEY, String(s.best));
   store.setItem(MUTE_KEY, s.muted ? "1" : "0");
+  store.setItem(SHAKE_KEY, s.shake ? "1" : "0");
 }

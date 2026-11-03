@@ -4,6 +4,7 @@ import {
   Z_BRUTE, Z_GHOUL, type World,
 } from "../sim/types";
 import { drawProgress } from "./progress";
+import { absorbShake, shakePixels } from "./shake";
 
 const SOOT = "#120c08";
 const GROUT = "#1a120b";
@@ -408,19 +409,6 @@ function overlay(c: CanvasRenderingContext2D, w: World): void {
   print(c, 150, 178, "TAP OR PRESS R", COPPER_HI, 2);
 }
 
-function shakeOf(w: World): number {
-  let s = 0;
-  if (w.hurtCd > 32) s = 6;
-  else if (w.hurtCd > 18) s = 3;
-  for (let i = 0; i < MAX_FX; i++) {
-    const age = w.tick - (w.fxTick[i] ?? 0);
-    const kind = w.fxKind[i] ?? 0;
-    if (kind === FX_PUFF && age < 8) s = Math.max(s, 4);
-    if (kind === FX_FLASH && age < 4) s = Math.max(s, 2);
-  }
-  return s;
-}
-
 function drawZombie(c: CanvasRenderingContext2D, w: World, i: number): void {
   const x = w.zombies.x[i] ?? 0;
   const y = w.zombies.y[i] ?? 0;
@@ -434,19 +422,16 @@ let lastPx = 0;
 let lastPy = 0;
 let walk = 0;
 
-export function draw(c: CanvasRenderingContext2D, w: World): void {
+export function draw(c: CanvasRenderingContext2D, w: World, shake = true): void {
   c.imageSmoothingEnabled = false;
   if (Math.abs(w.px - lastPx) + Math.abs(w.py - lastPy) > 0.2) walk = 10;
   else if (walk > 0) walk--;
   lastPx = w.px;
   lastPy = w.py;
-  const s = shakeOf(w);
+  absorbShake(w.tick, w.events);
+  const [sx, sy] = shakePixels(w.tick, shake);
   c.save();
-  if (s > 0) {
-    const jx = ((w.tick * 17) & 3) - 1;
-    const jy = ((w.tick * 13) & 3) - 1;
-    c.translate(jx * s * 0.55, jy * s * 0.55);
-  }
+  if (sx !== 0 || sy !== 0) c.translate(sx, sy);
   cobble(c);
   gear(c, 56, 78, 30, w.tick * 0.01, BRASS_LO);
   gear(c, 424, 264, 38, -w.tick * 0.008, COPPER);
