@@ -1,8 +1,25 @@
 import { createRng } from "./rng";
-import { H, MAX_BULLETS, MAX_ZOMBIES, W, type Pool, type World } from "./types";
-const pool = (n: number): Pool => ({ x: new Float32Array(n), y: new Float32Array(n), vx: new Float32Array(n), vy: new Float32Array(n), hp: new Int16Array(n), alive: new Uint8Array(n) });
-export const createWorld = (seed: number): World => ({
-  rng: createRng(seed), tick: 0, px: W / 2, py: H / 2, hp: 5, score: 0, wave: 0,
-  toSpawn: 0, spawnCd: 0, fireCd: 0, hurtCd: 0, over: false,
-  zombies: pool(MAX_ZOMBIES), bullets: pool(MAX_BULLETS), events: new Uint8Array(4),
+import {
+  EV_N, H, MAX_BULLETS, MAX_COGS, MAX_ZOMBIES, OFFER_N, UPG_COUNT, W, type Pool, type World,
+} from "./types";
+const pool = (n: number): Pool => ({
+  x: new Float32Array(n), y: new Float32Array(n), vx: new Float32Array(n), vy: new Float32Array(n),
+  hp: new Int16Array(n), alive: new Uint8Array(n),
 });
+export const createWorld = (seed: number): World => {
+  const offers = new Int8Array(OFFER_N);
+  offers.fill(-1);
+  const teslaHit = new Int16Array(8);
+  teslaHit.fill(-1);
+  const bHit = new Int16Array(MAX_BULLETS);
+  bHit.fill(-1);
+  return {
+    rng: createRng(seed), tick: 0, px: W / 2, py: H / 2, hp: 5, maxHp: 5,
+    score: 0, wave: 0, toSpawn: 0, spawnCd: 0, fireCd: 0, hurtCd: 0, over: false,
+    xp: 0, level: 0, choosing: 0, teslaCd: 0, teslaN: 0, teslaFlash: 0, shield: 0, shieldCd: 0,
+    zombies: pool(MAX_ZOMBIES), bullets: pool(MAX_BULLETS), cogs: pool(MAX_COGS),
+    events: new Uint8Array(EV_N), upgrades: new Uint8Array(UPG_COUNT), offers,
+    scratch: new Uint8Array(UPG_COUNT), bHit, bPierce: new Uint8Array(MAX_BULLETS),
+    zMark: new Uint8Array(MAX_ZOMBIES), teslaHit,
+  };
+};

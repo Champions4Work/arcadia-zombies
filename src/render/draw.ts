@@ -1,4 +1,5 @@
 import { H, MAX_BULLETS, MAX_ZOMBIES, W, type World } from "../sim/types";
+import { drawProgress } from "./progress";
 const BRASS = "#c8963e";
 const COPPER = "#b5562f";
 function gear(c: CanvasRenderingContext2D, x: number, y: number, r: number, a: number): void {
@@ -27,6 +28,7 @@ export function draw(c: CanvasRenderingContext2D, w: World): void {
   }
   c.fillStyle = BRASS; c.font = "bold 14px monospace";
   c.fillText(`HP ${"♥".repeat(Math.max(0, w.hp))}  SCORE ${w.score}  WAVE ${w.wave}`, 8, 18);
+  drawProgress(c, w);
   if (w.over) {
     c.fillStyle = "rgba(0,0,0,0.6)"; c.fillRect(0, 0, W, H);
     c.fillStyle = BRASS; c.font = "bold 28px monospace"; c.textAlign = "center";
