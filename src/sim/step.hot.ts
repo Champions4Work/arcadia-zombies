@@ -20,6 +20,8 @@ import {
   ventEvery, ventRange, whistleRange,
 } from "./progress";
 import { hasMod, hordeBudget, hordeGap, MOD_NOHEAL } from "./modifiers";
+import { tryReroll } from "./reroll";
+import { fell } from "./revive";
 import { stepMapEvents } from "./map-events.hot";
 import { clearMapStrike, mapStrikeDmg, mapStrikeOn, mapStrikeR, mapStrikeX, mapStrikeY } from "./map-events";
 import {
@@ -154,6 +156,7 @@ export function step(w: World, input: Input): void {
   if (w.over) return;
   if (juiceFrame(JUICE_DT)) return;
   if (w.choosing) {
+    if ((input.reroll ?? 0) > 0 && tryReroll(w)) return;
     tryPick(w, input.pick ?? 0);
     return;
   }
@@ -256,7 +259,7 @@ export function step(w: World, input: Input): void {
           thorns(w, spikes);
           if (w.over) return;
         }
-        if (w.hp <= 0) { w.over = true; return; }
+        if (fell(w)) return;
       }
     }
   }

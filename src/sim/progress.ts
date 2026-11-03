@@ -97,18 +97,23 @@ export function xpNeed(level: number): number {
 }
 
 export function fireEvery(w: World): number {
-  const base = 12 - (w.upgrades[UPG_FIRE] ?? 0) * 2;
+  const base = 12 - ((w.upgrades[UPG_FIRE] ?? 0) + w.meta.gun) * 2;
   if (characterAt(w.charId).passive !== PASSIVE_FIRE) return Math.max(3, base);
   return Math.max(3, Math.round(base * 100 / 130));
 }
 
 export function moveSpeed(w: World): number {
-  return 2 + (w.upgrades[UPG_SPEED] ?? 0) * 0.4 + characterAt(w.charId).speed;
+  return 2 + (w.upgrades[UPG_SPEED] ?? 0) * 0.4 + characterAt(w.charId).speed + w.meta.spd;
+}
+
+export function maxHpOf(w: World): number {
+  const base = hasMod(w.mods, MOD_GLASS) ? 1 : 5 + characterAt(w.charId).hp;
+  return base + w.meta.hp + (w.upgrades[UPG_HP] ?? 0);
 }
 
 export function bulletDmg(w: World): number {
   const row = characterAt(w.charId);
-  let dmg = 1 + (w.upgrades[UPG_DMG] ?? 0) + (w.upgrades[EVOL_CANNON] ?? 0) + row.dmg + slugBonus(w);
+  let dmg = 1 + (w.upgrades[UPG_DMG] ?? 0) + (w.upgrades[EVOL_CANNON] ?? 0) + row.dmg + slugBonus(w) + w.meta.dmg;
   if (row.passive === PASSIVE_RAGE && w.hp * 2 <= w.maxHp) dmg += RAGE_DMG;
   return dmg;
 }
@@ -241,8 +246,7 @@ export function applyUpgrade(w: World, id: number): void {
   if (lv >= UPG_MAX) return;
   w.upgrades[id] = lv + 1;
   if (id === UPG_HP) {
-    const base = hasMod(w.mods, MOD_GLASS) ? 1 : 5 + characterAt(w.charId).hp;
-    w.maxHp = base + (w.upgrades[UPG_HP] ?? 0);
+    w.maxHp = maxHpOf(w);
     if (!hasMod(w.mods, MOD_NOHEAL)) w.hp = w.maxHp;
   }
   if (id === UPG_SHIELD) {
@@ -329,6 +333,7 @@ export function beginLevel(w: World): void {
   rollOffers(w);
   if ((w.offers[0] ?? -1) < 0) return;
   w.choosing = 1;
+  w.meta.rerollLeft = w.meta.reroll;
   w.events[EV_LEVEL] = 1;
 }
 

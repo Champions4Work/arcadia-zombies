@@ -1,4 +1,5 @@
 import { juicePlayerHurt } from "../render/juice";
+import { fell } from "./revive";
 import { ARENA_H, ARENA_W } from "./arena";
 import { clock, scoreMul, tierAt } from "./difficulty";
 import { applyScore, cannonHit, pacedSpeed } from "./modifiers";
@@ -294,7 +295,7 @@ function hurtPlayer(w: World, dmg: number): void {
   w.hp -= dmg;
   w.events[EV_HURT] = 1;
   juicePlayerHurt();
-  if (w.hp <= 0) w.over = true;
+  fell(w);
 }
 
 function clampLich(f: Lich): void {

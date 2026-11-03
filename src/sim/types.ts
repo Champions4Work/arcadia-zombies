@@ -53,7 +53,11 @@ export const FX_SPARK = 2;
 export const FX_PUFF = 3;
 export const FX_XP = 4;
 export const FX_BOOM = 5;
-export interface Input { dx: number; dy: number; pick?: number }
+export interface RunMods {
+  hp: number; dmg: number; spd: number; gun: number;
+  revive: number; reroll: number; rerollLeft: number; banked: number;
+}
+export interface Input { dx: number; dy: number; pick?: number; reroll?: number }
 export interface Pool {
   x: Float32Array; y: Float32Array; vx: Float32Array; vy: Float32Array;
   hp: Int16Array; alive: Uint8Array; kind: Uint8Array;
@@ -61,7 +65,7 @@ export interface Pool {
 export interface World {
   rng: Rng; tick: number; px: number; py: number; hp: number; maxHp: number;
   score: number; mods: number; wave: number; toSpawn: number; spawnCd: number; fireCd: number;
-  hurtCd: number; over: boolean; xp: number; level: number; choosing: number;
+  hurtCd: number; over: boolean; kills: number; xp: number; level: number; choosing: number;
   teslaCd: number; teslaN: number; teslaFlash: number; shield: number; shieldCd: number;
   aimX: number; aimY: number;
   rank: number; rankFlash: number; banner: number;
@@ -74,6 +78,7 @@ export interface World {
   wpnCd: Int16Array; gun: number;
   fxKind: Uint8Array; fxX: Float32Array; fxY: Float32Array; fxA: Float32Array; fxTick: Int32Array; fxHead: number;
   arena: Arena;
+  meta: RunMods;
 }
 export const EV_SHOT = 0;
 export const EV_KILL = 1;
@@ -85,4 +90,5 @@ export const EV_SHIELD = 6;
 export const EV_RANK = 7;
 export const EV_SAW = 8;
 export const EV_BOOM = 9;
-export const EV_N = 10;
+export const EV_REVIVE = 10;
+export const EV_N = 11;

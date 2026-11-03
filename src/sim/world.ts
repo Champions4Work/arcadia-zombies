@@ -36,7 +36,7 @@ export const createWorld = (seed: number, charId = CHAR_TINKER, mods = 0): World
   upgrades[UPG_WPN_RIVET] = 1;
   const world: World = {
     rng: createRng(seed), tick: 0, px: ARENA_W / 2, py: ARENA_H / 2, hp: 5, maxHp: 5,
-    score: 0, mods: bits, wave: 0, toSpawn: 0, spawnCd: 0, fireCd: 0, hurtCd: 0, over: false,
+    score: 0, mods: bits, wave: 0, toSpawn: 0, spawnCd: 0, fireCd: 0, hurtCd: 0, over: false, kills: 0,
     xp: 0, level: 0, choosing: 0, teslaCd: 0, teslaN: 0, teslaFlash: 0, shield: 0, shieldCd: 0,
     aimX: 1, aimY: 0,
     rank: 0, rankFlash: 0, banner: 0, ventCd: 0, healCd: 0, mortarCd: 0,
@@ -51,6 +51,7 @@ export const createWorld = (seed: number, charId = CHAR_TINKER, mods = 0): World
     fxKind: new Uint8Array(MAX_FX), fxX: new Float32Array(MAX_FX), fxY: new Float32Array(MAX_FX),
     fxA: new Float32Array(MAX_FX), fxTick: new Int32Array(MAX_FX), fxHead: 0,
     arena: createArena(seed, ARENA_W / 2, ARENA_H / 2),
+    meta: { hp: 0, dmg: 0, spd: 0, gun: 0, revive: 0, reroll: 0, rerollLeft: 0, banked: 0 },
   };
   attachFinale(world);
   attachMapEvents(world);

@@ -45,7 +45,15 @@ canvas{position:fixed;inset:0;display:block;width:100%;height:100%}
 #mods button[aria-pressed="true"]{color:#1c120c;background:linear-gradient(#fff1c2,#f0b03a)}
 #summary{margin:0;max-height:42vh;overflow:auto;font:700 13px/1.45 Inter,Cantarell,sans-serif;color:#fff1c2;letter-spacing:.06em;text-align:center;white-space:pre-line}
 #go{font:800 18px Inter,Cantarell,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#1c120c;background:linear-gradient(#fff1c2,#f0b03a);border:3px solid #1c120c;border-radius:14px;padding:12px 36px;cursor:pointer}
+#workshop,#back{font:800 13px/1 Inter,Cantarell,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#fff1c2;background:transparent;border:3px solid #f0b03a;border-radius:12px;padding:10px 14px;cursor:pointer}
+#bench{display:flex;flex-direction:column;gap:8px;width:min(440px,86vw);max-height:42vh;overflow:auto}
+#bench[hidden]{display:none}
+.fit{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px;border:3px solid #f0b03a;border-radius:12px;background:#1c120c;color:#fff1c2;font:700 12px/1.35 Inter,Cantarell,sans-serif}
+.fit b{color:#ffe7ad}
+.fit button{font:800 11px Inter,Cantarell,sans-serif;color:#1c120c;background:linear-gradient(#fff1c2,#f0b03a);border:2px solid #1c120c;border-radius:8px;padding:8px;cursor:pointer}
+.fit button:disabled{opacity:.4;cursor:default}
 #opts{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+#opts[hidden],#sfx[hidden]{display:none}
 #shake,#numbers,#codex,#endless{font:800 13px/1 Inter,Cantarell,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#fff1c2;background:transparent;border:3px solid #f0b03a;border-radius:12px;padding:10px 14px;cursor:pointer}
 #book{margin:0;max-height:42vh;overflow:auto;width:min(440px,86vw);font:700 12px/1.45 Inter,Cantarell,sans-serif;color:#fff1c2;letter-spacing:.03em;text-align:left;touch-action:auto}
 #book h2{margin:12px 0 4px;font:800 11px/1 Inter,Cantarell,sans-serif;letter-spacing:.16em;color:#f0b03a}
@@ -72,6 +80,9 @@ canvas{position:fixed;inset:0;display:block;width:100%;height:100%}
     <pre id="summary" hidden></pre>
     <div id="roster" role="group" aria-label="Choose survivor"></div>
     <button id="go" type="button">Play</button>
+    <button id="workshop" type="button">Workshop</button>
+    <button id="back" type="button" hidden>Back</button>
+    <div id="bench" hidden></div>
     <button id="codex" type="button" aria-expanded="false">Codex</button>
     <div id="book" hidden></div>
     <div id="opts">

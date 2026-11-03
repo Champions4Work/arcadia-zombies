@@ -2,7 +2,8 @@ export const PHASE_TITLE = "title";
 export const PHASE_PLAY = "play";
 export const PHASE_PAUSE = "pause";
 export const PHASE_OVER = "over";
-export type Phase = typeof PHASE_TITLE | typeof PHASE_PLAY | typeof PHASE_PAUSE | typeof PHASE_OVER;
+export const PHASE_WORKSHOP = "workshop";
+export type Phase = typeof PHASE_TITLE | typeof PHASE_PLAY | typeof PHASE_PAUSE | typeof PHASE_OVER | typeof PHASE_WORKSHOP;
 
 export const BEST_KEY = "arcadia.best";
 export const MUTE_KEY = "arcadia.muted";
@@ -17,6 +18,7 @@ export interface Session {
   shake: boolean;
   numbers: boolean;
   codex: boolean;
+  shopFrom: Phase;
 }
 
 export interface Store {
@@ -25,7 +27,20 @@ export interface Store {
 }
 
 export function createSession(best = 0, muted = false, shake = true, numbers = true): Session {
-  return { phase: PHASE_TITLE, best: Math.max(0, best | 0), last: 0, muted, shake, numbers, codex: false };
+  return { phase: PHASE_TITLE, best: Math.max(0, best | 0), last: 0, muted, shake, numbers, codex: false, shopFrom: PHASE_TITLE };
+}
+
+export function openWorkshop(s: Session): boolean {
+  if (s.phase !== PHASE_TITLE && s.phase !== PHASE_OVER) return false;
+  s.codex = false;
+  s.shopFrom = s.phase;
+  s.phase = PHASE_WORKSHOP;
+  return true;
+}
+
+export function closeWorkshop(s: Session): void {
+  if (s.phase !== PHASE_WORKSHOP) return;
+  s.phase = s.shopFrom === PHASE_OVER ? PHASE_OVER : PHASE_TITLE;
 }
 
 export function shouldStep(s: Session): boolean {
@@ -41,6 +56,7 @@ export function closeCodex(s: Session): void {
 }
 
 export function begin(s: Session): boolean {
+  if (s.phase === PHASE_WORKSHOP) return false;
   s.codex = false;
   if (s.phase === PHASE_TITLE || s.phase === PHASE_OVER) {
     s.phase = PHASE_PLAY;

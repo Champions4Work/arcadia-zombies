@@ -7,6 +7,7 @@ import { drawLich } from "./finale";
 import { renderHorde } from "./horde-draw";
 import { drawJuice } from "./juice";
 import { drawCards, drawHud } from "./hud";
+import { drawReroll } from "./reroll";
 import { drawSaws, drawShield, drawTesla } from "./progress";
 import { LAYER_BACK, LAYER_FRONT, LAYER_HUD, LAYER_MID, paintLayers } from "./plugins";
 import "./map-events";
@@ -98,6 +99,7 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
   if (opts?.hud !== false) drawHud(c, w);
   paintArrows(c, w);
   drawCards(c, w);
+  drawReroll(c, w);
   if (w.over) {
     c.fillStyle = "rgba(8,4,14,0.5)";
     c.fillRect(0, 0, W, H);
