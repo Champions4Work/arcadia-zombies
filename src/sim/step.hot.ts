@@ -9,6 +9,7 @@ import {
   sawRadius, shieldReload, takeXp, teslaChain, teslaEvery, teslaPower, teslaRange, tryPick,
   ventEvery, ventRange, whistleRange,
 } from "./progress";
+import { freshShot, holdSpawns, lichMinion, lichUp, lichX, lichY, stepFinale, tallyKill, watchFinale } from "./finale";
 import {
   EV_HURT, EV_KILL, EV_RANK, EV_SAW, EV_SHIELD, EV_SHOT, EV_TESLA, EV_WAVE, FX_FLASH, FX_PUFF, FX_SPARK,
   FX_XP, H, MAX_BULLETS, MAX_FX, MAX_ZOMBIES, UPG_COOLANT, UPG_DYNAMO, UPG_MORTAR, UPG_PIERCE, UPG_RICOCHET,
@@ -31,6 +32,7 @@ function killZombie(w: World, i: number): void {
   const x = z.x[i] ?? 0;
   const y = z.y[i] ?? 0;
   z.alive[i] = 0;
+  tallyKill(w);
   w.score += foeScore(raw, w.wave, w.rank);
   w.events[EV_KILL] = 1;
   emitFx(w, FX_PUFF, x, y, raw & Z_KIND);
@@ -74,6 +76,7 @@ function shootDir(w: World, ux: number, uy: number): void {
     b.hp[j] = 0;
     b.kind[j] = w.upgrades[UPG_RICOCHET] ?? 0;
     w.bHit[j] = -1;
+    freshShot(w, j);
     w.bPierce[j] = (w.upgrades[UPG_PIERCE] ?? 0) + (w.upgrades[EVOL_CANNON] ?? 0);
     w.events[EV_SHOT] = 1;
     emitFx(w, FX_FLASH, w.px + ux * 11, w.py + uy * 7, Math.atan2(uy, ux));
@@ -82,18 +85,32 @@ function shootDir(w: World, ux: number, uy: number): void {
 }
 function fire(w: World): void {
   const z = w.zombies;
-  let best = -1;
-  let bd = 1e12;
-  for (let i = 0; i < MAX_ZOMBIES; i++) {
-    if (!z.alive[i]) continue;
-    const dx = (z.x[i] ?? 0) - w.px;
-    const dy = (z.y[i] ?? 0) - w.py;
-    const d = dx * dx + dy * dy;
-    if (d < bd) { bd = d; best = i; }
+  let tx = 0;
+  let ty = 0;
+  let found = false;
+  if (lichUp(w)) {
+    tx = lichX(w);
+    ty = lichY(w);
+    found = true;
+  } else {
+    let best = -1;
+    let bd = 1e12;
+    for (let i = 0; i < MAX_ZOMBIES; i++) {
+      if (!z.alive[i]) continue;
+      const dx = (z.x[i] ?? 0) - w.px;
+      const dy = (z.y[i] ?? 0) - w.py;
+      const d = dx * dx + dy * dy;
+      if (d < bd) { bd = d; best = i; }
+    }
+    if (best >= 0) {
+      tx = z.x[best] ?? 0;
+      ty = z.y[best] ?? 0;
+      found = true;
+    }
   }
-  if (best < 0) return;
-  const dx = (z.x[best] ?? 0) - w.px;
-  const dy = (z.y[best] ?? 0) - w.py;
+  if (!found) return;
+  const dx = tx - w.px;
+  const dy = ty - w.py;
   const len = Math.sqrt(dx * dx + dy * dy) || 1;
   const ux = dx / len;
   const uy = dy / len;
@@ -232,12 +249,15 @@ export function step(w: World, input: Input): void {
   const z = w.zombies;
   let alive = 0;
   for (let i = 0; i < MAX_ZOMBIES; i++) if (z.alive[i]) alive++;
-  if (alive === 0 && w.toSpawn === 0) {
+  watchFinale(w);
+  if (holdSpawns(w)) {
+    w.toSpawn = 0;
+  } else if (alive === 0 && w.toSpawn === 0) {
     w.wave++;
     w.toSpawn = 4 + w.wave * 2 + w.rank;
     w.events[EV_WAVE] = 1;
   }
-  if (w.toSpawn > 0 && --w.spawnCd <= 0) {
+  if (!holdSpawns(w) && w.toSpawn > 0 && --w.spawnCd <= 0) {
     spawnWaveFoe(w);
     w.toSpawn--;
     w.spawnCd = spawnEvery(w.rank);
@@ -293,7 +313,7 @@ export function step(w: World, input: Input): void {
           if (w.over) return;
         }
       } else {
-        w.hp -= scaledDmg(foeContact(raw), w.rank);
+        w.hp -= lichMinion(w, i) ? 1 : scaledDmg(foeContact(raw), w.rank);
         w.events[EV_HURT] = 1;
         const spikes = w.upgrades[UPG_SPIKES] ?? 0;
         if (spikes > 0) {
@@ -369,4 +389,5 @@ export function step(w: World, input: Input): void {
     w.mortarCd = mortarEvery(w);
   }
   spinSaws(w);
+  stepFinale(w);
 }

@@ -1,8 +1,8 @@
 import { setMusicOn, setMusicWave } from "./render/music";
 import { draw } from "./render/draw";
 import { pauseHit } from "./render/hud";
-import { bootSfx, persistSfx, playUiClick, playWorldSfx, resetSfxPlayback, setSfxVolume, sfxMuted, sfxVolume, toggleSfxMuted } from "./render/sfx";
-import { sfxMuteLabel, sfxVolumePercent } from "./render/sfx-cues";
+import { bootSfx, persistSfx, playSfxCue, playUiClick, playWorldSfx, resetSfxPlayback, setSfxVolume, sfxMuted, sfxVolume, toggleSfxMuted } from "./render/sfx";
+import { CUE_BOSS, sfxMuteLabel, sfxVolumePercent } from "./render/sfx-cues";
 import { setMuted, unlockAudio } from "./render/sound";
 import { applyCanvas, screenToGame, type Fit } from "./shell/fit";
 import {
@@ -22,7 +22,10 @@ import {
   toggleShake,
 } from "./shell/session";
 import { resetShake } from "./render/shake";
+import { devSeconds, loadCrown, markWon, saveCrown, toggleEndless } from "./shell/crown";
 import { createStick, liftStick, moveStick, pressStick, showRestStick } from "./shell/stick";
+import { clock } from "./sim/difficulty";
+import { armDevJump, isWon, killCount, setRunEndless, takeCue, victoryText } from "./sim/finale";
 import { cardSlot, summaryText } from "./sim/progress";
 import { step } from "./sim/step.hot";
 import { H, OFFER_N, W, type Input } from "./sim/types";
@@ -35,6 +38,7 @@ function tryStore(): { getItem(k: string): string | null; setItem(k: string, v: 
 const store = tryStore();
 const saved = store ? loadStore(store) : { best: 0, muted: false, shake: true };
 const session = createSession(saved.best, saved.muted, saved.shake);
+let crown = store ? loadCrown(store) : { won: false, endless: false };
 setMuted(session.muted);
 bootSfx(store);
 
@@ -47,6 +51,7 @@ const sub = document.getElementById("sub") as HTMLElement;
 const goBtn = document.getElementById("go") as HTMLButtonElement;
 const muteBtn = document.getElementById("mute") as HTMLButtonElement;
 const shakeBtn = document.getElementById("shake") as HTMLButtonElement;
+const endlessBtn = document.getElementById("endless") as HTMLButtonElement;
 const summary = document.getElementById("summary") as HTMLElement;
 const sfxMuteBtn = document.getElementById("sfx-mute") as HTMLButtonElement;
 const sfxVol = document.getElementById("sfx-vol") as HTMLInputElement;
@@ -65,7 +70,9 @@ let acc = 0;
 let last = performance.now();
 
 function persist(): void {
-  if (store) syncStore(session, store);
+  if (!store) return;
+  syncStore(session, store);
+  saveCrown(store, crown);
 }
 
 function paint(): void {
@@ -80,17 +87,25 @@ function paint(): void {
     sub.textContent = "Esc or tap Resume";
     goBtn.textContent = "Resume";
   } else if (session.phase === PHASE_OVER) {
-    headline.textContent = "The Gears Stop";
-    sub.textContent = `Best ${session.best}`;
+    if (isWon(world)) {
+      headline.textContent = "The Lich Falls";
+      sub.textContent = `${clock(world.tick)} · ${killCount(world)} KILLS`;
+    } else {
+      headline.textContent = "The Gears Stop";
+      sub.textContent = `Best ${session.best}`;
+    }
     goBtn.textContent = "Play";
   }
-  const over = session.phase === PHASE_OVER ? summaryText(world) : "";
+  const over = session.phase === PHASE_OVER ? (isWon(world) ? victoryText(world) : summaryText(world)) : "";
   summary.hidden = over.length === 0;
   summary.textContent = over;
   muteBtn.textContent = session.muted ? "Muted" : "Sound";
   muteBtn.setAttribute("aria-pressed", session.muted ? "true" : "false");
   shakeBtn.textContent = session.shake ? "Screen shake: On" : "Screen shake: Off";
   shakeBtn.setAttribute("aria-pressed", session.shake ? "true" : "false");
+  endlessBtn.hidden = !crown.won;
+  endlessBtn.textContent = crown.endless ? "Endless: On" : "Endless: Off";
+  endlessBtn.setAttribute("aria-pressed", crown.endless ? "true" : "false");
   sfxMuteBtn.textContent = sfxMuteLabel(sfxMuted());
   sfxMuteBtn.setAttribute("aria-pressed", sfxMuted() ? "true" : "false");
   if (document.activeElement !== sfxVol) sfxVol.value = String(sfxVolumePercent(sfxVolume()));
@@ -103,6 +118,9 @@ function startRun(): void {
   const reset = begin(session);
   if (reset) {
     world = createWorld(Date.now() >>> 0);
+    const jump = devSeconds(location.search, import.meta.env.DEV);
+    if (jump > 0) armDevJump(world, jump);
+    setRunEndless(world, crown.endless);
     resetShake();
     acc = 0;
     pendingPick = 0;
@@ -146,6 +164,14 @@ function sfxVolInput(): void {
   playUiClick();
 }
 
+function endless(): void {
+  unlockAudio();
+  crown = toggleEndless(crown);
+  setRunEndless(world, crown.endless);
+  playUiClick();
+  persist();
+  paint();
+}
 function placeJoy(): void {
   const playing = session.phase === PHASE_PLAY && !world.choosing;
   const rest = showRestStick(
@@ -163,6 +189,7 @@ function placeJoy(): void {
 
 function sfx(): void {
   playWorldSfx(world);
+  if (takeCue(world)) playSfxCue(CUE_BOSS);
 }
 
 goBtn.addEventListener("click", startRun);
@@ -170,6 +197,7 @@ muteBtn.addEventListener("click", mute);
 shakeBtn.addEventListener("click", shake);
 sfxMuteBtn.addEventListener("click", sfxMute);
 sfxVol.addEventListener("input", sfxVolInput);
+endlessBtn.addEventListener("click", endless);
 
 addEventListener("keydown", (e) => {
   const inSfx = e.target instanceof HTMLElement && !!e.target.closest("#sfx");
@@ -286,6 +314,11 @@ function frame(now: number): void {
       input.pick = 0;
       acc -= STEP_MS;
       sfx();
+      if (isWon(world) && !crown.won) {
+        crown = markWon(crown);
+        persist();
+        paint();
+      }
       if (world.over) {
         finish(session, world.score);
         persist();

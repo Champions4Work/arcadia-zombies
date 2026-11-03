@@ -31,7 +31,7 @@ canvas{position:fixed;inset:0;display:block;width:100%;height:100%}
 #sub{margin:0;font:600 16px/1.4 Inter,Cantarell,sans-serif;color:#f0c86a;letter-spacing:.06em;text-align:center}
 #summary{margin:0;max-height:42vh;overflow:auto;font:700 13px/1.45 Inter,Cantarell,sans-serif;color:#fff1c2;letter-spacing:.06em;text-align:center;white-space:pre-line}
 #go{font:800 18px Inter,Cantarell,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#1c120c;background:linear-gradient(#fff1c2,#f0b03a);border:3px solid #1c120c;border-radius:14px;padding:12px 36px;cursor:pointer}
-#shake{font:800 13px/1 Inter,Cantarell,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#fff1c2;background:transparent;border:3px solid #f0b03a;border-radius:12px;padding:10px 14px;cursor:pointer}
+#shake,#endless{font:800 13px/1 Inter,Cantarell,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#fff1c2;background:transparent;border:3px solid #f0b03a;border-radius:12px;padding:10px 14px;cursor:pointer}
 #sfx{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;touch-action:auto}
 #sfx-mute{font:800 12px/1 Inter,Cantarell,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#fff1c2;background:#1c120c;border:3px solid #f0b03a;border-radius:999px;padding:8px 12px;cursor:pointer;touch-action:auto}
 #sfx label{font:700 12px/1 Inter,Cantarell,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#f0c86a;display:flex;align-items:center;gap:8px}
@@ -51,6 +51,7 @@ canvas{position:fixed;inset:0;display:block;width:100%;height:100%}
     <pre id="summary" hidden></pre>
     <button id="go" type="button">Play</button>
     <button id="shake" type="button" aria-label="Screen shake" aria-pressed="true">Screen shake: On</button>
+    <button id="endless" type="button" hidden aria-label="Endless mode" aria-pressed="false">Endless: Off</button>
     <div id="sfx">
       <button id="sfx-mute" type="button" aria-label="Mute sound effects" aria-pressed="false">SFX On</button>
       <label>Vol <input id="sfx-vol" type="range" min="0" max="100" value="80" aria-label="Sound effects volume"></label>
