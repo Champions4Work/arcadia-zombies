@@ -126,14 +126,14 @@ export function parseQuestSave(raw: string | null, today: string): QuestState {
   if (typeof raw !== "string" || raw.length === 0) return fresh;
   let data: unknown;
   try { data = JSON.parse(raw); } catch { return fresh; }
-  if (!isRecord(data) || data.day !== today) return fresh;
+  if (!isRecord(data) || data["day"] !== today) return fresh;
   return {
     ...fresh,
-    kills: posInt(data.kills),
-    bestSeconds: posInt(data.bestSeconds),
-    unions: posInt(data.unions),
-    bestScore: posInt(data.bestScore),
-    bestLevel: posInt(data.bestLevel),
+    kills: posInt(data["kills"]),
+    bestSeconds: posInt(data["bestSeconds"]),
+    unions: posInt(data["unions"]),
+    bestScore: posInt(data["bestScore"]),
+    bestLevel: posInt(data["bestLevel"]),
   };
 }
 
@@ -143,12 +143,12 @@ export function loadQuests(store: QuestStore, today: string): QuestState {
 
 export function saveQuests(store: QuestStore, state: QuestState): void {
   const body = JSON.stringify({
-    day: state.day,
-    kills: state.kills,
-    bestSeconds: state.bestSeconds,
-    unions: state.unions,
-    bestScore: state.bestScore,
-    bestLevel: state.bestLevel,
+    "day": state.day,
+    "kills": state.kills,
+    "bestSeconds": state.bestSeconds,
+    "unions": state.unions,
+    "bestScore": state.bestScore,
+    "bestLevel": state.bestLevel,
   });
   try { store.setItem(QUEST_KEY, body); } catch { return; }
 }

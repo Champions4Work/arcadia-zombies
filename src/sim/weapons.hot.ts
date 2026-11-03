@@ -29,6 +29,15 @@ function aimAt(w: World): number {
     w.aimY = dy / len;
     return 1;
   }
+  const boss = w.boss;
+  if (boss.on) {
+    const dx = boss.x - w.px;
+    const dy = boss.y - w.py;
+    const len = Math.sqrt(dx * dx + dy * dy) || 1;
+    w.aimX = dx / len;
+    w.aimY = dy / len;
+    return 1;
+  }
   const z = w.zombies;
   const sight = fogSight(w);
   let best = -1;
@@ -62,6 +71,7 @@ function spawnShot(w: World, ux: number, uy: number, speed: number, dmg: number,
     b.kind[j] = bounce;
     w.bHit[j] = -1;
     w.bPierce[j] = pierce;
+    w.boss.bulletMark[j] = 0;
     w.bLife[j] = life;
     w.bGun[j] = gun;
     w.bRad[j] = 0;

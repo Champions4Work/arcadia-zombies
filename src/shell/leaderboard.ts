@@ -259,12 +259,12 @@ export function loadLeaderboard(store: Store): SavedRecords {
 export function saveLeaderboard(store: Store, saved: SavedRecords): void {
   try {
     store.setItem(LEADERBOARD_KEY, JSON.stringify({
-      v: 1,
-      board: saved.board.map((r) => ({
-        score: r.score, time: r.time, tier: r.tier, kills: r.kills, build: r.build, character: r.character, mods: r.mods, workshop: r.workshop,
+      "v": 1,
+      "board": saved.board.map((r) => ({
+        "score": r.score, "time": r.time, "tier": r.tier, "kills": r.kills, "build": r.build, "character": r.character, "mods": r.mods, "workshop": r.workshop,
       })),
-      life: { kills: saved.life.kills, bestTime: saved.life.bestTime, runs: saved.life.runs },
-      unlocked: saved.unlocked.slice(),
+      "life": { "kills": saved.life.kills, "bestTime": saved.life.bestTime, "runs": saved.life.runs },
+      "unlocked": saved.unlocked.slice(),
     }));
   } catch {
     return;
@@ -327,33 +327,40 @@ function isRecord(v: unknown): v is Record<string, unknown> {
 function decode(v: unknown): SavedRecords {
   const saved = emptyLeaderboard();
   if (!isRecord(v)) return saved;
-  if (Array.isArray(v.board)) {
+  const board = v["board"];
+  if (Array.isArray(board)) {
     let seen = 0;
-    for (const item of v.board) {
+    for (const item of board) {
       if (seen++ > 30) break;
       if (!isRecord(item)) continue;
-      if (typeof item.score !== "number" && typeof item.score !== "string") continue;
+      const score = item["score"];
+      const build = item["build"];
+      const character = item["character"];
+      const workshop = item["workshop"];
+      if (typeof score !== "number" && typeof score !== "string") continue;
       saved.board.push(sanitize({
-        score: item.score as number,
-        time: item.time as number,
-        tier: item.tier as number,
-        kills: item.kills as number,
-        build: typeof item.build === "string" ? item.build : "",
-        character: typeof item.character === "string" ? item.character : "",
-        mods: clampMods((item.mods as number) ?? 0),
-        workshop: typeof item.workshop === "string" ? item.workshop : "",
+        score: score as number,
+        time: item["time"] as number,
+        tier: item["tier"] as number,
+        kills: item["kills"] as number,
+        build: typeof build === "string" ? build : "",
+        character: typeof character === "string" ? character : "",
+        mods: clampMods((item["mods"] as number) ?? 0),
+        workshop: typeof workshop === "string" ? workshop : "",
       }));
     }
     saved.board.sort(compareRuns);
     if (saved.board.length > BOARD_LIMIT) saved.board.length = BOARD_LIMIT;
   }
-  if (isRecord(v.life)) {
-    saved.life.kills = clampInt(v.life.kills);
-    saved.life.bestTime = clampInt(v.life.bestTime);
-    saved.life.runs = clampInt(v.life.runs);
+  const life = v["life"];
+  if (isRecord(life)) {
+    saved.life.kills = clampInt(life["kills"]);
+    saved.life.bestTime = clampInt(life["bestTime"]);
+    saved.life.runs = clampInt(life["runs"]);
   }
-  if (Array.isArray(v.unlocked)) {
-    for (const id of v.unlocked) {
+  const unlocked = v["unlocked"];
+  if (Array.isArray(unlocked)) {
+    for (const id of unlocked) {
       if (typeof id !== "string" || !achievementName(id)) continue;
       if (saved.unlocked.indexOf(id) >= 0) continue;
       saved.unlocked.push(id);

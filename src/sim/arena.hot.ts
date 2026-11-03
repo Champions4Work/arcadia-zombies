@@ -3,11 +3,12 @@ import {
   OB_BARREL, PROP_CELL, PROP_COLS, PROP_REACH, PROP_ROWS, PUFF_BARREL, SPAWN_BOT, SPAWN_INSET, SPAWN_MARGIN, SPAWN_TOP, TELE_LIFE, cameraTarget, edgePoint, hitsProp, spawnHidden,
   type Arena,
 } from "./arena";
+import { finaleBlocksBoss } from "./finale";
 import { foeHp, foePack, foeSpeed, Z_ELITE, Z_GAS, Z_KIND, Z_KNIGHT, Z_RAT, Z_SPITTER } from "./foes";
 import { pacedSpeed } from "./modifiers";
 import { nextFloat } from "./rng";
 import {
-  FX_PUFF, FX_SPARK, H, MAX_FX, MAX_ZOMBIES, W, Z_BRUTE, Z_GHOUL, type World,
+  FX_PUFF, FX_SPARK, H, MAX_FX, MAX_ZOMBIES, TELE_BOSS, W, Z_BRUTE, Z_GHOUL, type World,
 } from "./types";
 
 function emitFx(w: World, kind: number, x: number, y: number, a: number): void {
@@ -409,6 +410,14 @@ function packPoint(w: World, x: number, y: number, s: number): void {
 function materialize(w: World, slot: number, x: number, y: number): boolean {
   const z = w.zombies;
   const raw = w.arena.teleKind[slot] ?? 0;
+  if (raw === TELE_BOSS) {
+    if (finaleBlocksBoss(w) || w.boss.on) return true;
+    w.boss.x = x;
+    w.boss.y = y;
+    w.boss.pending = 2;
+    emitFx(w, FX_PUFF, x, y, 4);
+    return true;
+  }
   const pack = foePack(raw);
   let placed = 0;
   for (let s = 0; s < pack; s++) {

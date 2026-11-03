@@ -1,4 +1,5 @@
 import { JUICE_DT, juiceFrame, juicePlayerHurt, tickJuice } from "../render/juice";
+import { bossSpeedMul, hurtBoss, stepBoss } from "./boss.hot";
 import { indexProps } from "./arena";
 import {
   chaseZombie, cutProps, pickupHeals, queueSpawn, slidePlayer, teleCount, tickTelegraphs, updateCamera,
@@ -27,7 +28,7 @@ import { stepMapEvents } from "./map-events.hot";
 import { clearMapStrike, mapStrikeDmg, mapStrikeOn, mapStrikeR, mapStrikeX, mapStrikeY } from "./map-events";
 import {
   EV_HURT, EV_RANK, EV_SAW, EV_SHIELD, EV_TESLA, EV_WAVE, FX_FLASH, FX_SPARK,
-  MAX_ZOMBIES, UPG_COOLANT, UPG_MORTAR, UPG_SPIKES, UPG_TESLA,
+  MAX_ZOMBIES, TESLA_BOSS, UPG_COOLANT, UPG_MORTAR, UPG_SPIKES, UPG_TESLA,
   UPG_VENT, UPG_WHISTLE, EVOL_AEGIS, type Input, type World,
 } from "./types";
 import { rivetEvery } from "./weapons";
@@ -47,6 +48,7 @@ function pulseAt(w: World, x: number, y: number, r: number, dmg: number): void {
 }
 function zap(w: World): void {
   const z = w.zombies;
+  const boss = w.boss;
   const power = teslaPower(w);
   const firstR2 = teslaRange(w) * teslaRange(w);
   const hopR2 = teslaChain(w) * teslaChain(w);
@@ -55,15 +57,35 @@ function zap(w: World): void {
   let cx = w.px;
   let cy = w.py;
   let lim = firstR2;
+  let bossMarked = 0;
   for (let hop = 0; hop < power; hop++) {
     let best = -1;
     let bd = lim;
+    let pickBoss = 0;
+    if (boss.on && bossMarked === 0) {
+      const dx = boss.x - cx;
+      const dy = boss.y - cy;
+      const d = dx * dx + dy * dy;
+      if (d < bd) { bd = d; pickBoss = 1; }
+    }
     for (let i = 0; i < MAX_ZOMBIES; i++) {
       if (!z.alive[i] || w.zMark[i]) continue;
       const dx = (z.x[i] ?? 0) - cx;
       const dy = (z.y[i] ?? 0) - cy;
       const d = dx * dx + dy * dy;
-      if (d < bd) { bd = d; best = i; }
+      if (d < bd) { bd = d; best = i; pickBoss = 0; }
+    }
+    if (pickBoss) {
+      bossMarked = 1;
+      if (w.teslaN < 8) {
+        w.teslaHit[w.teslaN] = TESLA_BOSS;
+        w.teslaN++;
+      }
+      hurtBoss(w, power);
+      cx = boss.x;
+      cy = boss.y;
+      lim = hopR2;
+      continue;
     }
     if (best < 0) break;
     w.zMark[best] = 1;
@@ -174,7 +196,7 @@ export function step(w: World, input: Input): void {
     w.events[EV_RANK] = 1;
   }
   if (w.teslaFlash > 0) w.teslaFlash--;
-  slidePlayer(w, input.dx, input.dy, moveSpeed(w));
+  slidePlayer(w, input.dx, input.dy, moveSpeed(w) * bossSpeedMul(w));
   updateCamera(w);
   const z = w.zombies;
   let alive = 0;
@@ -291,6 +313,7 @@ export function step(w: World, input: Input): void {
   stepFinale(w);
   if (w.chestOpen) return;
   tickTelegraphs(w);
+  stepBoss(w);
   if (!hasMod(w.mods, MOD_NOHEAL)) pickupHeals(w);
   tickJuice(JUICE_DT);
   openTouchedChest(w);

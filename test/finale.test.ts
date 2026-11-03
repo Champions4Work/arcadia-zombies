@@ -270,10 +270,16 @@ describe("clockwork lich", () => {
     expect(runLabel(w.tick)).toBe("19:50/20:00");
     for (let t = 0; t < 599; t++) step(w, idle());
     expect(lichUp(w)).toBe(false);
+    expect(w.tick).toBeLessThan(FINALE_TICK);
     expect(countZ(w)).toBe(0);
     expect(runLabel(w.tick)).toContain("/20:00");
-    step(w, idle());
+    let extra = 0;
+    while (w.tick < FINALE_TICK && extra < 40) {
+      step(w, idle());
+      extra++;
+    }
     expect(lichUp(w)).toBe(true);
+    expect(w.tick).toBe(FINALE_TICK);
     expect(clock(w.tick)).toBe("20:00");
     expect(countZ(w)).toBe(0);
   });
