@@ -119,16 +119,26 @@ export function noteWave(best: number, wave: number): number {
 }
 
 export function loadRoster(store: Kv): { index: number; bestWave: number } {
-  const bestWave = readWave(store.getItem(BEST_WAVE_KEY));
-  const index = characterIndex(store.getItem(SURVIVOR_KEY));
-  return { index: isUnlocked(index, bestWave) ? index : CHAR_TINKER, bestWave };
+  try {
+    const bestWave = readWave(store.getItem(BEST_WAVE_KEY));
+    const index = characterIndex(store.getItem(SURVIVOR_KEY));
+    return { index: isUnlocked(index, bestWave) ? index : CHAR_TINKER, bestWave };
+  } catch {
+    return { index: CHAR_TINKER, bestWave: 0 };
+  }
 }
 
 export function saveRoster(store: Kv, index: number, bestWave: number): void {
-  const prev = loadRoster(store);
-  const wave = noteWave(prev.bestWave, bestWave);
-  const want = isUnlocked(index, wave) ? index : prev.index;
-  const pick = isUnlocked(want, wave) ? want : CHAR_TINKER;
-  store.setItem(SURVIVOR_KEY, characterAt(pick).id);
-  store.setItem(BEST_WAVE_KEY, String(wave));
+  try {
+    const best = readWave(store.getItem(BEST_WAVE_KEY));
+    const saved = characterIndex(store.getItem(SURVIVOR_KEY));
+    const prev = isUnlocked(saved, best) ? saved : CHAR_TINKER;
+    const wave = noteWave(best, bestWave);
+    const want = isUnlocked(index, wave) ? index : prev;
+    const pick = isUnlocked(want, wave) ? want : CHAR_TINKER;
+    store.setItem(SURVIVOR_KEY, characterAt(pick).id);
+    store.setItem(BEST_WAVE_KEY, String(wave));
+  } catch {
+    return;
+  }
 }

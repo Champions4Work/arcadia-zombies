@@ -13,7 +13,7 @@ import {
   WPN_FLAME, WPN_HARP, WPN_MORT, WPN_RIVET, WPN_SHOT, type World,
 } from "./types";
 import {
-  BOMB_FUSE, flameJets, flameLife, harpoonDamage, harpoonPierce, mortarDamage, mortarRadius,
+  BOMB_FUSE, flameHit, flameJets, flameLife, harpoonDamage, harpoonPierce, mortarDamage, mortarRadius,
   pelletCount, pelletHit, pelletLife, rivetHit, weaponEvery,
 } from "./weapons";
 
@@ -114,7 +114,7 @@ function fireShotgun(w: World, lv: number): void {
 
 function fireFlame(w: World, lv: number): void {
   if (!aimAt(w)) return;
-  spray(w, w.aimX, w.aimY, flameJets(lv), 0.2, 2, 1, 0, WPN_FLAME, flameLife(lv));
+  spray(w, w.aimX, w.aimY, flameJets(lv), 0.2, 2, flameHit(w), 0, WPN_FLAME, flameLife(lv));
 }
 
 function fireHarpoon(w: World, lv: number): void {
@@ -137,7 +137,7 @@ function ready(w: World, idx: number, lv: number): number {
     w.wpnCd[idx] = left - 1;
     return 0;
   }
-  w.wpnCd[idx] = weaponEvery(idx, lv);
+  w.wpnCd[idx] = weaponEvery(w, idx, lv);
   return 1;
 }
 
