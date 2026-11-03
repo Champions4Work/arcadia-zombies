@@ -1,5 +1,6 @@
 import { H, W, type World } from "../sim/types";
 import { paintActors, paintBullets, paintFx } from "./actors";
+import { drawLich } from "./finale";
 import { drawCards, drawHud } from "./hud";
 import { drawSaws, drawShield, drawTesla } from "./progress";
 import { LAYER_BACK, LAYER_FRONT, LAYER_HUD, LAYER_MID, paintLayers } from "./plugins";
@@ -32,6 +33,7 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
   drawTesla(c, w);
   paintFx(c, w);
   paintLayers(c, w, LAYER_MID);
+  drawLich(c, w);
   c.restore();
   if (w.hurtCd > 0) {
     const g = c.createRadialGradient(W / 2, H / 2, 60, W / 2, H / 2, 280);
