@@ -17,6 +17,7 @@ import {
   presentBoard,
   rankSum,
   resetTracker,
+  runLine,
   saveLeaderboard,
   settleRun,
   shareText,
@@ -34,8 +35,8 @@ const mem = (): Store & { raw(): Map<string, string> } => {
   };
 };
 
-const row = (score: number, time = 0, tier = 1, kills = 0, build = "STOCK"): RunRecord => ({
-  score, time, tier, kills, build,
+const row = (score: number, time = 0, tier = 1, kills = 0, build = "STOCK", character = "tinker"): RunRecord => ({
+  score, time, tier, kills, build, character,
 });
 
 const zero = (): RunRecord => row(0);
@@ -45,8 +46,16 @@ describe("run records", () => {
     const run = captureRun({
       score: 80, time: 600, tier: 4, kills: 9, upgrades: [0, 2, 0, 0, 1, 0, 0, 0, 0, 0],
     });
-    expect(run).toEqual({ score: 80, time: 600, tier: 4, kills: 9, build: "SHOT2 DMG1" });
-    expect(shareText(run)).toBe("Arcadia: Gears of the Dead — Score 80 · 0:10 · OVERPRESSURE · 9 kills · SHOT2 DMG1");
+    expect(run).toEqual({ score: 80, time: 600, tier: 4, kills: 9, build: "SHOT2 DMG1", character: "tinker" });
+    expect(shareText(run)).toBe("Arcadia: Gears of the Dead — Score 80 · 0:10 · OVERPRESSURE · 9 kills · SHOT2 DMG1 · Tinker");
+    const brute = captureRun({
+      score: 80, time: 600, tier: 4, kills: 9, upgrades: [0, 2, 0, 0, 1, 0, 0, 0, 0, 0], character: "brute",
+    });
+    expect(brute.character).toBe("brute");
+    expect(runLine(brute)).toContain("Brute");
+    expect(captureRun({
+      score: 1, time: 1, tier: 0, kills: 0, upgrades: [], character: "lich",
+    }).character).toBe("tinker");
   });
 
   it("formats survival time from 60 ticks per second", () => {
@@ -160,8 +169,8 @@ describe("leaderboard", () => {
     expect(view.life).toBe("Kills 9 · Best time 0:10 · Runs 1");
     expect(view.rows[0]).toEqual({
       title: "#1  Score 80",
-      detail: "0:10 · OVERPRESSURE · 9 kills · SHOT2 DMG1",
-      share: "Arcadia: Gears of the Dead — Score 80 · 0:10 · OVERPRESSURE · 9 kills · SHOT2 DMG1",
+      detail: "0:10 · OVERPRESSURE · 9 kills · SHOT2 DMG1 · Tinker",
+      share: "Arcadia: Gears of the Dead — Score 80 · 0:10 · OVERPRESSURE · 9 kills · SHOT2 DMG1 · Tinker",
     });
   });
 });

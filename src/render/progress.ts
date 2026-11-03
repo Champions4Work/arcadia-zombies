@@ -1,4 +1,4 @@
-import { sawAngle, sawRadius } from "../sim/progress";
+import { sawAngle, sawRadius, sawSpin } from "../sim/progress";
 import { UPG_SAWS, type World } from "../sim/types";
 import { drawCards } from "./hud";
 import { sawSprite } from "./sprites";
@@ -9,7 +9,7 @@ export function drawSaws(c: CanvasRenderingContext2D, w: World): void {
   const spr = sawSprite();
   const rad = sawRadius(w);
   for (let s = 0; s < n; s++) {
-    const a = sawAngle(w.tick, s, n);
+    const a = sawAngle(w.tick, s, n, sawSpin(w));
     c.save();
     c.translate(w.px + Math.cos(a) * rad, w.py + Math.sin(a) * rad);
     c.rotate(w.tick * 0.18 + s);

@@ -1,7 +1,7 @@
 import { juicePlayerHurt } from "../render/juice";
 import { ARENA_H, ARENA_W } from "./arena";
 import { clock, scoreMul, tierAt } from "./difficulty";
-import { bulletDmg, sawAngle, sawDamage, sawRadius, shieldReload, teslaPower, teslaRange, upgName } from "./progress";
+import { bulletDmg, sawAngle, sawDamage, sawRadius, sawSpin, shieldReload, teslaPower, teslaRange, upgName } from "./progress";
 import {
   EV_HURT, EV_KILL, EV_SHIELD, EV_TESLA, MAX_BULLETS, MAX_ZOMBIES, UPG_COUNT, UPG_SAWS,
   Z_GHOUL, type World,
@@ -384,7 +384,7 @@ function soakSaws(w: World, f: Lich): void {
   const dmg = sawDamage(w);
   for (let s = 0; s < n; s++) {
     if (f.on !== 1) return;
-    const a = sawAngle(w.tick, s, n);
+    const a = sawAngle(w.tick, s, n, sawSpin(w));
     const dx = f.x - (w.px + Math.cos(a) * r);
     const dy = (f.y - 12) - (w.py + Math.sin(a) * r);
     if (dx * dx + dy * dy < LICH_R2) harmLich(w, dmg);
