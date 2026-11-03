@@ -1,9 +1,11 @@
 import { clock, tierFrac, tierName } from "../sim/difficulty";
+import { Z_ELITE, Z_GAS, Z_KIND } from "../sim/foes";
 import { xpNeed } from "../sim/progress";
 import {
   FX_FLASH, FX_PUFF, FX_SPARK, FX_XP, H, MAX_BULLETS, MAX_FX, MAX_ZOMBIES, W,
-  Z_BRUTE, Z_GHOUL, type World,
+  Z_BRUTE, Z_GHOUL, Z_SHAMBLER, type World,
 } from "../sim/types";
+import { closeElite, drawAcid, drawFoe, drawGasCloud, isAcid, openElite } from "./foes";
 import { drawProgress } from "./progress";
 import { absorbShake, shakePixels } from "./shake";
 
@@ -273,6 +275,10 @@ function bullets(c: CanvasRenderingContext2D, w: World): void {
     const y = b.y[j] ?? 0;
     const vx = b.vx[j] ?? 0;
     const vy = b.vy[j] ?? 0;
+    if (isAcid(b.hp[j] ?? 0)) {
+      drawAcid(c, x, y, vx, vy);
+      continue;
+    }
     px(c, x - vx * 1.4 - 2, y - vy * 1.4 - 1, COPPER, 5, 3);
     px(c, x - 3, y - 3, EMBER, 6, 6);
     px(c, x - 1, y - 1, EMBER_HI, 3, 3);
@@ -313,6 +319,10 @@ function fx(c: CanvasRenderingContext2D, w: World): void {
       c.globalAlpha = 1;
     } else if (kind === FX_PUFF && age < 18) {
       const z = w.fxA[i] ?? 0;
+      if (z === Z_GAS) {
+        drawGasCloud(c, x, y, age);
+        continue;
+      }
       const s = 5 + age;
       c.globalAlpha = 0.6 - age / 36;
       const col = z === Z_GHOUL ? BRASS : z === Z_BRUTE ? STEAM : ROT_HI;
@@ -458,10 +468,15 @@ function overlay(c: CanvasRenderingContext2D, w: World): void {
 function drawZombie(c: CanvasRenderingContext2D, w: World, i: number): void {
   const x = w.zombies.x[i] ?? 0;
   const y = w.zombies.y[i] ?? 0;
-  const kind = w.zombies.kind[i] ?? 0;
+  const raw = w.zombies.kind[i] ?? 0;
+  const kind = raw & Z_KIND;
+  const elite = (raw & Z_ELITE) !== 0;
+  if (elite) openElite(c, x, y);
   if (kind === Z_GHOUL) ghoul(c, x, y, w.tick);
   else if (kind === Z_BRUTE) brute(c, x, y, w.tick, w.zombies.hp[i] ?? 1);
-  else shambler(c, x, y, w.tick);
+  else if (kind === Z_SHAMBLER) shambler(c, x, y, w.tick);
+  else drawFoe(c, x, y, w.tick, kind, w.zombies.hp[i] ?? 1, w.zombies.vy[i] ?? 0, w.px, w.py);
+  if (elite) closeElite(c, x, y, w.tick, kind);
 }
 
 let lastPx = 0;
