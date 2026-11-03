@@ -6,6 +6,7 @@ import {
   SPIT_CD_ELITE, SPIT_FAR_R2, SPIT_MAX_R2, SPIT_NEAR_R2, Z_ELITE,
 } from "./foes";
 import { shieldReload } from "./progress";
+import { fell } from "./revive";
 import { juicePlayerHurt } from "../render/juice";
 import { EV_HURT, EV_SHIELD, MAX_BULLETS, type World } from "./types";
 
@@ -92,10 +93,7 @@ export function acidTouch(w: World, x: number, y: number): number {
   w.hp -= scaledDmg(ACID_DMG, w.rank);
   w.events[EV_HURT] = 1;
   juicePlayerHurt();
-  if (w.hp <= 0) {
-    w.over = true;
-    return 2;
-  }
+  if (fell(w)) return 2;
   return 1;
 }
 
@@ -116,5 +114,5 @@ export function detonateGas(w: World, x: number, y: number, elite: number): void
   w.hp -= scaledDmg(GAS_DMG, w.rank);
   w.events[EV_HURT] = 1;
   juicePlayerHurt();
-  if (w.hp <= 0) w.over = true;
+  fell(w);
 }

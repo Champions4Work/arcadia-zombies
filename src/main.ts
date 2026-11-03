@@ -1,11 +1,13 @@
+import { awardRun, applyWorkshop, emptyWorkshop, loadWorkshop, saveWorkshop, tryBuy } from "./meta/workshop";
 import { noteFrame, toggleFps, toggleFromKey } from "./render/fps";
 import { setNumbersOn, stopRemaining } from "./render/juice";
 import { setMusicOn, setMusicWave } from "./render/music";
 import { draw } from "./render/draw";
 import { pauseHit } from "./render/hud";
 import { bootSfx, persistSfx, playSfxCue, playUiClick, playWorldSfx, resetSfxPlayback, setSfxVolume, sfxMuted, sfxVolume, toggleSfxMuted } from "./render/sfx";
-import { CUE_BOSS, sfxMuteLabel, sfxVolumePercent } from "./render/sfx-cues";
+import { CUE_BOSS, CUE_SHIELD, sfxMuteLabel, sfxVolumePercent } from "./render/sfx-cues";
 import { setMuted, unlockAudio } from "./render/sound";
+import { renderBench } from "./shell/bench";
 import { codexStamp, emptyCodex, loadCodex, observe, renderBook, saveCodex } from "./shell/codex";
 import { applyCanvas, screenToGame, type Fit } from "./shell/fit";
 import { mountPicker, paintPicker } from "./shell/picker";
@@ -24,15 +26,18 @@ import { mountLeaderboard } from "./shell/leaderboard-dom";
 import {
   begin,
   closeCodex,
+  closeWorkshop,
   createSession,
   finish,
   loadStore,
   onBlur,
   openCodex,
+  openWorkshop,
   PHASE_OVER,
   PHASE_PAUSE,
   PHASE_PLAY,
   PHASE_TITLE,
+  PHASE_WORKSHOP,
   shouldStep,
   syncStore,
   toggleMute,
@@ -52,7 +57,7 @@ import {
   offerCount,
   saveRoster,
 } from "./sim/characters";
-import { clock } from "./sim/difficulty";
+import { clock, tierName } from "./sim/difficulty";
 import { armDevJump, isWon, killCount, setRunEndless, takeCue, victoryText } from "./sim/finale";
 import { fillHorde, HORDE_BULLETS, HORDE_ZOMBIES } from "./sim/horde";
 import {
@@ -65,9 +70,11 @@ import {
   scoreLabel,
   toggleMod,
 } from "./sim/modifiers";
+import { scrapEarned } from "./meta/scrap";
 import { cardSlot, summaryText } from "./sim/progress";
+import { rerollHit } from "./sim/reroll";
 import { step } from "./sim/step.hot";
-import { EV_KILL, H, W, type Input } from "./sim/types";
+import { EV_KILL, EV_REVIVE, H, W, type Input } from "./sim/types";
 import { createWorld } from "./sim/world";
 
 function tryStore(): { getItem(k: string): string | null; setItem(k: string, v: string): void } | null {
@@ -78,6 +85,9 @@ const store = tryStore();
 const saved = store ? loadStore(store) : { best: 0, muted: false, shake: true, numbers: true };
 const roster = store ? loadRoster(store) : { index: CHAR_TINKER, bestWave: 0 };
 const session = createSession(saved.best, saved.muted, saved.shake, saved.numbers);
+const loadedShop = store ? loadWorkshop(store) : { shop: emptyWorkshop(), writable: true };
+const shop = loadedShop.shop;
+const shopWritable = loadedShop.writable;
 let crown = store ? loadCrown(store) : { won: false, endless: false };
 let mods = store ? loadMods(store) : 0;
 const records = store ? loadLeaderboard(store) : emptyLeaderboard();
@@ -98,6 +108,11 @@ const veil = document.getElementById("veil") as HTMLElement;
 const headline = document.getElementById("headline") as HTMLElement;
 const sub = document.getElementById("sub") as HTMLElement;
 const goBtn = document.getElementById("go") as HTMLButtonElement;
+const workshopBtn = document.getElementById("workshop") as HTMLButtonElement;
+const backBtn = document.getElementById("back") as HTMLButtonElement;
+const bench = document.getElementById("bench") as HTMLElement;
+const opts = document.getElementById("opts") as HTMLElement;
+const sfxBox = document.getElementById("sfx") as HTMLElement;
 const muteBtn = document.getElementById("mute") as HTMLButtonElement;
 const shakeBtn = document.getElementById("shake") as HTMLButtonElement;
 const endlessBtn = document.getElementById("endless") as HTMLButtonElement;
@@ -122,12 +137,16 @@ function makeWorld(seed: number) {
 }
 
 let world = makeWorld(1);
+applyWorkshop(world, shop);
 let fit: Fit = applyCanvas(canvas, ctx, innerWidth, innerHeight, devicePixelRatio || 1, W, H);
 const keys = new Set<string>();
-const input: Input = { dx: 0, dy: 0, pick: 0 };
+const input: Input = { dx: 0, dy: 0, pick: 0, reroll: 0 };
 const stick = createStick();
 let stickId = -1;
 let pendingPick = 0;
+let pendingReroll = 0;
+let lastScrap = 0;
+let lastBase = 0;
 const STEP_MS = 1000 / 60;
 let acc = 0;
 let last = performance.now();
@@ -135,6 +154,7 @@ let last = performance.now();
 function persist(): void {
   if (!store) return;
   syncStore(session, store);
+  saveWorkshop(store, shop, shopWritable);
   saveCrown(store, crown);
   saveRoster(store, survivor, bestWave);
   saveMods(store, mods);
@@ -147,13 +167,20 @@ function noteCodex(): void {
 
 function paint(): void {
   const playing = session.phase === PHASE_PLAY;
+  const fitting = session.phase === PHASE_WORKSHOP;
   veil.classList.toggle("on", !playing);
-  const picking = (session.phase === PHASE_TITLE || session.phase === PHASE_OVER) && !session.codex;
+  const picking = (session.phase === PHASE_TITLE || session.phase === PHASE_OVER) && !session.codex && !fitting;
   modsRoot.hidden = !picking;
   modRead.hidden = !picking;
+  goBtn.hidden = fitting;
+  workshopBtn.hidden = fitting || session.codex || !(session.phase === PHASE_TITLE || session.phase === PHASE_OVER);
+  backBtn.hidden = !fitting;
+  bench.hidden = !fitting;
+  opts.hidden = fitting;
+  sfxBox.hidden = fitting;
   if (session.phase === PHASE_TITLE) {
     headline.textContent = "Arcadia: Gears of the Dead";
-    sub.textContent = `Best ${session.best} · ${scoreLabel(mods)}`;
+    sub.textContent = `Best ${session.best} · Scrap ${shop.scrap} · ${scoreLabel(mods)}`;
     goBtn.textContent = "Play";
   } else if (session.phase === PHASE_PAUSE) {
     headline.textContent = "Paused";
@@ -166,9 +193,12 @@ function paint(): void {
       sub.textContent = `${clock(world.tick)} · ${killCount(world)} KILLS · ${runMul}`;
     } else {
       headline.textContent = "The Gears Stop";
-      sub.textContent = `Best ${session.best} · ${runMul}`;
+      sub.textContent = `Best ${session.best} · ${tierName(world.rank)} · ${clock(world.tick)} · ${runMul} · +${lastScrap} scrap`;
     }
     goBtn.textContent = "Play";
+  } else if (fitting) {
+    headline.textContent = "Workshop";
+    sub.textContent = `Brass Scrap ${shop.scrap}`;
   }
   if (session.codex && (session.phase === PHASE_TITLE || session.phase === PHASE_OVER)) {
     headline.textContent = "Codex";
@@ -189,7 +219,7 @@ function paint(): void {
     }
   }
   const overBody = session.phase === PHASE_OVER && !session.codex
-    ? (isWon(world) ? victoryText(world) : summaryText(world))
+    ? (isWon(world) ? victoryText(world, lastBase) : summaryText(world))
     : "";
   const over = overBody.length > 0 ? `${scoreBanner(world.mods)}\n${overBody}` : "";
   summary.hidden = over.length === 0;
@@ -227,11 +257,33 @@ function paint(): void {
     line: session.phase === PHASE_OVER ? runLineText : "",
     share: session.phase === PHASE_OVER ? runShare : null,
   });
-  setMusicOn(session.phase === PHASE_PLAY || session.phase === PHASE_TITLE);
+  setMusicOn(playing || session.phase === PHASE_TITLE || fitting);
   setMusicWave(playing ? Math.max(world.wave, world.rank) : 0);
 }
 
+function buyFitting(id: number): void {
+  if (!tryBuy(shop, id)) return;
+  persist();
+  renderBench(bench, shop, buyFitting);
+  paint();
+}
+
+function showWorkshop(): void {
+  unlockAudio();
+  if (!openWorkshop(session)) return;
+  renderBench(bench, shop, buyFitting);
+  playUiClick();
+  paint();
+}
+
+function leaveWorkshop(): void {
+  closeWorkshop(session);
+  playUiClick();
+  paint();
+}
+
 function startRun(): void {
+  if (session.phase === PHASE_WORKSHOP) return;
   unlockAudio();
   leader.close();
   closeCodex(session);
@@ -240,12 +292,14 @@ function startRun(): void {
     const seedQuery = import.meta.env.DEV ? Number(new URLSearchParams(location.search).get("seed")) : NaN;
     const seed = Number.isFinite(seedQuery) && seedQuery > 0 ? seedQuery >>> 0 : Date.now() >>> 0;
     world = makeWorld(seed);
+    applyWorkshop(world, shop);
     const jump = devSeconds(location.search, import.meta.env.DEV);
     if (jump > 0) armDevJump(world, jump);
     setRunEndless(world, crown.endless);
     resetShake();
     acc = 0;
     pendingPick = 0;
+    pendingReroll = 0;
     resetSfxPlayback();
     resetTracker(tracker);
     runLineText = "";
@@ -331,6 +385,7 @@ function placeJoy(): void {
 
 function sfx(): void {
   playWorldSfx(world);
+  if (world.events[EV_REVIVE]) playSfxCue(CUE_SHIELD);
   if (takeCue(world)) playSfxCue(CUE_BOSS);
 }
 
@@ -360,6 +415,8 @@ for (let i = 0; i < MOD_LIST.length; i++) {
 }
 
 goBtn.addEventListener("click", startRun);
+workshopBtn.addEventListener("click", showWorkshop);
+backBtn.addEventListener("click", leaveWorkshop);
 codexBtn.addEventListener("click", codexToggle);
 muteBtn.addEventListener("click", mute);
 shakeBtn.addEventListener("click", shake);
@@ -379,6 +436,10 @@ addEventListener("keydown", (e) => {
   if (k === "escape") {
     e.preventDefault();
     if (e.repeat) return;
+    if (session.phase === PHASE_WORKSHOP) {
+      leaveWorkshop();
+      return;
+    }
     if (session.codex) {
       closeCodex(session);
       playUiClick();
@@ -409,6 +470,7 @@ addEventListener("keydown", (e) => {
     codexToggle();
     return;
   }
+  if (session.phase === PHASE_WORKSHOP) return;
   if (k === " " || k === "enter") {
     if (session.phase !== PHASE_PLAY) {
       const target = e.target;
@@ -420,6 +482,10 @@ addEventListener("keydown", (e) => {
   }
   if (k === "r" && session.phase === PHASE_OVER) {
     startRun();
+    return;
+  }
+  if (session.phase === PHASE_PLAY && world.choosing && k === "r" && !e.repeat) {
+    pendingReroll = 1;
     return;
   }
   if (import.meta.env.DEV && session.phase === PHASE_PLAY && !e.repeat && (k === "b" || k === "n" || k === "e" || k === "v")) {
@@ -457,7 +523,8 @@ addEventListener("pointerdown", (e) => {
     return;
   }
   if (world.choosing) {
-    pendingPick = cardSlot(p.x, p.y, offerCount(world));
+    if (rerollHit(p.x, p.y)) pendingReroll = 1;
+    else pendingPick = cardSlot(p.x, p.y, offerCount(world));
     return;
   }
   stickId = e.pointerId;
@@ -506,10 +573,13 @@ function frame(now: number): void {
     }
     while (acc >= STEP_MS) {
       input.pick = pendingPick;
+      input.reroll = pendingReroll;
       step(world, input);
       noteKills(tracker, world.events[EV_KILL] ?? 0);
       pendingPick = 0;
+      pendingReroll = 0;
       input.pick = 0;
+      input.reroll = 0;
       acc -= STEP_MS;
       const reached = noteWave(bestWave, world.wave);
       const waveUp = reached !== bestWave;
@@ -522,6 +592,8 @@ function frame(now: number): void {
       }
       noteCodex();
       if (world.over) {
+        lastBase = scrapEarned(world.tick, world.rank, world.kills);
+        lastScrap = awardRun(shop, world);
         finish(session, world.score);
         const settled = settleRun(records, captureRun({
           score: world.score,
@@ -531,6 +603,7 @@ function frame(now: number): void {
           upgrades: world.upgrades,
           character: characterAt(world.charId).id,
           mods: world.mods,
+          workshop: world.workshop,
         }));
         runLineText = settled.line;
         runShare = settled.share;

@@ -431,6 +431,7 @@ function ability(ctx: CanvasRenderingContext2D, w: World): void {
 
 export function drawHud(ctx: CanvasRenderingContext2D, w: World): void {
   heartGauge(ctx, w);
+  if (w.meta.revive > 0) ink(ctx, "REV", 52, 8, 9, "#ffb060");
   if (!w.choosing) banner(ctx, w);
   clockPanel(ctx, w);
   pauseButton(ctx);
