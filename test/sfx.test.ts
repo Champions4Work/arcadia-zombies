@@ -1,7 +1,7 @@
 import { applyUpgrade, sawAngle, sawRadius, takeXp, xpNeed } from "../src/sim/progress";
 import { step } from "../src/sim/step.hot";
 import {
-  EV_HURT, EV_KILL, EV_LEVEL, EV_SAW, EV_SHIELD, EV_SHOT, EV_TESLA, FX_SPARK,
+  EV_HURT, EV_KILL, EV_LEVEL, EV_RANK, EV_SAW, EV_SHIELD, EV_SHOT, EV_TESLA, FX_SPARK,
   UPG_PIERCE, UPG_SAWS, UPG_SHIELD, UPG_SHOTGUN, UPG_TESLA, type Input, type World,
 } from "../src/sim/types";
 import { createWorld } from "../src/sim/world";
@@ -13,7 +13,7 @@ import {
 import {
   admitCue, clampSfxVolume, CUE_BOSS, CUE_CLICK, CUE_DEATH, CUE_HIT, CUE_HURT, CUE_LEVEL,
   CUE_N, CUE_PICK, CUE_RANK, CUE_RIFLE, CUE_RIVET, CUE_SAW, CUE_SHIELD, CUE_SHOTGUN, CUE_TESLA,
-  cueBase, cueDur, cueGap, createSfxGate, difficultyRank, isBossWave, loadSfxPrefs, mixGain,
+  cueBase, cueDur, cueGap, createSfxGate, isBossWave, loadSfxPrefs, mixGain,
   saveSfxPrefs, SFX_MUTE_KEY, SFX_VOL_DEFAULT, SFX_VOL_KEY, sfxMuteLabel,
   sfxVolumePercent, shotCue, VOICE_CAP, voicesAt,
 } from "../src/render/sfx-cues";
@@ -91,28 +91,13 @@ describe("sfx settings", () => {
 });
 
 describe("difficulty voices", () => {
-  it("ranks waves monotonically and marks every fifth wave a boss", () => {
-    expect(difficultyRank(0)).toBe(0);
-    expect(difficultyRank(1)).toBe(0);
-    expect(difficultyRank(2)).toBe(1);
-    expect(difficultyRank(3)).toBe(1);
-    expect(difficultyRank(4)).toBe(2);
-    expect(difficultyRank(7)).toBe(3);
-    expect(difficultyRank(11)).toBe(4);
-    expect(difficultyRank(15)).toBe(4);
-    expect(difficultyRank(16)).toBe(5);
-    let prev = 0;
-    for (let wave = 0; wave <= 40; wave++) {
-      const rank = difficultyRank(wave);
-      expect(rank).toBeGreaterThanOrEqual(prev);
-      prev = rank;
-    }
+  it("marks every fifth wave a boss", () => {
     expect(isBossWave(0)).toBe(false);
     expect(isBossWave(4)).toBe(false);
     expect(isBossWave(5)).toBe(true);
     expect(isBossWave(10)).toBe(true);
     expect(isBossWave(15)).toBe(true);
-    expect(difficultyRank(5)).toBe(difficultyRank(4));
+    expect(isBossWave(16)).toBe(false);
   });
 
   it("maps the equipped weapon onto a shot voice", () => {
@@ -217,6 +202,8 @@ describe("world cues", () => {
 
   it("horns on a rank change and sirens once on a boss wave", () => {
     const w = createWorld(8);
+    w.hp = 9999;
+    w.maxHp = 9999;
     for (let i = 0; i < 5; i++) {
       quiet(w);
       step(w, idle());
@@ -224,10 +211,29 @@ describe("world cues", () => {
       playWorldSfx(w, sink);
     }
     expect(w.wave).toBe(5);
-    expect(heard.filter((id) => id === CUE_RANK)).toHaveLength(2);
+    expect(w.tick).toBe(5);
+    expect(heard.filter((id) => id === CUE_RANK)).toHaveLength(0);
     expect(heard.filter((id) => id === CUE_BOSS)).toEqual([CUE_BOSS]);
     t += 3;
     playWorldSfx(w, sink);
+    expect(heard.filter((id) => id === CUE_BOSS)).toEqual([CUE_BOSS]);
+    while (w.tick < 1799) step(w, idle());
+    t += 3;
+    playWorldSfx(w, sink);
+    expect(w.wave).toBe(5);
+    expect(w.rank).toBe(0);
+    expect(heard.filter((id) => id === CUE_RANK)).toHaveLength(0);
+    step(w, idle());
+    expect(w.tick).toBe(1800);
+    expect(w.rank).toBe(1);
+    expect(w.events[EV_RANK]).toBe(1);
+    t += 3;
+    playWorldSfx(w, sink);
+    expect(heard.filter((id) => id === CUE_RANK)).toEqual([CUE_RANK]);
+    step(w, idle());
+    t += 3;
+    playWorldSfx(w, sink);
+    expect(heard.filter((id) => id === CUE_RANK)).toEqual([CUE_RANK]);
     expect(heard.filter((id) => id === CUE_BOSS)).toEqual([CUE_BOSS]);
   });
 
@@ -383,6 +389,7 @@ describe("world cues", () => {
     vols.length = 0;
     w.wave = 5;
     w.choosing = 0;
+    w.events[EV_RANK] = 1;
     w.events[EV_LEVEL] = 1;
     w.events[EV_HURT] = 1;
     w.events[EV_SHOT] = 1;
@@ -413,6 +420,7 @@ describe("world cues", () => {
     for (let id = 0; id < VOICE_CAP; id++) expect(playSfxCue(id, sink)).toBe(true);
     w.wave = 5;
     w.choosing = 0;
+    w.events[EV_RANK] = 1;
     playWorldSfx(w, sink);
     expect(heard).toContain(CUE_BOSS);
     expect(heard).toContain(CUE_RANK);

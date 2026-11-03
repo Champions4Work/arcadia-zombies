@@ -46,7 +46,6 @@ export interface Store {
 
 export interface SfxTrack {
   choosing: number;
-  rank: number;
   bossWave: number;
   primed: number;
 }
@@ -83,15 +82,6 @@ export function saveSfxPrefs(store: Store, prefs: SfxPrefs): void {
   store.setItem(SFX_VOL_KEY, clampSfxVolume(prefs.volume).toFixed(2));
 }
 
-export function difficultyRank(wave: number): number {
-  const w = wave > 0 ? wave | 0 : 0;
-  if (w < 2) return 0;
-  if (w < 4) return 1;
-  if (w < 7) return 2;
-  if (w < 11) return 3;
-  return 4 + ((w - 11) / 5 | 0);
-}
-
 export function isBossWave(wave: number): boolean {
   const w = wave | 0;
   return w >= 5 && w % 5 === 0;
@@ -124,7 +114,7 @@ export function mixGain(base: number, active: number): number {
 }
 
 export function createSfxTrack(): SfxTrack {
-  return { choosing: 0, rank: 0, bossWave: -1, primed: 0 };
+  return { choosing: 0, bossWave: -1, primed: 0 };
 }
 
 export function createSfxGate(): SfxGate {
@@ -199,13 +189,11 @@ function put(out: Uint8Array, n: number, id: number): number {
 
 export function collectCues(w: World, track: SfxTrack, out: Uint8Array): number {
   let n = 0;
-  const rank = difficultyRank(w.wave);
   if (track.primed) {
     if (isBossWave(w.wave) && w.wave !== track.bossWave) n = put(out, n, CUE_BOSS);
-    if (rank > track.rank || w.events[EV_RANK]) n = put(out, n, CUE_RANK);
+    if (w.events[EV_RANK]) n = put(out, n, CUE_RANK);
     if (track.choosing > 0 && w.choosing === 0) n = put(out, n, CUE_PICK);
   }
-  track.rank = rank;
   if (isBossWave(w.wave)) track.bossWave = w.wave;
   track.choosing = w.choosing;
   track.primed = 1;

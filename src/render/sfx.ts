@@ -59,7 +59,6 @@ export function persistSfx(store: Store): void {
 
 export function resetSfxPlayback(): void {
   track.choosing = 0;
-  track.rank = 0;
   track.bossWave = -1;
   track.primed = 0;
   resetSfxGate(gate);
