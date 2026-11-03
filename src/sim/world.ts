@@ -1,6 +1,7 @@
 import { resetJuice } from "../render/juice";
 import { CHAR_TINKER, CHARACTERS, characterAt } from "./characters";
 import { attachFinale } from "./finale";
+import { attachMapEvents } from "./map-events";
 import { applyUpgrade } from "./progress";
 import { createRng } from "./rng";
 import {
@@ -48,6 +49,7 @@ export const createWorld = (seed: number, charId = CHAR_TINKER): World => {
     fxA: new Float32Array(MAX_FX), fxTick: new Int32Array(MAX_FX), fxHead: 0,
   };
   attachFinale(world);
+  attachMapEvents(world);
   applyCharacter(world, charId);
   return world;
 };

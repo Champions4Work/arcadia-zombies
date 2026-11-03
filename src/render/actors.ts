@@ -1,4 +1,5 @@
 import { Z_ELITE, Z_GAS, Z_KIND, Z_KNIGHT, Z_RAT, Z_SPITTER } from "../sim/foes";
+import { fogCover } from "../sim/map-events";
 import { enemyFlash } from "./juice";
 import {
   FX_FLASH, FX_PUFF, FX_SPARK, FX_XP, Z_BRUTE, Z_GHOUL, Z_SHAMBLER, type World,
@@ -172,12 +173,19 @@ export function paintActors(ctx: CanvasRenderingContext2D, w: World, moving: boo
     seq[slot] = id;
   }
   const hidden = w.hurtCd > 0 && w.hurtCd % 6 >= 3;
+  const cover = fogCover(w);
+  const shade = cover > 0 ? 1 - cover : 1;
   for (let i = 0; i < n; i++) {
     const id = seq[i] ?? -1;
     if (id < 0) {
+      ctx.globalAlpha = 1;
       if (!hidden) paintHero(ctx, w, moving);
-    } else if (!offScreen(z.x[id] ?? 0, z.y[id] ?? 0, 96)) paintOne(ctx, w, id);
+    } else if (!offScreen(z.x[id] ?? 0, z.y[id] ?? 0, 96)) {
+      if (shade < 1) ctx.globalAlpha = shade;
+      paintOne(ctx, w, id);
+    }
   }
+  ctx.globalAlpha = 1;
 }
 
 function binOf(y: number): number {

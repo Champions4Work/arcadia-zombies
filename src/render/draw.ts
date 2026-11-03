@@ -8,6 +8,7 @@ import { drawJuice } from "./juice";
 import { drawCards, drawHud } from "./hud";
 import { drawSaws, drawShield, drawTesla } from "./progress";
 import { LAYER_BACK, LAYER_FRONT, LAYER_HUD, LAYER_MID, paintLayers } from "./plugins";
+import "./map-events";
 import { absorbShake, shakePixels } from "./shake";
 import { drawStage } from "./stage";
 

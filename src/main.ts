@@ -173,7 +173,9 @@ function startRun(): void {
   leader.close();
   const reset = begin(session);
   if (reset) {
-    world = makeWorld(Date.now() >>> 0);
+    const seedQuery = import.meta.env.DEV ? Number(new URLSearchParams(location.search).get("seed")) : NaN;
+    const seed = Number.isFinite(seedQuery) && seedQuery > 0 ? seedQuery >>> 0 : Date.now() >>> 0;
+    world = makeWorld(seed);
     const jump = devSeconds(location.search, import.meta.env.DEV);
     if (jump > 0) armDevJump(world, jump);
     setRunEndless(world, crown.endless);
