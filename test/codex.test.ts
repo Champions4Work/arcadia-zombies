@@ -65,6 +65,14 @@ describe("codex", () => {
     expect(store.getItem(CODEX_KEY)).toContain("1");
   });
 
+  it("does not throw when the store refuses the write", () => {
+    const store = {
+      getItem: () => null,
+      setItem: () => { throw new Error("full"); },
+    };
+    expect(() => saveCodex(store, emptyCodex())).not.toThrow();
+  });
+
   it("ignores a broken save and still opens", () => {
     const store = mem();
     store.setItem(CODEX_KEY, "nope");

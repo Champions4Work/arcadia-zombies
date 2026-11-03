@@ -45,16 +45,20 @@ export function emptyCodex(): Codex {
 }
 
 export function loadCodex(store: Store): Codex {
-  const book = emptyCodex();
-  const raw = store.getItem(CODEX_KEY);
-  if (!raw) return book;
-  const parts = raw.split(".");
-  const ups = parts[0] ?? "";
-  const foes = parts[1] ?? "";
-  for (let i = 0; i < book.ups.length && i < ups.length; i++) book.ups[i] = ups.charCodeAt(i) === 49 ? 1 : 0;
-  for (let i = 0; i < book.foes.length && i < foes.length; i++) book.foes[i] = foes.charCodeAt(i) === 49 ? 1 : 0;
-  book.elite = (parts[2] ?? "") === "1" ? 1 : 0;
-  return book;
+  try {
+    const book = emptyCodex();
+    const raw = store.getItem(CODEX_KEY);
+    if (!raw) return book;
+    const parts = raw.split(".");
+    const ups = parts[0] ?? "";
+    const foes = parts[1] ?? "";
+    for (let i = 0; i < book.ups.length && i < ups.length; i++) book.ups[i] = ups.charCodeAt(i) === 49 ? 1 : 0;
+    for (let i = 0; i < book.foes.length && i < foes.length; i++) book.foes[i] = foes.charCodeAt(i) === 49 ? 1 : 0;
+    book.elite = (parts[2] ?? "") === "1" ? 1 : 0;
+    return book;
+  } catch {
+    return emptyCodex();
+  }
 }
 
 export function codexStamp(book: Codex): string {
@@ -66,7 +70,11 @@ export function codexStamp(book: Codex): string {
 }
 
 export function saveCodex(store: Store, book: Codex): void {
-  store.setItem(CODEX_KEY, codexStamp(book));
+  try {
+    store.setItem(CODEX_KEY, codexStamp(book));
+  } catch {
+    return;
+  }
 }
 
 export function observe(book: Codex, w: World): boolean {

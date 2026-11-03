@@ -8,6 +8,7 @@ const CAP = 1_000_000_000;
 const CODES: readonly string[] = [
   "TESLA", "SHOT", "SAWS", "FIRE", "DMG", "HP", "SPEED", "VENT", "PIERCE", "SHIELD",
   "SPIKES", "COOLANT", "MORTAR", "WHISTLE", "RICOCHET", "DYNAMO", "STORM", "CANNON", "AEGIS",
+  "CROWN", "BELLOW", "HALO", "HEART", "BRIAR", "HOWITZ", "CALLIO",
 ];
 
 export interface Store {

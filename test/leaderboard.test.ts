@@ -1,6 +1,6 @@
 import { applyUpgrade } from "../src/sim/progress";
 import { step } from "../src/sim/step.hot";
-import { EV_KILL, UPG_PIERCE, type Input } from "../src/sim/types";
+import { EV_KILL, UNION_CROWN, UPG_PIERCE, type Input } from "../src/sim/types";
 import { createWorld } from "../src/sim/world";
 import {
   ACHIEVEMENTS,
@@ -74,6 +74,12 @@ describe("run records", () => {
     expect(buildLabel([0, 0, 0, 0, 0, 9, 0, 0, 0, 0])).toBe("HP9");
     expect(rankSum("TESLA5 SHOT3")).toBe(8);
     expect(rankSum("STOCK")).toBe(0);
+  });
+
+  it("includes the crown code when thunder crown is forged", () => {
+    const crowned: number[] = [];
+    crowned[UNION_CROWN] = 1;
+    expect(buildLabel(crowned)).toContain("CROWN1");
   });
 
   it("adds every kill reported in a tick", () => {
