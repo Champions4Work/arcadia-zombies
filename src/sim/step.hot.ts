@@ -17,6 +17,7 @@ import {
   UPG_SAWS, UPG_SHIELD, UPG_SHOTGUN, UPG_SPIKES, UPG_TESLA, UPG_VENT, UPG_WHISTLE, W,
   EVOL_AEGIS, EVOL_CANNON, type Input, type World,
 } from "./types";
+import { JUICE_DT, juiceFrame, juiceHit, juicePlayerHurt, tickJuice } from "../render/juice";
 const BULLET_SPEED = 5;
 function emitFx(w: World, kind: number, x: number, y: number, a: number): void {
   const i = w.fxHead;
@@ -48,7 +49,9 @@ function hurtZombie(w: World, i: number, dmg: number): void {
   const z = w.zombies;
   z.hp[i] = (z.hp[i] ?? 1) - dmg;
   emitFx(w, FX_SPARK, z.x[i] ?? 0, z.y[i] ?? 0, 0);
-  if ((z.hp[i] ?? 0) <= 0) killZombie(w, i);
+  const killed = (z.hp[i] ?? 0) <= 0;
+  if (killed) killZombie(w, i);
+  juiceHit(i, z.x[i] ?? 0, z.y[i] ?? 0, dmg, z.kind[i] ?? 0, killed, w.tick);
 }
 function pulseAt(w: World, x: number, y: number, r: number, dmg: number): void {
   const z = w.zombies;
@@ -227,6 +230,7 @@ function thorns(w: World, dmg: number): void {
 export function step(w: World, input: Input): void {
   w.events.fill(0);
   if (w.over) return;
+  if (juiceFrame(JUICE_DT)) return;
   if (w.choosing) {
     tryPick(w, input.pick ?? 0);
     return;
@@ -319,6 +323,7 @@ export function step(w: World, input: Input): void {
       } else {
         w.hp -= lichMinion(w, i) ? 1 : scaledDmg(foeContact(raw), w.rank);
         w.events[EV_HURT] = 1;
+        juicePlayerHurt();
         const spikes = w.upgrades[UPG_SPIKES] ?? 0;
         if (spikes > 0) {
           thorns(w, spikes);
@@ -397,4 +402,5 @@ export function step(w: World, input: Input): void {
   }
   spinSaws(w);
   stepFinale(w);
+  tickJuice(JUICE_DT);
 }

@@ -7,6 +7,7 @@ import {
 } from "./foes";
 import { shieldReload } from "./progress";
 import { nextFloat } from "./rng";
+import { juicePlayerHurt } from "../render/juice";
 import { EV_HURT, EV_SHIELD, H, MAX_BULLETS, MAX_ZOMBIES, W, type World } from "./types";
 
 function edgeX(t: number, u: number): number {
@@ -145,6 +146,7 @@ export function acidTouch(w: World, x: number, y: number): number {
   }
   w.hp -= scaledDmg(ACID_DMG, w.rank);
   w.events[EV_HURT] = 1;
+  juicePlayerHurt();
   if (w.hp <= 0) {
     w.over = true;
     return 2;
@@ -168,5 +170,6 @@ export function detonateGas(w: World, x: number, y: number, elite: number): void
   }
   w.hp -= scaledDmg(GAS_DMG, w.rank);
   w.events[EV_HURT] = 1;
+  juicePlayerHurt();
   if (w.hp <= 0) w.over = true;
 }

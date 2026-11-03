@@ -1,3 +1,4 @@
+import { resetJuice } from "../render/juice";
 import { attachFinale } from "./finale";
 import { createRng } from "./rng";
 import {
@@ -8,6 +9,7 @@ const pool = (n: number): Pool => ({
   hp: new Int16Array(n), alive: new Uint8Array(n), kind: new Uint8Array(n),
 });
 export const createWorld = (seed: number): World => {
+  resetJuice();
   const offers = new Int8Array(OFFER_N);
   offers.fill(-1);
   const teslaHit = new Int16Array(8);

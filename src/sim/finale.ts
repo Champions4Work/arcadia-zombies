@@ -1,3 +1,4 @@
+import { juicePlayerHurt } from "../render/juice";
 import { ARENA_H, ARENA_W } from "./arena";
 import { clock, scoreMul, tierAt } from "./difficulty";
 import { bulletDmg, sawAngle, sawDamage, sawRadius, shieldReload, teslaPower, teslaRange, upgName } from "./progress";
@@ -291,6 +292,7 @@ function hurtPlayer(w: World, dmg: number): void {
   }
   w.hp -= dmg;
   w.events[EV_HURT] = 1;
+  juicePlayerHurt();
   if (w.hp <= 0) w.over = true;
 }
 

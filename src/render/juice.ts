@@ -1,0 +1,334 @@
+import { Z_ELITE, Z_KIND, Z_KNIGHT } from "../sim/foes";
+import { Z_BRUTE } from "../sim/types";
+
+export const NUMBER_CAP = 256;
+export const FLASH_CAP = 2048;
+export const FLASH_MS = 80;
+export const PART_CAP = 128;
+export const STOP_ELITE_MS = 40;
+export const STOP_BOSS_MS = 60;
+export const STOP_HURT_MS = 50;
+export const STOP_BUDGET_MS = 100;
+export const STOP_WINDOW_MS = 1000;
+export const JUICE_DT = 1000 / 60;
+export const CRIT_COLOR = "#ffe14a";
+export const HIT_COLOR = "#f4efe2";
+export const NUMBER_LIFE = 720;
+
+const SOOT = "#120c08";
+const BRASS = "#c8963e";
+const BRASS_HI = "#e8c878";
+const COPPER = "#b5562f";
+const GLYPH = new Uint16Array([
+  0b111101101101111, 0b010010010010010, 0b111001111100111, 0b111001111001111, 0b101101111001001,
+  0b111100111001111, 0b111100111101111, 0b111001010010010, 0b111101111101111, 0b111101111001111,
+]);
+
+const numX = new Float32Array(NUMBER_CAP);
+const numY = new Float32Array(NUMBER_CAP);
+const numVx = new Float32Array(NUMBER_CAP);
+const numVy = new Float32Array(NUMBER_CAP);
+const numLife = new Float32Array(NUMBER_CAP);
+const numDmg = new Int16Array(NUMBER_CAP);
+const numCrit = new Uint8Array(NUMBER_CAP);
+const numOn = new Uint8Array(NUMBER_CAP);
+const flash = new Float32Array(FLASH_CAP);
+const pX = new Float32Array(PART_CAP);
+const pY = new Float32Array(PART_CAP);
+const pVx = new Float32Array(PART_CAP);
+const pVy = new Float32Array(PART_CAP);
+const pLife = new Float32Array(PART_CAP);
+const pRot = new Float32Array(PART_CAP);
+const pSpin = new Float32Array(PART_CAP);
+const pGear = new Uint8Array(PART_CAP);
+const pOn = new Uint8Array(PART_CAP);
+
+let numCursor = 0;
+let numCount = 0;
+let pCursor = 0;
+let pCount = 0;
+let flashScan = 0;
+let flashOn = 0;
+let stopMs = 0;
+let usedMs = 0;
+let windowMs = 0;
+let showNumbers = true;
+
+export function damageNumbersOn(): boolean {
+  return showNumbers;
+}
+
+export function setNumbersOn(on: boolean): void {
+  showNumbers = on;
+}
+
+export function resetJuice(): void {
+  numCursor = 0;
+  numCount = 0;
+  pCursor = 0;
+  pCount = 0;
+  flashScan = 0;
+  flashOn = 0;
+  stopMs = 0;
+  usedMs = 0;
+  windowMs = 0;
+  numOn.fill(0);
+  pOn.fill(0);
+  flash.fill(0);
+}
+
+export function burstCount(slot: number, tick: number): number {
+  const m = ((slot | 0) + (tick | 0)) % 3;
+  return 4 + (m < 0 ? m + 3 : m);
+}
+
+export function numberColor(crit: number): string {
+  return crit ? CRIT_COLOR : HIT_COLOR;
+}
+
+export function numberCount(): number {
+  return numCount;
+}
+
+export function particleCount(): number {
+  return pCount;
+}
+
+export function stopRemaining(): number {
+  return stopMs;
+}
+
+export function stopUsed(): number {
+  return usedMs;
+}
+
+export function enemyFlash(slot: number): number {
+  if (slot < 0 || slot >= FLASH_CAP) return 0;
+  return flash[slot] ?? 0;
+}
+
+export function flashesLive(): number {
+  return flashOn;
+}
+
+export function numberScale(i: number): number {
+  return (numCrit[i] ?? 0) === 1 ? 2 : 1;
+}
+
+export function numberY(i: number): number {
+  return numY[i] ?? 0;
+}
+
+export function lastNumberCrit(): number {
+  const i = numCursor === 0 ? NUMBER_CAP - 1 : numCursor - 1;
+  return numCrit[i] ?? 0;
+}
+
+export function lastNumberValue(): number {
+  const i = numCursor === 0 ? NUMBER_CAP - 1 : numCursor - 1;
+  return numDmg[i] ?? 0;
+}
+
+function grant(ms: number): void {
+  if (ms <= 0) return;
+  const room = STOP_BUDGET_MS - usedMs;
+  if (room <= 0) return;
+  const g = ms < room ? ms : room;
+  usedMs += g;
+  stopMs += g;
+}
+
+function spawnNumber(x: number, y: number, dmg: number, crit: boolean): void {
+  const i = numCursor;
+  numCursor = i + 1 < NUMBER_CAP ? i + 1 : 0;
+  if (numOn[i] === 0) numCount++;
+  numOn[i] = 1;
+  numX[i] = x;
+  numY[i] = y;
+  numVx[i] = ((i % 5) - 2) * 8;
+  numVy[i] = crit ? -58 : -36;
+  numLife[i] = NUMBER_LIFE;
+  numDmg[i] = dmg;
+  numCrit[i] = crit ? 1 : 0;
+}
+
+function spawnPart(x: number, y: number, vx: number, vy: number, gear: number): void {
+  const i = pCursor;
+  pCursor = i + 1 < PART_CAP ? i + 1 : 0;
+  if (pOn[i] === 0) pCount++;
+  pOn[i] = 1;
+  pX[i] = x;
+  pY[i] = y;
+  pVx[i] = vx;
+  pVy[i] = vy;
+  pLife[i] = 460;
+  pRot[i] = 0;
+  pSpin[i] = gear ? 11 : 4;
+  pGear[i] = gear;
+}
+
+export function juicePlayerHurt(): void {
+  grant(STOP_HURT_MS);
+}
+
+function killStop(raw: number, killed: boolean): number {
+  if (!killed) return 0;
+  const kind = raw & Z_KIND;
+  if (kind === Z_BRUTE || kind === Z_KNIGHT) return STOP_BOSS_MS;
+  if ((raw & Z_ELITE) !== 0) return STOP_ELITE_MS;
+  return 0;
+}
+
+export function juiceHit(slot: number, x: number, y: number, dmg: number, kind: number, killed: boolean, tick: number): void {
+  const dealt = dmg > 0 ? dmg | 0 : 0;
+  const body = kind & Z_KIND;
+  const elite = (kind & Z_ELITE) !== 0;
+  const boss = body === Z_BRUTE || body === Z_KNIGHT;
+  const crit = dealt >= 3 || (killed && (elite || boss));
+  if (showNumbers) spawnNumber(x, y - 14, dealt, crit);
+  if (slot >= 0 && slot < FLASH_CAP) {
+    if ((flash[slot] ?? 0) <= 0) flashOn++;
+    flash[slot] = FLASH_MS;
+    if (slot + 1 > flashScan) flashScan = slot + 1;
+  }
+  if (!killed) return;
+  const n = burstCount(slot, tick);
+  const base = ((((slot | 0) * 17 + (tick | 0)) % 628) / 100);
+  for (let k = 0; k < n; k++) {
+    const a = base + (k * 6.283185307179586) / n;
+    const sp = 52 + k * 8;
+    spawnPart(x, y, Math.cos(a) * sp, Math.sin(a) * sp - 16, (k & 1) ^ 1);
+  }
+  grant(killStop(kind, killed));
+}
+
+export function juiceFrame(dt: number): boolean {
+  windowMs += dt;
+  while (windowMs >= STOP_WINDOW_MS) {
+    windowMs -= STOP_WINDOW_MS;
+    usedMs = 0;
+  }
+  if (stopMs <= 0) return false;
+  stopMs = stopMs > dt ? stopMs - dt : 0;
+  return true;
+}
+
+export function tickJuice(dt: number): void {
+  const scale = dt * 0.001;
+  if (flashOn > 0) {
+    for (let i = 0; i < flashScan; i++) {
+      const t = flash[i] ?? 0;
+      if (t <= 0) continue;
+      const next = t > dt ? t - dt : 0;
+      flash[i] = next;
+      if (next === 0) flashOn--;
+    }
+  }
+  if (numCount > 0) {
+    for (let i = 0; i < NUMBER_CAP; i++) {
+      if (numOn[i] === 0) continue;
+      numX[i] = (numX[i] ?? 0) + (numVx[i] ?? 0) * scale;
+      numY[i] = (numY[i] ?? 0) + (numVy[i] ?? 0) * scale;
+      const life = (numLife[i] ?? 0) - dt;
+      if (life <= 0) {
+        numOn[i] = 0;
+        numCount--;
+      } else numLife[i] = life;
+    }
+  }
+  if (pCount > 0) {
+    for (let i = 0; i < PART_CAP; i++) {
+      if (pOn[i] === 0) continue;
+      pX[i] = (pX[i] ?? 0) + (pVx[i] ?? 0) * scale;
+      pY[i] = (pY[i] ?? 0) + (pVy[i] ?? 0) * scale;
+      pRot[i] = (pRot[i] ?? 0) + (pSpin[i] ?? 0) * scale;
+      const life = (pLife[i] ?? 0) - dt;
+      if (life <= 0) {
+        pOn[i] = 0;
+        pCount--;
+      } else pLife[i] = life;
+    }
+  }
+}
+
+function digits(n: number): number {
+  if (n < 10) return 1;
+  if (n < 100) return 2;
+  if (n < 1000) return 3;
+  return 4;
+}
+
+function glyph(c: CanvasRenderingContext2D, x: number, y: number, d: number, s: number): void {
+  const bits = GLYPH[d] ?? 0;
+  for (let p = 0; p < 15; p++) {
+    if (bits & (1 << (14 - p))) c.fillRect((x + (p % 3) * s) | 0, (y + ((p / 3) | 0) * s) | 0, s, s);
+  }
+}
+
+function drawValue(c: CanvasRenderingContext2D, x: number, y: number, n: number, col: string, s: number): void {
+  let v = n | 0;
+  if (v < 0) v = 0;
+  if (v > 9999) v = 9999;
+  let div = 1;
+  let probe = v;
+  while (probe >= 10 && div < 1000) {
+    div *= 10;
+    probe = (probe / 10) | 0;
+  }
+  c.fillStyle = col;
+  let rest = v;
+  let i = 0;
+  while (div >= 1 && i < 4) {
+    const d = (rest / div) | 0;
+    glyph(c, x + i * 4 * s, y, d, s);
+    rest -= d * div;
+    div = (div / 10) | 0;
+    i++;
+  }
+}
+
+export function drawJuice(c: CanvasRenderingContext2D): void {
+  if (pCount > 0) {
+    for (let i = 0; i < PART_CAP; i++) {
+      if (pOn[i] === 0) continue;
+      const life = pLife[i] ?? 0;
+      c.globalAlpha = life > 160 ? 1 : Math.max(0, life / 160);
+      const x = pX[i] ?? 0;
+      const y = pY[i] ?? 0;
+      if ((pGear[i] ?? 0) === 1) {
+        c.save();
+        c.translate(x | 0, y | 0);
+        c.rotate(pRot[i] ?? 0);
+        c.fillStyle = BRASS_HI;
+        c.fillRect(-2, -8, 4, 16);
+        c.fillRect(-8, -2, 16, 4);
+        c.fillStyle = BRASS;
+        c.fillRect(-4, -4, 8, 8);
+        c.restore();
+      } else {
+        c.fillStyle = BRASS;
+        c.fillRect((x - 4) | 0, (y - 3) | 0, 8, 6);
+        c.fillStyle = COPPER;
+        c.fillRect((x - 1) | 0, (y - 1) | 0, 4, 4);
+      }
+    }
+  }
+  c.globalAlpha = 1;
+  if (!showNumbers || numCount === 0) return;
+  const smooth = c.imageSmoothingEnabled;
+  c.imageSmoothingEnabled = false;
+  for (let i = 0; i < NUMBER_CAP; i++) {
+    if (numOn[i] === 0) continue;
+    const life = numLife[i] ?? 0;
+    const crit = numCrit[i] ?? 0;
+    const s = (crit === 1 ? 2 : 1) * 3;
+    const val = numDmg[i] ?? 0;
+    const x = (numX[i] ?? 0) - digits(val) * 2 * s;
+    const y = numY[i] ?? 0;
+    c.globalAlpha = life > 200 ? 1 : Math.max(0, life / 200);
+    drawValue(c, x + s, y + s, val, SOOT, s);
+    drawValue(c, x, y, val, numberColor(crit), s);
+  }
+  c.imageSmoothingEnabled = smooth;
+  c.globalAlpha = 1;
+}
