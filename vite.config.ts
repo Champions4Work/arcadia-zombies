@@ -29,5 +29,5 @@ export default defineConfig({
       format: { comments: false, ecma: 2022 },
     },
   },
-  test: { globals: true },
+  test: { globals: true, exclude: ["**/node_modules/**", "**/dist/**", "**/e2e/**"] },
 } as never);

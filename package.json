@@ -10,11 +10,14 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "size": "node scripts/size.mjs",
-    "ci": "npm run lint && npm run typecheck && npm run test && npm run build && npm run size",
+    "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort",
+    "smoke": "playwright test",
+    "ci": "npm run lint && npm run typecheck && npm run test && npm run build && npm run size && npm run smoke",
     "playtest": "vitest run test/playtest.test.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.14.0",
+    "@playwright/test": "1.64.1",
     "eslint": "^9.14.0",
     "terser": "^5.36.0",
     "typescript": "^5.6.3",

@@ -17,6 +17,8 @@ jobs:
       - run: npm run playtest
       - run: npm run build
       - run: npm run size
+      - run: npx playwright install --with-deps chromium
+      - run: npm run smoke
   deploy:
     needs: ci
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
