@@ -14,9 +14,9 @@ function rollKind(m: MapBag): number {
   return k;
 }
 
-function rollSpot(m: MapBag): void {
-  m.x = 48 + nextFloat(m.rng) * (W - 96);
-  m.y = 108 + nextFloat(m.rng) * (H - 156);
+function rollSpot(w: World, m: MapBag): void {
+  m.x = w.arena.camX + 48 + nextFloat(m.rng) * (W - 96);
+  m.y = w.arena.camY + 108 + nextFloat(m.rng) * (H - 156);
 }
 
 function schedule(w: World, m: MapBag): void {
@@ -31,7 +31,7 @@ function finish(w: World, m: MapBag): void {
   schedule(w, m);
 }
 
-function startWarn(m: MapBag): void {
+function startWarn(w: World, m: MapBag): void {
   const kind = rollKind(m);
   m.kind = kind;
   m.lastKind = kind;
@@ -39,7 +39,7 @@ function startWarn(m: MapBag): void {
   m.life = WARN_TICKS;
   m.crate = 0;
   m.spawnCd = 6;
-  rollSpot(m);
+  rollSpot(w, m);
   m.bannerKind = kind;
   m.banner = WARN_TICKS + liveSpan(kind);
 }
@@ -85,7 +85,7 @@ function tickGears(w: World, m: MapBag): void {
     if (!m.gearOn[i]) continue;
     const y = (m.gearY[i] ?? 0) + (m.gearVy[i] ?? 0);
     m.gearY[i] = y;
-    if (y > H + 12) {
+    if (y > w.arena.camY + H + 12) {
       m.gearOn[i] = 0;
       continue;
     }
@@ -113,7 +113,7 @@ function tickCrate(w: World, m: MapBag): void {
   finish(w, m);
 }
 
-function spawnGear(m: MapBag): void {
+function spawnGear(w: World, m: MapBag): void {
   if (m.spawnCd > 0) {
     m.spawnCd--;
     return;
@@ -121,8 +121,8 @@ function spawnGear(m: MapBag): void {
   for (let i = 0; i < GEAR_N; i++) {
     if (m.gearOn[i]) continue;
     m.gearOn[i] = 1;
-    m.gearX[i] = 28 + nextFloat(m.rng) * (W - 56);
-    m.gearY[i] = 16;
+    m.gearX[i] = w.arena.camX + 28 + nextFloat(m.rng) * (W - 56);
+    m.gearY[i] = w.arena.camY + 16;
     m.gearVy[i] = 2.5 + nextFloat(m.rng) * 1.3;
     m.spawnCd = 8;
     return;
@@ -140,7 +140,7 @@ export function stepMapEvents(w: World): void {
     return;
   }
   if (m.phase === MAP_LIVE) {
-    if (m.kind === MAP_GEAR) spawnGear(m);
+    if (m.kind === MAP_GEAR) spawnGear(w, m);
     m.life--;
     if (m.life <= 0) finish(w, m);
     return;
@@ -148,5 +148,5 @@ export function stepMapEvents(w: World): void {
   if (lichUp(w)) return;
   if (gearsAlive(m)) return;
   if (w.tick < m.nextAt) return;
-  startWarn(m);
+  startWarn(w, m);
 }

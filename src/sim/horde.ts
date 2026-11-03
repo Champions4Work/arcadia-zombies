@@ -9,17 +9,19 @@ export function fillHorde(w: World, zombies = HORDE_ZOMBIES, bullets = HORDE_BUL
   const bN = Math.min(bullets, MAX_BULLETS);
   const cols = 40;
   const rows = Math.ceil(zN / cols);
+  const ox = w.arena.camX;
+  const oy = w.arena.camY;
   const z = w.zombies;
   for (let i = 0; i < zN; i++) {
     const c = i % cols;
     const r = (i / cols) | 0;
-    let x = (c + 0.5) * (W / cols);
-    let y = (r + 0.5) * (H / rows);
+    let x = ox + (c + 0.5) * (W / cols);
+    let y = oy + (r + 0.5) * (H / rows);
     const dx = x - w.px;
     const dy = y - w.py;
     if (dx * dx + dy * dy < POCKET * POCKET) {
-      x = dx < 0 ? 16 : W - 16;
-      y = Math.min(H - 16, Math.max(24, y));
+      x = dx < 0 ? ox + 16 : ox + W - 16;
+      y = Math.min(oy + H - 16, Math.max(oy + 24, y));
     }
     const kind = i % 3;
     z.x[i] = x;
@@ -36,8 +38,8 @@ export function fillHorde(w: World, zombies = HORDE_ZOMBIES, bullets = HORDE_BUL
   for (let j = 0; j < bN; j++) {
     const c = j % bCols;
     const r = (j / bCols) | 0;
-    b.x[j] = (c + 0.5) * (W / bCols);
-    b.y[j] = (r + 0.5) * (H / Math.ceil(bN / bCols));
+    b.x[j] = ox + (c + 0.5) * (W / bCols);
+    b.y[j] = oy + (r + 0.5) * (H / Math.ceil(bN / bCols));
     const dir = j & 3;
     b.vx[j] = dir === 0 ? 5 : dir === 1 ? -5 : 0;
     b.vy[j] = dir === 2 ? 5 : dir === 3 ? -5 : 0;

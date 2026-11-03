@@ -1,5 +1,6 @@
 import { H, MAX_BULLETS, MAX_ZOMBIES, W, type World } from "../sim/types";
 import { paintActors, paintBullets, paintFx, paintPlayer } from "./actors";
+import { paintArrows, paintDecals, paintProps } from "./arena";
 import { shouldBlitHorde } from "./cull";
 import { paintFps } from "./fps";
 import { drawLich } from "./finale";
@@ -28,11 +29,6 @@ function hordeYard(): HTMLCanvasElement {
   const g = document.createElement("canvas");
   g.width = W;
   g.height = H;
-  const gc = g.getContext("2d");
-  if (gc) {
-    gc.imageSmoothingEnabled = true;
-    drawStage(gc, 0);
-  }
   yard = g;
   return g;
 }
@@ -53,10 +49,15 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
     countAlive(w.bullets.alive, MAX_BULLETS),
   );
   const moving = walk > 0;
+  const camX = Math.round(w.arena.camX);
+  const camY = Math.round(w.arena.camY);
   c.save();
   if (sx !== 0 || sy !== 0) c.translate(sx, sy);
+  c.translate(-camX, -camY);
   if (horde) {
     renderHorde(c, w, hordeYard());
+    paintDecals(c, w);
+    paintProps(c, w);
     paintPlayer(c, w, moving);
     drawSaws(c, w);
     drawShield(c, w);
@@ -65,6 +66,7 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
   } else {
     drawStage(c, w.tick);
     paintLayers(c, w, LAYER_BACK);
+    paintDecals(c, w);
     paintActors(c, w, moving);
     drawSaws(c, w);
     drawShield(c, w);
@@ -76,6 +78,11 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
   paintLayers(c, w, LAYER_MID);
   drawLich(c, w);
   c.restore();
+  const vig = c.createRadialGradient(W / 2, H * 0.55, 90, W / 2, H * 0.5, 300);
+  vig.addColorStop(0, "rgba(0,0,0,0)");
+  vig.addColorStop(1, "rgba(16,8,24,0.28)");
+  c.fillStyle = vig;
+  c.fillRect(0, 0, W, H);
   if (w.hurtCd > 0) {
     const g = c.createRadialGradient(W / 2, H / 2, 60, W / 2, H / 2, 280);
     g.addColorStop(0, "rgba(160,0,0,0)");
@@ -89,6 +96,7 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
     c.fillRect(0, 0, W, H);
   }
   if (opts?.hud !== false) drawHud(c, w);
+  paintArrows(c, w);
   drawCards(c, w);
   if (w.over) {
     c.fillStyle = "rgba(8,4,14,0.5)";

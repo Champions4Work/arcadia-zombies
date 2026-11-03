@@ -139,8 +139,9 @@ function supply(ctx: CanvasRenderingContext2D, w: World): void {
   const y = mapY(w);
   if (phase === MAP_WARN) {
     const t = 1 - mapLife(w) / WARN_TICKS;
-    const sx = -80 + (x + 80) * Math.min(1, Math.max(0, t));
-    airship(ctx, sx, 42, w.tick);
+    const left = w.arena.camX;
+    const sx = left - 80 + (x - left + 80) * Math.min(1, Math.max(0, t));
+    airship(ctx, sx, w.arena.camY + 42, w.tick);
     reticle(ctx, x, y, w.tick, "rgba(255,214,120,0.95)");
     ctx.globalAlpha = 0.35;
     ctx.beginPath();
@@ -153,9 +154,10 @@ function supply(ctx: CanvasRenderingContext2D, w: World): void {
   if (phase !== MAP_LIVE || kind !== MAP_DROP) return;
   const flown = DROP_LIVE - mapLife(w);
   const sx = x + Math.min(220, flown * 3.2);
-  if (sx < W + 70) airship(ctx, sx, 36, w.tick);
+  if (sx < w.arena.camX + W + 70) airship(ctx, sx, w.arena.camY + 36, w.tick);
   const fall = Math.min(1, flown / CRATE_FALL);
-  crate(ctx, x, 40 + (y - 40) * fall);
+  const top = w.arena.camY + 40;
+  crate(ctx, x, top + (y - top) * fall);
 }
 
 function fog(ctx: CanvasRenderingContext2D, w: World): void {
@@ -166,11 +168,11 @@ function fog(ctx: CanvasRenderingContext2D, w: World): void {
   g.addColorStop(0.4, `rgba(168,180,190,${cover * 0.5})`);
   g.addColorStop(1, `rgba(86,98,110,${cover * 0.78})`);
   ctx.fillStyle = g;
-  ctx.fillRect(0, 0, W, H);
+  ctx.fillRect(w.arena.camX, w.arena.camY, W, H);
   ctx.fillStyle = "rgba(232,238,242,0.45)";
   for (let i = 0; i < 6; i++) {
-    const x = (i * 90 + w.tick * (0.4 + i * 0.05)) % (W + 80) - 40;
-    const y = 70 + (i * 37) % 180;
+    const x = w.arena.camX + ((i * 90 + w.tick * (0.4 + i * 0.05)) % (W + 80) - 40);
+    const y = w.arena.camY + 70 + (i * 37) % 180;
     ctx.beginPath();
     ctx.ellipse(x, y, 46, 16, 0, 0, Math.PI * 2);
     ctx.fill();
@@ -183,8 +185,8 @@ function gears(ctx: CanvasRenderingContext2D, w: World): void {
   if (kind === MAP_GEAR && phase === MAP_WARN) {
     const spots = [36, 108, 372, 444];
     for (let i = 0; i < spots.length; i++) {
-      const x = spots[i] ?? 0;
-      const y = 70 + Math.sin(w.tick * 0.09 + i) * 8;
+      const x = w.arena.camX + (spots[i] ?? 0);
+      const y = w.arena.camY + 70 + Math.sin(w.tick * 0.09 + i) * 8;
       cog(ctx, x, y, 10, w.tick * 0.06 + i, BRASS, 6, true);
     }
   }

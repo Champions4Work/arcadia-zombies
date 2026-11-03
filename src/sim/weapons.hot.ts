@@ -1,3 +1,5 @@
+import { bulletBlocks } from "./arena.hot";
+import { ARENA_H, ARENA_W } from "./arena";
 import { emitFx, hurtZombie } from "./combat.hot";
 import { fogSight } from "./map-events";
 import { freshShot, lichUp, lichX, lichY } from "./finale";
@@ -6,9 +8,9 @@ import { B_ACID, foeHitR2, knightBlocks, Z_KIND, Z_KNIGHT } from "./foes";
 import { acidTouch } from "./foes.hot";
 import { beginQuery, beginRadiusQuery, nextQuery, rebuildZombieGrid } from "./grid.hot";
 import {
-  EV_BOOM, EV_SHOT, EVOL_CANNON, FX_BOOM, FX_FLASH, FX_SPARK, H, MAX_BULLETS, MAX_ZOMBIES, UPG_PIERCE,
+  EV_BOOM, EV_SHOT, EVOL_CANNON, FX_BOOM, FX_FLASH, FX_SPARK, MAX_BULLETS, MAX_ZOMBIES, UPG_PIERCE,
   UPG_RICOCHET, UPG_SHOTGUN, UPG_WPN_FLAME, UPG_WPN_HARP, UPG_WPN_MORT, UPG_WPN_RIVET, UPG_WPN_SHOT,
-  W, WPN_FLAME, WPN_HARP, WPN_MORT, WPN_RIVET, WPN_SHOT, type World,
+  WPN_FLAME, WPN_HARP, WPN_MORT, WPN_RIVET, WPN_SHOT, type World,
 } from "./types";
 import {
   BOMB_FUSE, flameJets, flameLife, harpoonDamage, harpoonPierce, mortarDamage, mortarRadius,
@@ -178,20 +180,20 @@ function bounceRivet(w: World, j: number, bx: number, by: number): number {
   let left = b.kind[j] ?? 0;
   let x = bx;
   let y = by;
-  if (left > 0 && (x < 2 || x > W - 2)) {
+  if (left > 0 && (x < 2 || x > ARENA_W - 2)) {
     b.vx[j] = -(b.vx[j] ?? 0);
-    x = x < 2 ? 2 : W - 2;
+    x = x < 2 ? 2 : ARENA_W - 2;
     left--;
   }
-  if (left > 0 && (y < 2 || y > H - 2)) {
+  if (left > 0 && (y < 2 || y > ARENA_H - 2)) {
     b.vy[j] = -(b.vy[j] ?? 0);
-    y = y < 2 ? 2 : H - 2;
+    y = y < 2 ? 2 : ARENA_H - 2;
     left--;
   }
   b.kind[j] = left;
   b.x[j] = x;
   b.y[j] = y;
-  return x < -10 || y < -10 || x > W + 10 || y > H + 10 ? 1 : 0;
+  return x < -24 || y < -24 || x > ARENA_W + 24 || y > ARENA_H + 24 ? 1 : 0;
 }
 
 export function tickProjectiles(w: World): number {
@@ -214,7 +216,7 @@ export function tickProjectiles(w: World): number {
     } else {
       b.x[j] = bx;
       b.y[j] = by;
-      if (gun !== WPN_MORT && (bx < -10 || by < -10 || bx > W + 10 || by > H + 10)) {
+      if (gun !== WPN_MORT && (bx < -24 || by < -24 || bx > ARENA_W + 24 || by > ARENA_H + 24)) {
         b.alive[j] = 0;
         continue;
       }
@@ -298,6 +300,7 @@ export function tickProjectiles(w: World): number {
         }
       }
     }
+    if (b.alive[j] && bulletBlocks(w, bx, by, dmg)) b.alive[j] = 0;
   }
   return 0;
 }

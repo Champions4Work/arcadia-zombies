@@ -1,4 +1,4 @@
-import { H, W } from "../sim/types";
+import { ARENA_H, ARENA_W } from "../sim/arena";
 import { BRASS, cog, COPPER, lit, OUTLINE, rivet, roundRect, STEEL } from "./paint";
 import { puffSprite } from "./sprites";
 
@@ -233,10 +233,10 @@ function drawYard(ctx: CanvasRenderingContext2D): void {
   sky.addColorStop(0.78, "#e07068");
   sky.addColorStop(1, "#ffb15a");
   ctx.fillStyle = sky;
-  ctx.fillRect(0, 0, W, H);
+  ctx.fillRect(0, 0, ARENA_W, 160);
   ctx.fillStyle = "rgba(255,255,255,0.85)";
-  for (let i = 0; i < 28; i++) {
-    const x = (i * 97) % W;
+  for (let i = 0; i < 48; i++) {
+    const x = (i * 97) % ARENA_W;
     const y = (i * 41) % 70;
     ctx.globalAlpha = 0.35 + (i % 4) * 0.12;
     ctx.fillRect(x, y, i % 5 === 0 ? 2 : 1.2, i % 5 === 0 ? 2 : 1.2);
@@ -260,20 +260,20 @@ function drawYard(ctx: CanvasRenderingContext2D): void {
       ctx.fillStyle = "#3a2458";
     }
   }
-  const ground = ctx.createLinearGradient(0, 100, 0, H);
+  const ground = ctx.createLinearGradient(0, 100, 0, ARENA_H);
   ground.addColorStop(0, "#5c6e7e");
   ground.addColorStop(0.4, "#7f93a4");
   ground.addColorStop(1, "#6a7e90");
   ctx.fillStyle = ground;
-  ctx.fillRect(0, 108, W, H - 108);
+  ctx.fillRect(0, 108, ARENA_W, ARENA_H - 108);
   const sun = ctx.createRadialGradient(400, 36, 8, 340, 90, 220);
   sun.addColorStop(0, "rgba(255,210,140,0.55)");
   sun.addColorStop(1, "rgba(255,160,70,0)");
   ctx.fillStyle = sun;
-  ctx.fillRect(0, 0, W, 200);
-  for (let row = 0, y = 112; y < H + 8; y += 30, row++) {
+  ctx.fillRect(0, 0, ARENA_W, 200);
+  for (let row = 0, y = 112; y < ARENA_H + 8; y += 30, row++) {
     const ox = row & 1 ? 18 : 0;
-    for (let x = -36; x < W; x += 42) plate(ctx, x + ox, y, 38, 26, tone(x, y) === 3 ? 1 : 0);
+    for (let x = -36; x < ARENA_W; x += 42) plate(ctx, x + ox, y, 38, 26, tone(x, y) === 3 ? 1 : 0);
   }
   chimney(ctx, 22, 30, 26, 88, 3);
   chimney(ctx, 54, 16, 22, 96, 4);
@@ -302,18 +302,13 @@ function drawYard(ctx: CanvasRenderingContext2D): void {
   spill.addColorStop(1, "rgba(255,140,40,0)");
   ctx.fillStyle = spill;
   ctx.fillRect(120, 80, 240, 120);
-  const vig = ctx.createRadialGradient(W / 2, H * 0.55, 90, W / 2, H * 0.5, 300);
-  vig.addColorStop(0, "rgba(0,0,0,0)");
-  vig.addColorStop(1, "rgba(16,8,24,0.28)");
-  ctx.fillStyle = vig;
-  ctx.fillRect(0, 0, W, H);
 }
 
 function background(): HTMLCanvasElement {
   if (!yard) {
     yard = document.createElement("canvas");
-    yard.width = W * STAGE;
-    yard.height = H * STAGE;
+    yard.width = ARENA_W * STAGE;
+    yard.height = ARENA_H * STAGE;
     const ctx = yard.getContext("2d");
     if (!ctx) return yard;
     ctx.scale(STAGE, STAGE);
@@ -430,7 +425,7 @@ function smoke(ctx: CanvasRenderingContext2D, tick: number): void {
 function embers(ctx: CanvasRenderingContext2D, tick: number): void {
   ctx.fillStyle = "#ffb050";
   for (let i = 0; i < 12; i++) {
-    const x = (i * 83 + tick * (0.25 + (i % 3) * 0.12)) % W;
+    const x = (i * 83 + tick * (0.25 + (i % 3) * 0.12)) % ARENA_W;
     const y = 30 + ((i * 47 + tick * 0.18) % 90);
     ctx.globalAlpha = 0.35 + (i % 3) * 0.15;
     ctx.fillRect(x, y, i % 2 ? 2 : 1.4, i % 2 ? 2 : 1.4);
@@ -445,7 +440,7 @@ function spinGears(ctx: CanvasRenderingContext2D, tick: number): void {
 }
 
 export function drawStage(ctx: CanvasRenderingContext2D, tick: number): void {
-  ctx.drawImage(background(), 0, 0, W, H);
+  ctx.drawImage(background(), 0, 0, ARENA_W, ARENA_H);
   slats(ctx, 292, 156, 176, 26, tick);
   slats(ctx, 310, 204, 158, 22, tick + 6);
   slats(ctx, 18, 188, 124, 22, tick + 3);

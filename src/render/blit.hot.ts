@@ -77,13 +77,15 @@ function culled(dx: number, dy: number, sw: number, sh: number): boolean {
 export function composeHorde(w: World, frame: Uint32Array): void {
   frame.set(bg);
   yHead.fill(-1);
+  const camX = Math.round(w.arena.camX);
+  const camY = Math.round(w.arena.camY);
   const z = w.zombies;
   const bob = (w.tick >> 4) & 1;
   const base = zombieSprite(0, bob);
   for (let i = 0; i < MAX_ZOMBIES; i++) {
     if (!z.alive[i]) continue;
-    const x = z.x[i] ?? 0;
-    const y = z.y[i] ?? 0;
+    const x = (z.x[i] ?? 0) - camX;
+    const y = (z.y[i] ?? 0) - camY;
     const kind = z.kind[i] ?? 0;
     const spr = kind === 0 ? base : zombieSprite(kind, bob);
     if (culled((x - spr.ox) | 0, (y - spr.oy) | 0, spr.w, spr.h)) continue;
@@ -98,8 +100,8 @@ export function composeHorde(w: World, frame: Uint32Array): void {
   for (let slot = 0; slot < Y_SLOTS; slot++) {
     let i = yHead[slot] ?? -1;
     while (i >= 0) {
-      const x = z.x[i] ?? 0;
-      const y = z.y[i] ?? 0;
+      const x = (z.x[i] ?? 0) - camX;
+      const y = (z.y[i] ?? 0) - camY;
       const spr = zombieSprite(z.kind[i] ?? 0, bob);
       const dx = (x - spr.ox) | 0;
       const dy = (y - spr.oy) | 0;
@@ -111,8 +113,8 @@ export function composeHorde(w: World, frame: Uint32Array): void {
   const b = w.bullets;
   for (let j = 0; j < MAX_BULLETS; j++) {
     if (!b.alive[j]) continue;
-    const x = b.x[j] ?? 0;
-    const y = b.y[j] ?? 0;
+    const x = (b.x[j] ?? 0) - camX;
+    const y = (b.y[j] ?? 0) - camY;
     const spr = bulletSprite(b.vx[j] ?? 0, b.vy[j] ?? 0);
     const dx = (x - spr.ox) | 0;
     const dy = (y - spr.oy) | 0;

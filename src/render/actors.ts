@@ -1,23 +1,27 @@
+import { ARENA_H } from "../sim/arena";
 import { Z_ELITE, Z_GAS, Z_KIND, Z_KNIGHT, Z_RAT, Z_SPITTER } from "../sim/foes";
 import { fogCover } from "../sim/map-events";
 import { enemyFlash } from "./juice";
 import {
   FX_FLASH, FX_PUFF, FX_SPARK, FX_XP, Z_BRUTE, Z_GHOUL, Z_SHAMBLER, type World,
 } from "../sim/types";
+import { paintProp } from "./arena";
+import { offScreen } from "./cull";
 import { gasGlyph, knightGlyph, projectileFor, ratGearGlyph, spitterGlyph } from "./foes";
+import { blit, BRASS, font, roundRect } from "./paint";
 import { paintWeapon } from "./weapons";
 import {
   bulletPaint, fxPaint, registerBullet, registerFx, registerZombie, zombieGlyph, type BulletPaint, type FxPaint, type Glyph,
 } from "./plugins";
-import { offScreen } from "./cull";
-import { blit, BRASS, font, roundRect } from "./paint";
 import {
   BRUTE, creepFrames, fallbackFrames, fallbackSpec, GHOUL, gunSprite, HERO_H, HERO_W, heroFrames,
   paintShadow, puffSprite, SHAMBLER, starSprite, boltSprite,
 } from "./sprites";
 
-const LO = -80;
-const HI = 420;
+export const BIN_LO = -80;
+export const BIN_HI = ARENA_H + 100;
+const LO = BIN_LO;
+const HI = BIN_HI;
 const SPAN = HI - LO + 1;
 const bin = new Uint16Array(SPAN);
 let seq = new Int32Array(256);
@@ -144,18 +148,20 @@ function paintOne(ctx: CanvasRenderingContext2D, w: World, i: number): void {
 export function paintActors(ctx: CanvasRenderingContext2D, w: World, moving: boolean): void {
   const z = w.zombies;
   const cap = z.alive.length;
-  const need = cap + 1;
+  const obs = w.arena;
+  const need = cap + obs.obsN + 1;
   if (seq.length < need) {
     seq = new Int32Array(need);
     tmp = new Int32Array(need);
   }
   let n = 0;
   for (let i = 0; i < cap; i++) if (z.alive[i]) tmp[n++] = i;
+  for (let i = 0; i < obs.obsN; i++) if (obs.obsAlive[i]) tmp[n++] = -2 - i;
   tmp[n++] = -1;
   bin.fill(0);
   for (let i = 0; i < n; i++) {
     const id = tmp[i] ?? -1;
-    const y = id < 0 ? w.py : (z.y[id] ?? 0);
+    const y = id < -1 ? (obs.obsY[-2 - id] ?? 0) : id < 0 ? w.py : (z.y[id] ?? 0);
     bin[binOf(y)] = (bin[binOf(y)] ?? 0) + 1;
   }
   let run = 0;
@@ -166,7 +172,7 @@ export function paintActors(ctx: CanvasRenderingContext2D, w: World, moving: boo
   }
   for (let i = 0; i < n; i++) {
     const id = tmp[i] ?? -1;
-    const y = id < 0 ? w.py : (z.y[id] ?? 0);
+    const y = id < -1 ? (obs.obsY[-2 - id] ?? 0) : id < 0 ? w.py : (z.y[id] ?? 0);
     const key = binOf(y);
     const slot = bin[key] ?? 0;
     bin[key] = slot + 1;
@@ -177,10 +183,11 @@ export function paintActors(ctx: CanvasRenderingContext2D, w: World, moving: boo
   const shade = cover > 0 ? 1 - cover : 1;
   for (let i = 0; i < n; i++) {
     const id = seq[i] ?? -1;
-    if (id < 0) {
+    if (id < -1) paintProp(ctx, w, -2 - id);
+    else if (id < 0) {
       ctx.globalAlpha = 1;
       if (!hidden) paintHero(ctx, w, moving);
-    } else if (!offScreen(z.x[id] ?? 0, z.y[id] ?? 0, 96)) {
+    } else if (!offScreen(z.x[id] ?? 0, z.y[id] ?? 0, 96, obs.camX, obs.camY)) {
       if (shade < 1) ctx.globalAlpha = shade;
       paintOne(ctx, w, id);
     }
@@ -209,7 +216,7 @@ export function paintBullets(ctx: CanvasRenderingContext2D, w: World): void {
   const b = w.bullets;
   for (let i = 0; i < b.alive.length; i++) {
     if (!b.alive[i]) continue;
-    if (offScreen(b.x[i] ?? 0, b.y[i] ?? 0, 24)) continue;
+    if (offScreen(b.x[i] ?? 0, b.y[i] ?? 0, 24, w.arena.camX, w.arena.camY)) continue;
     if (paintWeapon(ctx, w, i)) continue;
     const paint = projectileFor(b.hp[i] ?? 0, bulletPaint(b.kind[i] ?? 0, defaultBolt));
     paint(ctx, b.x[i] ?? 0, b.y[i] ?? 0, b.vx[i] ?? 1, b.vy[i] ?? 0, w.tick);

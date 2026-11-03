@@ -1,6 +1,7 @@
+import { ARENA_H, ARENA_W } from "../sim/arena";
 import { tierFrac, tierName } from "../sim/difficulty";
 import { isUnion, unionHint, unionSpec } from "../sim/evolve";
-import { runLabel } from "../sim/finale";
+import { lichUp, lichX, lichY, runLabel } from "../sim/finale";
 import { Z_GAS, Z_KIND, Z_KNIGHT, Z_RAT, Z_SPITTER } from "../sim/foes";
 import { offerCount } from "../sim/characters";
 import { CARD_Y, cardFrame, offerId, rarityName, UPG_RARITY, upgName, xpNeed } from "../sim/progress";
@@ -336,8 +337,8 @@ function minimap(ctx: CanvasRenderingContext2D, w: World): void {
   for (let i = 0; i < z.alive.length; i++) {
     if (!z.alive[i]) continue;
     if (step > 1 && seen++ % step !== 0) continue;
-    const mx = cx + ((z.x[i] ?? 0) / W - 0.5) * span;
-    const my = cy + ((z.y[i] ?? 0) / H - 0.5) * span;
+    const mx = cx + ((z.x[i] ?? 0) / ARENA_W - 0.5) * span;
+    const my = cy + ((z.y[i] ?? 0) / ARENA_H - 0.5) * span;
     const kind = (z.kind[i] ?? 0) & Z_KIND;
     ctx.fillStyle = kind === Z_BRUTE ? "#d06aff"
       : kind === Z_GHOUL ? "#3ad4f0"
@@ -348,8 +349,19 @@ function minimap(ctx: CanvasRenderingContext2D, w: World): void {
       : "#9ae046";
     ctx.fillRect(mx - 1.3, my - 1.3, 2.6, 2.6);
   }
+  if (lichUp(w)) {
+    const lx = cx + (lichX(w) / ARENA_W - 0.5) * span;
+    const ly = cy + (lichY(w) / ARENA_H - 0.5) * span;
+    ctx.fillStyle = "#e4c0ff";
+    ctx.fillRect(lx - 1.8, ly - 1.8, 3.6, 3.6);
+  }
+  const vx = cx + (w.arena.camX / ARENA_W - 0.5) * span;
+  const vy = cy + (w.arena.camY / ARENA_H - 0.5) * span;
+  ctx.strokeStyle = "#ffe7ad";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(vx, vy, (W / ARENA_W) * span, (H / ARENA_H) * span);
   ctx.save();
-  ctx.translate(cx + (w.px / W - 0.5) * span, cy + (w.py / H - 0.5) * span);
+  ctx.translate(cx + (w.px / ARENA_W - 0.5) * span, cy + (w.py / ARENA_H - 0.5) * span);
   ctx.rotate(Math.atan2(w.aimY, w.aimX || 1));
   ctx.beginPath();
   ctx.moveTo(5, 0);

@@ -1,70 +1,13 @@
+import { slideUnit } from "./arena.hot";
 import { scaledDmg } from "./difficulty";
 import {
-  ACID_DMG, ACID_HIT_R2, ACID_SPEED, B_ACID, foeHp, foePack, foeSpeed, GAS_BLAST_R2,
-  GAS_BLAST_R2_ELITE, GAS_DMG, KNIGHT_TURN, KNIGHT_TURN_ELITE, rollKind, SPIT_CD,
-  SPIT_CD_ELITE, SPIT_FAR_R2, SPIT_MAX_R2, SPIT_NEAR_R2, Z_ELITE, Z_KIND, Z_KNIGHT,
-  Z_SPITTER,
+  ACID_DMG, ACID_HIT_R2, ACID_SPEED, B_ACID, GAS_BLAST_R2,
+  GAS_BLAST_R2_ELITE, GAS_DMG, KNIGHT_TURN, KNIGHT_TURN_ELITE, SPIT_CD,
+  SPIT_CD_ELITE, SPIT_FAR_R2, SPIT_MAX_R2, SPIT_NEAR_R2, Z_ELITE,
 } from "./foes";
 import { shieldReload } from "./progress";
-import { nextFloat } from "./rng";
 import { juicePlayerHurt } from "../render/juice";
-import { EV_HURT, EV_SHIELD, H, MAX_BULLETS, MAX_ZOMBIES, W, type World } from "./types";
-
-function edgeX(t: number, u: number): number {
-  if (t < 1) return u * W;
-  if (t < 2) return W + 8;
-  if (t < 3) return u * W;
-  return -8;
-}
-
-function edgeY(t: number, u: number): number {
-  if (t < 1) return -8;
-  if (t < 2) return u * H;
-  if (t < 3) return H + 8;
-  return u * H;
-}
-
-function placeFoe(w: World, i: number, raw: number, x: number, y: number): void {
-  const z = w.zombies;
-  const kind = raw & Z_KIND;
-  const elite = (raw & Z_ELITE) !== 0;
-  z.x[i] = x;
-  z.y[i] = y;
-  z.kind[i] = raw;
-  z.hp[i] = foeHp(kind, w.rank, elite);
-  z.vx[i] = foeSpeed(kind, w.rank, nextFloat(w.rng));
-  z.alive[i] = 1;
-  if (kind === Z_SPITTER) z.vy[i] = (nextFloat(w.rng) * 36) | 0;
-  else if (kind === Z_KNIGHT) z.vy[i] = Math.atan2(w.py - y, w.px - x);
-  else z.vy[i] = 0;
-}
-
-function freeSlot(w: World, from: number): number {
-  const z = w.zombies;
-  for (let i = from; i < MAX_ZOMBIES; i++) {
-    if (!z.alive[i]) return i;
-  }
-  return -1;
-}
-
-export function spawnWaveFoe(w: World): void {
-  const slot = freeSlot(w, 0);
-  if (slot < 0) return;
-  const raw = rollKind(w);
-  const t = nextFloat(w.rng) * 4;
-  const u = nextFloat(w.rng);
-  const x = edgeX(t, u);
-  const y = edgeY(t, u);
-  placeFoe(w, slot, raw, x, y);
-  const pack = foePack(raw);
-  for (let s = 1; s < pack; s++) {
-    const j = freeSlot(w, slot + 1);
-    if (j < 0) return;
-    const jx = (nextFloat(w.rng) - 0.5) * 36;
-    const jy = (nextFloat(w.rng) - 0.5) * 36;
-    placeFoe(w, j, raw, x + jx, y + jy);
-  }
-}
+import { EV_HURT, EV_SHIELD, MAX_BULLETS, type World } from "./types";
 
 function spawnAcid(w: World, x: number, y: number, ux: number, uy: number): boolean {
   const b = w.bullets;
@@ -106,8 +49,7 @@ export function tickSpitter(w: World, i: number): void {
     mx = (-dy / d) * side;
     my = (dx / d) * side;
   }
-  z.x[i] = zx + mx * sp;
-  z.y[i] = zy + my * sp;
+  slideUnit(w, i, mx, my, sp, 8);
   const cd = z.vy[i] ?? 0;
   if (cd > 0) {
     z.vy[i] = cd - 1;
