@@ -1,3 +1,5 @@
+import { composeHorde } from "../src/render/blit.hot";
+import { bg, buildSprites, zombieSprite } from "../src/render/horde-sprites";
 import {
   burstCount,
   CRIT_COLOR,
@@ -28,9 +30,11 @@ import {
   stopUsed,
   tickJuice,
 } from "../src/render/juice";
+import { acidTouch, detonateGas } from "../src/sim/foes.hot";
+import { lichX, lichY, seekSeconds } from "../src/sim/finale";
 import { Z_ELITE, Z_KNIGHT } from "../src/sim/foes";
 import { step } from "../src/sim/step.hot";
-import { EV_HURT, EV_KILL, EV_SHIELD, Z_BRUTE, Z_GHOUL, Z_SHAMBLER, type Input, type World } from "../src/sim/types";
+import { EV_HURT, EV_KILL, EV_SHIELD, H, W, Z_BRUTE, Z_GHOUL, Z_SHAMBLER, type Input, type World } from "../src/sim/types";
 import { createWorld } from "../src/sim/world";
 import { createSession, loadStore, NUM_KEY, syncStore, toggleNumbers } from "../src/shell/session";
 
@@ -312,5 +316,93 @@ describe("damage number setting", () => {
     syncStore(again, store);
     expect(store.getItem(NUM_KEY)).toBe("1");
     expect(loadStore(store).numbers).toBe(true);
+  });
+});
+
+const stamp = new Uint32Array(W * H);
+
+describe("horde blit flash", () => {
+  it("whites out a blitted stamp while that enemy is flashing", () => {
+    buildSprites();
+    bg.fill(0);
+    resetJuice();
+    const w = createWorld(3);
+    w.toSpawn = 0;
+    w.zombies.alive[0] = 1;
+    w.zombies.kind[0] = Z_SHAMBLER;
+    w.zombies.x[0] = 80;
+    w.zombies.y[0] = 100;
+    composeHorde(w, stamp);
+    const spr = zombieSprite(Z_SHAMBLER, (w.tick >> 4) & 1);
+    const dx = (80 - spr.ox) | 0;
+    const dy = (100 - spr.oy) | 0;
+    let ink = 0;
+    let colored = 0;
+    for (let y = 0; y < spr.h; y++) {
+      for (let x = 0; x < spr.w; x++) {
+        if ((spr.pix[y * spr.w + x] ?? 0) === 0) continue;
+        ink++;
+        const got = stamp[(dy + y) * W + dx + x] ?? 0;
+        if (got !== 0 && got !== 0xffffffff) colored++;
+      }
+    }
+    expect(ink).toBeGreaterThan(8);
+    expect(colored).toBe(ink);
+    juiceHit(0, 80, 100, 1, Z_SHAMBLER, false, w.tick);
+    composeHorde(w, stamp);
+    let white = 0;
+    for (let y = 0; y < spr.h; y++) {
+      for (let x = 0; x < spr.w; x++) {
+        if ((spr.pix[y * spr.w + x] ?? 0) === 0) continue;
+        if ((stamp[(dy + y) * W + dx + x] ?? 0) === 0xffffffff) white++;
+      }
+    }
+    expect(white).toBe(ink);
+    expect(stopRemaining()).toBe(0);
+  });
+});
+
+describe("splashes and the lich", () => {
+  it("grants hit-stop for acid and a gas blast, skips a shield, and stays inside 100ms", () => {
+    resetJuice();
+    const w = createWorld(1);
+    w.hurtCd = 0;
+    acidTouch(w, w.px, w.py);
+    expect(w.events[EV_HURT]).toBe(1);
+    expect(stopRemaining()).toBe(STOP_HURT_MS);
+    w.hurtCd = 0;
+    detonateGas(w, w.px, w.py, 0);
+    expect(stopRemaining()).toBe(STOP_HURT_MS * 2);
+    juicePlayerHurt();
+    expect(stopRemaining()).toBe(STOP_BUDGET_MS);
+    expect(stopUsed()).toBe(STOP_BUDGET_MS);
+    resetJuice();
+    const shielded = createWorld(2);
+    shielded.shield = 2;
+    shielded.hurtCd = 0;
+    acidTouch(shielded, shielded.px, shielded.py);
+    expect(shielded.events[EV_SHIELD]).toBe(1);
+    expect(stopRemaining()).toBe(0);
+  });
+
+  it("grants hit-stop when the lich body takes HP", () => {
+    resetJuice();
+    const w = createWorld(8);
+    w.hp = 40;
+    w.maxHp = 40;
+    w.fireCd = 99999;
+    w.toSpawn = 0;
+    w.spawnCd = 99999;
+    seekSeconds(w, 1200);
+    step(w, idle);
+    w.px = lichX(w);
+    w.py = lichY(w);
+    w.hurtCd = 0;
+    const before = w.hp;
+    resetJuice();
+    step(w, idle);
+    expect(w.hp).toBeLessThan(before);
+    expect(stopRemaining()).toBe(STOP_HURT_MS);
+    expect(stopUsed()).toBeLessThanOrEqual(STOP_BUDGET_MS);
   });
 });

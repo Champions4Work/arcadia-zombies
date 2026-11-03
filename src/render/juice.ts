@@ -48,6 +48,7 @@ let numCount = 0;
 let pCursor = 0;
 let pCount = 0;
 let flashScan = 0;
+let flashOn = 0;
 let stopMs = 0;
 let usedMs = 0;
 let windowMs = 0;
@@ -67,6 +68,7 @@ export function resetJuice(): void {
   pCursor = 0;
   pCount = 0;
   flashScan = 0;
+  flashOn = 0;
   stopMs = 0;
   usedMs = 0;
   windowMs = 0;
@@ -103,6 +105,10 @@ export function stopUsed(): number {
 export function enemyFlash(slot: number): number {
   if (slot < 0 || slot >= FLASH_CAP) return 0;
   return flash[slot] ?? 0;
+}
+
+export function flashesLive(): number {
+  return flashOn;
 }
 
 export function numberScale(i: number): number {
@@ -181,6 +187,7 @@ export function juiceHit(slot: number, x: number, y: number, dmg: number, kind: 
   const crit = dealt >= 3 || (killed && (elite || boss));
   if (showNumbers) spawnNumber(x, y - 14, dealt, crit);
   if (slot >= 0 && slot < FLASH_CAP) {
+    if ((flash[slot] ?? 0) <= 0) flashOn++;
     flash[slot] = FLASH_MS;
     if (slot + 1 > flashScan) flashScan = slot + 1;
   }
@@ -208,10 +215,13 @@ export function juiceFrame(dt: number): boolean {
 
 export function tickJuice(dt: number): void {
   const scale = dt * 0.001;
-  if (flashScan > 0) {
+  if (flashOn > 0) {
     for (let i = 0; i < flashScan; i++) {
       const t = flash[i] ?? 0;
-      if (t > 0) flash[i] = t > dt ? t - dt : 0;
+      if (t <= 0) continue;
+      const next = t > dt ? t - dt : 0;
+      flash[i] = next;
+      if (next === 0) flashOn--;
     }
   }
   if (numCount > 0) {
