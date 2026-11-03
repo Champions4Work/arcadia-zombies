@@ -45,11 +45,15 @@ function drawXp(c: CanvasRenderingContext2D, w: World): void {
   const need = xpNeed(w.level);
   const t = need <= 0 ? 0 : Math.min(1, w.xp / need);
   c.fillStyle = "#1a120b";
-  c.fillRect(8, 22, 160, 5);
+  c.fillRect(8, 22, 200, 5);
   c.fillStyle = BRASS;
-  c.fillRect(8, 22, 160 * t, 5);
+  c.fillRect(8, 22, 200 * t, 5);
+  c.fillStyle = "#24180e";
+  c.fillRect(328, 4, 148, 16);
+  c.fillStyle = BRASS;
   c.font = "bold 12px monospace";
-  c.fillText(`LV ${w.level}  XP ${w.xp}/${need}${w.shield ? `  ⬡${w.shield}` : ""}`, 174, 18);
+  const sh = w.shield > 0 ? ` ⬡${w.shield}` : "";
+  c.fillText(`LV ${w.level} ${w.xp}/${need}${sh}`, 332, 16);
 }
 function drawCards(c: CanvasRenderingContext2D, w: World): void {
   if (!w.choosing) return;
