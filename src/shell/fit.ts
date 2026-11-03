@@ -1,0 +1,55 @@
+export interface Fit {
+  dpr: number;
+  scale: number;
+  ox: number;
+  oy: number;
+  cssW: number;
+  cssH: number;
+  bufW: number;
+  bufH: number;
+}
+
+export function computeFit(vw: number, vh: number, dpr: number, gameW: number, gameH: number): Fit {
+  const w = Math.max(1, vw);
+  const h = Math.max(1, vh);
+  const px = Math.max(1, dpr);
+  const scale = Math.min(w / gameW, h / gameH);
+  return {
+    dpr: px,
+    scale,
+    ox: (w - gameW * scale) / 2,
+    oy: (h - gameH * scale) / 2,
+    cssW: w,
+    cssH: h,
+    bufW: Math.max(1, Math.round(w * px)),
+    bufH: Math.max(1, Math.round(h * px)),
+  };
+}
+
+export function applyCanvas(
+  canvas: HTMLCanvasElement,
+  ctx: CanvasRenderingContext2D,
+  vw: number,
+  vh: number,
+  dpr: number,
+  gameW: number,
+  gameH: number,
+): Fit {
+  const f = computeFit(vw, vh, dpr, gameW, gameH);
+  canvas.style.width = `${f.cssW}px`;
+  canvas.style.height = `${f.cssH}px`;
+  if (canvas.width !== f.bufW || canvas.height !== f.bufH) {
+    canvas.width = f.bufW;
+    canvas.height = f.bufH;
+  }
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.fillStyle = "#120c08";
+  ctx.fillRect(0, 0, f.bufW, f.bufH);
+  ctx.imageSmoothingEnabled = false;
+  ctx.setTransform(f.dpr * f.scale, 0, 0, f.dpr * f.scale, f.ox * f.dpr, f.oy * f.dpr);
+  return f;
+}
+
+export function screenToGame(f: Fit, x: number, y: number): { x: number; y: number } {
+  return { x: (x - f.ox) / f.scale, y: (y - f.oy) / f.scale };
+}
