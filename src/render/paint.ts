@@ -16,6 +16,7 @@ export const GREEN: Metal = { hi: "#eaffb0", mid: "#8ed43a", lo: "#3e8618", edge
 export const GREEN_BOOT: Metal = { hi: "#c6e878", mid: "#4f8e20", lo: "#27520e", edge: "#0e2406" };
 export const BLUE: Metal = { hi: "#d8fbff", mid: "#3ec4e4", lo: "#1478a4", edge: "#083048" };
 export const PURPLE: Metal = { hi: "#f6d8ff", mid: "#c45aee", lo: "#7428a8", edge: "#2c0848" };
+export const SKIN: Metal = { hi: "#ffe0c4", mid: "#f0b088", lo: "#c07858", edge: "#6a3828" };
 
 export function font(px: number, weight = 700): string {
   return `${weight} ${px}px ${FONT}`;
@@ -77,17 +78,51 @@ export function pill(ctx: CanvasRenderingContext2D, x: number, y: number, w: num
 }
 
 export function cog(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, rot: number, m: Metal, teeth = 8, glow = false): void {
-  const bar = teeth > 10 ? 0.28 : 0.32;
+  const outer = r;
+  const inner = r * 0.74;
+  const step = (Math.PI * 2) / teeth;
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(rot);
-  ctx.fillStyle = m.mid;
-  ctx.fillRect(-r, -r * 0.16, r * 2, r * bar);
-  ctx.fillRect(-r * 0.16, -r, r * bar, r * 2);
   ctx.beginPath();
-  ctx.arc(0, 0, r * 0.46, 0, Math.PI * 2);
-  ctx.fillStyle = glow ? "#ffb030" : m.hi;
+  for (let i = 0; i < teeth; i++) {
+    const a = i * step - Math.PI / 2;
+    const p = (k: number, rad: number): [number, number] => [Math.cos(a + step * k) * rad, Math.sin(a + step * k) * rad];
+    const a0 = p(0.02, inner);
+    const a1 = p(0.2, outer);
+    const a2 = p(0.48, outer);
+    const a3 = p(0.66, inner);
+    if (i === 0) ctx.moveTo(a0[0], a0[1]);
+    else ctx.lineTo(a0[0], a0[1]);
+    ctx.lineTo(a1[0], a1[1]);
+    ctx.lineTo(a2[0], a2[1]);
+    ctx.lineTo(a3[0], a3[1]);
+  }
+  ctx.closePath();
+  ctx.fillStyle = lit(ctx, -r, -r, r * 2, r * 2, m);
   ctx.fill();
+  ctx.lineWidth = Math.max(1.2, r * 0.16);
+  ctx.strokeStyle = OUTLINE;
+  ctx.stroke();
+  if (glow) {
+    const g = ctx.createRadialGradient(0, 0, r * 0.05, 0, 0, r * 0.55);
+    g.addColorStop(0, "#fff6d0");
+    g.addColorStop(0.45, "#ffb030");
+    g.addColorStop(1, "rgba(255,120,20,0.15)");
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.48, 0, Math.PI * 2);
+    ctx.fillStyle = g;
+    ctx.fill();
+  } else {
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.28, 0, Math.PI * 2);
+    ctx.fillStyle = OUTLINE;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.12, 0, Math.PI * 2);
+    ctx.fillStyle = m.hi;
+    ctx.fill();
+  }
   ctx.restore();
 }
 
@@ -144,6 +179,48 @@ export function heart(ctx: CanvasRenderingContext2D, x: number, y: number, s: nu
   ctx.closePath();
 }
 
+export function flame(ctx: CanvasRenderingContext2D, x: number, y: number, s: number): void {
+  ctx.beginPath();
+  ctx.moveTo(x, y + s);
+  ctx.bezierCurveTo(x - s * 0.85, y + s * 0.15, x - s * 0.15, y - s * 0.85, x, y - s * 1.15);
+  ctx.bezierCurveTo(x + s * 0.35, y - s * 0.15, x + s * 0.95, y + s * 0.35, x, y + s);
+  ctx.closePath();
+}
+
+export function dome(ctx: CanvasRenderingContext2D, x: number, y: number, r: number): void {
+  ctx.beginPath();
+  ctx.arc(x, y, r + 2.4, 0, Math.PI * 2);
+  ctx.fillStyle = lit(ctx, x - r, y - r, r * 2.4, r * 2.4, BRASS);
+  ctx.fill();
+  ctx.lineWidth = 2.2;
+  ctx.strokeStyle = OUTLINE;
+  ctx.stroke();
+  const g = ctx.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.1, x, y, r);
+  g.addColorStop(0, "rgba(230,255,255,0.95)");
+  g.addColorStop(0.35, "rgba(120,220,245,0.78)");
+  g.addColorStop(1, "rgba(20,90,140,0.55)");
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fillStyle = g;
+  ctx.fill();
+  blob(ctx, x, y + r * 0.12, r * 0.52, r * 0.48, SKIN, 1.2);
+  eye(ctx, x - r * 0.22, y + r * 0.02, r * 0.16, 0.4);
+  eye(ctx, x + r * 0.22, y + r * 0.02, r * 0.16, 0.4);
+  ctx.beginPath();
+  ctx.arc(x, y + r * 0.22, r * 0.16, 0.15 * Math.PI, 0.85 * Math.PI);
+  ctx.strokeStyle = "#6a3828";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(x - r * 0.38, y - r * 0.42, r * 0.28, r * 0.14, -0.8, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(255,255,255,0.85)";
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(255,255,255,0.55)";
+  ctx.lineWidth = 1.2;
+  ctx.stroke();
+}
 
 export function bakeRaw(w: number, h: number, draw: (ctx: CanvasRenderingContext2D) => void): HTMLCanvasElement {
   const c = document.createElement("canvas");

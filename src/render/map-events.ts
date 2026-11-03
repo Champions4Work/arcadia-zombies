@@ -63,19 +63,52 @@ function steam(ctx: CanvasRenderingContext2D, w: World): void {
   ctx.arc(0, 4, 22 + age * 1.3, 0, Math.PI * 2);
   ctx.fillStyle = "#ff9a32";
   ctx.fill();
+  for (let i = 0; i < 6; i++) {
+    const t = (age * 0.08 + i * 0.17) % 1;
+    ctx.globalAlpha = (1 - t) * 0.9;
+    ctx.beginPath();
+    ctx.ellipse(Math.sin(i * 1.7 + age * 0.2) * 10, -t * span, 18 + t * 26, 12 + t * 16, 0, 0, Math.PI * 2);
+    ctx.fillStyle = i % 2 ? "#fff8ee" : "#ffd27a";
+    ctx.fill();
+  }
   ctx.globalAlpha = 1;
-  ring(ctx, 0, 0, span, "#ffe1a8", 3);
+  ring(ctx, 0, 0, 16 + age * 1.4, "#ffe1a8", 4);
   ctx.restore();
 }
 
 function airship(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number): void {
-  const bob = tick & 1;
-  ctx.fillStyle = "#c45a86";
+  ctx.save();
+  ctx.translate(x, y);
   ctx.beginPath();
-  ctx.ellipse(x, y + bob, 34, 14, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, 0, 34, 14, 0, 0, Math.PI * 2);
+  const g = ctx.createLinearGradient(-20, -14, 16, 12);
+  g.addColorStop(0, "#f6d2e6");
+  g.addColorStop(0.5, "#c45a86");
+  g.addColorStop(1, "#6e2848");
+  ctx.fillStyle = g;
   ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = OUTLINE;
+  ctx.stroke();
   ctx.fillStyle = BRASS.mid;
-  ctx.fillRect(x - 34, y - 2 + bob, 68, 5);
+  ctx.fillRect(-34, -2, 68, 5);
+  roundRect(ctx, -12, 12, 24, 8, 2);
+  ctx.fillStyle = BRASS.hi;
+  ctx.fill();
+  ctx.stroke();
+  ctx.save();
+  ctx.translate(30, 14);
+  ctx.rotate(tick * 0.45);
+  ctx.strokeStyle = "#fff4dc";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(-5, 0);
+  ctx.lineTo(5, 0);
+  ctx.moveTo(0, -5);
+  ctx.lineTo(0, 5);
+  ctx.stroke();
+  ctx.restore();
+  ctx.restore();
 }
 
 function crate(ctx: CanvasRenderingContext2D, x: number, y: number): void {
@@ -136,6 +169,14 @@ function fog(ctx: CanvasRenderingContext2D, w: World): void {
   g.addColorStop(1, `rgba(86,98,110,${cover * 0.78})`);
   ctx.fillStyle = g;
   ctx.fillRect(w.arena.camX, w.arena.camY, W, H);
+  ctx.fillStyle = "rgba(232,238,242,0.45)";
+  for (let i = 0; i < 6; i++) {
+    const x = w.arena.camX + ((i * 90 + w.tick * (0.4 + i * 0.05)) % (W + 80) - 40);
+    const y = w.arena.camY + 70 + (i * 37) % 180;
+    ctx.beginPath();
+    ctx.ellipse(x, y, 46, 16, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
 }
 
 function gears(ctx: CanvasRenderingContext2D, w: World): void {

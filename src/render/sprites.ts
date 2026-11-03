@@ -1,5 +1,5 @@
 import {
-  bakeActor, bakeRaw, blob, BLUE, BRASS, cog, COPPER, eye, GREEN, GREEN_BOOT, grin,
+  bakeActor, bakeRaw, blob, BLUE, BRASS, cog, COPPER, dome, eye, GREEN, GREEN_BOOT, grin,
   pill, PURPLE, rivet, type Metal,
 } from "./paint";
 
@@ -88,9 +88,28 @@ export function drawHero(ctx: CanvasRenderingContext2D, frame: number): void {
   pill(ctx, -14, -30 + bob, 7, 12, 0.7 + swing * 0.2, BRASS);
   cog(ctx, -15, -40 + bob, 7.2, frame * 0.35, BRASS, 8, true);
   pill(ctx, 0, -34 + bob, 26, 20, 0, BRASS, 2.6);
+  pill(ctx, 0, -33 + bob, 16, 12, 0, { hi: "#ffe7b0", mid: "#d4922c", lo: "#8a5410", edge: "#3e2408" }, 1.6);
+  const glow = ctx.createRadialGradient(-1, -34 + bob, 1, 0, -33 + bob, 7);
+  glow.addColorStop(0, "#fff6d2");
+  glow.addColorStop(0.5, "#ff9a24");
+  glow.addColorStop(1, "rgba(255,80,10,0.15)");
+  ctx.beginPath();
+  ctx.arc(0, -33 + bob, 5.2, 0, Math.PI * 2);
+  ctx.fillStyle = glow;
+  ctx.fill();
+  ctx.lineWidth = 1.4;
+  ctx.strokeStyle = "#1c120c";
+  ctx.stroke();
+  rivet(ctx, -8, -40 + bob, 1.4);
+  rivet(ctx, 8, -40 + bob, 1.4);
+  rivet(ctx, -8, -26 + bob, 1.4);
+  rivet(ctx, 8, -26 + bob, 1.4);
   pill(ctx, 7, -16 + bob, 8, 15, -swing * 0.85, BRASS);
   pill(ctx, 7, -7, 10, 6.5, -0.04, COPPER, 1.8);
-  cog(ctx, 0, -50 + bob, 10, frame * 0.2, BRASS, 6, true);
+  blob(ctx, 12, -38 + bob, 6.5, 5.5, BRASS, 2);
+  dome(ctx, 0, -50 + bob, 11);
+  pill(ctx, 0, -61.5 + bob, 5, 3.2, 0, COPPER, 1.2);
+  blob(ctx, 0, -64 + bob, 2.1, 2.1, BRASS, 1.2);
 }
 
 export const HERO_W = 58;
@@ -160,27 +179,53 @@ export function fallbackFrames(kind: number): HTMLCanvasElement[] {
 }
 
 export function shadowSprite(): HTMLCanvasElement {
-  if (!shadow) shadow = bakeRaw(64, 28, (ctx) => {
-    ctx.fillStyle = "rgba(16,10,18,0.35)";
-    ctx.beginPath();
-    ctx.ellipse(32, 14, 26, 11, 0, 0, Math.PI * 2);
-    ctx.fill();
-  });
+  if (!shadow) {
+    shadow = bakeRaw(64, 28, (ctx) => {
+      const g = ctx.createRadialGradient(32, 14, 2, 32, 14, 26);
+      g.addColorStop(0, "rgba(16,10,18,0.55)");
+      g.addColorStop(1, "rgba(16,10,18,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.ellipse(32, 14, 26, 11, 0, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
   return shadow;
 }
 
 export function gunSprite(): HTMLCanvasElement {
-  if (!gun) gun = bakeRaw(28, 14, (ctx) => {
-    pill(ctx, 14, 7, 18, 6, 0, BRASS, 1.6);
-    pill(ctx, 22, 7, 8, 4.2, 0, COPPER, 1.3);
-  });
+  if (!gun) {
+    gun = bakeRaw(28, 14, (ctx) => {
+      pill(ctx, 14, 7, 18, 6, 0, BRASS, 1.6);
+      pill(ctx, 22, 7, 8, 4.2, 0, COPPER, 1.3);
+      blob(ctx, 8, 7, 4, 4, BRASS, 1.4);
+      const g = ctx.createRadialGradient(25, 7, 0.5, 25, 7, 4);
+      g.addColorStop(0, "#fff4c8");
+      g.addColorStop(1, "rgba(255,140,30,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(25, 7, 4, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
   return gun;
 }
 
 export function boltSprite(): HTMLCanvasElement {
-  if (!bolt) bolt = bakeRaw(28, 16, (ctx) => {
-    pill(ctx, 15, 8, 16, 5, 0, BRASS, 1.3);
-  });
+  if (!bolt) {
+    bolt = bakeRaw(28, 16, (ctx) => {
+      const g = ctx.createRadialGradient(16, 8, 1, 16, 8, 8);
+      g.addColorStop(0, "rgba(255,220,140,0.9)");
+      g.addColorStop(1, "rgba(255,140,40,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, 28, 16);
+      pill(ctx, 15, 8, 16, 5, 0, { hi: "#fff6d0", mid: "#ffb040", lo: "#e06010", edge: "#7a2808" }, 1.3);
+      ctx.beginPath();
+      ctx.arc(20, 8, 2, 0, Math.PI * 2);
+      ctx.fillStyle = "#fff8e4";
+      ctx.fill();
+    });
+  }
   return bolt;
 }
 
@@ -191,7 +236,17 @@ export function gearSprite(): HTMLCanvasElement {
 
 export function sawSprite(): HTMLCanvasElement {
   if (!saw) {
-    saw = bakeRaw(40, 40, (ctx) => cog(ctx, 20, 20, 13, 0, STEEL_SAW, 10, false));
+    saw = bakeRaw(40, 40, (ctx) => {
+      cog(ctx, 20, 20, 13, 0, STEEL_SAW, 10, false);
+      const g = ctx.createRadialGradient(20, 20, 1, 20, 20, 8);
+      g.addColorStop(0, "#fff4c4");
+      g.addColorStop(0.6, "#ff8a1e");
+      g.addColorStop(1, "rgba(255,80,10,0)");
+      ctx.beginPath();
+      ctx.arc(20, 20, 7, 0, Math.PI * 2);
+      ctx.fillStyle = g;
+      ctx.fill();
+    });
   }
   return saw;
 }
@@ -199,10 +254,11 @@ export function sawSprite(): HTMLCanvasElement {
 export function puffSprite(): HTMLCanvasElement {
   if (!puff) {
     puff = bakeRaw(32, 32, (ctx) => {
-      ctx.fillStyle = "rgba(255,255,255,0.7)";
-      ctx.beginPath();
-      ctx.arc(16, 16, 12, 0, Math.PI * 2);
-      ctx.fill();
+      const g = ctx.createRadialGradient(16, 16, 2, 16, 16, 15);
+      g.addColorStop(0, "rgba(255,255,255,0.9)");
+      g.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, 32, 32);
     });
   }
   return puff;
@@ -211,9 +267,20 @@ export function puffSprite(): HTMLCanvasElement {
 export function starSprite(): HTMLCanvasElement {
   if (!star) {
     star = bakeRaw(32, 32, (ctx) => {
+      const g = ctx.createRadialGradient(16, 16, 1, 16, 16, 14);
+      g.addColorStop(0, "rgba(255,244,200,0.95)");
+      g.addColorStop(0.4, "rgba(255,170,50,0.7)");
+      g.addColorStop(1, "rgba(255,120,20,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, 32, 32);
       ctx.fillStyle = "#fff8e0";
-      ctx.fillRect(14, 4, 4, 24);
-      ctx.fillRect(4, 14, 24, 4);
+      ctx.beginPath();
+      for (let i = 0; i < 4; i++) {
+        ctx.rotate(0);
+        const a = (i / 4) * Math.PI * 2;
+        ctx.ellipse(16 + Math.cos(a) * 4, 16 + Math.sin(a) * 4, 7, 2.2, a, 0, Math.PI * 2);
+      }
+      ctx.fill();
     });
   }
   return star;

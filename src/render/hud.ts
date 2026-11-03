@@ -9,9 +9,9 @@ import { CARD_Y, cardFrame, offerId, rarityName, UPG_RARITY, upgName, xpNeed } f
 import {
   EVOL_AEGIS, EVOL_CANNON, EVOL_STORM, H, UNION_BELLOWS, UNION_BRIAR, UNION_CALLIOPE,
   UNION_CROWN, UNION_HALO, UNION_HEART, UNION_HOWITZER, UPG_DMG, UPG_FIRE, UPG_HP, UPG_MAX, UPG_MORTAR,
-  UPG_SAWS, UPG_SHOTGUN, UPG_TESLA, UPG_VENT, W, Z_BRUTE, Z_GHOUL, type World,
+  UPG_PIERCE, UPG_SAWS, UPG_SHIELD, UPG_SHOTGUN, UPG_SPEED, UPG_TESLA, UPG_VENT, W, Z_BRUTE, Z_GHOUL, type World,
 } from "../sim/types";
-import { BRASS, cog, font, heart, lit, OUTLINE, roundRect } from "./paint";
+import { BRASS, cog, flame, font, heart, lit, OUTLINE, roundRect } from "./paint";
 
 const BLURB = [
   "Chain a spark through nearby foes.",
@@ -142,6 +142,23 @@ function brassRing(ctx: CanvasRenderingContext2D, x: number, y: number, r: numbe
   ctx.stroke();
 }
 
+function flameIcon(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, tick: number): void {
+  const k = 0.88 + Math.sin(tick * 0.18) * 0.1;
+  flame(ctx, x, y, s * k);
+  const g = ctx.createLinearGradient(x, y - s, x, y + s);
+  g.addColorStop(0, "#fff4c0");
+  g.addColorStop(0.45, "#ff9a22");
+  g.addColorStop(1, "#e04010");
+  ctx.fillStyle = g;
+  ctx.fill();
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = OUTLINE;
+  ctx.stroke();
+  flame(ctx, x, y + s * 0.15, s * k * 0.45);
+  ctx.fillStyle = "#fff1a8";
+  ctx.fill();
+}
+
 function heartGauge(ctx: CanvasRenderingContext2D, w: World): void {
   const x = 26;
   const y = 28;
@@ -242,6 +259,8 @@ function banner(ctx: CanvasRenderingContext2D, w: World): void {
   fitInk(ctx, name, x + bw / 2, y + 16, 12, bw - 18, flash ? "#fff3c0" : "#fff8ee");
   const litN = Math.max(1, Math.min(6, Math.ceil(tierFrac(w.tick) * 6)));
   for (let i = 0; i < 6; i++) cog(ctx, x + 34 + i * 18, y + 35, 4, w.tick * 0.015 + i, i < litN ? BRASS : { hi: "#6a5430", mid: "#4a381c", lo: "#2a2014", edge: "#1a120c" }, 6, i < litN);
+  flameIcon(ctx, x - 2, y + 30, 9, w.tick);
+  flameIcon(ctx, x + bw + 2, y + 30, 9, w.tick + 10);
 }
 
 function clockIcon(ctx: CanvasRenderingContext2D, x: number, y: number): void {
@@ -369,7 +388,19 @@ function minimap(ctx: CanvasRenderingContext2D, w: World): void {
   ink(ctx, "CLOCKTOWER YARD", 51, 293, 7, "#ffe7ad", "center");
 }
 
-function badgeIcon(ctx: CanvasRenderingContext2D, _kind: number, x: number, y: number, tick: number): void {
+function badgeIcon(ctx: CanvasRenderingContext2D, kind: number, x: number, y: number, tick: number): void {
+  if (kind === UPG_FIRE) {
+    flameIcon(ctx, x, y + 6, 10, tick);
+    return;
+  }
+  if (kind === UPG_TESLA) {
+    bolt(ctx, x, y, 12);
+    return;
+  }
+  if (kind === UPG_SHOTGUN) {
+    pellets(ctx, x, y, 8);
+    return;
+  }
   cog(ctx, x, y, 12, tick * 0.02, BRASS, 8, true);
 }
 
@@ -442,17 +473,102 @@ function wrap(ctx: CanvasRenderingContext2D, text: string, max: number): string[
   return lines;
 }
 
+function bolt(ctx: CanvasRenderingContext2D, x: number, y: number, s: number): void {
+  ctx.beginPath();
+  ctx.moveTo(x + s * 0.15, y - s);
+  ctx.lineTo(x - s * 0.45, y + s * 0.05);
+  ctx.lineTo(x - s * 0.05, y + s * 0.05);
+  ctx.lineTo(x - s * 0.2, y + s);
+  ctx.lineTo(x + s * 0.55, y - s * 0.12);
+  ctx.lineTo(x + s * 0.05, y - s * 0.12);
+  ctx.closePath();
+  const g = ctx.createLinearGradient(x, y - s, x, y + s);
+  g.addColorStop(0, "#fff6c8");
+  g.addColorStop(1, "#ffb020");
+  ctx.fillStyle = g;
+  ctx.fill();
+  ctx.lineWidth = 1.4;
+  ctx.strokeStyle = OUTLINE;
+  ctx.stroke();
+}
+
+function pellets(ctx: CanvasRenderingContext2D, x: number, y: number, s: number): void {
+  for (let i = -1; i <= 1; i++) {
+    ctx.beginPath();
+    ctx.arc(x + i * s * 0.7, y + Math.abs(i) * 2, s * 0.38, 0, Math.PI * 2);
+    ctx.fillStyle = i === 0 ? "#fff1c2" : BRASS.mid;
+    ctx.fill();
+    ctx.lineWidth = 1.3;
+    ctx.strokeStyle = OUTLINE;
+    ctx.stroke();
+  }
+}
+
+function shieldIcon(ctx: CanvasRenderingContext2D, x: number, y: number, s: number): void {
+  ctx.beginPath();
+  ctx.moveTo(x, y - s);
+  ctx.lineTo(x + s * 0.85, y - s * 0.55);
+  ctx.lineTo(x + s * 0.7, y + s * 0.35);
+  ctx.quadraticCurveTo(x, y + s * 1.05, x - s * 0.7, y + s * 0.35);
+  ctx.lineTo(x - s * 0.85, y - s * 0.55);
+  ctx.closePath();
+  ctx.fillStyle = lit(ctx, x - s, y - s, s * 2, s * 2, BRASS);
+  ctx.fill();
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = OUTLINE;
+  ctx.stroke();
+}
+
+function arrow(ctx: CanvasRenderingContext2D, x: number, y: number, s: number): void {
+  ctx.beginPath();
+  ctx.moveTo(x - s, y);
+  ctx.lineTo(x + s * 0.15, y);
+  ctx.moveTo(x, y - s * 0.5);
+  ctx.lineTo(x + s, y);
+  ctx.lineTo(x, y + s * 0.5);
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+  ctx.lineWidth = 4.4;
+  ctx.strokeStyle = OUTLINE;
+  ctx.stroke();
+  ctx.lineWidth = 2.2;
+  ctx.strokeStyle = "#ffe7ad";
+  ctx.stroke();
+}
+
+function chevrons(ctx: CanvasRenderingContext2D, x: number, y: number, s: number): void {
+  ctx.lineWidth = 2.2;
+  ctx.strokeStyle = "#ffe7ad";
+  ctx.lineJoin = "round";
+  for (let i = -1; i <= 1; i++) {
+    ctx.beginPath();
+    ctx.moveTo(x - s * 0.45, y - s * 0.4 + i * s * 0.35);
+    ctx.lineTo(x + s * 0.15, y + i * s * 0.35);
+    ctx.lineTo(x - s * 0.45, y + s * 0.4 + i * s * 0.35);
+    ctx.stroke();
+  }
+}
+
 function iconFor(ctx: CanvasRenderingContext2D, id: number, x: number, y: number): void {
-  if (id === UPG_HP) {
-    heart(ctx, x, y + 2, 10);
+  ctx.save();
+  ctx.translate(x, y);
+  if (id === UPG_TESLA) bolt(ctx, 0, 0, 12);
+  else if (id === UPG_SHOTGUN) pellets(ctx, 0, 0, 8);
+  else if (id === UPG_SAWS) cog(ctx, 0, 0, 12, 0.2, BRASS, 8, true);
+  else if (id === UPG_FIRE) flameIcon(ctx, 0, 4, 12, 0);
+  else if (id === UPG_HP) {
+    heart(ctx, 0, 2, 10);
     ctx.fillStyle = "#ff4450";
     ctx.fill();
     ctx.lineWidth = 1.5;
     ctx.strokeStyle = OUTLINE;
     ctx.stroke();
-    return;
-  }
-  cog(ctx, x, y, 12, 0.2, BRASS, 8, true);
+  }   else if (id === UPG_SPEED) chevrons(ctx, 0, 0, 12);
+  else if (id === UPG_VENT) flameIcon(ctx, 0, 4, 12, 1);
+  else if (id === UPG_PIERCE) arrow(ctx, 0, 0, 12);
+  else if (id === UPG_SHIELD) shieldIcon(ctx, 0, 0, 12);
+  else cog(ctx, 0, 0, 12, 0.1, BRASS, 8, true);
+  ctx.restore();
 }
 
 function drawCard(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, id: number, index: number, world: World): void {
