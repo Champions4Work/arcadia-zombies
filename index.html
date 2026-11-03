@@ -37,7 +37,12 @@ canvas{position:fixed;inset:0;display:block;width:100%;height:100%}
 .survivor-copy{display:flex;flex-direction:column;gap:2px;min-height:3.4em;text-align:center}
 .survivor-lock{min-height:1.2em;margin-top:auto;letter-spacing:.08em;text-transform:uppercase;color:#e07040}
 #headline{margin:0;font:800 clamp(26px,7vw,40px)/1.15 Inter,Cantarell,sans-serif;color:#fff1c2;letter-spacing:.02em;text-align:center;text-shadow:0 3px 0 #3a220c}
-#sub{margin:0;font:600 16px/1.4 Inter,Cantarell,sans-serif;color:#f0c86a;letter-spacing:.06em;text-align:center}
+#sub,#mod-read{margin:0;font:600 16px/1.4 Inter,Cantarell,sans-serif;color:#f0c86a;letter-spacing:.06em;text-align:center}
+#mod-read{font-size:13px;max-width:520px}
+#mods{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:520px}
+#mods[hidden],#mod-read[hidden]{display:none}
+#mods button{font:800 11px/1.2 Inter,Cantarell,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#fff1c2;background:transparent;border:3px solid #f0b03a;border-radius:999px;padding:7px 10px;cursor:pointer}
+#mods button[aria-pressed="true"]{color:#1c120c;background:linear-gradient(#fff1c2,#f0b03a)}
 #summary{margin:0;max-height:42vh;overflow:auto;font:700 13px/1.45 Inter,Cantarell,sans-serif;color:#fff1c2;letter-spacing:.06em;text-align:center;white-space:pre-line}
 #go{font:800 18px Inter,Cantarell,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#1c120c;background:linear-gradient(#fff1c2,#f0b03a);border:3px solid #1c120c;border-radius:14px;padding:12px 36px;cursor:pointer}
 #opts{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
@@ -61,7 +66,9 @@ canvas{position:fixed;inset:0;display:block;width:100%;height:100%}
 <div id="veil" class="on">
   <div id="panel">
     <h1 id="headline">Arcadia: Gears of the Dead</h1>
-    <p id="sub">Best 0</p>
+    <p id="sub">Best 0 · ×1.00</p>
+    <p id="mod-read">Optional modifiers</p>
+    <div id="mods" role="group" aria-label="Run modifiers"></div>
     <pre id="summary" hidden></pre>
     <div id="roster" role="group" aria-label="Choose survivor"></div>
     <button id="go" type="button">Play</button>

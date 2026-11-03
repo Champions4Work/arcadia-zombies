@@ -2,6 +2,7 @@ import { juiceHit } from "../render/juice";
 import { tallyKill } from "./finale";
 import { foeKillXp, foeScore, Z_ELITE, Z_GAS, Z_KIND } from "./foes";
 import { detonateGas } from "./foes.hot";
+import { applyScore, cannonHit } from "./modifiers";
 import { takeXp } from "./progress";
 import {
   EV_KILL, FX_PUFF, FX_SPARK, FX_XP, MAX_FX, UPG_DYNAMO, type World,
@@ -24,7 +25,7 @@ export function killZombie(w: World, i: number): void {
   const y = z.y[i] ?? 0;
   z.alive[i] = 0;
   tallyKill(w);
-  w.score += foeScore(raw, w.wave, w.rank);
+  w.score += applyScore(foeScore(raw, w.wave, w.rank), w.mods);
   w.events[EV_KILL] = (w.events[EV_KILL] ?? 0) + 1;
   emitFx(w, FX_PUFF, x, y, raw & Z_KIND);
   const xp = foeKillXp(raw, w.rank);
@@ -36,10 +37,11 @@ export function killZombie(w: World, i: number): void {
 }
 
 export function hurtZombie(w: World, i: number, dmg: number): void {
+  const hit = cannonHit(dmg, w.mods);
   const z = w.zombies;
-  z.hp[i] = (z.hp[i] ?? 1) - dmg;
+  z.hp[i] = (z.hp[i] ?? 1) - hit;
   emitFx(w, FX_SPARK, z.x[i] ?? 0, z.y[i] ?? 0, 0);
   const killed = (z.hp[i] ?? 0) <= 0;
   if (killed) killZombie(w, i);
-  juiceHit(i, z.x[i] ?? 0, z.y[i] ?? 0, dmg, z.kind[i] ?? 0, killed, w.tick);
+  juiceHit(i, z.x[i] ?? 0, z.y[i] ?? 0, hit, z.kind[i] ?? 0, killed, w.tick);
 }

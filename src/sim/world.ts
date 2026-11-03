@@ -3,6 +3,7 @@ import { ARENA_H, ARENA_W, createArena } from "./arena";
 import { CHAR_TINKER, CHARACTERS, characterAt } from "./characters";
 import { attachFinale } from "./finale";
 import { attachMapEvents } from "./map-events";
+import { clampMods, hasMod, MOD_GLASS } from "./modifiers";
 import { applyUpgrade } from "./progress";
 import { createRng } from "./rng";
 import {
@@ -22,8 +23,9 @@ export function applyCharacter(w: World, index: number, start?: number): void {
   const upg = start === undefined ? row.startUpg : start;
   if (upg >= 0) applyUpgrade(w, upg);
 }
-export const createWorld = (seed: number, charId = CHAR_TINKER): World => {
+export const createWorld = (seed: number, charId = CHAR_TINKER, mods = 0): World => {
   resetJuice();
+  const bits = clampMods(mods);
   const offers = new Int8Array(OFFER_N);
   offers.fill(-1);
   const teslaHit = new Int16Array(8);
@@ -34,7 +36,7 @@ export const createWorld = (seed: number, charId = CHAR_TINKER): World => {
   upgrades[UPG_WPN_RIVET] = 1;
   const world: World = {
     rng: createRng(seed), tick: 0, px: ARENA_W / 2, py: ARENA_H / 2, hp: 5, maxHp: 5,
-    score: 0, wave: 0, toSpawn: 0, spawnCd: 0, fireCd: 0, hurtCd: 0, over: false,
+    score: 0, mods: bits, wave: 0, toSpawn: 0, spawnCd: 0, fireCd: 0, hurtCd: 0, over: false,
     xp: 0, level: 0, choosing: 0, teslaCd: 0, teslaN: 0, teslaFlash: 0, shield: 0, shieldCd: 0,
     aimX: 1, aimY: 0,
     rank: 0, rankFlash: 0, banner: 0, ventCd: 0, healCd: 0, mortarCd: 0,
@@ -53,5 +55,9 @@ export const createWorld = (seed: number, charId = CHAR_TINKER): World => {
   attachFinale(world);
   attachMapEvents(world);
   applyCharacter(world, charId);
+  if (hasMod(bits, MOD_GLASS)) {
+    world.maxHp = 1;
+    world.hp = 1;
+  }
   return world;
 };

@@ -1,6 +1,7 @@
 import { juicePlayerHurt } from "../render/juice";
 import { ARENA_H, ARENA_W } from "./arena";
 import { clock, scoreMul, tierAt } from "./difficulty";
+import { applyScore, cannonHit, pacedSpeed } from "./modifiers";
 import { bulletDmg, sawAngle, sawDamage, sawRadius, sawSpin, shieldReload, teslaPower, teslaRange, upgName } from "./progress";
 import {
   EV_HURT, EV_KILL, EV_SHIELD, EV_TESLA, MAX_BULLETS, MAX_ZOMBIES, UPG_COUNT, UPG_SAWS,
@@ -181,7 +182,7 @@ export function takeCue(w: World): boolean {
 export function harmLich(w: World, dmg: number): void {
   const f = of(w);
   if (f.on !== 1 || dmg <= 0) return;
-  f.hp -= dmg;
+  f.hp -= cannonHit(dmg, w.mods);
   if (f.hp < 0) f.hp = 0;
 }
 
@@ -341,7 +342,7 @@ function spawnAdd(w: World, x: number, y: number): void {
     z.kind[i] = Z_GHOUL;
     z.x[i] = x < 16 ? 16 : x > ARENA_W - 16 ? ARENA_W - 16 : x;
     z.y[i] = y < 48 ? 48 : y > ARENA_H - 16 ? ARENA_H - 16 : y;
-    z.vx[i] = 0.85;
+    z.vx[i] = pacedSpeed(0.85, w.mods);
     z.vy[i] = 0;
     z.hp[i] = 2;
     of(w).minion[i] = 1;
@@ -416,7 +417,7 @@ function defeat(w: World, f: Lich): void {
   clearShots(f);
   dropMinions(w, f);
   tallyKill(w);
-  w.score += 500 * scoreMul(w.rank);
+  w.score += applyScore(500 * scoreMul(w.rank), w.mods);
   w.events[EV_KILL] = (w.events[EV_KILL] ?? 0) + 1;
   if (f.endless !== 1) w.over = true;
 }

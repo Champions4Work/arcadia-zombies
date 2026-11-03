@@ -19,6 +19,7 @@ import {
   sawRadius, shieldReload, teslaChain, teslaEvery, teslaPower, teslaRange, tryPick,
   ventEvery, ventRange, whistleRange,
 } from "./progress";
+import { hasMod, hordeBudget, hordeGap, MOD_NOHEAL } from "./modifiers";
 import { stepMapEvents } from "./map-events.hot";
 import { clearMapStrike, mapStrikeDmg, mapStrikeOn, mapStrikeR, mapStrikeX, mapStrikeY } from "./map-events";
 import {
@@ -178,19 +179,19 @@ export function step(w: World, input: Input): void {
     w.toSpawn = 0;
   } else if (alive === 0 && w.toSpawn === 0 && teleCount(w) === 0) {
     w.wave++;
-    w.toSpawn = 4 + w.wave * 2 + w.rank;
+    w.toSpawn = hordeBudget(4 + w.wave * 2 + w.rank, w.mods);
     w.events[EV_WAVE] = 1;
   }
   if (!holdSpawns(w) && w.toSpawn > 0 && --w.spawnCd <= 0) {
     queueSpawn(w, rollKind(w));
     w.toSpawn--;
-    w.spawnCd = spawnEvery(w.rank);
+    w.spawnCd = hordeGap(spawnEvery(w.rank), w.mods);
   }
   if (--w.fireCd <= 0) { fireRivet(w); w.fireCd = rivetEvery(w); }
   tickWeapons(w);
   if (w.hurtCd > 0) w.hurtCd--;
   const cool = w.upgrades[UPG_COOLANT] ?? 0;
-  if (cool > 0 && w.hp < w.maxHp && --w.healCd <= 0) {
+  if (!hasMod(w.mods, MOD_NOHEAL) && cool > 0 && w.hp < w.maxHp && --w.healCd <= 0) {
     w.hp++;
     w.healCd = healEvery(w);
   }
@@ -284,6 +285,6 @@ export function step(w: World, input: Input): void {
   }
   stepFinale(w);
   tickTelegraphs(w);
-  pickupHeals(w);
+  if (!hasMod(w.mods, MOD_NOHEAL)) pickupHeals(w);
   tickJuice(JUICE_DT);
 }

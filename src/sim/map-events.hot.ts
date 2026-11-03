@@ -1,4 +1,5 @@
 import { lichUp } from "./finale";
+import { applyScore, hasMod, MOD_NOHEAL } from "./modifiers";
 import {
   CRATE_FALL, CRATE_R2, DROP_HEAL, DROP_LIVE, DROP_SCORE, FOG_LIVE, GAP_MIN, GAP_SPAN,
   GEAR_LIVE, GEAR_N, GEAR_R2, GEAR_SCORE, MAP_DROP, MAP_FOG, MAP_GEAR, MAP_IDLE, MAP_LIVE, MAP_NONE,
@@ -93,7 +94,7 @@ function tickGears(w: World, m: MapBag): void {
     const dy = y - w.py;
     if (dx * dx + dy * dy < GEAR_R2) {
       m.gearOn[i] = 0;
-      w.score += GEAR_SCORE;
+      w.score += applyScore(GEAR_SCORE, w.mods);
     }
   }
 }
@@ -108,8 +109,8 @@ function tickCrate(w: World, m: MapBag): void {
   const dx = m.x - w.px;
   const dy = m.y - w.py;
   if (dx * dx + dy * dy >= CRATE_R2) return;
-  if (w.hp < w.maxHp) w.hp += DROP_HEAL;
-  w.score += DROP_SCORE;
+  if (!hasMod(w.mods, MOD_NOHEAL) && w.hp < w.maxHp) w.hp += DROP_HEAL;
+  w.score += applyScore(DROP_SCORE, w.mods);
   finish(w, m);
 }
 

@@ -55,6 +55,16 @@ import {
 import { clock } from "./sim/difficulty";
 import { armDevJump, isWon, killCount, setRunEndless, takeCue, victoryText } from "./sim/finale";
 import { fillHorde, HORDE_BULLETS, HORDE_ZOMBIES } from "./sim/horde";
+import {
+  hasMod,
+  loadMods,
+  MOD_LIST,
+  modNames,
+  saveMods,
+  scoreBanner,
+  scoreLabel,
+  toggleMod,
+} from "./sim/modifiers";
 import { cardSlot, summaryText } from "./sim/progress";
 import { step } from "./sim/step.hot";
 import { EV_KILL, H, W, type Input } from "./sim/types";
@@ -69,6 +79,7 @@ const saved = store ? loadStore(store) : { best: 0, muted: false, shake: true, n
 const roster = store ? loadRoster(store) : { index: CHAR_TINKER, bestWave: 0 };
 const session = createSession(saved.best, saved.muted, saved.shake, saved.numbers);
 let crown = store ? loadCrown(store) : { won: false, endless: false };
+let mods = store ? loadMods(store) : 0;
 const records = store ? loadLeaderboard(store) : emptyLeaderboard();
 const tracker = createTracker();
 let runLineText = "";
@@ -95,6 +106,8 @@ const summary = document.getElementById("summary") as HTMLElement;
 const rosterEl = document.getElementById("roster") as HTMLElement;
 const codexBtn = document.getElementById("codex") as HTMLButtonElement;
 const book = document.getElementById("book") as HTMLElement;
+const modRead = document.getElementById("mod-read") as HTMLElement;
+const modsRoot = document.getElementById("mods") as HTMLElement;
 const sfxMuteBtn = document.getElementById("sfx-mute") as HTMLButtonElement;
 const sfxVol = document.getElementById("sfx-vol") as HTMLInputElement;
 const panel = document.getElementById("panel") as HTMLElement;
@@ -103,7 +116,7 @@ const joy = document.getElementById("joy") as HTMLElement;
 const knob = document.getElementById("knob") as HTMLElement;
 
 function makeWorld(seed: number) {
-  const next = createWorld(seed, survivor);
+  const next = createWorld(seed, survivor, mods);
   if (location.hash === "#horde") fillHorde(next, HORDE_ZOMBIES, HORDE_BULLETS);
   return next;
 }
@@ -124,6 +137,7 @@ function persist(): void {
   syncStore(session, store);
   saveCrown(store, crown);
   saveRoster(store, survivor, bestWave);
+  saveMods(store, mods);
 }
 
 function noteCodex(): void {
@@ -134,21 +148,25 @@ function noteCodex(): void {
 function paint(): void {
   const playing = session.phase === PHASE_PLAY;
   veil.classList.toggle("on", !playing);
+  const picking = (session.phase === PHASE_TITLE || session.phase === PHASE_OVER) && !session.codex;
+  modsRoot.hidden = !picking;
+  modRead.hidden = !picking;
   if (session.phase === PHASE_TITLE) {
     headline.textContent = "Arcadia: Gears of the Dead";
-    sub.textContent = `Best ${session.best}`;
+    sub.textContent = `Best ${session.best} · ${scoreLabel(mods)}`;
     goBtn.textContent = "Play";
   } else if (session.phase === PHASE_PAUSE) {
     headline.textContent = "Paused";
     sub.textContent = "Esc or tap Resume";
     goBtn.textContent = "Resume";
   } else if (session.phase === PHASE_OVER) {
+    const runMul = scoreLabel(world.mods);
     if (isWon(world)) {
       headline.textContent = "The Lich Falls";
-      sub.textContent = `${clock(world.tick)} · ${killCount(world)} KILLS`;
+      sub.textContent = `${clock(world.tick)} · ${killCount(world)} KILLS · ${runMul}`;
     } else {
       headline.textContent = "The Gears Stop";
-      sub.textContent = `Best ${session.best}`;
+      sub.textContent = `Best ${session.best} · ${runMul}`;
     }
     goBtn.textContent = "Play";
   }
@@ -157,9 +175,23 @@ function paint(): void {
     sub.textContent = "Unions stay sealed until you forge them";
   }
   const menu = session.phase === PHASE_TITLE || session.phase === PHASE_OVER;
-  const over = session.phase === PHASE_OVER && !session.codex
+  if (picking) {
+    const names = modNames(mods);
+    const next = scoreLabel(mods);
+    modRead.textContent = session.phase === PHASE_OVER
+      ? `Next ${next}${names ? ` · ${names}` : ""}`
+      : (names || "Optional modifiers");
+    for (let i = 0; i < modButtons.length; i++) {
+      const btn = modButtons[i];
+      if (!btn) continue;
+      const on = hasMod(mods, Number(btn.dataset.mod));
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    }
+  }
+  const overBody = session.phase === PHASE_OVER && !session.codex
     ? (isWon(world) ? victoryText(world) : summaryText(world))
     : "";
+  const over = overBody.length > 0 ? `${scoreBanner(world.mods)}\n${overBody}` : "";
   summary.hidden = over.length === 0;
   summary.textContent = over;
   const showRoster = menu && !session.codex;
@@ -302,6 +334,31 @@ function sfx(): void {
   if (takeCue(world)) playSfxCue(CUE_BOSS);
 }
 
+function flipMod(bit: number): void {
+  if (session.phase === PHASE_PLAY || session.phase === PHASE_PAUSE) return;
+  unlockAudio();
+  mods = toggleMod(mods, bit);
+  playUiClick();
+  persist();
+  paint();
+}
+
+const modButtons: HTMLButtonElement[] = [];
+for (let i = 0; i < MOD_LIST.length; i++) {
+  const mod = MOD_LIST[i];
+  if (!mod) continue;
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.dataset.mod = String(mod.bit);
+  btn.textContent = `${mod.name} ${scoreLabel(mod.bit)}`;
+  btn.title = mod.blurb;
+  btn.setAttribute("aria-pressed", hasMod(mods, mod.bit) ? "true" : "false");
+  const bit = mod.bit;
+  btn.addEventListener("click", () => flipMod(bit));
+  modsRoot.append(btn);
+  modButtons.push(btn);
+}
+
 goBtn.addEventListener("click", startRun);
 codexBtn.addEventListener("click", codexToggle);
 muteBtn.addEventListener("click", mute);
@@ -314,6 +371,8 @@ endlessBtn.addEventListener("click", endless);
 addEventListener("keydown", (e) => {
   const inSfx = e.target instanceof HTMLElement && !!e.target.closest("#sfx");
   if (inSfx && e.key !== "Escape") return;
+  const inMods = e.target instanceof HTMLElement && !!e.target.closest("#mods");
+  if (inMods && e.key !== "Escape") return;
   unlockAudio();
   paint();
   const k = e.key.toLowerCase();
@@ -471,6 +530,7 @@ function frame(now: number): void {
           kills: tracker.kills,
           upgrades: world.upgrades,
           character: characterAt(world.charId).id,
+          mods: world.mods,
         }));
         runLineText = settled.line;
         runShare = settled.share;

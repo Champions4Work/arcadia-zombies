@@ -4,6 +4,7 @@ import {
   type Arena,
 } from "./arena";
 import { foeHp, foePack, foeSpeed, Z_ELITE, Z_GAS, Z_KIND, Z_KNIGHT, Z_RAT, Z_SPITTER } from "./foes";
+import { pacedSpeed } from "./modifiers";
 import { nextFloat } from "./rng";
 import {
   FX_PUFF, FX_SPARK, H, MAX_FX, MAX_ZOMBIES, W, Z_BRUTE, Z_GHOUL, type World,
@@ -378,7 +379,7 @@ function armFoe(w: World, i: number, raw: number, x: number, y: number): void {
   z.y[i] = y;
   z.kind[i] = raw;
   z.hp[i] = foeHp(kind, w.rank, elite);
-  z.vx[i] = foeSpeed(kind, w.rank, nextFloat(w.rng));
+  z.vx[i] = pacedSpeed(foeSpeed(kind, w.rank, nextFloat(w.rng)), w.mods);
   z.alive[i] = 1;
   if (kind === Z_SPITTER) z.vy[i] = (nextFloat(w.rng) * 36) | 0;
   else if (kind === Z_KNIGHT) z.vy[i] = Math.atan2(w.py - y, w.px - x);

@@ -1,5 +1,6 @@
 import { CHAR_TINKER, characterAt, characterIndex } from "../sim/characters";
 import { tierName } from "../sim/difficulty";
+import { clampMods, modNames, scoreLabel } from "../sim/modifiers";
 
 export const LEADERBOARD_KEY = "arcadia.leaderboard";
 export const BOARD_LIMIT = 10;
@@ -24,6 +25,7 @@ export interface RunRecord {
   kills: number;
   build: string;
   character: string;
+  mods: number;
 }
 
 export interface Life {
@@ -45,6 +47,7 @@ export interface RunInput {
   kills: number;
   upgrades: ArrayLike<number>;
   character?: string;
+  mods?: number;
 }
 
 export interface KillTracker {
@@ -134,6 +137,7 @@ export function captureRun(input: RunInput): RunRecord {
     kills: input.kills,
     build: buildLabel(input.upgrades),
     character: input.character ?? characterAt(CHAR_TINKER).id,
+    mods: clampMods(input.mods ?? 0),
   });
 }
 
@@ -146,13 +150,19 @@ export function formatTime(ticks: number): string {
 
 export function runLine(run: RunRecord): string {
   const row = sanitize(run);
-  return `${formatTime(row.time)} · ${tierName(row.tier)} · ${row.kills} kills · ${row.build} · ${characterAt(characterIndex(row.character)).name}`;
+  return `${formatTime(row.time)} · ${tierName(row.tier)} · ${row.kills} kills · ${row.build} · ${characterAt(characterIndex(row.character)).name}${modSuffix(row.mods)}`;
 }
 
 export function shareText(run: RunRecord): string {
   const row = sanitize(run);
   const who = characterAt(characterIndex(row.character)).name;
-  return `Arcadia: Gears of the Dead — Score ${row.score} · ${formatTime(row.time)} · ${tierName(row.tier)} · ${row.kills} kills · ${row.build} · ${who}`;
+  return `Arcadia: Gears of the Dead — Score ${row.score} · ${formatTime(row.time)} · ${tierName(row.tier)} · ${row.kills} kills · ${row.build} · ${who}${modSuffix(row.mods)}`;
+}
+
+function modSuffix(mods: number): string {
+  if (!mods) return "";
+  const names = modNames(mods);
+  return names ? ` · ${scoreLabel(mods)} · ${names}` : ` · ${scoreLabel(mods)}`;
 }
 
 export function toastText(name: string): string {
@@ -243,7 +253,7 @@ export function saveLeaderboard(store: Store, saved: SavedRecords): void {
     store.setItem(LEADERBOARD_KEY, JSON.stringify({
       v: 1,
       board: saved.board.map((r) => ({
-        score: r.score, time: r.time, tier: r.tier, kills: r.kills, build: r.build, character: r.character,
+        score: r.score, time: r.time, tier: r.tier, kills: r.kills, build: r.build, character: r.character, mods: r.mods,
       })),
       life: { kills: saved.life.kills, bestTime: saved.life.bestTime, runs: saved.life.runs },
       unlocked: saved.unlocked.slice(),
@@ -273,6 +283,7 @@ function sanitize(run: RunRecord): RunRecord {
     kills: clampInt(run.kills),
     build: cleanBuild(run.build),
     character: cleanCharacter(run.character),
+    mods: clampMods(run.mods ?? 0),
   };
 }
 
@@ -320,6 +331,7 @@ function decode(v: unknown): SavedRecords {
         kills: item.kills as number,
         build: typeof item.build === "string" ? item.build : "",
         character: typeof item.character === "string" ? item.character : "",
+        mods: clampMods((item.mods as number) ?? 0),
       }));
     }
     saved.board.sort(compareRuns);
