@@ -290,16 +290,16 @@ export function drawJuice(c: CanvasRenderingContext2D): void {
         c.translate(x | 0, y | 0);
         c.rotate(pRot[i] ?? 0);
         c.fillStyle = BRASS_HI;
-        c.fillRect(-1, -4, 2, 8);
-        c.fillRect(-4, -1, 8, 2);
+        c.fillRect(-2, -8, 4, 16);
+        c.fillRect(-8, -2, 16, 4);
         c.fillStyle = BRASS;
-        c.fillRect(-2, -2, 4, 4);
+        c.fillRect(-4, -4, 8, 8);
         c.restore();
       } else {
         c.fillStyle = BRASS;
-        c.fillRect((x - 2) | 0, (y - 2) | 0, 4, 3);
+        c.fillRect((x - 4) | 0, (y - 3) | 0, 8, 6);
         c.fillStyle = COPPER;
-        c.fillRect(x | 0, y | 0, 2, 2);
+        c.fillRect((x - 1) | 0, (y - 1) | 0, 4, 4);
       }
     }
   }
@@ -311,7 +311,7 @@ export function drawJuice(c: CanvasRenderingContext2D): void {
     if (numOn[i] === 0) continue;
     const life = numLife[i] ?? 0;
     const crit = numCrit[i] ?? 0;
-    const s = crit === 1 ? 2 : 1;
+    const s = (crit === 1 ? 2 : 1) * 3;
     const val = numDmg[i] ?? 0;
     const x = (numX[i] ?? 0) - digits(val) * 2 * s;
     const y = numY[i] ?? 0;

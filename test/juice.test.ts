@@ -214,6 +214,7 @@ describe("hit stop", () => {
     expect(ghoul.events[EV_KILL]).toBe(1);
     expect(stopRemaining()).toBe(STOP_ELITE_MS);
     expect(lastNumberCrit()).toBe(1);
+    ghoul.choosing = 0;
     const gTick = ghoul.tick;
     let stalled = 0;
     while (stopRemaining() > 0 && stalled < 8) {
