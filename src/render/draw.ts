@@ -1,6 +1,9 @@
-import { H, W, type World } from "../sim/types";
-import { paintActors, paintBullets, paintFx } from "./actors";
+import { H, MAX_BULLETS, MAX_ZOMBIES, W, type World } from "../sim/types";
+import { paintActors, paintBullets, paintFx, paintPlayer } from "./actors";
+import { shouldBlitHorde } from "./cull";
+import { paintFps } from "./fps";
 import { drawLich } from "./finale";
+import { renderHorde } from "./horde-draw";
 import { drawCards, drawHud } from "./hud";
 import { drawSaws, drawShield, drawTesla } from "./progress";
 import { LAYER_BACK, LAYER_FRONT, LAYER_HUD, LAYER_MID, paintLayers } from "./plugins";
@@ -10,6 +13,27 @@ import { drawStage } from "./stage";
 let lastPx = 0;
 let lastPy = 0;
 let walk = 0;
+let yard: HTMLCanvasElement | null = null;
+
+function countAlive(flag: Uint8Array, n: number): number {
+  let k = 0;
+  for (let i = 0; i < n; i++) if (flag[i]) k++;
+  return k;
+}
+
+function hordeYard(): HTMLCanvasElement {
+  if (yard) return yard;
+  const g = document.createElement("canvas");
+  g.width = W;
+  g.height = H;
+  const gc = g.getContext("2d");
+  if (gc) {
+    gc.imageSmoothingEnabled = true;
+    drawStage(gc, 0);
+  }
+  yard = g;
+  return g;
+}
 
 export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boolean; shake?: boolean }): void {
   c.imageSmoothingEnabled = true;
@@ -22,16 +46,30 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
   lastPy = w.py;
   absorbShake(w.tick, w.events);
   const [sx, sy] = shakePixels(w.tick, opts?.shake !== false);
+  const horde = shouldBlitHorde(
+    countAlive(w.zombies.alive, MAX_ZOMBIES),
+    countAlive(w.bullets.alive, MAX_BULLETS),
+  );
+  const moving = walk > 0;
   c.save();
   if (sx !== 0 || sy !== 0) c.translate(sx, sy);
-  drawStage(c, w.tick);
-  paintLayers(c, w, LAYER_BACK);
-  paintActors(c, w, walk > 0);
-  drawSaws(c, w);
-  drawShield(c, w);
-  paintBullets(c, w);
-  drawTesla(c, w);
-  paintFx(c, w);
+  if (horde) {
+    renderHorde(c, w, hordeYard());
+    paintPlayer(c, w, moving);
+    drawSaws(c, w);
+    drawShield(c, w);
+    drawTesla(c, w);
+    paintFx(c, w);
+  } else {
+    drawStage(c, w.tick);
+    paintLayers(c, w, LAYER_BACK);
+    paintActors(c, w, moving);
+    drawSaws(c, w);
+    drawShield(c, w);
+    paintBullets(c, w);
+    drawTesla(c, w);
+    paintFx(c, w);
+  }
   paintLayers(c, w, LAYER_MID);
   drawLich(c, w);
   c.restore();
@@ -54,4 +92,5 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
     c.fillRect(0, 0, W, H);
   }
   paintLayers(c, w, LAYER_HUD);
+  paintFps(c);
 }

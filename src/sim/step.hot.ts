@@ -10,6 +10,7 @@ import {
   ventEvery, ventRange, whistleRange,
 } from "./progress";
 import { freshShot, holdSpawns, lichMinion, lichUp, lichX, lichY, stepFinale, tallyKill, watchFinale } from "./finale";
+import { beginQuery, nextQuery, rebuildZombieGrid } from "./grid.hot";
 import {
   EV_HURT, EV_KILL, EV_RANK, EV_SAW, EV_SHIELD, EV_SHOT, EV_TESLA, EV_WAVE, FX_FLASH, FX_PUFF, FX_SPARK,
   FX_XP, H, MAX_BULLETS, MAX_FX, MAX_ZOMBIES, UPG_COOLANT, UPG_DYNAMO, UPG_MORTAR, UPG_PIERCE, UPG_RICOCHET,
@@ -171,7 +172,10 @@ function spinSaws(w: World): void {
     const a = sawAngle(w.tick, s, n);
     const sx = w.px + Math.cos(a) * r;
     const sy = w.py + Math.sin(a) * r;
-    for (let i = 0; i < MAX_ZOMBIES; i++) {
+    beginQuery(sx, sy);
+    for (;;) {
+      const i = nextQuery();
+      if (i < 0) break;
       if (!z.alive[i]) continue;
       const dx = (z.x[i] ?? 0) - sx;
       const dy = (z.y[i] ?? 0) - sy;
@@ -326,6 +330,7 @@ export function step(w: World, input: Input): void {
   }
   const b = w.bullets;
   const dmg = bulletDmg(w);
+  rebuildZombieGrid(z.alive, z.x, z.y, MAX_ZOMBIES);
   for (let j = 0; j < MAX_BULLETS; j++) {
     if (!b.alive[j]) continue;
     let bx = (b.x[j] ?? 0) + (b.vx[j] ?? 0);
@@ -351,9 +356,11 @@ export function step(w: World, input: Input): void {
       if (hit === 2) return;
       continue;
     }
-    for (let i = 0; i < MAX_ZOMBIES; i++) {
-      if (!z.alive[i]) continue;
-      if (w.bHit[j] === i) continue;
+    beginQuery(bx, by);
+    for (;;) {
+      const i = nextQuery();
+      if (i < 0) break;
+      if (!z.alive[i] || i === (w.bHit[j] ?? -1)) continue;
       const raw = z.kind[i] ?? 0;
       const zx = z.x[i] ?? 0;
       const zy = z.y[i] ?? 0;

@@ -6,6 +6,7 @@ import { gasGlyph, knightGlyph, projectileFor, ratGearGlyph, spitterGlyph } from
 import {
   bulletPaint, fxPaint, registerBullet, registerFx, registerZombie, zombieGlyph, type BulletPaint, type FxPaint, type Glyph,
 } from "./plugins";
+import { offScreen } from "./cull";
 import { blit, BRASS, font, roundRect } from "./paint";
 import {
   BRUTE, creepFrames, fallbackFrames, fallbackSpec, GHOUL, gunSprite, HERO_H, HERO_W, heroFrames,
@@ -48,6 +49,11 @@ registerZombie(Z_SPITTER, spitterGlyph);
 registerZombie(Z_GAS, gasGlyph);
 registerZombie(Z_KNIGHT, knightGlyph);
 registerZombie(Z_RAT, ratGearGlyph);
+
+export function paintPlayer(ctx: CanvasRenderingContext2D, w: World, moving: boolean): void {
+  if (w.hurtCd > 0 && w.hurtCd % 6 >= 3) return;
+  paintHero(ctx, w, moving);
+}
 
 function paintHero(ctx: CanvasRenderingContext2D, w: World, moving: boolean): void {
   paintShadow(ctx, w.px, w.py, 32);
@@ -162,7 +168,7 @@ export function paintActors(ctx: CanvasRenderingContext2D, w: World, moving: boo
     const id = seq[i] ?? -1;
     if (id < 0) {
       if (!hidden) paintHero(ctx, w, moving);
-    } else paintOne(ctx, w, id);
+    } else if (!offScreen(z.x[id] ?? 0, z.y[id] ?? 0, 96)) paintOne(ctx, w, id);
   }
 }
 
@@ -187,6 +193,7 @@ export function paintBullets(ctx: CanvasRenderingContext2D, w: World): void {
   const b = w.bullets;
   for (let i = 0; i < b.alive.length; i++) {
     if (!b.alive[i]) continue;
+    if (offScreen(b.x[i] ?? 0, b.y[i] ?? 0, 24)) continue;
     const paint = projectileFor(b.hp[i] ?? 0, bulletPaint(b.kind[i] ?? 0, defaultBolt));
     paint(ctx, b.x[i] ?? 0, b.y[i] ?? 0, b.vx[i] ?? 1, b.vy[i] ?? 0, w.tick);
   }

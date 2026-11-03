@@ -314,8 +314,13 @@ function minimap(ctx: CanvasRenderingContext2D, w: World): void {
   ctx.strokeRect(cx - 18, cy - 18, 36, 36);
   const z = w.zombies;
   const span = r * 1.45;
+  let alive = 0;
+  for (let i = 0; i < z.alive.length; i++) if (z.alive[i]) alive++;
+  const step = alive > 96 ? Math.ceil(alive / 96) : 1;
+  let seen = 0;
   for (let i = 0; i < z.alive.length; i++) {
     if (!z.alive[i]) continue;
+    if (step > 1 && seen++ % step !== 0) continue;
     const mx = cx + ((z.x[i] ?? 0) / W - 0.5) * span;
     const my = cy + ((z.y[i] ?? 0) / H - 0.5) * span;
     const kind = (z.kind[i] ?? 0) & Z_KIND;
