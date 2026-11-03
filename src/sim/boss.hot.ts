@@ -12,19 +12,10 @@ import {
 } from "./progress";
 import { nextFloat } from "./rng";
 import {
-  EV_HURT, EV_KILL, EV_LEVEL, EV_SHIELD, EV_SIREN, FX_FLASH, FX_PUFF, FX_SPARK,
-  MAX_BULLETS, MAX_FX, MAX_ZOMBIES, TELE_BOSS, Z_GHOUL, type Boss, type World,
+  EV_HURT, EV_KILL, EV_LEVEL, EV_SHIELD, EV_SIREN,
+  MAX_BULLETS, MAX_ZOMBIES, TELE_BOSS, Z_GHOUL, type Boss, type World,
 } from "./types";
 const TELE_LEAD = TELE_LIFE + 1;
-function puff(w: World, kind: number, x: number, y: number, a: number): void {
-  const i = w.fxHead;
-  w.fxKind[i] = kind;
-  w.fxX[i] = x;
-  w.fxY[i] = y;
-  w.fxA[i] = a;
-  w.fxTick[i] = w.tick;
-  w.fxHead = i + 1 < MAX_FX ? i + 1 : 0;
-}
 function clearVolley(b: Boss): void {
   for (let i = 0; i < MAX_BOSS_SHOTS; i++) b.shotLife[i] = 0;
   for (let i = 0; i < MAX_CLOUDS; i++) b.cloudLife[i] = 0;
@@ -94,9 +85,6 @@ function killBoss(w: World): void {
   const b = w.boss;
   if (!b.on) return;
   const tier = b.tier;
-  const x = b.x;
-  const y = b.y;
-  const kind = b.kind;
   b.on = 0;
   b.pending = 0;
   b.warn = 0;
@@ -107,7 +95,6 @@ function killBoss(w: World): void {
   clearVolley(b);
   w.score += applyScore(bossScore(w.wave, tier), w.mods);
   w.events[EV_KILL] = 1;
-  puff(w, FX_PUFF, x, y, kind + 4);
   takeXp(w, bossXp(w.level, tier));
   if (!w.choosing && canUpgrade(w)) {
     rollOffers(w);
@@ -121,7 +108,6 @@ export function hurtBoss(w: World, dmg: number): void {
   const b = w.boss;
   if (!b.on || dmg <= 0) return;
   b.hp -= dmg;
-  puff(w, FX_SPARK, b.x, b.y - 8, 0);
   if (b.hp <= 0) killBoss(w);
 }
 function summonGhoul(w: World, x: number, y: number, tier: number): void {
@@ -201,7 +187,6 @@ function stepBehemoth(w: World): void {
         const sp = pacedSpeed(3.3 + tier * 0.28, w.mods);
         b.vx = b.aimX * sp;
         b.vy = b.aimY * sp;
-        puff(w, FX_FLASH, b.x, b.y, 0);
       }
       return;
     }
@@ -225,7 +210,6 @@ function stepBehemoth(w: World): void {
       b.timer = 46;
       b.slam = 8;
       b.slamHit = 0;
-      puff(w, FX_FLASH, b.x, b.y, 1);
     }
     return;
   }
@@ -496,7 +480,6 @@ function spawnBoss(w: World): void {
   aimAtPlayer(w);
   clearVolley(b);
   w.events[EV_SIREN] = 1;
-  puff(w, FX_PUFF, b.x, b.y, kind + 4);
 }
 function bossTeleQueued(w: World): boolean {
   const alive = w.arena.teleAlive;
