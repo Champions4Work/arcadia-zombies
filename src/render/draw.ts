@@ -1,5 +1,6 @@
 import { H, MAX_BULLETS, MAX_ZOMBIES, W, type World } from "../sim/types";
 import { paintActors, paintBullets, paintFx, paintPlayer } from "./actors";
+import { drawChestGround, drawChestReveal } from "./chestFx";
 import { paintArrows, paintDecals, paintProps } from "./arena";
 import { shouldBlitHorde } from "./cull";
 import { paintFps } from "./fps";
@@ -78,6 +79,7 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
   drawJuice(c);
   paintLayers(c, w, LAYER_MID);
   drawLich(c, w);
+  drawChestGround(c, w);
   c.restore();
   const vig = c.createRadialGradient(W / 2, H * 0.55, 90, W / 2, H * 0.5, 300);
   vig.addColorStop(0, "rgba(0,0,0,0)");
@@ -100,6 +102,7 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
   paintArrows(c, w);
   drawCards(c, w);
   drawReroll(c, w);
+  drawChestReveal(c, w);
   if (w.over) {
     c.fillStyle = "rgba(8,4,14,0.5)";
     c.fillRect(0, 0, W, H);

@@ -57,7 +57,7 @@ export interface RunMods {
   hp: number; dmg: number; spd: number; gun: number;
   revive: number; reroll: number; rerollLeft: number; banked: number;
 }
-export interface Input { dx: number; dy: number; pick?: number; reroll?: number }
+export interface Input { dx: number; dy: number; pick?: number; reroll?: number; skip?: number }
 export interface Pool {
   x: Float32Array; y: Float32Array; vx: Float32Array; vy: Float32Array;
   hp: Int16Array; alive: Uint8Array; kind: Uint8Array;
@@ -80,6 +80,9 @@ export interface World {
   arena: Arena;
   meta: RunMods;
   workshop: string;
+  chestX: Float32Array; chestY: Float32Array; chestOn: Uint8Array; chestPrize: Int8Array;
+  chestOpen: number; chestCount: number; chestT: number; chestDur: number;
+  chestGold: number; chestLinger: number; chestCursor: number; chestSeal: number;
 }
 export const EV_SHOT = 0;
 export const EV_KILL = 1;
@@ -92,4 +95,6 @@ export const EV_RANK = 7;
 export const EV_SAW = 8;
 export const EV_BOOM = 9;
 export const EV_REVIVE = 10;
-export const EV_N = 11;
+export const EV_CHEST = 11;
+export const EV_CHEST_END = 12;
+export const EV_N = 13;

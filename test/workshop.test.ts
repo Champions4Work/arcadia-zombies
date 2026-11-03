@@ -165,9 +165,9 @@ describe("brass scrap", () => {
     const tracker = createTracker();
     seekSeconds(w, 1200);
     let guard = 0;
-    while (!w.over && guard < 8) {
+    while (!w.over && guard < 80) {
       if (lichUp(w) && lichHp(w) > 0) harmLich(w, lichMaxHp());
-      step(w, idle(0));
+      step(w, { dx: 0, dy: 0, pick: 0, skip: w.chestOpen ? 1 : 0 });
       noteKills(tracker, w.events[EV_KILL] ?? 0);
       guard++;
     }

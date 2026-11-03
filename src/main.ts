@@ -2,10 +2,11 @@ import { awardRun, applyWorkshop, emptyWorkshop, loadWorkshop, saveWorkshop, try
 import { noteFrame, toggleFps, toggleFromKey } from "./render/fps";
 import { setNumbersOn, stopRemaining } from "./render/juice";
 import { setMusicOn, setMusicWave } from "./render/music";
+import { chestSkipKey } from "./render/chestFx";
 import { draw } from "./render/draw";
 import { pauseHit } from "./render/hud";
 import { bootSfx, persistSfx, playSfxCue, playUiClick, playWorldSfx, resetSfxPlayback, setSfxVolume, sfxMuted, sfxVolume, toggleSfxMuted } from "./render/sfx";
-import { CUE_BOSS, CUE_SHIELD, sfxMuteLabel, sfxVolumePercent } from "./render/sfx-cues";
+import { CUE_BOSS, CUE_CLICK, CUE_LEVEL, CUE_PICK, CUE_SHIELD, sfxMuteLabel, sfxVolumePercent } from "./render/sfx-cues";
 import { setMuted, unlockAudio } from "./render/sound";
 import { renderBench } from "./shell/bench";
 import { codexStamp, emptyCodex, loadCodex, observe, renderBook, saveCodex } from "./shell/codex";
@@ -70,6 +71,7 @@ import {
   offerCount,
   saveRoster,
 } from "./sim/characters";
+import { dropChest } from "./sim/chest";
 import { clock, tierName } from "./sim/difficulty";
 import { armDevJump, isWon, killCount, setRunEndless, takeCue, victoryText } from "./sim/finale";
 import { fillHorde, HORDE_BULLETS, HORDE_ZOMBIES } from "./sim/horde";
@@ -87,7 +89,7 @@ import { scrapEarned } from "./meta/scrap";
 import { cardSlot, summaryText } from "./sim/progress";
 import { rerollHit } from "./sim/reroll";
 import { step } from "./sim/step.hot";
-import { EV_KILL, EV_REVIVE, H, W, type Input } from "./sim/types";
+import { EV_CHEST, EV_CHEST_END, EV_KILL, EV_REVIVE, H, W, type Input, type World } from "./sim/types";
 import { createWorld } from "./sim/world";
 
 function tryStore(): { getItem(k: string): string | null; setItem(k: string, v: string): void } | null {
@@ -170,11 +172,12 @@ let world = makeWorld(1);
 applyWorkshop(world, shop);
 let fit: Fit = applyCanvas(canvas, ctx, innerWidth, innerHeight, devicePixelRatio || 1, W, H);
 const keys = new Set<string>();
-const input: Input = { dx: 0, dy: 0, pick: 0, reroll: 0 };
+const input: Input = { dx: 0, dy: 0, pick: 0, reroll: 0, skip: 0 };
 const stick = createStick();
 let stickId = -1;
 let pendingPick = 0;
 let pendingReroll = 0;
+let pendingSkip = 0;
 let lastScrap = 0;
 let lastBase = 0;
 const STEP_MS = 1000 / 60;
@@ -336,14 +339,28 @@ function startRun(): void {
     acc = 0;
     pendingPick = 0;
     pendingReroll = 0;
+    pendingSkip = 0;
+    if (import.meta.env.DEV && location.search.includes("chest=1")) {
+      dropChest(world, world.px + 56, world.py);
+      world.toSpawn = 8;
+      world.spawnCd = 99999;
+      world.fireCd = 99999;
+      world.wpnCd.fill(9999);
+    }
     resetSfxPlayback();
     resetTracker(tracker);
     runLineText = "";
     runShare = null;
   }
   playUiClick();
+  publish(world);
   persist();
   paint();
+}
+
+function publish(w: World): void {
+  if (!import.meta.env.DEV) return;
+  (globalThis as unknown as { __arcadia?: { world: World; dropChest: typeof dropChest } }).__arcadia = { world: w, dropChest };
 }
 
 function mute(): void {
@@ -405,7 +422,7 @@ function endless(): void {
   paint();
 }
 function placeJoy(): void {
-  const playing = session.phase === PHASE_PLAY && !world.choosing;
+  const playing = session.phase === PHASE_PLAY && !world.choosing && !world.chestOpen;
   const rest = showRestStick(
     innerWidth,
     matchMedia("(pointer: coarse)").matches,
@@ -423,6 +440,9 @@ function sfx(): void {
   playWorldSfx(world);
   if (world.events[EV_REVIVE]) playSfxCue(CUE_SHIELD);
   if (takeCue(world)) playSfxCue(CUE_BOSS);
+  if (world.events[EV_CHEST]) playSfxCue(CUE_LEVEL);
+  else if (world.chestOpen && world.chestT > 0 && world.chestT % 7 === 0) playSfxCue(CUE_CLICK);
+  if (world.events[EV_CHEST_END]) playSfxCue(CUE_PICK);
 }
 
 function flipMod(bit: number): void {
@@ -517,6 +537,11 @@ addEventListener("keydown", (e) => {
     return;
   }
   if (session.phase === PHASE_WORKSHOP) return;
+  if (session.phase === PHASE_PLAY && world.chestOpen && chestSkipKey(e.key, e.repeat)) {
+    e.preventDefault();
+    pendingSkip = 1;
+    return;
+  }
   if (k === " " || k === "enter") {
     if (session.phase !== PHASE_PLAY) {
       const target = e.target;
@@ -568,6 +593,10 @@ addEventListener("pointerdown", (e) => {
     paint();
     return;
   }
+  if (world.chestOpen) {
+    pendingSkip = 1;
+    return;
+  }
   if (world.choosing) {
     if (rerollHit(p.x, p.y)) pendingReroll = 1;
     else pendingPick = cardSlot(p.x, p.y, offerCount(world));
@@ -608,6 +637,7 @@ addEventListener("blur", hide);
 document.addEventListener("visibilitychange", () => { if (document.hidden) hide(); });
 
 function frame(now: number): void {
+  publish(world);
   noteFrame(now);
   acc += Math.min(250, now - last);
   last = now;
@@ -620,12 +650,15 @@ function frame(now: number): void {
     while (acc >= STEP_MS) {
       input.pick = pendingPick;
       input.reroll = pendingReroll;
+      input.skip = pendingSkip;
       step(world, input);
       noteKills(tracker, world.events[EV_KILL] ?? 0);
       pendingPick = 0;
       pendingReroll = 0;
+      pendingSkip = 0;
       input.pick = 0;
       input.reroll = 0;
+      input.skip = 0;
       acc -= STEP_MS;
       const reached = noteWave(bestWave, world.wave);
       const waveUp = reached !== bestWave;

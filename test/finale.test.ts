@@ -127,6 +127,11 @@ describe("clockwork lich", () => {
       guard++;
     }
     expect(isWon(w)).toBe(true);
+    expect(w.chestOpen).toBe(1);
+    while (!w.over && guard < 900) {
+      step(w, { dx: 0, dy: 0, pick: 0, skip: 1 });
+      guard++;
+    }
     expect(w.over).toBe(true);
     expect(lichUp(w)).toBe(false);
     expect(killCount(w)).toBeGreaterThan(0);
