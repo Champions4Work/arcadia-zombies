@@ -1,5 +1,6 @@
 import { ARENA_H, ARENA_W } from "../sim/arena";
 import { H, W } from "../sim/types";
+import { YARD_W, ZONE_N, zoneRow } from "../sim/zones";
 import { eachVentFx, paintGround } from "./ground";
 import { BRASS, cog, COPPER, lit, OUTLINE, rivet, roundRect, STEEL } from "./paint";
 import { puffSprite } from "./sprites";
@@ -11,6 +12,11 @@ const STACKS = [
   { x: 36, y: 34 },
   { x: 64, y: 22 },
   { x: 98, y: 40 },
+];
+const HEAP_STACKS = [
+  { x: 51, y: 58 },
+  { x: 86, y: 70 },
+  { x: 119, y: 64 },
 ];
 
 let yard: HTMLCanvasElement | null = null;
@@ -201,22 +207,45 @@ function belt(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h:
   joint(ctx, x + w - 8, y + h / 2, h * 0.28);
 }
 
-function drawYard(ctx: CanvasRenderingContext2D): void {
-  const sky = ctx.createLinearGradient(0, 0, 0, 150);
-  sky.addColorStop(0, "#241454");
-  sky.addColorStop(0.45, "#6a3478");
-  sky.addColorStop(0.78, "#e07068");
-  sky.addColorStop(1, "#ffb15a");
-  ctx.fillStyle = sky;
-  ctx.fillRect(0, 0, ARENA_W, 160);
+function hex(n: number): string {
+  return `#${(n & 0xffffff).toString(16).padStart(6, "0")}`;
+}
+
+function yardLocal(ctx: CanvasRenderingContext2D, origin: number): void {
+  ctx.beginPath();
+  ctx.rect(origin, 0, YARD_W, ARENA_H);
+  ctx.clip();
+  ctx.translate(origin, 0);
+}
+
+function paintSky(ctx: CanvasRenderingContext2D, sky: readonly [number, number, number, number], x: number, w: number): void {
+  const g = ctx.createLinearGradient(x, 0, x, 150);
+  g.addColorStop(0, hex(sky[0]));
+  g.addColorStop(0.45, hex(sky[1]));
+  g.addColorStop(0.78, hex(sky[2]));
+  g.addColorStop(1, hex(sky[3]));
+  ctx.fillStyle = g;
+  ctx.fillRect(x, 0, w, 160);
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x, 0, w, 90);
+  ctx.clip();
   ctx.fillStyle = "rgba(255,255,255,0.85)";
-  for (let i = 0; i < 48; i++) {
-    const x = (i * 97) % ARENA_W;
-    const y = (i * 41) % 70;
+  const shift = sky[0] & 255;
+  for (let i = 0; i < 22; i++) {
+    const sx = x + ((i * 97 + shift) % w);
+    const sy = (i * 41) % 70;
     ctx.globalAlpha = 0.35 + (i % 4) * 0.12;
-    ctx.fillRect(x, y, i % 5 === 0 ? 2 : 1.2, i % 5 === 0 ? 2 : 1.2);
+    const s = i % 5 === 0 ? 2 : 1.2;
+    ctx.fillRect(sx, sy, s, s);
   }
+  ctx.restore();
   ctx.globalAlpha = 1;
+}
+
+function paintWorks(ctx: CanvasRenderingContext2D, origin: number): void {
+  ctx.save();
+  yardLocal(ctx, origin);
   ctx.fillStyle = "rgba(255,210,230,0.35)";
   ctx.beginPath();
   ctx.ellipse(80, 28, 36, 12, 0, 0, Math.PI * 2);
@@ -235,12 +264,11 @@ function drawYard(ctx: CanvasRenderingContext2D): void {
       ctx.fillStyle = "#3a2458";
     }
   }
-  paintGround(ctx);
   const sun = ctx.createRadialGradient(400, 36, 8, 340, 90, 220);
   sun.addColorStop(0, "rgba(255,210,140,0.55)");
   sun.addColorStop(1, "rgba(255,160,70,0)");
   ctx.fillStyle = sun;
-  ctx.fillRect(0, 0, ARENA_W, 200);
+  ctx.fillRect(0, 0, YARD_W, 200);
   chimney(ctx, 22, 30, 26, 88, 3);
   chimney(ctx, 54, 16, 22, 96, 4);
   chimney(ctx, 84, 38, 20, 74, 2);
@@ -268,20 +296,109 @@ function drawYard(ctx: CanvasRenderingContext2D): void {
   spill.addColorStop(1, "rgba(255,140,40,0)");
   ctx.fillStyle = spill;
   ctx.fillRect(120, 80, 240, 120);
+  ctx.restore();
+}
+
+function paintHeap(ctx: CanvasRenderingContext2D, origin: number): void {
+  ctx.save();
+  yardLocal(ctx, origin);
+  chimney(ctx, 40, 58, 22, 52, 2);
+  chimney(ctx, 78, 70, 16, 36, 1);
+  chimney(ctx, 110, 64, 18, 42, 1);
+  factory(ctx, 160, 102, 86, 30);
+  factory(ctx, 390, 108, 64, 24);
+  pipe(ctx, 28, 146, 170, 156, 6);
+  pipe(ctx, 210, 150, 210, 188, 6);
+  pipe(ctx, 430, 142, 560, 154, 5);
+  joint(ctx, 210, 150, 5);
+  cog(ctx, 280, 168, 18, 0.6, COPPER, 6, false);
+  cog(ctx, 500, 176, 12, -0.4, BRASS, 7, false);
+  ctx.fillStyle = "#2a2018";
+  ctx.fillRect(16, 112, 130, 8);
+  ctx.fillRect(340, 116, 90, 6);
+  ctx.restore();
+}
+
+function crane(ctx: CanvasRenderingContext2D, x: number): void {
+  ctx.fillStyle = STEEL.mid;
+  ctx.fillRect(x, 40, 8, 96);
+  ctx.fillStyle = STEEL.hi;
+  ctx.fillRect(x + 1, 40, 2, 96);
+  ctx.fillStyle = BRASS.mid;
+  ctx.fillRect(x - 8, 40, 78, 6);
+  ctx.fillRect(x + 64, 46, 4, 26);
+  ctx.strokeStyle = OUTLINE;
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(x + 4, 46);
+  ctx.lineTo(x + 66, 72);
+  ctx.stroke();
+  cog(ctx, x + 4, 128, 10, 0.2, BRASS, 6, false);
+}
+
+function mast(ctx: CanvasRenderingContext2D, x: number): void {
+  ctx.fillStyle = "#6a5038";
+  ctx.fillRect(x, 24, 5, 112);
+  ctx.fillRect(x - 28, 46, 64, 4);
+  ctx.strokeStyle = "#3a2414";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(x + 2, 28);
+  ctx.lineTo(x - 24, 48);
+  ctx.lineTo(x + 2, 48);
+  ctx.stroke();
+  ctx.fillStyle = "#8a3030";
+  ctx.beginPath();
+  ctx.moveTo(x + 5, 48);
+  ctx.lineTo(x + 30, 60);
+  ctx.lineTo(x + 5, 72);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function paintDock(ctx: CanvasRenderingContext2D, origin: number): void {
+  ctx.save();
+  yardLocal(ctx, origin);
+  factory(ctx, 20, 104, 100, 28);
+  crane(ctx, 180);
+  crane(ctx, 420);
+  mast(ctx, 560);
+  pipe(ctx, 36, 136, 160, 136, 6);
+  pipe(ctx, 300, 132, 460, 140, 5);
+  joint(ctx, 160, 136, 5);
+  belt(ctx, 48, 170, 130, 16);
+  ctx.restore();
+}
+
+const SKYLINE_PAINT = [paintHeap, paintWorks, paintDock];
+const SKYLINE_FX = [fxHeap, fxWorks, fxDock];
+export const SKYLINE_N = SKYLINE_PAINT.length === SKYLINE_FX.length ? SKYLINE_PAINT.length : 0;
+
+function drawYard(ctx: CanvasRenderingContext2D): void {
+  for (let zone = 0; zone < ZONE_N; zone++) {
+    const row = zoneRow(zone);
+    paintSky(ctx, row.sky, zone * YARD_W, YARD_W);
+  }
+  paintGround(ctx);
+  for (let zone = 0; zone < ZONE_N; zone++) {
+    const row = zoneRow(zone);
+    const paint = SKYLINE_PAINT[row.skyline];
+    if (paint) paint(ctx, zone * YARD_W);
+  }
 }
 
 function background(): HTMLCanvasElement {
-  if (!yard) {
-    yard = document.createElement("canvas");
-    yard.width = ARENA_W * STAGE;
-    yard.height = ARENA_H * STAGE;
-    const ctx = yard.getContext("2d");
-    if (!ctx) return yard;
-    ctx.scale(STAGE, STAGE);
-    ctx.lineJoin = "round";
-    ctx.lineCap = "round";
-    drawYard(ctx);
-  }
+  if (yard) return yard;
+  const next = document.createElement("canvas");
+  next.width = ARENA_W * STAGE;
+  next.height = ARENA_H * STAGE;
+  const ctx = next.getContext("2d");
+  if (!ctx) return next;
+  ctx.scale(STAGE, STAGE);
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+  drawYard(ctx);
+  yard = next;
   return yard;
 }
 
@@ -373,10 +490,10 @@ function hands(ctx: CanvasRenderingContext2D, tick: number): void {
   ctx.restore();
 }
 
-function smoke(ctx: CanvasRenderingContext2D, tick: number): void {
+function smokeFrom(ctx: CanvasRenderingContext2D, tick: number, stacks: readonly { x: number; y: number }[]): void {
   const puff = puffSprite();
-  for (let s = 0; s < STACKS.length; s++) {
-    const stack = STACKS[s];
+  for (let s = 0; s < stacks.length; s++) {
+    const stack = stacks[s];
     if (!stack) continue;
     for (let i = 0; i < 4; i++) {
       const t = ((tick * 0.55 + i * 18 + s * 7) % 72) / 72;
@@ -386,6 +503,53 @@ function smoke(ctx: CanvasRenderingContext2D, tick: number): void {
     }
   }
   ctx.globalAlpha = 1;
+}
+
+function fxWorks(ctx: CanvasRenderingContext2D, tick: number, origin: number): void {
+  ctx.save();
+  yardLocal(ctx, origin);
+  slats(ctx, 292, 156, 176, 26, tick);
+  slats(ctx, 310, 204, 158, 22, tick + 6);
+  slats(ctx, 18, 188, 124, 22, tick + 3);
+  spinGears(ctx, tick);
+  hands(ctx, tick);
+  smokeFrom(ctx, tick, STACKS);
+  balloon(ctx, tick);
+  ctx.restore();
+}
+
+function fxHeap(ctx: CanvasRenderingContext2D, tick: number, origin: number): void {
+  ctx.save();
+  yardLocal(ctx, origin);
+  smokeFrom(ctx, tick, HEAP_STACKS);
+  cog(ctx, 280, 168, 18, tick * 0.004, COPPER, 6, false);
+  ctx.restore();
+}
+
+function fxDock(ctx: CanvasRenderingContext2D, tick: number, origin: number): void {
+  ctx.save();
+  yardLocal(ctx, origin);
+  const sway = Math.sin(tick * 0.03) * 6;
+  ctx.strokeStyle = BRASS.mid;
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.moveTo(244, 46);
+  ctx.lineTo(244 + sway, 96);
+  ctx.moveTo(484, 46);
+  ctx.lineTo(484 + sway * 0.7, 100);
+  ctx.stroke();
+  ctx.save();
+  ctx.translate(565, 60);
+  ctx.rotate(Math.sin(tick * 0.05) * 0.2);
+  ctx.fillStyle = "#8a3030";
+  ctx.beginPath();
+  ctx.moveTo(0, -8);
+  ctx.lineTo(22, 0);
+  ctx.lineTo(0, 8);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+  ctx.restore();
 }
 
 function embers(ctx: CanvasRenderingContext2D, tick: number): void {
@@ -415,15 +579,13 @@ function ventSteam(ctx: CanvasRenderingContext2D, tick: number, camX: number, ca
 }
 
 export function drawStageFx(ctx: CanvasRenderingContext2D, tick: number, camX: number, camY: number): void {
-  slats(ctx, 292, 156, 176, 26, tick);
-  slats(ctx, 310, 204, 158, 22, tick + 6);
-  slats(ctx, 18, 188, 124, 22, tick + 3);
-  spinGears(ctx, tick);
-  ventSteam(ctx, tick, camX, camY);
-  hands(ctx, tick);
-  smoke(ctx, tick);
-  balloon(ctx, tick);
+  for (let zone = 0; zone < ZONE_N; zone++) {
+    const row = zoneRow(zone);
+    const fx = SKYLINE_FX[row.skyline];
+    if (fx) fx(ctx, tick, zone * YARD_W);
+  }
   embers(ctx, tick);
+  ventSteam(ctx, tick, camX, camY);
 }
 
 export function drawYardWindow(ctx: CanvasRenderingContext2D, camX: number, camY: number, vw = W, vh = H): void {
