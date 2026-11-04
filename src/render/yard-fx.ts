@@ -51,6 +51,18 @@ const PROPS: { id: string; x: number; y: number }[] = [
   { id: "lamp", x: 622, y: 350 },
   { id: "lamp", x: 350, y: 500 },
   { id: "lamp", x: 610, y: 500 },
+  { id: "crate", x: 400, y: 468 },
+  { id: "barrel", x: 448, y: 492 },
+  { id: "crate_stack", x: 520, y: 476 },
+  { id: "pipes_blue_tank", x: 568, y: 500 },
+  { id: "barrel", x: 392, y: 540 },
+  { id: "crate", x: 470, y: 556 },
+  { id: "barrel", x: 538, y: 548 },
+  { id: "pipes_blue_tank", x: 430, y: 588 },
+  { id: "crate_stack", x: 500, y: 600 },
+  { id: "lamp", x: 420, y: 460 },
+  { id: "lamp", x: 500, y: 520 },
+  { id: "lamp", x: 560, y: 580 },
 ];
 
 const TANKS = [
@@ -58,6 +70,8 @@ const TANKS = [
   { x: 348, y: 310 },
   { x: 612, y: 230 },
   { x: 612, y: 310 },
+  { x: 568, y: 500 },
+  { x: 430, y: 588 },
 ];
 
 const POOLS = [
@@ -68,6 +82,9 @@ const POOLS = [
   { x: 622, y: 350 },
   { x: 350, y: 500 },
   { x: 610, y: 500 },
+  { x: 420, y: 460 },
+  { x: 500, y: 520 },
+  { x: 560, y: 580 },
 ];
 
 const STEAM_VENTS = [

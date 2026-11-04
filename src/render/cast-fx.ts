@@ -62,12 +62,20 @@ export function paintRivetBolt(ctx: CanvasRenderingContext2D, x: number, y: numb
   ctx.translate(x, y);
   ctx.rotate(ang);
   ctx.globalCompositeOperation = "lighter";
-  ctx.fillStyle = "#ffd24a";
-  ctx.fillRect(-16, -3.6, 36, 7.2);
-  ctx.fillStyle = "rgba(255,252,220,0.98)";
-  ctx.fillRect(10, -2, 18, 4);
+  ctx.strokeStyle = "rgba(255,180,48,0.55)";
+  ctx.lineWidth = 3.2;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(-11, 0);
+  ctx.lineTo(14, 0);
+  ctx.stroke();
+  ctx.strokeStyle = "#ffd24a";
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.moveTo(-8, 0);
+  ctx.lineTo(16, 0);
+  ctx.stroke();
   ctx.restore();
-  blitShot(ctx, 0, x, y, vx, vy);
 }
 
 export function paintPellet(ctx: CanvasRenderingContext2D, x: number, y: number, vx: number, vy: number): void {

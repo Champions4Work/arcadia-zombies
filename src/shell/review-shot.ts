@@ -46,8 +46,8 @@ export function reviewHorde(w: World): number {
   for (let i = 0; i < MAX_ZOMBIES; i++) z.alive[i] = 0;
   let n = 0;
   for (let i = 0; i < REVIEW_HORDE; i++) {
-    const a = (i / REVIEW_HORDE) * Math.PI * 2;
-    const r = i < 16 ? REVIEW_RING + (i % 3) * 10 : REVIEW_RING + 36 + (i % 4) * 12;
+    const a = (i / REVIEW_HORDE) * Math.PI * 2 + (((i * 13) % 11) - 5) * 0.05;
+    const r = (i < 16 ? REVIEW_RING + (i % 3) * 10 : REVIEW_RING + 36 + (i % 4) * 12) + (((i * 17) % 13) - 6);
     const kind = KINDS[i % KINDS.length] ?? 0;
     z.alive[i] = 1;
     z.kind[i] = kind;
@@ -56,9 +56,10 @@ export function reviewHorde(w: World): number {
     z.hp[i] = kind === Z_BRUTE || (kind & Z_ELITE) !== 0 ? 18 : 1;
     z.vx[i] = 0;
     z.vy[i] = 0;
-    stampBlood(z.x[i] ?? 0, (z.y[i] ?? 0) + 6, i * 3);
-    stampBlood((z.x[i] ?? 0) + 8, (z.y[i] ?? 0) + 10, i * 5);
-    stampCasing(w.px - 20 - (i % 9) * 5, w.py + 6 + ((i * 4) % 14), i);
+    stampBlood(z.x[i] ?? 0, (z.y[i] ?? 0) + 8, i * 3);
+    stampBlood((z.x[i] ?? 0) + 10, (z.y[i] ?? 0) + 14, i * 5);
+    stampCasing((z.x[i] ?? 0) - 12, (z.y[i] ?? 0) + 10, i);
+    stampCasing(w.px - 24 - (i % 11) * 7, w.py + 10 + ((i * 5) % 22), i + 3);
     n++;
   }
   stampCasing(w.px - 14, w.py + 8, 9);
@@ -75,12 +76,25 @@ export function reviewHorde(w: World): number {
   stampBlood(w.px + 22, w.py + 16, 5);
   stampBlood(w.px - 28, w.py + 20, 7);
   stampBlood(w.px + 8, w.py + 24, 9);
+  stampBlood(w.px - 40, w.py + 48, 21);
+  stampBlood(w.px + 36, w.py + 54, 33);
+  stampBlood(w.px + 12, w.py + 70, 45);
+  stampBlood(w.px - 18, w.py + 82, 57);
+  stampBlood(w.px - 70, w.py + 130, 61);
+  stampBlood(w.px + 64, w.py + 148, 73);
+  stampBlood(w.px + 8, w.py + 168, 85);
+  stampBlood(w.px - 48, w.py + 188, 91);
+  stampBlood(w.px + 40, w.py + 200, 99);
+  stampCasing(w.px - 60, w.py + 140, 31);
+  stampCasing(w.px + 54, w.py + 156, 41);
+  stampCasing(w.px - 20, w.py + 176, 51);
+  stampCasing(w.px + 28, w.py + 192, 61);
   const b = w.bullets;
   for (let j = 0; j < MAX_BULLETS; j++) b.alive[j] = 0;
-  for (let j = 0; j < 10; j++) {
+  for (let j = 0; j < 5; j++) {
     b.alive[j] = 1;
-    b.x[j] = w.px + 30 + j * 11;
-    b.y[j] = w.py - 18;
+    b.x[j] = w.px + 38 + j * 22;
+    b.y[j] = w.py - 22;
     b.vx[j] = 10;
     b.vy[j] = 0;
     w.bGun[j] = WPN_RIVET;

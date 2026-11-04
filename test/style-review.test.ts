@@ -22,13 +22,13 @@ describe("visual review gates", () => {
     expect(HERO_DRAW_SCALE).toBe(1.25);
   });
 
-  it("scales normal foes to 0.78 of hero height and brutes to 0.98x", () => {
-    expect(FOE_TO_HERO).toBe(0.78);
-    expect(BRUTE_TO_HERO).toBe(0.98);
-    expect(foeWorldH(0)).toBeCloseTo(64 * 0.78);
-    expect(foeWorldH(Z_BRUTE)).toBeCloseTo(64 * 0.98);
-    expect(foeWorldScale(0, 62)).toBeCloseTo((64 * 0.78) / 62);
-    expect(foeWorldScale(Z_BRUTE, 98)).toBeCloseTo((64 * 0.98) / 98);
+  it("scales normal foes to 0.58 of hero height and brutes to 0.74x", () => {
+    expect(FOE_TO_HERO).toBe(0.58);
+    expect(BRUTE_TO_HERO).toBe(0.74);
+    expect(foeWorldH(0)).toBeCloseTo(64 * 0.58);
+    expect(foeWorldH(Z_BRUTE)).toBeCloseTo(64 * 0.74);
+    expect(foeWorldScale(0, 62)).toBeCloseTo((64 * 0.58) / 62);
+    expect(foeWorldScale(Z_BRUTE, 98)).toBeCloseTo((64 * 0.74) / 98);
     const look = readFileSync("src/art/look.ts", "utf8");
     expect(look.includes("export function paintRifle")).toBe(true);
     expect(look.includes("ellipse(x, y + 3, 14, 5")).toBe(true);
@@ -39,11 +39,17 @@ describe("visual review gates", () => {
     expect(look.includes("rgba(200,208,220")).toBe(false);
     expect(look.includes("ellipse(mx, my, 18, 10")).toBe(false);
     expect(look.includes("lineTo(mx + nx * 36")).toBe(true);
+    expect(look.includes("rgba(255,96,16,0.95)")).toBe(true);
+    expect(look.includes("Math.sin(tick * 0.28)")).toBe(true);
     const actors = readFileSync("src/render/actors.ts", "utf8");
     expect(actors.includes("hp >= 3")).toBe(false);
     expect(actors.includes("paintElite")).toBe(false);
     expect(actors.includes("strokeRect")).toBe(false);
     expect(actors.includes("elite || kind === Z_BRUTE || kind === Z_KNIGHT")).toBe(true);
+    expect(actors.includes("for (let i = 1; i <= 5;")).toBe(false);
+    const bolt = readFileSync("src/render/cast-fx.ts", "utf8");
+    expect(bolt.includes("fillRect(-16, -3.6, 36, 7.2)")).toBe(false);
+    expect(bolt.includes("lineTo(16, 0)")).toBe(true);
   });
 
   it("keeps props on the walls and the spawn floor open", () => {
@@ -65,6 +71,9 @@ describe("visual review gates", () => {
     expect(yard.includes("blue_glow")).toBe(true);
     expect(yard.includes("pipes_blue_tank")).toBe(true);
     expect(yard.includes("window_lit")).toBe(true);
+    expect(yard.includes("x: 420, y: 460")).toBe(true);
+    expect(yard.includes("x: 500, y: 520")).toBe(true);
+    expect(yard.includes("x: 430, y: 588")).toBe(true);
     const ground = readFileSync("src/render/ground.ts", "utf8");
     expect(ground.includes("rgba(24,24,32,0.58)")).toBe(false);
     expect(ground.includes("tile_stone_seamless")).toBe(true);
@@ -105,6 +114,10 @@ describe("visual review gates", () => {
     expect(hud.includes("function restStick")).toBe(true);
     expect(hud.includes("fillRect(cx - r * 0.78")).toBe(true);
     expect(hud.includes("bw * 0.72")).toBe(true);
+    expect(hud.includes("#e24a32")).toBe(true);
+    expect(hud.includes("#3d8cff")).toBe(true);
+    expect(hud.includes("72/100")).toBe(true);
+    expect(hud.includes("${w.hp}/${w.maxHp}")).toBe(true);
   });
 
   it("keeps spawn telegraphs and kill puffs on pack sprites, and aligns vertical belts", () => {

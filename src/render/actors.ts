@@ -67,12 +67,6 @@ function paintHero(ctx: CanvasRenderingContext2D, w: World, moving: boolean): vo
     stampCasing(w.px + ox - 4, w.py + oy + 2, w.tick);
     stampCasing(w.px + ox - 10, w.py + oy + 7, w.tick + 3);
     stampCasing(w.px + ox - 16, w.py + oy + 11, w.tick + 6);
-    const mag = Math.max(0.2, Math.hypot(w.aimX, w.aimY));
-    const nx = w.aimX / mag;
-    const ny = w.aimY / mag;
-    for (let i = 1; i <= 5; i++) {
-      paintRivetBolt(ctx, w.px + nx * (30 + i * 12), w.py - 18 + ny * (30 + i * 12), nx * 8, ny * 8);
-    }
   }
 }
 
@@ -84,7 +78,7 @@ function paintOne(ctx: CanvasRenderingContext2D, w: World, i: number): void {
   const kind = raw & Z_KIND;
   const elite = (raw & Z_ELITE) !== 0;
   const hp = z.hp[i] ?? 1;
-  const flip = w.px - x < 0 ? -1 : 1;
+  const flip = ((i * 17 + (x | 0)) & 1) === 0 ? -1 : 1;
   const flash = enemyFlash(i) > 0;
   const marked = elite || kind === Z_BRUTE || kind === Z_KNIGHT;
   paintZombie(ctx, x, y, kind, elite, w.tick + i * 3, flip);
