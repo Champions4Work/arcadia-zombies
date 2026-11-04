@@ -15,6 +15,7 @@ import { drawSaws, drawShield, drawTesla } from "./progress";
 import { LAYER_BACK, LAYER_FRONT, LAYER_HUD, LAYER_MID, paintLayers } from "./plugins";
 import "./map-events";
 import "./boss";
+import "./depth";
 import { absorbShake, shakePixels } from "./shake";
 import { drawStageFx, drawYardWindow } from "./stage";
 import { paintHurt, paintVeil } from "./veil";

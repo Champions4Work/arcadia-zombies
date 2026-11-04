@@ -1,5 +1,6 @@
 import { resetJuice } from "../render/juice";
 import { createBoss } from "./boss";
+import { attachDepth } from "./depth";
 import { attachWarn } from "./warn";
 import { ARENA_H, ARENA_W, createArena } from "./arena";
 import { CHEST_SLOTS, MAX_CHESTS } from "./chest";
@@ -69,6 +70,7 @@ export const createWorld = (seed: number, charId = CHAR_TINKER, mods = 0): World
   attachFinale(world);
   attachMapEvents(world);
   attachWarn(world);
+  attachDepth(world);
   applyCharacter(world, charId);
   if (hasMod(bits, MOD_GLASS)) {
     world.maxHp = 1;
