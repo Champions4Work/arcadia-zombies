@@ -225,7 +225,7 @@ describe("gameplay depth hooks", () => {
     expect(cargoOn(w, 0)).toBe(1);
     expect(cargoPhase(w, 0)).toBe(CARGO_RIDE);
     expect(cargoKind(w, 0)).toBe(CARGO_UPG);
-    expect(Math.abs(cargoX(w, 0) - 356)).toBeLessThan(0.1);
+    expect(Math.abs(cargoX(w, 0) - 480)).toBeLessThan(0.1);
     expect(Math.abs(cargoY(w, 0) - 658)).toBeLessThan(0.1);
     expect(ventCount(w)).toBeGreaterThanOrEqual(3);
     expect(ventX(w, 0)).toBeGreaterThan(0);

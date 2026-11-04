@@ -114,6 +114,8 @@ The wide amber rank bar on image 1 has no pack frame yet. Draw that bar to match
 
 **HUD r31** tightens phone chrome against `docs/target_look.jpg`: brass `panel_frame_small` timer strip with clock glyph, skull, and live kills; `objectives_panel` under gear frame; larger blits for `minimap_frame`, `heart_ring`, `power_slot`, and `ultimate_button`; brass pause ring on phone.
 
+**Belt r32** makes the bottom perimeter conveyor read at phone scale: scrolling `conveyor` chevrons, brass-zone yellow motion arrows, a gold pickup halo on upgrade `crate_stack`, and `reviewDepth` parks that glow mid-belt for `?shot=1` captures.
+
 Do not blit a second resource bar.
 
 ## World sprites

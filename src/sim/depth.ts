@@ -280,11 +280,11 @@ export function reviewDepth(w: World): void {
   d.cargoBelt[0] = 0;
   d.cargoPhase[0] = CARGO_RIDE;
   d.cargoKind[0] = CARGO_UPG;
-  d.cargoX[0] = 356;
+  d.cargoX[0] = 480;
   d.cargoY[0] = 658;
   d.ventX[0] = w.px - 96;
   d.ventY[0] = w.py + 96;
-  d.cargoT[0] = DROP_ALONG * 0.55;
+  d.cargoT[0] = 184;
   let slot = -1;
   for (let i = 0; i < MAX_OBS; i++) {
     if (i >= a.obsN || !a.obsAlive[i]) { slot = i; break; }

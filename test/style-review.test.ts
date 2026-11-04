@@ -146,7 +146,7 @@ describe("visual review gates", () => {
     expect(rack.includes('blitSheetFit(c, "power_slot"')).toBe(true);
     expect(rack.includes("layout.phone")).toBe(true);
     expect(rack.includes("Math.max(12, lv * 12)")).toBe(false);
-    expect(yard.includes("tick * 2.2")).toBe(true);
+    expect(yard.includes("tick * 2.8")).toBe(true);
     expect(yard.includes("w * 0.42")).toBe(false);
     const vents = yard.slice(yard.indexOf("const STEAM_VENTS"), yard.indexOf("export const YARD_CLEAR"));
     expect((vents.match(/\{ x:/g) || []).length).toBe(5);

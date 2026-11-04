@@ -478,21 +478,23 @@ function steamPuff(ctx: CanvasRenderingContext2D, x: number, y: number, tick: nu
   ctx.restore();
 }
 
-function arrow(ctx: CanvasRenderingContext2D, x: number, y: number, ang: number, tick: number): void {
+function arrow(ctx: CanvasRenderingContext2D, x: number, y: number, ang: number, tick: number, sc = 1): void {
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(ang);
-  ctx.globalAlpha = 0.82 + ((tick >> 1) & 1) * 0.18;
+  ctx.scale(sc, sc);
+  ctx.globalCompositeOperation = "lighter";
+  ctx.globalAlpha = 0.88 + ((tick >> 1) & 1) * 0.12;
   ctx.beginPath();
-  ctx.moveTo(16, 0);
-  ctx.lineTo(-7, 8);
+  ctx.moveTo(18, 0);
+  ctx.lineTo(-8, 10);
   ctx.lineTo(-2, 0);
-  ctx.lineTo(-7, -8);
+  ctx.lineTo(-8, -10);
   ctx.closePath();
   ctx.fillStyle = XP;
   ctx.fill();
   ctx.strokeStyle = INK;
-  ctx.lineWidth = 1.4;
+  ctx.lineWidth = 1.6;
   ctx.stroke();
   ctx.restore();
 }
@@ -504,25 +506,38 @@ function paintCrossBelt(
   w: number,
   tick: number,
 ): void {
-  ctx.fillStyle = "#14110e";
+  ctx.fillStyle = "#1c1610";
   ctx.fillRect(x, y - BELT_H * 0.5, w, BELT_H);
-  ctx.fillStyle = "#2a2218";
-  ctx.fillRect(x, y - BELT_H * 0.42, w, BELT_H * 0.84);
+  ctx.fillStyle = "#443528";
+  ctx.fillRect(x + 4, y - BELT_H * 0.44, w - 8, BELT_H * 0.88);
+  ctx.strokeStyle = BRASS_HI;
+  ctx.lineWidth = 4;
+  ctx.strokeRect(x + 2, y - BELT_H * 0.5 + 2, w - 4, BELT_H - 4);
   ctx.strokeStyle = BRASS_LO;
-  ctx.lineWidth = 3;
-  ctx.strokeRect(x + 1.5, y - BELT_H * 0.5 + 1.5, w - 3, BELT_H - 3);
-  const tile = 64;
-  const sc = BELT_H / 48;
-  for (let s = 0; s < w; s += tile) {
+  ctx.lineWidth = 2;
+  ctx.strokeRect(x + 8, y - BELT_H * 0.42 + 2, w - 16, BELT_H * 0.84 - 4);
+  if (yardBound === ZONE_BRASS) {
     ctx.save();
-    ctx.translate(x + s + 40, y + 12);
+    ctx.globalCompositeOperation = "lighter";
+    ctx.globalAlpha = 0.16 + ((tick >> 2) & 1) * 0.08;
+    ctx.fillStyle = XP;
+    ctx.fillRect(x + 6, y - 10, w - 12, 20);
+    ctx.restore();
+  }
+  const tile = 40;
+  const sc = BELT_H / 40;
+  const scroll = (tick * 2.4) % tile;
+  for (let s = -scroll; s < w; s += tile) {
+    ctx.save();
+    ctx.globalAlpha = 0.96;
+    ctx.translate(x + s + tile * 0.5, y);
     ctx.scale(sc, sc);
     blitSheet(ctx, "conveyor", 0, 0);
     ctx.restore();
   }
-  const off = (tick * 2.2) % 28;
-  for (let s = off; s < w; s += 28) {
-    if (yardBound !== ZONE_BRASS) arrow(ctx, x + s, y, 0, tick);
+  const off = (tick * 2.8) % 22;
+  for (let s = off; s < w; s += 22) {
+    arrow(ctx, x + s + 11, y, 0, tick, 1.45);
   }
 }
 
@@ -670,13 +685,6 @@ export function paintYardLive(
       paintTramCar(ctx, car.x, car.y);
     }
   }
-  const belts = beltsOf();
-  for (let i = 0; i < belts.length; i++) {
-    const belt = belts[i];
-    if (!belt) continue;
-    if (!visible(belt.x, belt.y, camX, camY, vw, vh, 220)) continue;
-    paintCrossBelt(ctx, belt.x, belt.y, belt.w, tick);
-  }
   for (const vent of ventsOf()) {
     if (!visible(vent.x, vent.y, camX, camY, vw, vh, 40)) continue;
     ctx.save();
@@ -686,6 +694,13 @@ export function paintYardLive(
     steamPuff(ctx, vent.x, vent.y, tick);
   }
   if (yardBound === ZONE_BRASS) paintBrassGrade(ctx, camX, camY, vw, vh);
+  const belts = beltsOf();
+  for (let i = 0; i < belts.length; i++) {
+    const belt = belts[i];
+    if (!belt) continue;
+    if (!visible(belt.x, belt.y, camX, camY, vw, vh, 220)) continue;
+    paintCrossBelt(ctx, belt.x, belt.y, belt.w, tick);
+  }
 }
 
 function paintBrassGrade(ctx: CanvasRenderingContext2D, camX: number, camY: number, vw: number, vh: number): void {
