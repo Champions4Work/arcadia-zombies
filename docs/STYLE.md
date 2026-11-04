@@ -100,13 +100,15 @@ Phone slots live in `docs/DESIGN.md`. Blit these frames into those slots.
 | Ultimate ring | `ultimate_button` |
 | Full-width XP bar | `xp_bar_frame` |
 | Minimap, top-left | `minimap_frame` |
-| Objectives, top-right | Dark translucent box, gold header, green checks |
+| Objectives, top-right | `objectives_panel` + `panel_frame_gears`, gold header, green checks |
 
 Optional brass frames: `panel_frame_glow`, `panel_frame_gears`, `panel_frame_pipes`, `panel_frame_small`, `ring_frame_a`, `ring_frame_b`.
 
 The wide amber rank bar on image 1 has no pack frame yet. Draw that bar to match image 1. Do not replace it with a slim pill.
 
 **HUD [#84](https://github.com/Champions4Work/arcadia-zombies/pull/84)** landed image 1 phone chrome. Keep that layout. Do not swap in image 2 desktop HUD chrome on phone.
+
+**HUD r31** tightens phone chrome against `docs/target_look.jpg`: brass `panel_frame_small` timer strip with clock glyph, skull, and live kills; `objectives_panel` under gear frame; larger blits for `minimap_frame`, `heart_ring`, `power_slot`, and `ultimate_button`; brass pause ring on phone.
 
 Do not blit a second resource bar.
 

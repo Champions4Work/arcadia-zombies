@@ -78,4 +78,15 @@ describe("phone HUD chrome", () => {
     expect(body.includes("ctx.arc(cx, cy, r * 0.58")).toBe(false);
     expect(body.includes("phone ? CYAN : HEALTH")).toBe(true);
   });
+
+  it("shows skull kills beside the phone timer strip", () => {
+    const texts: string[] = [];
+    bindPhone();
+    const w = createWorld(1);
+    w.kills = 72;
+    w.tick = 3600;
+    drawHud(stubCtx(texts), w);
+    expect(texts).toContain("72");
+    expect(texts.some((t) => t.includes(":"))).toBe(true);
+  });
 });

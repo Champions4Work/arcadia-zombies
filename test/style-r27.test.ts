@@ -14,10 +14,11 @@ describe("r27 art-bible pass", () => {
 
   it("paints cyan heart rings on phone without rectangular weapon slots", () => {
     const hud = readFileSync("src/render/hud.ts", "utf8");
-    expect(hud.includes("phone ? CYAN : BRASS")).toBe(true);
+    expect(hud.includes('blitSheetFit(ctx, "panel_frame_small"')).toBe(true);
     expect(hud.includes("phone ? CYAN : HEALTH")).toBe(true);
     const rack = readFileSync("src/render/weapons.ts", "utf8");
     expect(rack.includes('if (phone) {\n      paintPhonePower')).toBe(true);
+    expect(rack.includes('blitSheetFit(c, "panel_frame_glow"')).toBe(true);
     expect(rack.match(/blitSheetFit\(c, "power_slot"/g)?.length).toBe(1);
   });
 

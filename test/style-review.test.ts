@@ -159,7 +159,7 @@ describe("visual review gates", () => {
     const hud = readFileSync("src/render/hud.ts", "utf8");
     const start = hud.indexOf("function checkLine");
     const obj = hud.slice(start, hud.indexOf("export function drawHud"));
-    expect(obj.includes('blitSheetFit(ctx, "objectives_panel"')).toBe(false);
+    expect(obj.includes('blitSheetFit(ctx, "objectives_panel"')).toBe(true);
     expect(obj.includes("plate(")).toBe(false);
     expect(obj.includes('blitSheetFit(ctx, "panel_frame_gears"')).toBe(true);
     expect(obj.includes("rgba(8,10,16,0.78)")).toBe(true);
@@ -208,6 +208,8 @@ describe("visual review gates", () => {
     expect(hud.includes("if (!layout.phone && layout.face.w > 0) portrait(ctx, w, layout.face)")).toBe(true);
     expect(hud.includes("if (!layout.phone) {")).toBe(true);
     expect(hud.includes("skillKeys(ctx, layout)")).toBe(true);
+    expect(hud.includes('blitSheetFit(ctx, "panel_frame_small"')).toBe(true);
+    expect(hud.includes("function clockGlyph")).toBe(true);
     expect(hud.includes("formatClock(w.tick)")).toBe(true);
     expect(hud.includes("fillRect(cx - r * 0.78")).toBe(true);
     expect(hud.includes("bw * 0.72")).toBe(false);
