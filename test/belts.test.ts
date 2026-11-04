@@ -9,6 +9,14 @@ describe("upgrade belts", () => {
     expect(yardKindHits("conveyor", PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBe(BELTS.length);
   });
 
+  it("holds the first chest past the eight-minute power window", () => {
+    expect(BELT_DROP_EVERY).toBeGreaterThan(60 * 60 * 8);
+    const early = createWorld(3);
+    early.tick = 7800;
+    stepBelts(early);
+    expect(Array.from(early.chestOn).some((v) => v === 1)).toBe(false);
+  });
+
   it("drops a chest when a belt finishes a cycle", () => {
     const w = createWorld(3);
     w.tick = BELT_DROP_EVERY;
@@ -23,7 +31,7 @@ describe("upgrade belts", () => {
       y = w.chestY[i] ?? 0;
     }
     expect(n).toBe(1);
-    const belt = BELTS[1];
+    const belt = BELTS[((BELT_DROP_EVERY / BELT_DROP_EVERY) | 0) % BELTS.length];
     expect(belt).toBeTruthy();
     expect(x).toBe(beltEndX(belt!));
     expect(y).toBe(beltEndY(belt!));

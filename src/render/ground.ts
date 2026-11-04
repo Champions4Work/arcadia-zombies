@@ -23,7 +23,7 @@ export const FEAT_STAIN = 3;
 export const FEAT_RUBBLE = 4;
 export const VENT_FX_CAP = 4;
 export const VENT_PUFFS = 2;
-export const VENT_SLOW = 0.55;
+export const VENT_SLOW = 0.63;
 
 const COLS = (ARENA_W / TILE) | 0;
 const ROWS = (ARENA_H / TILE) | 0;

@@ -17,7 +17,7 @@ export const BELTS: readonly BeltSpec[] = [
   { x: 500, y: 448, w: 120, vert: 0 },
 ];
 
-export const BELT_DROP_EVERY = 7800;
+export const BELT_DROP_EVERY = 31200;
 
 export function beltEndX(belt: BeltSpec): number {
   return belt.vert ? belt.x : belt.x + belt.w;

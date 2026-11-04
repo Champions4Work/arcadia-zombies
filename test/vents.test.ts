@@ -2,7 +2,7 @@ import { chaseZombie } from "../src/sim/arena.hot";
 import { step } from "../src/sim/step.hot";
 import type { Input, World } from "../src/sim/types";
 import { createWorld } from "../src/sim/world";
-import { KIND_GRATE, TILE, ventSlow, groundCols, groundKind, groundRows } from "../src/render/ground";
+import { KIND_GRATE, TILE, VENT_SLOW, ventSlow, groundCols, groundKind, groundRows } from "../src/render/ground";
 
 const right: Input = { dx: 1, dy: 0, pick: 0 };
 
@@ -30,12 +30,12 @@ function firstGrate(): { x: number; y: number } | null {
 }
 
 describe("vent slow on the floor", () => {
-  it("cuts player slide and zombie chase to 0.55 on a grate", () => {
+  it("cuts player slide and zombie chase on a grate", () => {
     const grate = firstGrate();
     expect(grate).not.toBeNull();
     const gx = grate?.x ?? 0;
     const gy = grate?.y ?? 0;
-    expect(ventSlow(gx, gy)).toBe(0.55);
+    expect(ventSlow(gx, gy)).toBe(VENT_SLOW);
 
     const slow = createWorld(21);
     hold(slow);
@@ -51,7 +51,7 @@ describe("vent slow on the floor", () => {
     step(open, right);
     const openDx = open.px - 480;
     expect(openDx).toBeGreaterThan(0);
-    expect(slowDx / openDx).toBeCloseTo(0.55, 4);
+    expect(slowDx / openDx).toBeCloseTo(VENT_SLOW, 4);
 
     const chaser = createWorld(22);
     hold(chaser);
@@ -63,7 +63,7 @@ describe("vent slow on the floor", () => {
     chaser.zombies.y[0] = gy;
     chaser.zombies.vx[0] = 2;
     chaseZombie(chaser, 0);
-    expect((chaser.zombies.x[0] ?? 0) - gx).toBeCloseTo(1.1, 4);
+    expect((chaser.zombies.x[0] ?? 0) - gx).toBeCloseTo(2 * VENT_SLOW, 4);
 
     const runner = createWorld(22);
     hold(runner);

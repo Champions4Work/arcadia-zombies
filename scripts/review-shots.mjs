@@ -1,4 +1,4 @@
-import { mkdirSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { chromium } from "@playwright/test";
 
@@ -28,5 +28,31 @@ await page.waitForFunction(() => {
 await page.waitForTimeout(1200);
 const play = join(dest, "phone_390_play.png");
 await page.screenshot({ path: play, clip: { x: 0, y: 0, width: 390, height: 844 } });
+await page.keyboard.press("f");
+await page.waitForTimeout(400);
+const samples = [];
+for (let i = 0; i < 12; i++) {
+  await page.waitForTimeout(80);
+  samples.push(await page.evaluate(() => ({
+    fps: typeof globalThis.__azFps === "function" ? globalThis.__azFps() : -1,
+    alive: typeof globalThis.__azAlive === "function" ? globalThis.__azAlive() : -1,
+  })));
+}
+const fps = samples.map((s) => s.fps).filter((v) => v > 0);
+const alive = samples.map((s) => s.alive).filter((v) => v >= 0);
+const mid = (xs) => {
+  const s = [...xs].sort((a, b) => a - b);
+  return s[s.length >> 1] ?? 0;
+};
+const stats = {
+  mid: mid(fps),
+  avg: fps.length ? Math.round(fps.reduce((a, b) => a + b, 0) / fps.length) : 0,
+  min: fps.length ? Math.min(...fps) : 0,
+  max: fps.length ? Math.max(...fps) : 0,
+  alive: mid(alive),
+  samples: fps,
+};
+writeFileSync(join(dest, "world_props_fps.json"), `${JSON.stringify(stats, null, 2)}\n`);
 await browser.close();
 console.log(`wrote ${play}`);
+console.log(JSON.stringify(stats));
