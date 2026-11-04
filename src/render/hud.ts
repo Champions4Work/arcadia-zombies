@@ -168,8 +168,8 @@ function stampInk(
 }
 
 function banner(ctx: CanvasRenderingContext2D, w: World, box: Box, phone: boolean): void {
-  plate(ctx, box, "panel_frame_pipes");
   if (!phone) {
+    plate(ctx, box, "panel_frame_pipes");
     ctx.fillStyle = "#8a5a20";
     ctx.fillRect(box.x + 8, box.y + 18, box.w - 16, 12);
     ctx.fillStyle = "#e0a040";
@@ -178,6 +178,7 @@ function banner(ctx: CanvasRenderingContext2D, w: World, box: Box, phone: boolea
     stampInk(ctx, zoneTitleAt(w.wave), box.x + box.w / 2, box.y + box.h - 12, 11, "#fff6df");
     return;
   }
+  blitSheetFit(ctx, "panel_frame_glow", box.x - 14, box.y - 12, box.w + 28, box.h + 24);
   const cy = box.y + box.h / 2;
   ctx.fillStyle = "#c56a18";
   ctx.fillRect(box.x + 6, box.y + 6, box.w - 12, box.h - 12);
@@ -216,7 +217,8 @@ function skull(ctx: CanvasRenderingContext2D, x: number, y: number): void {
 }
 
 function clockPanel(ctx: CanvasRenderingContext2D, w: World, box: Box, phone: boolean): void {
-  plate(ctx, box, "panel_frame_small");
+  if (phone) blitSheetFit(ctx, "panel_frame_small", box.x - 12, box.y - 10, box.w + 24, box.h + 20);
+  else plate(ctx, box, "panel_frame_small");
   const face = waveFace(w);
   if (phone) {
     stampInk(ctx, formatClock(w.tick), box.x + 8, box.y + 12, 12, "#fff6df", "left");
@@ -518,6 +520,7 @@ function checkLine(
 }
 
 function objectives(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
+  blitSheetFit(ctx, "objectives_panel", box.x - 6, box.y - 6, box.w + 12, box.h + 12);
   blitSheetFit(ctx, "panel_frame_gears", box.x - 10, box.y - 10, box.w + 20, box.h + 20);
   ctx.fillStyle = "rgba(8,10,16,0.78)";
   ctx.fillRect(box.x, box.y, box.w, box.h);

@@ -41,6 +41,7 @@ export function setReviewWalk(on: boolean): void {
 
 export function reviewHorde(w: World, zone = ZONE_BRASS): number {
   walkOn = true;
+  w.rank = 0;
   w.px = ARENA_W * 0.5;
   w.py = ARENA_H * 0.5;
   w.aimX = 0.82;

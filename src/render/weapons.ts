@@ -22,13 +22,10 @@ export function paintWeapon(c: CanvasRenderingContext2D, w: World, j: number): n
 registerFx(FX_BOOM, paintBoom);
 
 function paintPhonePower(c: CanvasRenderingContext2D, i: number, cx: number, cy: number, r: number): void {
-  c.beginPath();
-  c.arc(cx, cy, r, 0, Math.PI * 2);
-  c.fillStyle = "#141820";
-  c.fill();
-  c.strokeStyle = i === 0 ? XP : CYAN;
-  c.lineWidth = 2.6;
-  c.stroke();
+  paintPhonePowerGlyph(c, i, cx, cy, r);
+}
+
+function paintPhonePowerGlyph(c: CanvasRenderingContext2D, i: number, cx: number, cy: number, r: number): void {
   const s = r * 0.52;
   if (i === 0) {
     c.fillStyle = "#f0c040";
@@ -161,7 +158,8 @@ export function drawWeaponRack(c: CanvasRenderingContext2D, w: World): void {
     const cx = sx + sw / 2;
     const cy = sy + sh / 2;
     if (phone) {
-      paintPhonePower(c, i, cx, cy, sw * 0.46);
+      blitSheetFit(c, "power_slot", sx - 7, sy - 7, sw + 14, sh + 14);
+      paintPhonePower(c, i, cx, cy, sw * 0.38);
       continue;
     }
     blitSheetFit(c, "power_slot", sx - 7, sy - 7, sw + 14, sh + 14);

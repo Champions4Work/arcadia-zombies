@@ -19,7 +19,7 @@ describe("visual review gates", () => {
     expect(sheet.includes('spr["x"]')).toBe(true);
     expect(sheet.includes("imageSmoothingEnabled = false")).toBe(true);
     expect(SEE_AXIS).toBe(360);
-    expect(HERO_DRAW_SCALE).toBe(1.4);
+    expect(HERO_DRAW_SCALE).toBe(1.52);
     expect(HERO_DRAW_SCALE * HERO_PACK_H).toBeGreaterThanOrEqual(foeWorldH(0) * 1.25);
   });
 
@@ -83,8 +83,8 @@ describe("visual review gates", () => {
 
   it("keeps dusk readable with local lamp pools and no global orange wash", () => {
     const draw = readFileSync("src/render/draw.ts", "utf8");
-    expect(draw.includes("rgba(2,4,10,0.42)")).toBe(true);
-    expect(draw.includes("rgba(40,18,8,0.06)")).toBe(true);
+    expect(draw.includes("rgba(2,4,12,0.52)")).toBe(true);
+    expect(draw.includes("rgba(48,20,8,0.1)")).toBe(true);
     expect(draw.includes("rgba(6,6,10,0.16)")).toBe(false);
     expect(draw.includes("rgba(220,132,52,0.34)")).toBe(false);
     expect(draw.includes("rgba(255,186,88,0.42)")).toBe(false);
@@ -133,7 +133,7 @@ describe("visual review gates", () => {
     const ground = readFileSync("src/render/ground.ts", "utf8");
     expect(ground.includes("rgba(24,24,32,0.58)")).toBe(false);
     expect(ground.includes("tile_stone_seamless")).toBe(true);
-    expect(ground.includes('globalCompositeOperation = "multiply"')).toBe(false);
+    expect(ground.includes('globalCompositeOperation = "multiply"')).toBe(true);
     expect(HAZARD_MARKS.length).toBe(0);
     const rack = readFileSync("src/render/weapons.ts", "utf8");
     expect(rack.includes("function paintPhonePower")).toBe(true);
@@ -143,7 +143,7 @@ describe("visual review gates", () => {
     expect(rack.includes("fillText")).toBe(true);
     expect(rack.includes("34/210")).toBe(true);
     expect(rack.includes("6/36")).toBe(true);
-    expect(rack.includes('blitSheetFit(c, "power_slot"')).toBe(true);
+    expect(rack.match(/blitSheetFit\(c, "power_slot"/g)?.length).toBe(2);
     expect(rack.includes("layout.phone")).toBe(true);
     expect(rack.includes("Math.max(12, lv * 12)")).toBe(false);
     expect(yard.includes("tick * 2.2")).toBe(true);
@@ -159,7 +159,7 @@ describe("visual review gates", () => {
     const hud = readFileSync("src/render/hud.ts", "utf8");
     const start = hud.indexOf("function checkLine");
     const obj = hud.slice(start, hud.indexOf("export function drawHud"));
-    expect(obj.includes('blitSheetFit(ctx, "objectives_panel"')).toBe(false);
+    expect(obj.includes('blitSheetFit(ctx, "objectives_panel"')).toBe(true);
     expect(obj.includes("plate(")).toBe(false);
     expect(obj.includes('blitSheetFit(ctx, "panel_frame_gears"')).toBe(true);
     expect(obj.includes("rgba(8,10,16,0.78)")).toBe(true);

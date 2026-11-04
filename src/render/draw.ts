@@ -111,11 +111,11 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
     c.fillRect(0, 0, viewW, viewH);
   }
   if (w.hurtCd > 0) paintHurt(c, w.hurtCd, viewW, viewH);
-  const vig = c.createRadialGradient(viewW * 0.5, viewH * 0.42, viewH * 0.12, viewW * 0.5, viewH * 0.5, viewH * 0.88);
+  const vig = c.createRadialGradient(viewW * 0.5, viewH * 0.38, viewH * 0.08, viewW * 0.5, viewH * 0.5, viewH * 0.92);
   vig.addColorStop(0, "rgba(0,0,0,0)");
-  vig.addColorStop(0.45, "rgba(40,18,8,0.06)");
-  vig.addColorStop(0.72, "rgba(8,8,18,0.22)");
-  vig.addColorStop(1, "rgba(2,4,10,0.42)");
+  vig.addColorStop(0.38, "rgba(48,20,8,0.1)");
+  vig.addColorStop(0.62, "rgba(8,8,18,0.32)");
+  vig.addColorStop(1, "rgba(2,4,12,0.52)");
   c.fillStyle = vig;
   c.fillRect(0, 0, viewW, viewH);
   paintLayers(c, w, LAYER_FRONT);

@@ -284,9 +284,9 @@ function blitScaled(ctx: CanvasRenderingContext2D, id: string, x: number, y: num
 function paintBrickWall(ctx: CanvasRenderingContext2D): void {
   const soot = yardBound === ZONE_BOILER;
   const steel = yardBound === ZONE_TRAM;
-  ctx.fillStyle = soot ? "#1a0c08" : steel ? "#141820" : "#2a1812";
+  ctx.fillStyle = soot ? "#1a0c08" : steel ? "#101418" : "#1a100c";
   ctx.fillRect(296, 168, 368, 68);
-  ctx.fillStyle = soot ? "#4a2414" : steel ? "#2a3844" : "#3a2218";
+  ctx.fillStyle = soot ? "#3a1c10" : steel ? "#222830" : "#2a1810";
   for (let row = 0; row < 5; row++) {
     const oy = 172 + row * 12;
     const shift = row & 1 ? 10 : 0;
@@ -297,13 +297,13 @@ function paintBrickWall(ctx: CanvasRenderingContext2D): void {
   const panes = soot ? [340, 404, 468, 532, 596] : steel ? [328, 400, 480, 560, 632] : [348, 412, 476, 540];
   for (let i = 0; i < panes.length; i++) {
     const px = panes[i] ?? 348;
-    ctx.fillStyle = soot ? "#7a2a10" : steel ? "#3a4858" : "#6a3a14";
+    ctx.fillStyle = soot ? "#5a2010" : steel ? "#2a3848" : "#4a2810";
     ctx.fillRect(px - 14, 178, 28, 34);
     ctx.fillStyle = soot
-      ? (i & 1 ? "#f8a030" : "#e06018")
+      ? (i & 1 ? "#c86820" : "#a04014")
       : steel
-        ? (i & 1 ? "#c8e8ff" : "#f0c060")
-        : (i & 1 ? "#f0b44a" : "#e08a28");
+        ? (i & 1 ? "#88c8e8" : "#c89830")
+        : (i & 1 ? "#c88828" : "#a05818");
     ctx.fillRect(px - 11, 182, 10, 12);
     ctx.fillRect(px + 1, 182, 10, 12);
     ctx.fillRect(px - 11, 196, 10, 10);
@@ -685,21 +685,40 @@ function paintBrassGrade(ctx: CanvasRenderingContext2D, camX: number, camY: numb
   ctx.save();
   ctx.globalCompositeOperation = "multiply";
   const shade = ctx.createLinearGradient(camX, camY, camX, camY + vh);
-  shade.addColorStop(0, "rgba(72,36,48,0.22)");
-  shade.addColorStop(0.35, "rgba(28,20,16,0.08)");
-  shade.addColorStop(1, "rgba(6,8,14,0.38)");
+  shade.addColorStop(0, "rgba(88,44,56,0.32)");
+  shade.addColorStop(0.32, "rgba(32,22,16,0.16)");
+  shade.addColorStop(0.72, "rgba(14,12,10,0.28)");
+  shade.addColorStop(1, "rgba(4,6,12,0.48)");
   ctx.fillStyle = shade;
   ctx.fillRect(camX, camY, vw, vh);
   ctx.restore();
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
-  const ray = ctx.createLinearGradient(camX + vw * 0.82, camY, camX + vw * 0.2, camY + vh * 0.55);
-  ray.addColorStop(0, "rgba(255,180,90,0.14)");
-  ray.addColorStop(0.45, "rgba(255,140,40,0.05)");
+  const ray = ctx.createLinearGradient(camX + vw * 0.86, camY, camX + vw * 0.12, camY + vh * 0.62);
+  ray.addColorStop(0, "rgba(255,176,88,0.22)");
+  ray.addColorStop(0.4, "rgba(255,130,48,0.08)");
   ray.addColorStop(1, "rgba(0,0,0,0)");
   ctx.fillStyle = ray;
   ctx.fillRect(camX, camY, vw, vh);
+  const ray2 = ctx.createLinearGradient(camX + vw * 0.58, camY + 40, camX + vw * 0.38, camY + vh * 0.75);
+  ray2.addColorStop(0, "rgba(255,150,70,0.1)");
+  ray2.addColorStop(0.55, "rgba(255,110,40,0.04)");
+  ray2.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = ray2;
+  ctx.fillRect(camX, camY, vw, vh);
   ctx.restore();
+  for (const pool of poolsOf()) {
+    if (!visible(pool.x, pool.y, camX, camY, vw, vh, 80)) continue;
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    const shaft = ctx.createLinearGradient(pool.x, pool.y - 40, pool.x, pool.y + 120);
+    shaft.addColorStop(0, "rgba(255,190,110,0.16)");
+    shaft.addColorStop(0.45, "rgba(255,140,50,0.06)");
+    shaft.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = shaft;
+    ctx.fillRect(pool.x - 28, pool.y - 40, 56, 160);
+    ctx.restore();
+  }
 }
 
 export function paintDoorSpawn(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number): void {

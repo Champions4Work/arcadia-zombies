@@ -7,7 +7,7 @@ import { blitSheet, blitSheetLean, foeSpriteId, heroSpriteId, spriteOf } from ".
 export const HERO_LOOK_W = 40;
 export const HERO_LOOK_H = 52;
 export const HERO_PACK_H = 64;
-export const HERO_DRAW_SCALE = 1.4;
+export const HERO_DRAW_SCALE = 1.52;
 export const FOE_TO_HERO = 0.58;
 export const BRUTE_TO_HERO = 1.12;
 export const CASE_W = 4.2;
@@ -148,26 +148,26 @@ export function paintSignatureHero(
   const ny = aimY / mag;
   paintShadow(ctx, x, y, 14 * s, 5 * s);
   ctx.save();
-  ctx.fillStyle = moving ? "rgba(62,220,220,0.42)" : "rgba(62,220,220,0.32)";
+  ctx.fillStyle = moving ? "rgba(40,28,18,0.38)" : "rgba(32,24,18,0.28)";
   ctx.beginPath();
   ctx.ellipse(x, y + 3, (moving ? 12 : 11) * s, (moving ? 4.6 : 4) * s, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
-  const rim = ctx.createRadialGradient(x, y - 18 * s, 2, x, y - 10 * s, 44 * s);
-  rim.addColorStop(0, "rgba(255,210,120,0.72)");
-  rim.addColorStop(0.42, "rgba(90,240,230,0.34)");
+  const rim = ctx.createRadialGradient(x, y - 18 * s, 2, x, y - 8 * s, 38 * s);
+  rim.addColorStop(0, shoot ? "rgba(255,180,90,0.62)" : "rgba(255,150,70,0.28)");
+  rim.addColorStop(0.5, "rgba(224,160,64,0.12)");
   rim.addColorStop(1, "rgba(0,0,0,0)");
   ctx.fillStyle = rim;
   ctx.beginPath();
-  ctx.ellipse(x, y - 12 * s, 36 * s, 44 * s, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y - 10 * s, 28 * s, 34 * s, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
   if (moving) {
-    ctx.strokeStyle = "rgba(120,245,245,0.72)";
-    ctx.lineWidth = 2.4;
+    ctx.strokeStyle = "rgba(224,160,64,0.42)";
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.ellipse(x, y + 3, 13 * s, 5 * s, 0, 0, Math.PI * 2);
+    ctx.ellipse(x, y + 3, 12 * s, 4.6 * s, 0, 0, Math.PI * 2);
     ctx.stroke();
   }
   ctx.restore();

@@ -4,7 +4,7 @@ export const PACK = {
   "sheets": {
     "actors": {
       "file": "actors.webp",
-      "w": 553,
+      "w": 528,
       "h": 100
     },
     "world": {
@@ -47,7 +47,7 @@ export const PACK = {
       "ax": 28,
       "ay": 68
     },
-    "hero_idle": {
+    "hero_walk_4": {
       "sheet": "actors",
       "x": 132,
       "y": 1,
@@ -56,18 +56,9 @@ export const PACK = {
       "ax": 26,
       "ay": 64
     },
-    "hero_walk_4": {
-      "sheet": "actors",
-      "x": 195,
-      "y": 1,
-      "w": 62,
-      "h": 64,
-      "ax": 26,
-      "ay": 64
-    },
     "hero_walk_3": {
       "sheet": "actors",
-      "x": 258,
+      "x": 195,
       "y": 1,
       "w": 61,
       "h": 64,
@@ -76,7 +67,7 @@ export const PACK = {
     },
     "hero_walk_1": {
       "sheet": "actors",
-      "x": 320,
+      "x": 257,
       "y": 1,
       "w": 60,
       "h": 64,
@@ -85,16 +76,25 @@ export const PACK = {
     },
     "hero_walk_2": {
       "sheet": "actors",
-      "x": 381,
+      "x": 318,
       "y": 1,
       "w": 60,
       "h": 64,
       "ax": 25,
       "ay": 64
     },
+    "hero_idle": {
+      "sheet": "actors",
+      "x": 379,
+      "y": 1,
+      "w": 37,
+      "h": 64,
+      "ax": 26,
+      "ay": 64
+    },
     "zombie_tubes": {
       "sheet": "actors",
-      "x": 442,
+      "x": 417,
       "y": 1,
       "w": 36,
       "h": 64,
@@ -103,7 +103,7 @@ export const PACK = {
     },
     "zombie_worker": {
       "sheet": "actors",
-      "x": 479,
+      "x": 454,
       "y": 1,
       "w": 34,
       "h": 62,
@@ -112,7 +112,7 @@ export const PACK = {
     },
     "zombie_crawler": {
       "sheet": "actors",
-      "x": 514,
+      "x": 489,
       "y": 1,
       "w": 38,
       "h": 52,

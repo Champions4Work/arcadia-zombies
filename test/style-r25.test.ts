@@ -180,7 +180,7 @@ describe("r25 art-bible phone pass", () => {
     expect(texts.some((t) => t.includes("34/210"))).toBe(false);
     expect(texts).not.toContain("240/240");
     expect(texts).not.toContain("Q");
-    expect(HERO_DRAW_SCALE).toBe(1.4);
+    expect(HERO_DRAW_SCALE).toBe(1.52);
     expect(HERO_PACK_H).toBe(64);
     const pack = JSON.parse(readFileSync("src/art/packed/pack.json", "utf8"));
     expect(pack.hero_px).toBe(64);

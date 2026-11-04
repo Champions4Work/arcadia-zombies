@@ -184,8 +184,8 @@ describe("wave districts", () => {
     expect(yard.includes("function furnaceGlow")).toBe(true);
     expect(yard.includes("rgba(110,36,12")).toBe(false);
     expect(yard.includes("#1a0c08")).toBe(true);
-    expect(yard.includes("#141820")).toBe(true);
-    expect(yard.includes("#2a1812")).toBe(true);
+    expect(yard.includes("#101418")).toBe(true);
+    expect(yard.includes("#1a100c")).toBe(true);
   });
 
   it("keeps the hero spawn clear in the later districts", () => {

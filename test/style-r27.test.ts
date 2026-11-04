@@ -7,7 +7,7 @@ describe("r27 art-bible pass", () => {
     const rack = readFileSync("src/render/weapons.ts", "utf8");
     expect(rack.includes("function paintPhonePower")).toBe(true);
     expect(rack.includes("paintPhonePower(c, i, cx, cy")).toBe(true);
-    expect(rack.includes('if (phone) {\n      paintPhonePower')).toBe(true);
+    expect(rack.includes('if (phone) {\n      blitSheetFit(c, "power_slot"')).toBe(true);
     expect(rack.includes("quadraticCurveTo")).toBe(true);
     expect(rack.includes("bezierCurveTo")).toBe(true);
   });
@@ -17,8 +17,8 @@ describe("r27 art-bible pass", () => {
     expect(hud.includes("phone ? CYAN : BRASS")).toBe(true);
     expect(hud.includes("phone ? CYAN : HEALTH")).toBe(true);
     const rack = readFileSync("src/render/weapons.ts", "utf8");
-    expect(rack.includes('if (phone) {\n      paintPhonePower')).toBe(true);
-    expect(rack.match(/blitSheetFit\(c, "power_slot"/g)?.length).toBe(1);
+    expect(rack.includes('if (phone) {\n      blitSheetFit(c, "power_slot"')).toBe(true);
+    expect(rack.match(/blitSheetFit\(c, "power_slot"/g)?.length).toBe(2);
   });
 
   it("densifies brass yard with side breakables, vents, and cyan pipe runs", () => {
@@ -43,10 +43,10 @@ describe("r27 art-bible pass", () => {
 
   it("paints dusk sky and hunter rim for phone readability", () => {
     const stage = readFileSync("src/render/stage.ts", "utf8");
-    expect(stage.includes("#1a1030")).toBe(true);
-    expect(stage.includes("rgba(255,190,110")).toBe(true);
+    expect(stage.includes("#120818")).toBe(true);
+    expect(stage.includes("rgba(255,176,88")).toBe(true);
     const look = readFileSync("src/art/look.ts", "utf8");
     expect(look.includes("createRadialGradient(x, y - 18 * s")).toBe(true);
-    expect(look.includes("rgba(255,210,120,0.72)")).toBe(true);
+    expect(look.includes("rgba(255,180,90,0.62)")).toBe(true);
   });
 });
