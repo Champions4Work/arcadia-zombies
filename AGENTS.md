@@ -10,3 +10,4 @@
 8. The sim is deterministic: all randomness goes through `src/sim/rng.ts`. Never use `Math.random` or wall-clock time inside `src/sim`.
 9. Keep the gzip bundle under the budget in `scripts/size.mjs` (124 KB). Art and sound are drawn in code.
 10. Only irreversible actions need a human: deleting live data, force-pushing main, sending outside messages.
+11. Before opening a PR, load the matching skill under `.cursor/skills/` and run its checklist. Visuals, juice, shake, HUD, and overlays use `game-feel` and `game-ui-ux`. Difficulty and upgrades use `balance-check` and `roguelike`. Render or sim performance uses `performance-optimization` and `perf-profile`. Sound uses `audio-design`. Broader design or UX passes also load `design-review` or `ux-design`. Skills stay in `.cursor/skills/` and are not shipped in the gzip bundle.
