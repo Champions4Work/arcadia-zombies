@@ -56,7 +56,7 @@ export interface DepthBag {
 const bag = new WeakMap<World, DepthBag>();
 
 const BELTS: readonly [number, number, number, number][] = [
-  [296, 420, 368, 0],
+  [296, 658, 368, 0],
 ];
 
 const VENTS: readonly [number, number][] = [
@@ -278,20 +278,20 @@ export function reviewDepth(w: World): void {
   const a = w.arena;
   d.cargoOn[0] = 1;
   d.cargoBelt[0] = 0;
-  d.cargoPhase[0] = CARGO_LAND;
+  d.cargoPhase[0] = CARGO_RIDE;
   d.cargoKind[0] = CARGO_UPG;
-  d.cargoX[0] = 468;
-  d.cargoY[0] = 404;
+  d.cargoX[0] = 356;
+  d.cargoY[0] = 658;
   d.ventX[0] = w.px - 96;
   d.ventY[0] = w.py + 96;
-  d.cargoT[0] = DROP_ALONG;
+  d.cargoT[0] = DROP_ALONG * 0.55;
   let slot = -1;
   for (let i = 0; i < MAX_OBS; i++) {
     if (i >= a.obsN || !a.obsAlive[i]) { slot = i; break; }
   }
   if (slot >= 0) {
-    a.obsX[slot] = w.px + 72;
-    a.obsY[slot] = w.py - 36;
+    a.obsX[slot] = 308;
+    a.obsY[slot] = 520;
     a.obsKind[slot] = OB_BOILER;
     a.obsHW[slot] = 14;
     a.obsHH[slot] = 16;

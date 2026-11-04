@@ -106,7 +106,7 @@ describe("visual review gates", () => {
     expect(yard.includes("BUILD_SCALE")).toBe(true);
     expect(yard.includes("BELT_H = 72")).toBe(true);
     expect(yard.includes("y: 232")).toBe(true);
-    expect(yard.includes("y: 420")).toBe(true);
+    expect(yard.includes("y: 658")).toBe(true);
     expect(yard.includes("vert: 1")).toBe(false);
     expect(yard.includes("paintVertPipe")).toBe(true);
     expect(yard.includes("paintBrassGrade")).toBe(true);
