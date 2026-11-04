@@ -2,9 +2,10 @@ import {
   CRATE_FALL, DROP_LIVE, fogCover, GEAR_N, gearOn, gearX, gearY, MAP_DROP, MAP_FOG, MAP_GEAR, MAP_LIVE, MAP_VENT,
   MAP_WARN, mapBanner, mapBannerKind, mapKind, mapLabel, mapLife, mapPhase, mapX, mapY, VENT_LIVE, WARN_TICKS,
 } from "../sim/map-events";
-import { H, W, type World } from "../sim/types";
+import { W, type World } from "../sim/types";
 import { BRASS, cog, font, lit, OUTLINE, roundRect } from "./paint";
 import { LAYER_HUD, LAYER_MID, registerLayer } from "./plugins";
+import { puffSprite } from "./sprites";
 
 function ink(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, size: number, color: string): void {
   ctx.font = font(size, 800);
@@ -55,24 +56,20 @@ function steam(ctx: CanvasRenderingContext2D, w: World): void {
   }
   if (mapPhase(w) !== MAP_LIVE) return;
   const age = VENT_LIVE - mapLife(w);
-  const span = 28 + age * 1.6;
+  const puff = puffSprite();
   ctx.save();
   ctx.translate(x, y);
-  ctx.globalAlpha = 0.55;
-  ctx.beginPath();
-  ctx.arc(0, 4, 22 + age * 1.3, 0, Math.PI * 2);
   ctx.fillStyle = "#ff9a32";
-  ctx.fill();
-  for (let i = 0; i < 6; i++) {
-    const t = (age * 0.08 + i * 0.17) % 1;
-    ctx.globalAlpha = (1 - t) * 0.9;
-    ctx.beginPath();
-    ctx.ellipse(Math.sin(i * 1.7 + age * 0.2) * 10, -t * span, 18 + t * 26, 12 + t * 16, 0, 0, Math.PI * 2);
-    ctx.fillStyle = i % 2 ? "#fff8ee" : "#ffd27a";
-    ctx.fill();
+  ctx.globalAlpha = 0.45;
+  ctx.fillRect(-14, -6, 28, 16);
+  for (let i = 0; i < 4; i++) {
+    const t = (age * 0.08 + i * 0.21) % 1;
+    const s = 14 + t * 18;
+    ctx.globalAlpha = (1 - t) * 0.7;
+    ctx.drawImage(puff, Math.sin(i * 1.7 + age * 0.2) * 8 - s / 2, -t * 36 - s / 2, s, s);
   }
   ctx.globalAlpha = 1;
-  ring(ctx, 0, 0, 16 + age * 1.4, "#ffe1a8", 4);
+  ring(ctx, 0, 0, 16 + age * 0.4, "#ffe1a8", 3);
   ctx.restore();
 }
 
@@ -81,11 +78,7 @@ function airship(ctx: CanvasRenderingContext2D, x: number, y: number, tick: numb
   ctx.translate(x, y);
   ctx.beginPath();
   ctx.ellipse(0, 0, 34, 14, 0, 0, Math.PI * 2);
-  const g = ctx.createLinearGradient(-20, -14, 16, 12);
-  g.addColorStop(0, "#f6d2e6");
-  g.addColorStop(0.5, "#c45a86");
-  g.addColorStop(1, "#6e2848");
-  ctx.fillStyle = g;
+  ctx.fillStyle = "#c45a86";
   ctx.fill();
   ctx.lineWidth = 2;
   ctx.strokeStyle = OUTLINE;
@@ -160,23 +153,38 @@ function supply(ctx: CanvasRenderingContext2D, w: World): void {
   crate(ctx, x, top + (y - top) * fall);
 }
 
+let fogDisk: HTMLCanvasElement | null = null;
+
+function fogPlate(): HTMLCanvasElement {
+  if (fogDisk) return fogDisk;
+  const c = document.createElement("canvas");
+  c.width = 480;
+  c.height = 480;
+  const ctx = c.getContext("2d");
+  if (ctx) {
+    const g = ctx.createRadialGradient(240, 240, 28, 240, 240, 240);
+    g.addColorStop(0, "rgba(214,224,230,0.18)");
+    g.addColorStop(0.4, "rgba(168,180,190,0.5)");
+    g.addColorStop(1, "rgba(86,98,110,0.78)");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 480, 480);
+  }
+  fogDisk = c;
+  return c;
+}
+
 function fog(ctx: CanvasRenderingContext2D, w: World): void {
   const cover = fogCover(w);
   if (cover <= 0) return;
-  const g = ctx.createRadialGradient(w.px, w.py, 28, w.px, w.py, 240);
-  g.addColorStop(0, `rgba(214,224,230,${cover * 0.18})`);
-  g.addColorStop(0.4, `rgba(168,180,190,${cover * 0.5})`);
-  g.addColorStop(1, `rgba(86,98,110,${cover * 0.78})`);
-  ctx.fillStyle = g;
-  ctx.fillRect(w.arena.camX, w.arena.camY, W, H);
+  ctx.globalAlpha = cover;
+  ctx.drawImage(fogPlate(), w.px - 240, w.py - 240);
   ctx.fillStyle = "rgba(232,238,242,0.45)";
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 4; i++) {
     const x = w.arena.camX + ((i * 90 + w.tick * (0.4 + i * 0.05)) % (W + 80) - 40);
     const y = w.arena.camY + 70 + (i * 37) % 180;
-    ctx.beginPath();
-    ctx.ellipse(x, y, 46, 16, 0, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.fillRect(x - 40, y - 10, 80, 20);
   }
+  ctx.globalAlpha = 1;
 }
 
 function gears(ctx: CanvasRenderingContext2D, w: World): void {
@@ -187,12 +195,12 @@ function gears(ctx: CanvasRenderingContext2D, w: World): void {
     for (let i = 0; i < spots.length; i++) {
       const x = w.arena.camX + (spots[i] ?? 0);
       const y = w.arena.camY + 70 + Math.sin(w.tick * 0.09 + i) * 8;
-      cog(ctx, x, y, 10, w.tick * 0.06 + i, BRASS, 6, true);
+      cog(ctx, x, y, 10, w.tick * 0.06 + i, BRASS, 6, false);
     }
   }
   for (let i = 0; i < GEAR_N; i++) {
     if (!gearOn(w, i)) continue;
-    cog(ctx, gearX(w, i), gearY(w, i), 12, w.tick * 0.08 + i, BRASS, 7, true);
+    cog(ctx, gearX(w, i), gearY(w, i), 12, w.tick * 0.08 + i, BRASS, 7, false);
   }
 }
 

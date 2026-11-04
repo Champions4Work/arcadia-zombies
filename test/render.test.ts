@@ -5,6 +5,7 @@ import { createWorld } from "../src/sim/world";
 import { projectileFor } from "../src/render/foes";
 import { UPG_FIRE, UPG_SAWS, Z_SHAMBLER } from "../src/sim/types";
 import { paintLayers, registerLayer, registerZombie, zombieGlyph, LAYER_BACK, LAYER_FRONT } from "../src/render/plugins";
+import { hurtAlpha } from "../src/render/veil";
 import { blurbFor, difficultyLabel, formatClock, pauseHit, weaponBadge, PAUSE_X, PAUSE_Y } from "../src/render/hud";
 import type { BulletPaint, Glyph } from "../src/render/plugins";
 import type { World } from "../src/sim/types";
@@ -77,5 +78,14 @@ describe("actor plugins", () => {
     expect(n).toBe(1);
     paintLayers(ctx, w, LAYER_BACK);
     expect(n).toBe(1);
+  });
+});
+
+describe("hurt veil", () => {
+  it("keeps a hit as strong as the old 0.4 edge", () => {
+    expect(hurtAlpha(45)).toBe(0.4);
+    expect(hurtAlpha(90)).toBe(0.4);
+    expect(hurtAlpha(18)).toBe(0.2);
+    expect(hurtAlpha(0)).toBe(0);
   });
 });

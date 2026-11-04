@@ -1,8 +1,10 @@
 import { ARENA_H, ARENA_W } from "../sim/arena";
+import { H, W } from "../sim/types";
+import { eachVentFx, paintGround } from "./ground";
 import { BRASS, cog, COPPER, lit, OUTLINE, rivet, roundRect, STEEL } from "./paint";
 import { puffSprite } from "./sprites";
 
-const STAGE = 3;
+const STAGE = 2;
 export const CLOCK_X = 240;
 export const CLOCK_Y = 78;
 const STACKS = [
@@ -108,33 +110,6 @@ function joint(ctx: CanvasRenderingContext2D, x: number, y: number, r: number): 
   ctx.strokeStyle = OUTLINE;
   ctx.stroke();
   rivet(ctx, x, y, Math.max(1, r * 0.28));
-}
-
-function plate(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, accent: number): void {
-  roundRect(ctx, x, y, w, h, 4);
-  ctx.fillStyle = lit(ctx, x, y, w, h * 1.4, accent ? BRASS : STEEL);
-  ctx.fill();
-  ctx.lineWidth = 1.6;
-  ctx.strokeStyle = accent ? "#6a4010" : "#243038";
-  ctx.stroke();
-  ctx.fillStyle = "rgba(255,255,255,0.28)";
-  ctx.fillRect(x + 3, y + 2, w - 6, 2);
-  ctx.fillStyle = "rgba(0,0,0,0.22)";
-  ctx.fillRect(x + 3, y + h - 4, w - 6, 2);
-  if ((tone(x, y) & 3) === 0) {
-    ctx.strokeStyle = "rgba(255,255,255,0.13)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(x + 6, y + 6);
-    ctx.lineTo(x + w - 6, y + h - 6);
-    ctx.moveTo(x + w - 6, y + 6);
-    ctx.lineTo(x + 6, y + h - 6);
-    ctx.stroke();
-  }
-  rivet(ctx, x + 4, y + 4, 1.15);
-  rivet(ctx, x + w - 4, y + 4, 1.15);
-  rivet(ctx, x + 4, y + h - 4, 1.15);
-  rivet(ctx, x + w - 4, y + h - 4, 1.15);
 }
 
 function tower(ctx: CanvasRenderingContext2D): void {
@@ -260,21 +235,12 @@ function drawYard(ctx: CanvasRenderingContext2D): void {
       ctx.fillStyle = "#3a2458";
     }
   }
-  const ground = ctx.createLinearGradient(0, 100, 0, ARENA_H);
-  ground.addColorStop(0, "#5c6e7e");
-  ground.addColorStop(0.4, "#7f93a4");
-  ground.addColorStop(1, "#6a7e90");
-  ctx.fillStyle = ground;
-  ctx.fillRect(0, 108, ARENA_W, ARENA_H - 108);
+  paintGround(ctx);
   const sun = ctx.createRadialGradient(400, 36, 8, 340, 90, 220);
   sun.addColorStop(0, "rgba(255,210,140,0.55)");
   sun.addColorStop(1, "rgba(255,160,70,0)");
   ctx.fillStyle = sun;
   ctx.fillRect(0, 0, ARENA_W, 200);
-  for (let row = 0, y = 112; y < ARENA_H + 8; y += 30, row++) {
-    const ox = row & 1 ? 18 : 0;
-    for (let x = -36; x < ARENA_W; x += 42) plate(ctx, x + ox, y, 38, 26, tone(x, y) === 3 ? 1 : 0);
-  }
   chimney(ctx, 22, 30, 26, 88, 3);
   chimney(ctx, 54, 16, 22, 96, 4);
   chimney(ctx, 84, 38, 20, 74, 2);
@@ -439,14 +405,29 @@ function spinGears(ctx: CanvasRenderingContext2D, tick: number): void {
   cog(ctx, 392, 196, 14, tick * 0.009, BRASS, 8, false);
 }
 
-export function drawStage(ctx: CanvasRenderingContext2D, tick: number): void {
-  ctx.drawImage(background(), 0, 0, ARENA_W, ARENA_H);
+function ventSteam(ctx: CanvasRenderingContext2D, tick: number, camX: number, camY: number): void {
+  const puff = puffSprite();
+  eachVentFx(camX, camY, tick, (x, y, s, t) => {
+    ctx.globalAlpha = (1 - t) * 0.38;
+    ctx.drawImage(puff, x - s / 2, y - s / 2, s, s);
+  });
+  ctx.globalAlpha = 1;
+}
+
+export function drawStageFx(ctx: CanvasRenderingContext2D, tick: number, camX: number, camY: number): void {
   slats(ctx, 292, 156, 176, 26, tick);
   slats(ctx, 310, 204, 158, 22, tick + 6);
   slats(ctx, 18, 188, 124, 22, tick + 3);
   spinGears(ctx, tick);
+  ventSteam(ctx, tick, camX, camY);
   hands(ctx, tick);
   smoke(ctx, tick);
   balloon(ctx, tick);
   embers(ctx, tick);
+}
+
+export function drawStage(ctx: CanvasRenderingContext2D, tick: number, camX = 0, camY = 0): void {
+  const src = background();
+  ctx.drawImage(src, camX * STAGE, camY * STAGE, W * STAGE, H * STAGE, camX, camY, W, H);
+  drawStageFx(ctx, tick, camX, camY);
 }

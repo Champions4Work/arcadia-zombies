@@ -17,5 +17,20 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   { plugins: { local: { rules: { "no-comments": noComments, "no-hot-alloc": noHotAlloc } } }, rules: { "local/no-comments": "error" } },
   { files: ["**/*.hot.ts"], rules: { "local/no-hot-alloc": "error" } },
+  {
+    files: ["src/render/horde-draw.ts", "src/render/blit.hot.ts", "src/render/ground-atlas.ts", "src/render/actors.ts"],
+    rules: {
+      "no-restricted-syntax": ["error", {
+        selector: "MemberExpression[property.name='getImageData']",
+        message: "No GPU readback on the horde or ground path.",
+      }, {
+        selector: "MemberExpression[property.name='shadowBlur']",
+        message: "shadowBlur is banned on the live render path.",
+      }, {
+        selector: "AssignmentExpression[left.property.name='filter']",
+        message: "Canvas filters are banned on the live render path.",
+      }],
+    },
+  },
   { files: ["scripts/**", "*.config.*"], languageOptions: { globals: { process: "readonly", console: "readonly" } } },
 );
