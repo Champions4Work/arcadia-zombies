@@ -139,7 +139,8 @@ function countObs(): number {
 
 export const MAX_OBS = countObs();
 
-export function zoneAt(x: number, _y: number): number {
+export function zoneAt(x: number, y: number): number {
+  void y;
   const span = YARD_W * ZONE_N;
   if (x <= 0) return ZONE_SCRAP;
   if (x >= span) return ZONE_DOCKS;
