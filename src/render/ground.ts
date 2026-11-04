@@ -424,12 +424,19 @@ function rubblePile(ctx: CanvasRenderingContext2D, x: number, y: number, s: numb
 }
 
 function fog(ctx: CanvasRenderingContext2D): void {
-  const haze = ctx.createLinearGradient(0, 100, 0, 280);
-  haze.addColorStop(0, "rgba(16,16,22,0.28)");
-  haze.addColorStop(0.5, "rgba(20,20,28,0.1)");
-  haze.addColorStop(1, "rgba(10,10,14,0)");
+  const haze = ctx.createLinearGradient(0, 100, 0, 320);
+  haze.addColorStop(0, "rgba(12,12,18,0.42)");
+  haze.addColorStop(0.45, "rgba(16,14,20,0.22)");
+  haze.addColorStop(1, "rgba(8,8,12,0)");
   ctx.fillStyle = haze;
-  ctx.fillRect(0, 100, ARENA_W, 220);
+  ctx.fillRect(0, 100, ARENA_W, 260);
+  if (bound === ZONE_BRASS) {
+    ctx.save();
+    ctx.globalCompositeOperation = "multiply";
+    ctx.fillStyle = "rgba(14,10,8,0.18)";
+    ctx.fillRect(0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
+    ctx.restore();
+  }
 }
 
 export const HAZARD_MARKS = [] as const;
@@ -450,11 +457,11 @@ const TRAM_MARKS = [
 
 export function paintGround(ctx: CanvasRenderingContext2D): void {
   build();
-  const wash = bound === ZONE_BOILER ? "#141210" : bound === ZONE_TRAM ? "#1c242c" : "#181412";
+  const wash = bound === ZONE_BOILER ? "#141210" : bound === ZONE_TRAM ? "#1c242c" : "#100e0c";
   const tile = bound === ZONE_BOILER ? "tile_metal_seamless" : "tile_stone_seamless";
-  const groutInk = bound === ZONE_BOILER ? "rgba(22,20,18,0.72)" : bound === ZONE_TRAM ? "rgba(20,28,36,0.5)" : "rgba(28,22,18,0.62)";
-  const veil = bound === ZONE_BOILER ? 0.55 : bound === ZONE_TRAM ? 0.28 : 0.04;
-  const veilInk = bound === ZONE_BRASS ? "#2a1810" : wash;
+  const groutInk = bound === ZONE_BOILER ? "rgba(22,20,18,0.72)" : bound === ZONE_TRAM ? "rgba(20,28,36,0.5)" : "rgba(22,18,14,0.78)";
+  const veil = bound === ZONE_BOILER ? 0.55 : bound === ZONE_TRAM ? 0.28 : 0.26;
+  const veilInk = bound === ZONE_BRASS ? "#1a1008" : wash;
   ctx.fillStyle = wash;
   ctx.fillRect(0, 108, ARENA_W, ARENA_H - 108);
   tileSheet(ctx, tile, 0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
@@ -520,6 +527,6 @@ export function paintGround(ctx: CanvasRenderingContext2D): void {
     rubblePile(ctx, fx[i] ?? 0, fy[i] ?? 0, fa[i] ?? 8);
   }
   fog(ctx);
-  ctx.fillStyle = "rgba(12,8,8,0.22)";
-  ctx.fillRect(0, 108, ARENA_W, 10);
+  ctx.fillStyle = "rgba(8,6,6,0.32)";
+  ctx.fillRect(0, 108, ARENA_W, 12);
 }

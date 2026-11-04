@@ -148,23 +148,23 @@ export function paintSignatureHero(
   const ny = aimY / mag;
   paintShadow(ctx, x, y, 14 * s, 5 * s);
   ctx.save();
-  ctx.fillStyle = moving ? "rgba(62,220,220,0.42)" : "rgba(62,220,220,0.32)";
+  ctx.fillStyle = moving ? "rgba(48,170,160,0.18)" : "rgba(48,170,160,0.12)";
   ctx.beginPath();
   ctx.ellipse(x, y + 3, (moving ? 12 : 11) * s, (moving ? 4.6 : 4) * s, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
-  const rim = ctx.createRadialGradient(x, y - 18 * s, 2, x, y - 10 * s, 44 * s);
-  rim.addColorStop(0, "rgba(255,210,120,0.72)");
-  rim.addColorStop(0.42, "rgba(90,240,230,0.34)");
+  const rim = ctx.createRadialGradient(x, y - 18 * s, 2, x, y - 10 * s, 38 * s);
+  rim.addColorStop(0, "rgba(255,190,100,0.38)");
+  rim.addColorStop(0.42, "rgba(80,190,180,0.14)");
   rim.addColorStop(1, "rgba(0,0,0,0)");
   ctx.fillStyle = rim;
   ctx.beginPath();
-  ctx.ellipse(x, y - 12 * s, 36 * s, 44 * s, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y - 12 * s, 28 * s, 34 * s, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
   if (moving) {
-    ctx.strokeStyle = "rgba(120,245,245,0.72)";
+    ctx.strokeStyle = "rgba(90,210,200,0.42)";
     ctx.lineWidth = 2.4;
     ctx.beginPath();
     ctx.ellipse(x, y + 3, 13 * s, 5 * s, 0, 0, Math.PI * 2);
@@ -172,6 +172,14 @@ export function paintSignatureHero(
   }
   ctx.restore();
   blitSheetLean(ctx, heroSpriteId(moving, tick), x, y, flip, bob, 0, s);
+  ctx.save();
+  ctx.globalCompositeOperation = "multiply";
+  ctx.globalAlpha = 0.22;
+  ctx.fillStyle = "#2a1810";
+  ctx.beginPath();
+  ctx.ellipse(x, y - 14 * s, 14 * s, 20 * s, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
   if (hitFlash > 0) {
     ctx.save();
     ctx.globalCompositeOperation = "lighter";

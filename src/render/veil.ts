@@ -17,15 +17,15 @@ function fogSheet(): HTMLCanvasElement {
   if (fog) return fog;
   fog = sheet((ctx) => {
     const wash = ctx.createLinearGradient(0, 0, 0, H);
-    wash.addColorStop(0, "rgba(40,16,28,0.14)");
-    wash.addColorStop(0.45, "rgba(28,14,12,0.04)");
-    wash.addColorStop(1, "rgba(8,8,14,0.16)");
+    wash.addColorStop(0, "rgba(36,12,24,0.22)");
+    wash.addColorStop(0.45, "rgba(22,12,10,0.08)");
+    wash.addColorStop(1, "rgba(6,6,12,0.24)");
     ctx.fillStyle = wash;
     ctx.fillRect(0, 0, W, H);
-    const vig = ctx.createRadialGradient(W / 2, H * 0.5, 70, W / 2, H * 0.5, 280);
+    const vig = ctx.createRadialGradient(W / 2, H * 0.5, 60, W / 2, H * 0.5, 300);
     vig.addColorStop(0, "rgba(0,0,0,0)");
-    vig.addColorStop(0.62, "rgba(18,10,8,0.06)");
-    vig.addColorStop(1, "rgba(6,6,12,0.28)");
+    vig.addColorStop(0.58, "rgba(14,8,6,0.1)");
+    vig.addColorStop(1, "rgba(4,4,10,0.38)");
     ctx.fillStyle = vig;
     ctx.fillRect(0, 0, W, H);
   });

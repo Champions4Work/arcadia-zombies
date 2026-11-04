@@ -35,25 +35,13 @@ const PROPS: { id: string; x: number; y: number }[] = [
   { id: "lamp", x: 480, y: 204 },
   { id: "lamp", x: 600, y: 208 },
   { id: "breakable_gear_pylon", x: 332, y: 340 },
-  { id: "crate_stack", x: 340, y: 368 },
-  { id: "barrel", x: 336, y: 386 },
   { id: "decal_grate", x: 368, y: 302 },
   { id: "decal_grate", x: 592, y: 302 },
-  { id: "crate", x: 332, y: 428 },
   { id: "valve_steam", x: 334, y: 468 },
-  { id: "decal_vent", x: 336, y: 450 },
-  { id: "barrel", x: 332, y: 508 },
-  { id: "crate_stack", x: 336, y: 548 },
   { id: "pipes_blue_tank", x: 334, y: 596 },
   { id: "breakable_boiler", x: 332, y: 636 },
   { id: "breakable_gear_pylon", x: 628, y: 340 },
-  { id: "crate_stack", x: 620, y: 368 },
-  { id: "barrel", x: 632, y: 386 },
-  { id: "crate", x: 628, y: 428 },
   { id: "valve_steam", x: 630, y: 468 },
-  { id: "decal_vent", x: 632, y: 450 },
-  { id: "barrel", x: 628, y: 508 },
-  { id: "crate_stack", x: 632, y: 548 },
   { id: "pipes_blue_tank", x: 630, y: 596 },
   { id: "breakable_boiler", x: 628, y: 636 },
 ];
@@ -69,13 +57,11 @@ const POOLS = [
   { x: 360, y: 208 },
   { x: 480, y: 204 },
   { x: 600, y: 208 },
-  { x: 332, y: 340 },
-  { x: 628, y: 340 },
 ];
 
 const STEAM_VENTS = [
-  { x: 360, y: 226 },
   { x: 424, y: 232 },
+  { x: 360, y: 226 },
   { x: 520, y: 226 },
   { x: 334, y: 468 },
   { x: 630, y: 468 },
@@ -260,9 +246,9 @@ function visible(x: number, y: number, camX: number, camY: number, vw: number, v
 }
 
 function lampPool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  const g = ctx.createRadialGradient(x, y - 10, 2, x, y + 10, 78);
-  g.addColorStop(0, "rgba(255,196,110,0.62)");
-  g.addColorStop(0.4, "rgba(255,150,56,0.28)");
+  const g = ctx.createRadialGradient(x, y - 10, 2, x, y + 10, 68);
+  g.addColorStop(0, "rgba(255,196,110,0.52)");
+  g.addColorStop(0.38, "rgba(255,130,48,0.22)");
   g.addColorStop(1, "rgba(10,10,14,0)");
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
@@ -284,9 +270,9 @@ function blitScaled(ctx: CanvasRenderingContext2D, id: string, x: number, y: num
 function paintBrickWall(ctx: CanvasRenderingContext2D): void {
   const soot = yardBound === ZONE_BOILER;
   const steel = yardBound === ZONE_TRAM;
-  ctx.fillStyle = soot ? "#1a0c08" : steel ? "#141820" : "#2a1812";
+  ctx.fillStyle = soot ? "#1a0c08" : steel ? "#141820" : "#18100c";
   ctx.fillRect(296, 168, 368, 68);
-  ctx.fillStyle = soot ? "#4a2414" : steel ? "#2a3844" : "#3a2218";
+  ctx.fillStyle = soot ? "#4a2414" : steel ? "#2a3844" : "#2a1814";
   for (let row = 0; row < 5; row++) {
     const oy = 172 + row * 12;
     const shift = row & 1 ? 10 : 0;
@@ -685,19 +671,35 @@ function paintBrassGrade(ctx: CanvasRenderingContext2D, camX: number, camY: numb
   ctx.save();
   ctx.globalCompositeOperation = "multiply";
   const shade = ctx.createLinearGradient(camX, camY, camX, camY + vh);
-  shade.addColorStop(0, "rgba(72,36,48,0.22)");
-  shade.addColorStop(0.35, "rgba(28,20,16,0.08)");
-  shade.addColorStop(1, "rgba(6,8,14,0.38)");
+  shade.addColorStop(0, "rgba(52,28,40,0.42)");
+  shade.addColorStop(0.32, "rgba(18,14,12,0.28)");
+  shade.addColorStop(0.62, "rgba(10,10,14,0.34)");
+  shade.addColorStop(1, "rgba(4,6,12,0.52)");
   ctx.fillStyle = shade;
   ctx.fillRect(camX, camY, vw, vh);
   ctx.restore();
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
-  const ray = ctx.createLinearGradient(camX + vw * 0.82, camY, camX + vw * 0.2, camY + vh * 0.55);
-  ray.addColorStop(0, "rgba(255,180,90,0.14)");
-  ray.addColorStop(0.45, "rgba(255,140,40,0.05)");
+  const ray = ctx.createLinearGradient(camX + vw * 0.86, camY - 20, camX + vw * 0.18, camY + vh * 0.62);
+  ray.addColorStop(0, "rgba(255,190,110,0.18)");
+  ray.addColorStop(0.35, "rgba(255,150,70,0.08)");
+  ray.addColorStop(0.72, "rgba(120,80,40,0.02)");
   ray.addColorStop(1, "rgba(0,0,0,0)");
   ctx.fillStyle = ray;
+  ctx.fillRect(camX, camY, vw, vh);
+  const ray2 = ctx.createLinearGradient(camX + vw * 0.72, camY, camX + vw * 0.34, camY + vh * 0.48);
+  ray2.addColorStop(0, "rgba(255,210,140,0.1)");
+  ray2.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = ray2;
+  ctx.fillRect(camX, camY, vw, vh);
+  ctx.restore();
+  ctx.save();
+  ctx.globalCompositeOperation = "source-over";
+  const fog = ctx.createRadialGradient(camX + vw * 0.5, camY + vh * 0.46, vh * 0.08, camX + vw * 0.5, camY + vh * 0.5, vh * 0.72);
+  fog.addColorStop(0, "rgba(0,0,0,0)");
+  fog.addColorStop(0.55, "rgba(8,6,10,0.12)");
+  fog.addColorStop(1, "rgba(4,4,8,0.28)");
+  ctx.fillStyle = fog;
   ctx.fillRect(camX, camY, vw, vh);
   ctx.restore();
 }

@@ -83,8 +83,8 @@ describe("visual review gates", () => {
 
   it("keeps dusk readable with local lamp pools and no global orange wash", () => {
     const draw = readFileSync("src/render/draw.ts", "utf8");
-    expect(draw.includes("rgba(2,4,10,0.42)")).toBe(true);
-    expect(draw.includes("rgba(40,18,8,0.06)")).toBe(true);
+    expect(draw.includes("rgba(2,4,10,0.58)")).toBe(true);
+    expect(draw.includes("rgba(40,18,8,0.06)")).toBe(false);
     expect(draw.includes("rgba(6,6,10,0.16)")).toBe(false);
     expect(draw.includes("rgba(220,132,52,0.34)")).toBe(false);
     expect(draw.includes("rgba(255,186,88,0.42)")).toBe(false);
@@ -133,7 +133,7 @@ describe("visual review gates", () => {
     const ground = readFileSync("src/render/ground.ts", "utf8");
     expect(ground.includes("rgba(24,24,32,0.58)")).toBe(false);
     expect(ground.includes("tile_stone_seamless")).toBe(true);
-    expect(ground.includes('globalCompositeOperation = "multiply"')).toBe(false);
+    expect(ground.includes('globalCompositeOperation = "multiply"')).toBe(true);
     expect(HAZARD_MARKS.length).toBe(0);
     const rack = readFileSync("src/render/weapons.ts", "utf8");
     expect(rack.includes("function paintPhonePower")).toBe(true);

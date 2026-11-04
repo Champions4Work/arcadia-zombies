@@ -21,7 +21,7 @@ describe("r27 art-bible pass", () => {
     expect(rack.match(/blitSheetFit\(c, "power_slot"/g)?.length).toBe(1);
   });
 
-  it("densifies brass yard with side breakables, vents, and cyan pipe runs", () => {
+  it("declutters brass yard props while keeping hero breakables and pipe runs", () => {
     const yard = readFileSync("src/render/yard-fx.ts", "utf8");
     const brassProps = yard.slice(yard.indexOf("const PROPS:"), yard.indexOf("const TANKS"));
     const brassPipes = yard.slice(yard.indexOf("const PIPE_RUNS = ["), yard.indexOf("const BELT_H"));
@@ -30,12 +30,14 @@ describe("r27 art-bible pass", () => {
     expect(yard.includes("paintVertPipe")).toBe(true);
     expect(brassProps.includes("breakable_gear_pylon")).toBe(true);
     expect(brassProps.includes("breakable_boiler")).toBe(true);
-    expect(brassProps.includes("decal_grate")).toBe(true);
+    expect(brassProps.includes("crate_stack")).toBe(false);
+    expect(brassProps.includes('"barrel"')).toBe(false);
     expect(brassProps.includes("x: 332, y: 340")).toBe(true);
     expect(brassPipes.includes("vert: 1")).toBe(true);
     expect(HAZARD_MARKS.length).toBe(0);
     expect(yardPropHits(YARD_CLEAR.x0, YARD_CLEAR.y0, YARD_CLEAR.x1, YARD_CLEAR.y1)).toBe(0);
-    expect(yardPropHits(PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(32);
+    expect(yardPropHits(PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(10);
+    expect(yardPropHits(PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeLessThanOrEqual(24);
     const depth = readFileSync("src/sim/depth.ts", "utf8");
     expect(depth.includes("[296, 420, 368, 0]")).toBe(true);
     expect(depth.includes("OB_CRATE, 380, 260")).toBe(true);
@@ -43,10 +45,10 @@ describe("r27 art-bible pass", () => {
 
   it("paints dusk sky and hunter rim for phone readability", () => {
     const stage = readFileSync("src/render/stage.ts", "utf8");
-    expect(stage.includes("#1a1030")).toBe(true);
+    expect(stage.includes("#120820")).toBe(true);
     expect(stage.includes("rgba(255,190,110")).toBe(true);
     const look = readFileSync("src/art/look.ts", "utf8");
     expect(look.includes("createRadialGradient(x, y - 18 * s")).toBe(true);
-    expect(look.includes("rgba(255,210,120,0.72)")).toBe(true);
+    expect(look.includes("rgba(255,190,100,0.38)")).toBe(true);
   });
 });
