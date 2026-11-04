@@ -20,7 +20,7 @@ import "./depth";
 import { absorbShake, shakePixels } from "./shake";
 import { drawStageFx, drawYardWindow } from "./stage";
 import { paintHurt, paintVeil } from "./veil";
-import { bindYard, paintYardGlow, paintYardLive } from "./yard-fx";
+import { bindYard, paintYardLive } from "./yard-fx";
 import { reviewWalkOn } from "../shell/review-shot";
 import { zoneAt } from "../sim/zones";
 import { bindGround } from "./ground";
@@ -109,17 +109,11 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
   if (w.hurtCd > 0) paintHurt(c, w.hurtCd, viewW, viewH);
   const vig = c.createRadialGradient(viewW * 0.5, viewH * 0.48, viewH * 0.16, viewW * 0.5, viewH * 0.5, viewH * 0.86);
   vig.addColorStop(0, "rgba(0,0,0,0)");
-  vig.addColorStop(0.28, "rgba(40,18,10,0.05)");
   vig.addColorStop(0.42, "rgba(24,14,8,0.08)");
   vig.addColorStop(0.7, "rgba(8,8,14,0.4)");
   vig.addColorStop(1, "rgba(4,6,12,0.72)");
   c.fillStyle = vig;
   c.fillRect(0, 0, viewW, viewH);
-  c.save();
-  if (sx !== 0 || sy !== 0) c.translate(sx, sy);
-  c.translate(-camX, -camY);
-  paintYardGlow(c, camX, camY, viewW, viewH);
-  c.restore();
   paintLayers(c, w, LAYER_FRONT);
   if (w.choosing) {
     c.fillStyle = "rgba(8,6,4,0.42)";

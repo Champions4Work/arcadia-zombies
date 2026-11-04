@@ -79,12 +79,6 @@ const POOLS = [
   { x: 360, y: 208 },
   { x: 480, y: 204 },
   { x: 600, y: 208 },
-  { x: 400, y: 278 },
-  { x: 560, y: 278 },
-  { x: 368, y: 250 },
-  { x: 592, y: 250 },
-  { x: 404, y: 400 },
-  { x: 556, y: 400 },
 ];
 
 const STEAM_VENTS = [
@@ -272,30 +266,15 @@ function visible(x: number, y: number, camX: number, camY: number, vw: number, v
 }
 
 function lampPool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  const g = ctx.createRadialGradient(x, y - 8, 4, x, y + 22, 148);
-  g.addColorStop(0, "rgba(255,210,120,0.7)");
-  g.addColorStop(0.22, "rgba(255,168,72,0.4)");
-  g.addColorStop(0.55, "rgba(210,110,36,0.16)");
+  const g = ctx.createRadialGradient(x, y - 8, 3, x, y + 10, 60);
+  g.addColorStop(0, "rgba(255,196,110,0.25)");
+  g.addColorStop(0.45, "rgba(255,150,56,0.12)");
   g.addColorStop(1, "rgba(10,10,14,0)");
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.ellipse(x, y + 18, 132, 88, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-}
-
-function lampWash(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  const g = ctx.createRadialGradient(x, y + 8, 8, x, y + 20, 110);
-  g.addColorStop(0, "rgba(255,196,110,0.22)");
-  g.addColorStop(0.45, "rgba(255,150,60,0.1)");
-  g.addColorStop(1, "rgba(10,10,14,0)");
-  ctx.save();
-  ctx.globalCompositeOperation = "lighter";
-  ctx.fillStyle = g;
-  ctx.beginPath();
-  ctx.ellipse(x, y + 16, 96, 62, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y + 10, 60, 36, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
@@ -305,16 +284,16 @@ function lampRay(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   ctx.globalCompositeOperation = "lighter";
   ctx.translate(x, y - 6);
   ctx.rotate(-0.38);
-  const g = ctx.createLinearGradient(0, 0, 0, -118);
-  g.addColorStop(0, "rgba(255,210,130,0.42)");
-  g.addColorStop(0.45, "rgba(255,170,70,0.16)");
+  const g = ctx.createLinearGradient(0, 0, 0, -96);
+  g.addColorStop(0, "rgba(255,196,110,0.25)");
+  g.addColorStop(0.55, "rgba(255,170,70,0.1)");
   g.addColorStop(1, "rgba(255,160,60,0)");
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.moveTo(-8, 0);
-  ctx.lineTo(10, 0);
-  ctx.lineTo(36, -118);
-  ctx.lineTo(-30, -118);
+  ctx.moveTo(-7, 0);
+  ctx.lineTo(9, 0);
+  ctx.lineTo(30, -96);
+  ctx.lineTo(-24, -96);
   ctx.closePath();
   ctx.fill();
   ctx.restore();
@@ -365,15 +344,15 @@ function paintBrickWall(ctx: CanvasRenderingContext2D): void {
 }
 
 function doorPool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  const g = ctx.createRadialGradient(x, y + 10, 2, x, y + 28, 64);
-  g.addColorStop(0, "rgba(255,196,96,0.52)");
-  g.addColorStop(0.45, "rgba(255,140,48,0.22)");
+  const g = ctx.createRadialGradient(x, y + 10, 2, x, y + 20, 48);
+  g.addColorStop(0, "rgba(255,176,80,0.25)");
+  g.addColorStop(0.5, "rgba(255,130,40,0.12)");
   g.addColorStop(1, "rgba(10,10,14,0)");
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.ellipse(x, y + 24, 52, 32, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y + 18, 36, 22, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
@@ -706,19 +685,6 @@ export function paintYardLive(
     blitSheet(ctx, steamFrame(tick), vent.x, vent.y - 10);
     ctx.restore();
     steamPuff(ctx, vent.x, vent.y, tick);
-  }
-}
-
-export function paintYardGlow(
-  ctx: CanvasRenderingContext2D,
-  camX: number,
-  camY: number,
-  vw: number,
-  vh: number,
-): void {
-  for (const pool of poolsOf()) {
-    if (!visible(pool.x, pool.y, camX, camY, vw, vh, 80)) continue;
-    lampWash(ctx, pool.x, pool.y);
   }
 }
 

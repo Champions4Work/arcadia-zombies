@@ -83,9 +83,13 @@ describe("r21 phone look", () => {
     expect(yard.includes("fillRect(x + 6, y - 12, len - 12, 24)")).toBe(true);
     expect(yard.includes("#7ae0d4")).toBe(true);
     expect(yard.includes("VALVE_B")).toBe(true);
-    expect(yard.includes("ellipse(x, y + 18, 132, 88")).toBe(true);
-    expect(yard.includes("export function paintYardGlow")).toBe(true);
+    expect(yard.includes("ellipse(x, y + 10, 60, 36")).toBe(true);
+    expect(yard.includes("rgba(255,196,110,0.25)")).toBe(true);
+    expect(yard.includes("export function paintYardGlow")).toBe(false);
+    expect(yard.includes("function lampWash")).toBe(false);
     expect(yard.includes("function lampRay")).toBe(true);
+    const poolBlock = yard.slice(yard.indexOf("const POOLS"), yard.indexOf("const STEAM_VENTS"));
+    expect((poolBlock.match(/\{ x:/g) || []).length).toBe(3);
     expect(yard.includes("FLOOR_DECALS")).toBe(true);
     expect(yard.includes("decal_grate")).toBe(true);
     expect(yard.includes("decal_vent")).toBe(true);
@@ -108,6 +112,7 @@ describe("r21 phone look", () => {
     const draw = readFileSync("src/render/draw.ts", "utf8");
     expect(draw.includes("rgba(4,6,12,0.72)")).toBe(true);
     expect(draw.includes("rgba(24,14,8,0.08)")).toBe(true);
-    expect(draw.includes("rgba(40,18,10,0.05)")).toBe(true);
+    expect(draw.includes("paintYardGlow")).toBe(false);
+    expect(draw.includes("rgba(40,18,10,0.05)")).toBe(false);
   });
 });
