@@ -117,15 +117,23 @@ describe("viewport chrome", () => {
   });
 
   it("docks the objectives card under the top-right cluster on 390x844", () => {
-    const { hud } = scene(390, 844, 3, { l: 0, r: 0, t: 47, b: 78 });
-    expect(hud.objectives.w).toBeGreaterThanOrEqual(140);
-    expect(hud.objectives.h).toBeGreaterThanOrEqual(90);
-    expect(hud.objectives.x).toBeGreaterThan(hud.view.w * 0.5);
-    expect(hud.objectives.y).toBeLessThan(hud.view.h * 0.35);
-    expect(boxesOverlap(hud.objectives, hud.clock)).toBe(false);
-    expect(boxesOverlap(hud.objectives, hud.difficulty)).toBe(false);
-    const frame = stickFrame(hud);
-    expect(frame.y).toBeGreaterThanOrEqual(hud.objectives.y + hud.objectives.h);
+    const insets = [ZERO_INSETS, { l: 0, r: 0, t: 47, b: 78 }] as const;
+    for (const safe of insets) {
+      const { hud, frame, joy } = restJoy(390, 844, 3, safe);
+      expect(boxInside(hud.objectives, hud.view, 0.5)).toBe(true);
+      expect(hud.objectives.w).toBeGreaterThanOrEqual(140);
+      expect(hud.objectives.h).toBeGreaterThanOrEqual(90);
+      expect(hud.objectives.x).toBeGreaterThan(hud.view.w * 0.5);
+      expect(hud.objectives.y).toBeLessThan(hud.view.h * 0.35);
+      expect(hud.objectives.y).toBeGreaterThanOrEqual(hud.clock.y + hud.clock.h);
+      for (const box of hudBoxes(hud)) {
+        if (box === hud.objectives) continue;
+        expect(boxesOverlap(hud.objectives, box)).toBe(false);
+      }
+      expect(boxesOverlap(hud.objectives, frame)).toBe(false);
+      expect(boxesOverlap(hud.objectives, joy)).toBe(false);
+      expect(frame.y).toBeGreaterThanOrEqual(hud.objectives.y + hud.objectives.h);
+    }
   });
 
   it("clamps a floating stick into the playfield so its disc never covers HUD", () => {

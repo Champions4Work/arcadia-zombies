@@ -137,7 +137,8 @@ export function stageObjectives(w: World): void {
   w.holdLeft = 180 * 60;
   w.toSpawn = 0;
   w.spawnCd = 99999;
-  w.fireCd = 12;
+  w.fireCd = 99999;
+  w.wpnCd.fill(9999);
   w.hurtCd = 0;
   w.px = ARENA_W / 2;
   w.py = ARENA_H / 2;

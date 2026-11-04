@@ -26,7 +26,7 @@ export function waveFace(w: World): { n: number; of: number } {
 export function holdClock(left: number): string {
   const ticks = left > 0 ? left | 0 : 0;
   const s = (ticks / 60) | 0;
-  const m = (s / 60) | 0;
+  const m = Math.min(99, (s / 60) | 0);
   const r = s % 60;
   return `${m < 10 ? "0" : ""}${m}:${r < 10 ? "0" : ""}${r}`;
 }

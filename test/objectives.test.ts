@@ -121,8 +121,10 @@ describe("chapter objectives", () => {
     w.zombies.y[0] = w.py;
     hurtZombie(w, 0, 4);
     killZombie(w, 0);
+    const rows = objectiveRows(w);
+    expect(rows[0]?.done).toBe(false);
+    expect(rows[1]?.done).toBe(false);
+    expect(rows[2]?.done).toBe(false);
     expect(w.kills).toBe(1);
-    expect(objectiveRows(w)[0]?.done).toBe(false);
-    expect(objectiveRows(w)[2]?.done).toBe(false);
   });
 });
