@@ -10,9 +10,9 @@ function flashPix(p: number): number {
   const r = (p >>> 16) & 0xff;
   const g = (p >>> 8) & 0xff;
   const b = p & 0xff;
-  const nr = r + ((255 - r) * 11 >> 4) + 18;
-  const ng = g + ((255 - g) * 9 >> 4) + 10;
-  const nb = b + ((255 - b) * 5 >> 4);
+  const nr = r + ((255 - r) * 13 >> 4) + 22;
+  const ng = g + ((255 - g) * 11 >> 4) + 14;
+  const nb = b + ((255 - b) * 6 >> 4) + 4;
   return ((nr > 255 ? 255 : nr) << 16) | ((ng > 255 ? 255 : ng) << 8) | (nb > 255 ? 255 : nb);
 }
 

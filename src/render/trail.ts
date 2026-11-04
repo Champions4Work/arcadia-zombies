@@ -17,7 +17,6 @@ export function resetTrail(): void {
 
 export function stampTrail(x: number, y: number, tick: number, moving: boolean): void {
   if (reduceMotionOn()) return;
-  if ((tick & 1) !== 0) return;
   const i = tHead;
   tHead = i + 1 < TRAIL_CAP ? i + 1 : 0;
   tx[i] = x;
@@ -37,21 +36,21 @@ export function paintTrail(
   ctx: CanvasRenderingContext2D,
   tick: number,
   flip: boolean,
-  moving: boolean,
+  dash: boolean,
 ): void {
-  if (reduceMotionOn()) return;
-  const bob = walkBob(tick, moving);
+  if (reduceMotionOn() || !dash) return;
+  const bob = walkBob(tick, true);
   const s = HERO_DRAW_SCALE;
-  const id = heroSpriteId(moving, tick);
+  const id = heroSpriteId(true, tick);
   for (let k = 0; k < TRAIL_CAP; k++) {
     const i = (tHead + k) % TRAIL_CAP;
     const life = tLife[i] ?? 0;
     if (life <= 0) continue;
-    const a = (life / TRAIL_LIFE) * 0.38;
+    const a = (life / TRAIL_LIFE) * 0.24;
     ctx.save();
     ctx.globalAlpha = a;
-    ctx.globalCompositeOperation = "lighter";
-    blitSheetLean(ctx, id, tx[i] ?? 0, ty[i] ?? 0, flip, bob, 0, s * 0.96);
+    ctx.globalCompositeOperation = "source-over";
+    blitSheetLean(ctx, id, tx[i] ?? 0, ty[i] ?? 0, flip, bob, 0, s * 0.9);
     ctx.restore();
   }
 }
