@@ -39,6 +39,28 @@ function blit(frame: Uint32Array, spr: Sprite, dx: number, dy: number): void {
   }
 }
 
+function blitFlip(frame: Uint32Array, spr: Sprite, dx: number, dy: number): void {
+  const sw = spr.w;
+  const sh = spr.h;
+  const pix = spr.pix;
+  let x0 = 0;
+  let y0 = 0;
+  let x1 = sw;
+  let y1 = sh;
+  if (dx < 0) x0 = -dx;
+  if (dy < 0) y0 = -dy;
+  if (dx + sw > W) x1 = W - dx;
+  if (dy + sh > H) y1 = H - dy;
+  for (let y = y0; y < y1; y++) {
+    const drow = (dy + y) * W + dx;
+    const srow = y * sw;
+    for (let x = x0; x < x1; x++) {
+      const p = pix[srow + (sw - 1 - x)] ?? 0;
+      if (p !== 0) frame[drow + x] = p;
+    }
+  }
+}
+
 function blitFlash(frame: Uint32Array, spr: Sprite, dx: number, dy: number): void {
   const sw = spr.w;
   const sh = spr.h;
@@ -105,7 +127,9 @@ export function composeHorde(w: World, frame: Uint32Array): void {
       const spr = zombieSprite(z.kind[i] ?? 0, bob);
       const dx = (x - spr.ox) | 0;
       const dy = (y - spr.oy) | 0;
+      const flip = (w.px - (z.x[i] ?? 0)) < 0;
       if (live > 0 && enemyFlash(i) > 0) blitFlash(frame, spr, dx, dy);
+      else if (flip) blitFlip(frame, spr, dx, dy);
       else blit(frame, spr, dx, dy);
       i = yNext[i] ?? -1;
     }

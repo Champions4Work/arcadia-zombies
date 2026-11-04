@@ -3,7 +3,7 @@ import type { World } from "../sim/types";
 export interface Glyph {
   w: number;
   h: number;
-  draw(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number, flip: number, hp: number): void;
+  draw(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number, flip: number, hp: number, pose?: number): void;
 }
 
 export type BulletPaint = (ctx: CanvasRenderingContext2D, x: number, y: number, vx: number, vy: number, tick: number) => void;

@@ -58,62 +58,80 @@ const KNIGHT = pack(0xe0, 0x70, 0x40);
 const RAT = pack(0xf0, 0xb0, 0x3a);
 
 function shambler(bob: number): Sprite {
-  return sprite(12, 16, 6, 15, (pix) => {
-    stamp(pix, 12, 1, 13, 10, 2, SOOT);
-    stamp(pix, 12, 1, 8 + bob, 3, 5, ROT_LO);
-    stamp(pix, 12, 8, 8 + (bob ^ 1), 3, 5, ROT_LO);
-    stamp(pix, 12, 2, 5 + bob, 8, 7, ROT);
-    stamp(pix, 12, 3, 1 + bob, 6, 5, ROT_HI);
-    stamp(pix, 12, 6, 2 + bob, 2, 2, EMBER);
+  return sprite(14, 18, 7, 17, (pix) => {
+    stamp(pix, 14, 1, 15, 12, 3, SOOT);
+    stamp(pix, 14, 1, 8 + bob, 4, 7, ROT_LO);
+    stamp(pix, 14, 9, 8 + (bob ^ 1), 4, 7, ROT_LO);
+    stamp(pix, 14, 2, 5 + bob, 10, 8, ROT);
+    stamp(pix, 14, 3, 6 + bob, 8, 4, ROT_HI);
+    stamp(pix, 14, 5, 7 + bob, 4, 3, EMBER);
+    stamp(pix, 14, 3, 1 + bob, 8, 5, ROT_HI);
+    stamp(pix, 14, 6, 2 + bob, 2, 2, EMBER_HI);
+    stamp(pix, 14, 2, 2 + bob, 2, 2, BRASS);
   });
 }
 
 function ghoul(bob: number): Sprite {
-  return sprite(10, 16, 5, 15, (pix) => {
-    stamp(pix, 10, 1, 13, 8, 2, SOOT);
-    stamp(pix, 10, 2, 8 + bob, 2, 5, BRASS_LO);
-    stamp(pix, 10, 6, 8 + (bob ^ 1), 2, 5, BRASS_LO);
-    stamp(pix, 10, 2, 4 + bob, 6, 7, BRASS);
-    stamp(pix, 10, 2, 0 + bob, 6, 5, BRASS_LO);
-    stamp(pix, 10, 4, 1 + bob, 2, 2, EYE);
-    stamp(pix, 10, 3, 6 + bob, 4, 2, COPPER);
+  return sprite(12, 18, 6, 17, (pix) => {
+    stamp(pix, 12, 1, 15, 10, 3, SOOT);
+    stamp(pix, 12, 2, 8 + bob, 3, 7, BRASS_LO);
+    stamp(pix, 12, 7, 8 + (bob ^ 1), 3, 7, BRASS_LO);
+    stamp(pix, 12, 2, 4 + bob, 8, 8, BRASS);
+    stamp(pix, 12, 3, 5 + bob, 6, 3, COPPER);
+    stamp(pix, 12, 2, 0 + bob, 8, 5, BRASS_LO);
+    stamp(pix, 12, 3, 1 + bob, 2, 2, EYE);
+    stamp(pix, 12, 7, 1 + bob, 3, 3, BRASS);
+    stamp(pix, 12, 8, 2 + bob, 1, 1, EMBER_HI);
   });
 }
 
 function brute(bob: number): Sprite {
-  return sprite(18, 18, 9, 17, (pix) => {
-    stamp(pix, 18, 2, 15, 14, 2, SOOT);
-    stamp(pix, 18, 1, 8 + bob, 16, 8, RUST);
-    stamp(pix, 18, 2, 9 + bob, 14, 5, COPPER);
-    stamp(pix, 18, 4, 10 + bob, 4, 3, EMBER);
-    stamp(pix, 18, 5, 2 + bob, 8, 6, RUST);
-    stamp(pix, 18, 7, 3 + bob, 3, 2, EMBER_HI);
+  return sprite(20, 20, 10, 19, (pix) => {
+    stamp(pix, 20, 2, 17, 16, 3, SOOT);
+    stamp(pix, 20, 1, 8 + bob, 18, 9, RUST);
+    stamp(pix, 20, 2, 9 + bob, 16, 6, COPPER);
+    stamp(pix, 20, 6, 10 + bob, 8, 4, EMBER);
+    stamp(pix, 20, 8, 11 + bob, 4, 2, EMBER_HI);
+    stamp(pix, 20, 5, 2 + bob, 10, 7, RUST);
+    stamp(pix, 20, 7, 3 + bob, 6, 3, BRASS);
+    stamp(pix, 20, 8, 4 + bob, 3, 2, EMBER_HI);
+    stamp(pix, 20, 2, 10 + bob, 3, 3, BRASS);
+    stamp(pix, 20, 15, 10 + bob, 3, 3, BRASS);
   });
 }
 
 function spitter(bob: number): Sprite {
-  return sprite(12, 16, 6, 15, (pix) => {
-    stamp(pix, 12, 1, 13, 10, 2, SOOT);
-    stamp(pix, 12, 2, 6 + bob, 8, 8, SPIT);
-    stamp(pix, 12, 3, 1 + bob, 6, 5, BRASS_LO);
-    stamp(pix, 12, 4, 2 + bob, 2, 2, EYE);
+  return sprite(14, 18, 7, 17, (pix) => {
+    stamp(pix, 14, 1, 15, 12, 3, SOOT);
+    stamp(pix, 14, 3, 7 + bob, 8, 8, SPIT);
+    stamp(pix, 14, 4, 8 + bob, 6, 4, BRASS);
+    stamp(pix, 14, 3, 1 + bob, 8, 6, BRASS_LO);
+    stamp(pix, 14, 5, 2 + bob, 2, 2, EYE);
+    stamp(pix, 14, 10, 6 + bob, 4, 3, SPIT);
+    stamp(pix, 14, 12, 7 + bob, 2, 2, EMBER_HI);
   });
 }
 
 function gasbag(bob: number): Sprite {
-  return sprite(14, 16, 7, 15, (pix) => {
-    stamp(pix, 14, 2, 13, 10, 2, SOOT);
-    stamp(pix, 14, 2, 4 + bob, 10, 10, GAS);
-    stamp(pix, 14, 4, 6 + bob, 6, 4, EMBER);
+  return sprite(16, 18, 8, 17, (pix) => {
+    stamp(pix, 16, 2, 15, 12, 3, SOOT);
+    stamp(pix, 16, 2, 4 + bob, 12, 11, GAS);
+    stamp(pix, 16, 4, 6 + bob, 8, 6, RUST);
+    stamp(pix, 16, 6, 7 + bob, 4, 3, EMBER);
+    stamp(pix, 16, 7, 8 + bob, 2, 2, EMBER_HI);
+    stamp(pix, 16, 11, 3 + bob, 3, 4, BRASS);
+    stamp(pix, 16, 3, 3 + bob, 3, 3, SPIT);
   });
 }
 
 function knight(bob: number): Sprite {
-  return sprite(18, 18, 7, 17, (pix) => {
-    stamp(pix, 18, 1, 15, 12, 2, SOOT);
-    stamp(pix, 18, 2, 7 + bob, 10, 9, KNIGHT);
-    stamp(pix, 18, 3, 2 + bob, 8, 6, BRASS);
-    stamp(pix, 18, 5, 3 + bob, 3, 2, EMBER_HI);
+  return sprite(18, 20, 8, 19, (pix) => {
+    stamp(pix, 18, 1, 17, 16, 3, SOOT);
+    stamp(pix, 18, 2, 8 + bob, 10, 9, KNIGHT);
+    stamp(pix, 18, 3, 9 + bob, 8, 5, COPPER);
+    stamp(pix, 18, 2, 2 + bob, 10, 7, BRASS);
+    stamp(pix, 18, 4, 3 + bob, 6, 3, BRASS_LO);
+    stamp(pix, 18, 5, 4 + bob, 3, 2, EMBER_HI);
     stamp(pix, 18, 12, 4 + bob, 5, 11, BRASS);
     stamp(pix, 18, 13, 5 + bob, 3, 9, BRASS_LO);
     stamp(pix, 18, 13, 8 + bob, 3, 2, EMBER);
@@ -121,10 +139,13 @@ function knight(bob: number): Sprite {
 }
 
 function rat(bob: number): Sprite {
-  return sprite(8, 8, 4, 7, (pix) => {
-    stamp(pix, 8, 0, 4 + bob, 8, 3, RAT);
-    stamp(pix, 8, 1, 2, 4, 3, BRASS_LO);
-    stamp(pix, 8, 5, 2, 2, 2, EYE);
+  return sprite(10, 10, 5, 9, (pix) => {
+    stamp(pix, 10, 0, 7 + bob, 10, 3, SOOT);
+    stamp(pix, 10, 0, 4 + bob, 9, 4, RAT);
+    stamp(pix, 10, 1, 2, 5, 4, BRASS_LO);
+    stamp(pix, 10, 2, 3, 3, 2, BRASS);
+    stamp(pix, 10, 6, 2, 3, 3, EYE);
+    stamp(pix, 10, 7, 3, 1, 1, EMBER);
   });
 }
 

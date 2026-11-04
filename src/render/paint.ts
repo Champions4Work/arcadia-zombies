@@ -222,6 +222,65 @@ export function dome(ctx: CanvasRenderingContext2D, x: number, y: number, r: num
   ctx.stroke();
 }
 
+export function plate(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, rot: number, m: Metal, stroke = 2): void {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(rot);
+  roundRect(ctx, -w / 2, -h / 2, w, h, Math.min(w, h) * 0.18);
+  ctx.fillStyle = lit(ctx, -w / 2, -h / 2, w, h, m);
+  ctx.fill();
+  ctx.lineWidth = stroke;
+  ctx.strokeStyle = OUTLINE;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(-w * 0.18, -h * 0.28, Math.max(0.6, w * 0.22), Math.max(0.4, h * 0.08), -0.3, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(255,248,230,0.42)";
+  ctx.fill();
+  ctx.restore();
+}
+
+export function goggles(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, tint = "rgba(120,220,245,0.82)"): void {
+  plate(ctx, x, y, s * 2.6, s * 0.95, 0, BRASS, 1.3);
+  ctx.beginPath();
+  ctx.arc(x - s * 0.7, y, s * 0.55, 0, Math.PI * 2);
+  ctx.arc(x + s * 0.7, y, s * 0.55, 0, Math.PI * 2);
+  ctx.fillStyle = tint;
+  ctx.fill();
+  ctx.lineWidth = 1.1;
+  ctx.strokeStyle = OUTLINE;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(x - s * 0.88, y - s * 0.18, s * 0.18, s * 0.1, -0.6, 0, Math.PI * 2);
+  ctx.ellipse(x + s * 0.52, y - s * 0.18, s * 0.18, s * 0.1, -0.6, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(255,255,255,0.75)";
+  ctx.fill();
+}
+
+export function boiler(ctx: CanvasRenderingContext2D, x: number, y: number, rx: number, ry: number, pulse: number): void {
+  blob(ctx, x, y, rx, ry, { hi: "#4a3230", mid: "#2a1a16", lo: "#140c0a", edge: "#080404" }, 2);
+  const g = ctx.createRadialGradient(x - rx * 0.15, y - ry * 0.1, 0.4, x, y, rx);
+  g.addColorStop(0, pulse > 0.5 ? "#fff6d2" : "#ffe08a");
+  g.addColorStop(0.45, pulse > 0.5 ? "#ff9a24" : "#ff6a12");
+  g.addColorStop(1, "rgba(255,60,8,0.12)");
+  ctx.beginPath();
+  ctx.ellipse(x, y, rx * 0.62, ry * 0.58, 0, 0, Math.PI * 2);
+  ctx.fillStyle = g;
+  ctx.fill();
+  ctx.lineWidth = 1.2;
+  ctx.strokeStyle = OUTLINE;
+  ctx.stroke();
+}
+
+export function stack(ctx: CanvasRenderingContext2D, x: number, y: number, h: number, puff: number): void {
+  plate(ctx, x, y, 4.4, h, 0, COPPER, 1.3);
+  plate(ctx, x, y - h * 0.46, 6.4, 2.4, 0, BRASS, 1.1);
+  if (puff > 0) {
+    ctx.globalAlpha = 0.45 * puff;
+    blob(ctx, x + 1, y - h * 0.7 - puff * 3, 2.4 + puff, 1.8 + puff * 0.6, { hi: "#f6f2ea", mid: "#d5e4ea", lo: "#8aa0aa", edge: "#3a4448" }, 0.6);
+    ctx.globalAlpha = 1;
+  }
+}
+
 export function bakeRaw(w: number, h: number, draw: (ctx: CanvasRenderingContext2D) => void): HTMLCanvasElement {
   const c = document.createElement("canvas");
   c.width = Math.max(1, Math.ceil(w * SCALE));

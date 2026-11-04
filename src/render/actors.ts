@@ -6,11 +6,12 @@ import {
   EV_SHOT, FX_BOOM, FX_FLASH, FX_PUFF, FX_SPARK, FX_XP, Z_BRUTE, Z_GHOUL, Z_SHAMBLER, type World,
 } from "../sim/types";
 import { paintProp } from "./arena";
-import { charKitId, paintKnightShield, paintSurvivor, poseOf } from "./cast";
+import { charKitId, paintKnightShield, paintSurvivor } from "./cast";
 import { paintBoom, paintFlash, paintLevelBurst, paintPuff, paintRivetBolt, paintSpark, paintXp } from "./cast-fx";
 import { offScreen } from "./cull";
 import { gasGlyph, knightGlyph, projectileFor, ratGearGlyph, spitterGlyph } from "./foes";
 import { blit, roundRect } from "./paint";
+import { foePose, foeStriking, heroPose, POSE_WALK, poseFrame } from "./poses";
 import { paintWeapon } from "./weapons";
 import {
   bulletPaint, fxPaint, registerBullet, registerFx, registerZombie, zombieGlyph, type BulletPaint, type Glyph,
@@ -33,9 +34,8 @@ function creepGlyph(spec: typeof SHAMBLER, slow: boolean): Glyph {
   return {
     w: spec.w,
     h: spec.h,
-    draw(ctx, x, y, tick, flip) {
-      const frame = (tick >> (slow ? 4 : 3)) & 3;
-      blit(ctx, creepFrames(spec), spec.w, spec.h, frame, x, y, flip);
+    draw(ctx, x, y, tick, flip, _hp, pose = POSE_WALK) {
+      blit(ctx, creepFrames(spec, pose), spec.w, spec.h, poseFrame(tick, pose, slow), x, y, flip);
     },
   };
 }
@@ -45,8 +45,8 @@ function fallbackGlyph(kind: number): Glyph {
   return {
     w: spec.w,
     h: spec.h,
-    draw(ctx, x, y, tick, flip) {
-      blit(ctx, fallbackFrames(kind), spec.w, spec.h, (tick >> 3) & 3, x, y, flip);
+    draw(ctx, x, y, tick, flip, _hp, pose = POSE_WALK) {
+      blit(ctx, fallbackFrames(kind, pose), spec.w, spec.h, poseFrame(tick, pose, false), x, y, flip);
     },
   };
 }
@@ -66,7 +66,7 @@ export function paintPlayer(ctx: CanvasRenderingContext2D, w: World, moving: boo
 
 function paintHero(ctx: CanvasRenderingContext2D, w: World, moving: boolean): void {
   const shoot = (w.events[EV_SHOT] ?? 0) !== 0;
-  const pose = poseOf(moving, shoot);
+  const pose = heroPose(moving, shoot, w.hurtCd > 0, w.over);
   const id = charKitId(w.charId);
   paintSurvivor(ctx, w, moving, (frame, flip) => {
     blit(ctx, heroFrames(id, pose), HERO_W, HERO_H, frame, w.px, w.py, flip);
@@ -99,8 +99,9 @@ function paintOne(ctx: CanvasRenderingContext2D, w: World, i: number): void {
     ctx.scale(1.28, 1.28);
     ctx.translate(-x, -y);
   }
-  paintShadow(ctx, x, y, glyph.w * 0.86);
-  glyph.draw(ctx, x, y, w.tick + i * 3, flip, hp);
+  paintShadow(ctx, x, y, glyph.w * 0.9);
+  const striking = foeStriking(kind, z.vx[i] ?? 0, z.vy[i] ?? 0, w.px - x, w.py - y);
+  glyph.draw(ctx, x, y, w.tick + i * 3, flip, hp, foePose(flash, striking, true));
   if (kind === Z_KNIGHT) paintKnightShield(ctx, x, y, z.vy[i] ?? 0, hp);
   if (elite) ctx.restore();
   if (hp >= 3) {

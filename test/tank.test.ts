@@ -110,6 +110,9 @@ function watch(): Paper {
       if (prop === "rotate") return () => { rotates++; };
       if (prop === "lineTo") return (x: number, y: number) => { lines.push([x, y]); };
       if (prop === "arc") return () => { arcs++; };
+      if (prop === "createLinearGradient" || prop === "createRadialGradient") {
+        return () => ({ addColorStop() {} });
+      }
       if (prop === "fillRect") return (_x: number, _y: number, w: number, h: number) => {
         rects.push({ s: fillStyle, w, h });
       };
@@ -351,7 +354,7 @@ describe("clockwork tank", () => {
     body.boss.aimY = 0.8;
     const drawn = watch();
     drawBoss(drawn.ctx, body, 1);
-    expect(drawn.rotates).toBe(1);
+    expect(drawn.rotates).toBeGreaterThanOrEqual(1);
     const ex = 100 + 0.6 * 96;
     const ey = 120 + 0.8 * 96;
     let aimed = false;
@@ -361,7 +364,7 @@ describe("clockwork tank", () => {
     }
     expect(aimed).toBe(true);
     expect(clean(drawn.seen)).toBe(true);
-    expect(drawn.arcs).toBe(0);
+    expect(drawn.arcs).toBeGreaterThan(0);
     const scar = arm(BOSS_TANK, 0, 0, 10, 1);
     scar.boss.cloudX[0] = 40;
     scar.boss.cloudY[0] = 50;
@@ -372,7 +375,6 @@ describe("clockwork tank", () => {
     expect(ash.seen.indexOf("#120c08")).toBeGreaterThanOrEqual(0);
     expect(ash.seen.indexOf("#ff5a1a")).toBeGreaterThanOrEqual(0);
     expect(ash.seen.indexOf("#d5e4ea")).toBe(-1);
-    expect(ash.arcs).toBe(0);
     const shell = arm(BOSS_TANK, 1, 0, 10, 1);
     shell.boss.shotKind[0] = 2;
     shell.boss.shotLife[0] = 40;
