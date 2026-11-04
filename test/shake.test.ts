@@ -1,10 +1,13 @@
 import { EV_HURT, EV_KILL, EV_LEVEL, EV_N, EV_SHOT, EV_WAVE, FX_FLASH, FX_PUFF } from "../src/sim/types";
 import { createWorld } from "../src/sim/world";
 import { juiceHit, resetJuice } from "../src/render/juice";
+import { setReduceMotion } from "../src/render/motion";
 import {
-  SHAKE_AMP,
   SHAKE_CAP,
+  TRAUMA_DECAY,
+  TRAUMA_HURT,
   absorbShake,
+  decayTrauma,
   impulseOf,
   punchShake,
   resetShake,
@@ -16,8 +19,10 @@ import { Z_SHAMBLER } from "../src/sim/types";
 import {
   createSession,
   loadStore,
+  MOTION_KEY,
   SHAKE_KEY,
   syncStore,
+  toggleReduceMotion,
   toggleShake,
 } from "../src/shell/session";
 
@@ -28,6 +33,11 @@ const mem = () => {
     setItem: (k: string, v: string) => { m.set(k, v); },
   };
 };
+
+afterEach(() => {
+  setReduceMotion(false);
+  resetShake();
+});
 
 describe("screen shake", () => {
   it("caps translation and ignores normal hits and kills", () => {
@@ -51,27 +61,22 @@ describe("screen shake", () => {
     const hurt = new Uint8Array(EV_N);
     hurt[EV_HURT] = 1;
     hurt[EV_KILL] = 1;
-    const peak = 6 * 0.3 * SHAKE_AMP * 2;
-    expect(impulseOf(hurt)).toBeCloseTo(6 * 0.3);
+    expect(impulseOf(hurt)).toBeCloseTo(TRAUMA_HURT);
     const hurtAt = shakeOffset(impulseOf(hurt), 3);
-    expect(hurtAt[0]).toBeCloseTo(peak);
-    expect(hurtAt[1]).toBeCloseTo(peak);
     expect(Math.abs(hurtAt[0])).toBeLessThanOrEqual(SHAKE_CAP);
     expect(Math.abs(hurtAt[1])).toBeLessThanOrEqual(SHAKE_CAP);
+    expect(Math.abs(hurtAt[0]) + Math.abs(hurtAt[1])).toBeGreaterThan(0);
 
     const big = new Uint8Array(EV_N);
     big[EV_WAVE] = 1;
     big[EV_LEVEL] = 1;
     expect(impulseOf(big)).toBeGreaterThan(0);
-    expect(impulseOf(big)).toBeLessThanOrEqual(SHAKE_CAP);
+    expect(impulseOf(big)).toBeLessThanOrEqual(1);
     expect(impulseOf(big)).toBeLessThan(impulseOf(hurt));
 
-    const slammed = shakeOffset(100, 3);
-    expect(slammed[0]).toBe(SHAKE_CAP);
-    expect(slammed[1]).toBe(SHAKE_CAP);
-    const slammedNeg = shakeOffset(100, 0);
-    expect(slammedNeg[0]).toBe(-SHAKE_CAP);
-    expect(slammedNeg[1]).toBe(-SHAKE_CAP);
+    const slammed = shakeOffset(1, 3);
+    expect(Math.abs(slammed[0])).toBeLessThanOrEqual(SHAKE_CAP);
+    expect(Math.abs(slammed[1])).toBeLessThanOrEqual(SHAKE_CAP);
 
     resetShake();
     for (let t = 1; t <= 24; t++) {
@@ -85,14 +90,37 @@ describe("screen shake", () => {
     }
   });
 
-  it("decays a hurt impulse inside a short window", () => {
+  it("decays trauma with easing instead of a 4-step jitter", () => {
     resetShake();
-    const hurt = new Uint8Array(EV_N);
-    hurt[EV_HURT] = 1;
-    absorbShake(1, hurt);
-    expect(shakeEnergy()).toBeGreaterThan(0);
-    for (let i = 0; i < 10; i++) shakePixels(i + 1, true);
+    punchShake(0.8);
+    const start = shakeEnergy();
+    expect(start).toBeCloseTo(0.8);
+    const x0 = shakeOffset(0.8, 1)[0];
+    const y0 = shakeOffset(0.8, 1)[1];
+    const x1 = shakeOffset(0.8, 8)[0];
+    const y1 = shakeOffset(0.8, 8)[1];
+    expect(x0 !== x1 || y0 !== y1).toBe(true);
+    const steps = new Set<string>();
+    for (let t = 0; t < 16; t++) {
+      const p = shakeOffset(0.8, t);
+      steps.add(`${p[0].toFixed(2)},${p[1].toFixed(2)}`);
+    }
+    expect(steps.size).toBeGreaterThan(4);
+    decayTrauma(0.25);
+    expect(shakeEnergy()).toBeCloseTo(0.8 * Math.exp(-TRAUMA_DECAY * 0.25));
+    expect(shakeEnergy()).toBeLessThan(start);
+    for (let i = 0; i < 40; i++) shakePixels(i + 1, true, 0.05);
     expect(shakeEnergy()).toBe(0);
+  });
+
+  it("overlapping punches add trauma instead of restarting", () => {
+    resetShake();
+    punchShake(0.4);
+    expect(shakeEnergy()).toBeCloseTo(0.4);
+    punchShake(0.4);
+    expect(shakeEnergy()).toBeCloseTo(0.8);
+    punchShake(1);
+    expect(shakeEnergy()).toBe(1);
   });
 
   it("a crit hit punches shake and the setting still zeroes it", () => {
@@ -102,7 +130,7 @@ describe("screen shake", () => {
     expect(shakeEnergy()).toBeGreaterThan(0);
     expect(shakePixels(1, false)).toEqual([0, 0]);
     resetShake();
-    punchShake(1.1);
+    punchShake(0.55);
     expect(shakeEnergy()).toBeGreaterThan(0);
     expect(shakePixels(2, true)[0]).not.toBe(0);
   });
@@ -128,5 +156,20 @@ describe("screen shake", () => {
     syncStore(session, store);
     expect(store.getItem(SHAKE_KEY)).toBe("1");
     expect(loadStore(store).shake).toBe(true);
+  });
+
+  it("reduce motion defaults from the query and kills shake", () => {
+    const store = mem();
+    expect(loadStore(store, true).reduceMotion).toBe(true);
+    expect(loadStore(store, false).reduceMotion).toBe(false);
+    const session = createSession(0, false, true, true, true);
+    expect(session.reduceMotion).toBe(true);
+    setReduceMotion(true);
+    punchShake(1);
+    expect(shakeEnergy()).toBe(0);
+    toggleReduceMotion(session);
+    syncStore(session, store);
+    expect(store.getItem(MOTION_KEY)).toBe("0");
+    expect(loadStore(store, true).reduceMotion).toBe(false);
   });
 });

@@ -1,10 +1,13 @@
 import { Z_ELITE, Z_KIND, Z_KNIGHT } from "../sim/foes";
 import { Z_BRUTE } from "../sim/types";
+import { reduceMotionOn } from "./motion";
 import { punchShake } from "./shake";
 
 export const NUMBER_CAP = 256;
 export const FLASH_CAP = 2048;
 export const FLASH_MS = 80;
+export const FLASH_SOFT_MS = 28;
+export const STOP_MAX_MS = 100;
 export const PART_CAP = 128;
 export const STOP_ELITE_MS = 40;
 export const STOP_BOSS_MS = 60;
@@ -62,6 +65,7 @@ let stopMs = 0;
 let usedMs = 0;
 let windowMs = 0;
 let showNumbers = true;
+let clockOwned = false;
 
 export function damageNumbersOn(): boolean {
   return showNumbers;
@@ -69,6 +73,14 @@ export function damageNumbersOn(): boolean {
 
 export function setNumbersOn(on: boolean): void {
   showNumbers = on;
+}
+
+export function ownJuiceClock(on: boolean): void {
+  clockOwned = on;
+}
+
+export function juiceClockOwned(): boolean {
+  return clockOwned;
 }
 
 export function resetJuice(): void {
@@ -160,12 +172,14 @@ export function lastNumberValue(): number {
 }
 
 function grant(ms: number): void {
-  if (ms <= 0) return;
+  if (ms <= 0 || reduceMotionOn()) return;
   const room = STOP_BUDGET_MS - usedMs;
   if (room <= 0) return;
   const g = ms < room ? ms : room;
   usedMs += g;
-  stopMs += g;
+  const next = stopMs + g;
+  const cap = STOP_MAX_MS < STOP_BUDGET_MS ? STOP_MAX_MS : STOP_BUDGET_MS;
+  stopMs = next > cap ? cap : next;
 }
 
 function spawnNumber(x: number, y: number, dmg: number, crit: boolean): void {
@@ -231,7 +245,7 @@ export function juiceHit(
   else if (dealt > 0) punchShake(SHAKE_HIT);
   if (slot >= 0 && slot < FLASH_CAP) {
     if ((flash[slot] ?? 0) <= 0) flashOn++;
-    flash[slot] = FLASH_MS;
+    flash[slot] = reduceMotionOn() ? FLASH_SOFT_MS : FLASH_MS;
     if (slot + 1 > flashScan) flashScan = slot + 1;
     const dx = x - ox;
     const dy = y - oy;

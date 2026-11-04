@@ -6,6 +6,7 @@ import {
   damageNumbersOn,
   enemyFlash,
   FLASH_MS,
+  FLASH_SOFT_MS,
   HIT_COLOR,
   hitKnockX,
   hitKnockY,
@@ -20,6 +21,7 @@ import {
   numberCount,
   numberScale,
   numberY,
+  ownJuiceClock,
   PART_CAP,
   particleCount,
   resetJuice,
@@ -29,10 +31,12 @@ import {
   STOP_CRIT_MS,
   STOP_ELITE_MS,
   STOP_HURT_MS,
+  STOP_MAX_MS,
   stopRemaining,
   stopUsed,
   tickJuice,
 } from "../src/render/juice";
+import { setReduceMotion } from "../src/render/motion";
 import { acidTouch, detonateGas } from "../src/sim/foes.hot";
 import { lichX, lichY, seekSeconds } from "../src/sim/finale";
 import { Z_ELITE, Z_KNIGHT } from "../src/sim/foes";
@@ -77,6 +81,8 @@ const bulletOn = (w: World, i = 0): void => {
 
 afterEach(() => {
   setNumbersOn(true);
+  setReduceMotion(false);
+  ownJuiceClock(false);
   resetJuice();
 });
 
@@ -340,7 +346,7 @@ describe("damage number setting", () => {
     syncStore(session, store);
     expect(store.getItem(NUM_KEY)).toBe("0");
     expect(loadStore(store).numbers).toBe(false);
-    const again = createSession(loadStore(store).best, loadStore(store).muted, loadStore(store).shake, loadStore(store).numbers);
+    const again = createSession(loadStore(store).best, loadStore(store).muted, loadStore(store).shake, loadStore(store).numbers, loadStore(store).reduceMotion);
     expect(again.numbers).toBe(false);
     toggleNumbers(again);
     syncStore(again, store);
@@ -473,5 +479,43 @@ describe("splashes and the lich", () => {
     expect(w.hp).toBeLessThan(before);
     expect(stopRemaining()).toBe(STOP_HURT_MS);
     expect(stopUsed()).toBeLessThanOrEqual(STOP_BUDGET_MS);
+  });
+});
+
+describe("hit-stop overlap and real-time decay", () => {
+  it("extends overlapping crits instead of restarting and hard-caps remaining time", () => {
+    resetJuice();
+    juiceHit(0, 12, 40, 4, Z_SHAMBLER, false, 0);
+    expect(stopRemaining()).toBe(STOP_CRIT_MS);
+    juiceFrame(10);
+    expect(stopRemaining()).toBe(STOP_CRIT_MS - 10);
+    juiceHit(1, 12, 40, 4, Z_SHAMBLER, false, 1);
+    expect(stopRemaining()).toBe(STOP_CRIT_MS - 10 + STOP_CRIT_MS);
+    expect(stopRemaining()).toBeLessThanOrEqual(STOP_MAX_MS);
+    expect(stopRemaining()).not.toBe(STOP_CRIT_MS);
+    juiceHit(2, 0, 0, 1, Z_BRUTE, true, 2);
+    expect(stopRemaining()).toBeGreaterThan(STOP_CRIT_MS);
+    expect(stopRemaining()).toBeLessThanOrEqual(STOP_MAX_MS);
+  });
+
+  it("decays on juiceFrame wall time", () => {
+    resetJuice();
+    ownJuiceClock(true);
+    juiceHit(0, 0, 0, 1, Z_GHOUL | Z_ELITE, true, 0);
+    expect(stopRemaining()).toBe(STOP_ELITE_MS);
+    juiceFrame(10);
+    expect(stopRemaining()).toBe(STOP_ELITE_MS - 10);
+    juiceFrame(STOP_ELITE_MS - 10);
+    expect(stopRemaining()).toBe(0);
+  });
+
+  it("reduce motion skips hit-stop and shortens flashes", () => {
+    resetJuice();
+    setReduceMotion(true);
+    juiceHit(4, 3, 3, 4, Z_SHAMBLER, false, 2);
+    expect(stopRemaining()).toBe(0);
+    expect(enemyFlash(4)).toBe(FLASH_SOFT_MS);
+    juicePlayerHurt();
+    expect(stopRemaining()).toBe(0);
   });
 });

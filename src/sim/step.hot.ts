@@ -1,4 +1,4 @@
-import { JUICE_DT, juiceFrame, juicePlayerHurt, tickJuice } from "../render/juice";
+import { JUICE_DT, juiceClockOwned, juiceFrame, juicePlayerHurt, stopRemaining, tickJuice } from "../render/juice";
 import { chargeUlt, stepUlt, tryUlt } from "./ult";
 import { stepWarn, tickEliteCharge } from "./warn";
 import { bossSpeedMul, hurtBoss, stepBoss } from "./boss.hot";
@@ -181,7 +181,9 @@ export function step(w: World, input: Input): void {
   w.events.fill(0);
   if (stepChest(w, input)) return;
   if (w.over) return;
-  if (juiceFrame(JUICE_DT)) return;
+  if (juiceClockOwned()) {
+    if (stopRemaining() > 0) return;
+  } else if (juiceFrame(JUICE_DT)) return;
   if (w.choosing) {
     if ((input.reroll ?? 0) > 0 && tryReroll(w)) return;
     tryPick(w, input.pick ?? 0);

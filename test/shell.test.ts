@@ -120,7 +120,7 @@ describe("session phases", () => {
     syncStore(s, store);
     expect(store.getItem(BEST_KEY)).toBe("7");
     expect(store.getItem(MUTE_KEY)).toBe("1");
-    expect(loadStore(store)).toEqual({ best: 7, muted: true, shake: true, numbers: true });
+    expect(loadStore(store)).toEqual({ best: 7, muted: true, shake: true, numbers: true, reduceMotion: false });
     expect(store.getItem(SHAKE_KEY)).toBe("1");
     store.setItem(BEST_KEY, "nope");
     expect(loadStore(store).best).toBe(0);
