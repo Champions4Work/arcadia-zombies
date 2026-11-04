@@ -354,11 +354,16 @@ export const HAZARD_MARKS = [
 
 export function paintGround(ctx: CanvasRenderingContext2D): void {
   build();
-  ctx.fillStyle = "#4f4636";
+  ctx.fillStyle = "#24303c";
   ctx.fillRect(0, 108, ARENA_W, ARENA_H - 108);
   tileSheet(ctx, "tile_stone_seamless", 0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
   ctx.save();
-  ctx.strokeStyle = "rgba(62,52,40,0.42)";
+  ctx.globalAlpha = 0.74;
+  ctx.fillStyle = "#24303c";
+  ctx.fillRect(0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
+  ctx.restore();
+  ctx.save();
+  ctx.strokeStyle = "rgba(36,48,62,0.55)";
   ctx.lineWidth = 1;
   const grout = TILE * 2;
   for (let x = 0; x <= ARENA_W; x += grout) {
@@ -376,7 +381,7 @@ export function paintGround(ctx: CanvasRenderingContext2D): void {
   ctx.restore();
   ctx.save();
   ctx.globalCompositeOperation = "multiply";
-  ctx.fillStyle = "rgba(24,30,42,0.28)";
+  ctx.fillStyle = "rgba(16,24,36,0.22)";
   ctx.fillRect(0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
   ctx.restore();
   for (let r = FLOOR0; r < ROWS; r++) {

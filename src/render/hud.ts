@@ -218,22 +218,68 @@ function portrait(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   barCount(ctx, "120/120", bx + 5, ey + 7);
 }
 
+function skillIcon(ctx: CanvasRenderingContext2D, i: number, x: number, y: number, s: number): void {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = XP;
+  ctx.strokeStyle = XP;
+  ctx.lineWidth = 2;
+  if (i === 0) {
+    ctx.beginPath();
+    ctx.moveTo(-s * 0.12, -s * 0.42);
+    ctx.lineTo(s * 0.18, -s * 0.08);
+    ctx.lineTo(s * 0.02, -s * 0.04);
+    ctx.lineTo(s * 0.16, s * 0.42);
+    ctx.lineTo(-s * 0.2, s * 0.02);
+    ctx.lineTo(-s * 0.02, -s * 0.02);
+    ctx.closePath();
+    ctx.fill();
+  } else if (i === 1) {
+    ctx.beginPath();
+    ctx.arc(0, s * 0.04, s * 0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(0, s * 0.04, s * 0.42, Math.PI * 1.15, Math.PI * 1.85);
+    ctx.stroke();
+  } else {
+    ctx.beginPath();
+    for (let k = 0; k < 6; k++) {
+      const a = (k / 6) * Math.PI * 2 - Math.PI / 2;
+      const r = k % 2 === 0 ? s * 0.4 : s * 0.18;
+      const px = Math.cos(a) * r;
+      const py = Math.sin(a) * r;
+      if (k === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
 function skillKeys(ctx: CanvasRenderingContext2D, layout: HudLayout): void {
   const keys = ["Q", "E", "R"];
-  const r = 11;
-  const cx = layout.ability.x + layout.ability.w * 0.5;
-  const cy = layout.ability.y - r - 5;
+  const r = 24;
+  const cx = layout.ability.x + layout.ability.w * 0.42;
+  const cy = layout.ability.y - 8;
+  const spots = [
+    { x: cx - 30, y: cy - 10 },
+    { x: cx, y: cy - 26 },
+    { x: cx + 28, y: cy - 10 },
+  ];
   for (let i = 0; i < 3; i++) {
-    const x = cx + (i - 1) * 22;
-    blitSheetFit(ctx, "ring_frame_b", x - r - 2, cy - r - 2, r * 2 + 4, r * 2 + 4);
+    const p = spots[i];
+    if (!p) continue;
+    blitSheetFit(ctx, "ring_frame_b", p.x - r - 2, p.y - r - 2, r * 2 + 4, r * 2 + 4);
     ctx.beginPath();
-    ctx.arc(x, cy, r * 0.7, 0, Math.PI * 2);
+    ctx.arc(p.x, p.y, r * 0.72, 0, Math.PI * 2);
     ctx.fillStyle = IRON;
     ctx.fill();
     ctx.strokeStyle = BRASS;
-    ctx.lineWidth = 1.4;
+    ctx.lineWidth = 2;
     ctx.stroke();
-    ink(ctx, keys[i] ?? "Q", x, cy, 10, STEAM, "center");
+    skillIcon(ctx, i, p.x, p.y - 2, r * 0.7);
+    ink(ctx, keys[i] ?? "Q", p.x, p.y + r * 0.52, 9, STEAM, "center");
   }
 }
 

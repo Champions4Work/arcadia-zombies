@@ -63,12 +63,18 @@ describe("visual review gates", () => {
 
   it("keeps dusk dark with local lamp pools and no global orange wash", () => {
     const draw = readFileSync("src/render/draw.ts", "utf8");
-    expect(draw.includes("rgba(6,6,10,0.16)")).toBe(true);
+    expect(draw.includes("rgba(4,6,12,0.68)")).toBe(true);
+    expect(draw.includes("rgba(6,6,10,0.16)")).toBe(false);
     expect(draw.includes("rgba(220,132,52,0.34)")).toBe(false);
     expect(draw.includes("rgba(255,186,88,0.42)")).toBe(false);
     const yard = readFileSync("src/render/yard-fx.ts", "utf8");
-    expect(yard.includes("ellipse(x, y + 8, 104, 60")).toBe(true);
+    expect(yard.includes("ellipse(x, y + 10, 52, 32")).toBe(true);
     expect(yard.includes("function doorPool")).toBe(true);
+    expect(yard.includes("function steamPuff")).toBe(true);
+    expect(yard.includes("#7a8088")).toBe(true);
+    expect(yard.includes("{ x: 348, y: 188 }")).toBe(true);
+    expect(yard.includes("{ x: 348, y: 268 }")).toBe(true);
+    expect(yard.includes("{ x: 612, y: 188 }")).toBe(false);
     expect(yard.includes("ellipse(x, y, 68, 50")).toBe(true);
     expect(yard.includes("bluePool")).toBe(true);
     expect(yard.includes("blue_glow")).toBe(true);
@@ -86,8 +92,9 @@ describe("visual review gates", () => {
     expect(rack.includes("wpnGlyph")).toBe(false);
     expect(rack.includes("drawIcon")).toBe(false);
     expect(rack.includes("fillText")).toBe(true);
-    expect(rack.includes("Math.max(12, lv * 12)")).toBe(true);
-    expect(rack.includes("`${n}`")).toBe(true);
+    expect(rack.includes("34/210")).toBe(true);
+    expect(rack.includes("6/36")).toBe(true);
+    expect(rack.includes("Math.max(12, lv * 12)")).toBe(false);
     expect(yard.includes("tick * 2.2")).toBe(true);
     expect(yard.includes("moveTo(14, 0)")).toBe(true);
   });
@@ -117,6 +124,8 @@ describe("visual review gates", () => {
     expect(hud.includes("const local = 170")).toBe(true);
     expect(hud.includes("function restStick")).toBe(true);
     expect(hud.includes("function skillKeys")).toBe(true);
+    expect(hud.includes("function skillIcon")).toBe(true);
+    expect(hud.includes("const r = 24")).toBe(true);
     expect(hud.includes('"Q"')).toBe(true);
     expect(hud.includes('"E"')).toBe(true);
     expect(hud.includes('"R"')).toBe(true);
