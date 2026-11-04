@@ -33,6 +33,27 @@ function drawYard(ctx: CanvasRenderingContext2D): void {
     ctx.fillRect(x, y, i % 5 === 0 ? 2 : 1.2, i % 5 === 0 ? 2 : 1.2);
   }
   ctx.globalAlpha = 1;
+  const rays = [
+    { x: 140, w: 86, lean: 48 },
+    { x: 390, w: 110, lean: 18 },
+    { x: 680, w: 78, lean: -36 },
+  ];
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  for (const ray of rays) {
+    const g = ctx.createLinearGradient(ray.x, 0, ray.x + ray.lean, 168);
+    g.addColorStop(0, "rgba(255,220,170,0.42)");
+    g.addColorStop(1, "rgba(255,150,70,0)");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(ray.x, 0);
+    ctx.lineTo(ray.x + ray.w, 0);
+    ctx.lineTo(ray.x + ray.w * 0.28 + ray.lean, 168);
+    ctx.lineTo(ray.x + ray.lean * 0.35, 168);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.restore();
   paintGround(ctx);
 }
 

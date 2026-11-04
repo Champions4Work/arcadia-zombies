@@ -94,8 +94,8 @@ describe("r21 phone look", () => {
     expect(yard.includes("fillRect(x + 6, y - 12, len - 12, 24)")).toBe(true);
     expect(yard.includes("#7ae0d4")).toBe(true);
     expect(yard.includes("VALVE_B")).toBe(true);
-    expect(yard.includes("ellipse(x, y + 10, 60, 36")).toBe(true);
-    expect(yard.includes("rgba(255,196,110,0.25)")).toBe(true);
+    expect(yard.includes("ellipse(x, y + 8, 46, 22")).toBe(true);
+    expect(yard.includes("rgba(255,214,140,0.78)")).toBe(true);
     expect(yard.includes("export function paintYardGlow")).toBe(false);
     expect(yard.includes("function lampWash")).toBe(false);
     expect(yard.includes("function lampRay")).toBe(true);
@@ -114,15 +114,16 @@ describe("r21 phone look", () => {
 
   it("rims the hunter in lamp amber and dusks the sky", () => {
     const look = readFileSync("src/art/look.ts", "utf8");
-    expect(look.includes("rgba(255,176,80,0.55)")).toBe(true);
-    expect(look.includes("rgba(255,214,120,0.82)")).toBe(true);
+    expect(look.includes("rgba(255,176,80,0.72)")).toBe(true);
+    expect(look.includes("rgba(255,214,120,0.82)")).toBe(false);
     expect(look.includes("rgba(62,220,220,0.32)")).toBe(false);
     const stage = readFileSync("src/render/stage.ts", "utf8");
     expect(stage.includes("#241028")).toBe(true);
     expect(stage.includes("#4a2418")).toBe(true);
     const draw = readFileSync("src/render/draw.ts", "utf8");
-    expect(draw.includes("rgba(4,6,12,0.72)")).toBe(true);
-    expect(draw.includes("rgba(24,14,8,0.08)")).toBe(true);
+    expect(draw.includes("rgba(4,6,12,0.32)")).toBe(true);
+    expect(draw.includes("rgba(24,14,8,0.03)")).toBe(true);
+    expect(stage.includes("rgba(255,220,170,0.42)")).toBe(true);
     expect(draw.includes("paintYardGlow")).toBe(false);
     expect(draw.includes("rgba(40,18,10,0.05)")).toBe(false);
   });

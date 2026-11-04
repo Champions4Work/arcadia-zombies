@@ -19,7 +19,7 @@ describe("visual review gates", () => {
     expect(sheet.includes('spr["x"]')).toBe(true);
     expect(sheet.includes("imageSmoothingEnabled = false")).toBe(true);
     expect(SEE_AXIS).toBe(360);
-    expect(HERO_DRAW_SCALE).toBe(1.4);
+    expect(HERO_DRAW_SCALE).toBe(1.05);
     expect(HERO_DRAW_SCALE * HERO_PACK_H).toBeGreaterThanOrEqual(foeWorldH(0) * 1.25);
   });
 
@@ -47,7 +47,7 @@ describe("visual review gates", () => {
     expect(look.includes("rgba(200,208,220")).toBe(false);
     expect(look.includes("lineTo(mx + nx * 62")).toBe(false);
     expect(look.includes("lineTo(mx + nx * 18")).toBe(true);
-    expect(look.includes("ellipse(mx, my, 14, 8")).toBe(true);
+    expect(look.includes("ellipse(mx, my, 8, 4.2")).toBe(true);
     expect(look.includes("rgba(255,96,16,0.95)")).toBe(true);
     expect(look.includes("export function walkBob")).toBe(true);
     expect(look.includes("export function shambleBob")).toBe(true);
@@ -81,17 +81,17 @@ describe("visual review gates", () => {
     expect(YARD_CLEAR.y1 - YARD_CLEAR.y0).toBeGreaterThanOrEqual(320);
   });
 
-  it("keeps dusk dark with local lamp pools and no global orange wash", () => {
+  it("keeps dusk readable with local lamp pools and no global orange wash", () => {
     const draw = readFileSync("src/render/draw.ts", "utf8");
-    expect(draw.includes("rgba(4,6,12,0.72)")).toBe(true);
-    expect(draw.includes("rgba(24,14,8,0.08)")).toBe(true);
+    expect(draw.includes("rgba(4,6,12,0.32)")).toBe(true);
+    expect(draw.includes("rgba(24,14,8,0.03)")).toBe(true);
     expect(draw.includes("paintYardGlow")).toBe(false);
     expect(draw.includes("rgba(6,6,10,0.16)")).toBe(false);
     expect(draw.includes("rgba(220,132,52,0.34)")).toBe(false);
     expect(draw.includes("rgba(255,186,88,0.42)")).toBe(false);
     const yard = readFileSync("src/render/yard-fx.ts", "utf8");
-    expect(yard.includes("ellipse(x, y + 10, 60, 36")).toBe(true);
-    expect(yard.includes("rgba(255,196,110,0.25)")).toBe(true);
+    expect(yard.includes("ellipse(x, y + 8, 46, 22")).toBe(true);
+    expect(yard.includes("rgba(255,214,140,0.78)")).toBe(true);
     expect(yard.includes("function lampWash")).toBe(false);
     expect(yard.includes("function lampRay")).toBe(true);
     expect(yard.includes("decal_vent")).toBe(true);

@@ -286,6 +286,8 @@ function build(): void {
     add(FEAT_GEAR, 790, 340, 13, 6);
     add(FEAT_GEAR, 330, 470, 16, 8);
     add(FEAT_GEAR, 860, 520, 11, 7);
+    add(FEAT_GEAR, 460, 520, 16, 8);
+    add(FEAT_GEAR, 520, 590, 13, 7);
   }
   for (let i = 0; i < 14; i++) {
     const hx = hash(i, 9);
@@ -494,13 +496,15 @@ export function paintGround(ctx: CanvasRenderingContext2D): void {
   const wash = bound === ZONE_BOILER ? "#141210" : bound === ZONE_TRAM ? "#1c242c" : "#24303c";
   const tile = bound === ZONE_BOILER ? "tile_metal_seamless" : "tile_stone_seamless";
   const groutInk = bound === ZONE_BOILER ? "rgba(22,20,18,0.72)" : bound === ZONE_TRAM ? "rgba(20,28,36,0.5)" : "rgba(36,48,62,0.55)";
-  const shade = bound === ZONE_BOILER ? "rgba(8,8,10,0.42)" : bound === ZONE_TRAM ? "rgba(10,16,22,0.18)" : "rgba(16,24,36,0.22)";
+  const shade = bound === ZONE_BOILER ? "rgba(8,8,10,0.42)" : bound === ZONE_TRAM ? "rgba(10,16,22,0.12)" : "rgba(16,24,36,0.06)";
+  const veil = bound === ZONE_BOILER ? 0.55 : bound === ZONE_TRAM ? 0.28 : 0.08;
+  const veilInk = bound === ZONE_BRASS ? "#3a2a1c" : wash;
   ctx.fillStyle = wash;
   ctx.fillRect(0, 108, ARENA_W, ARENA_H - 108);
   tileSheet(ctx, tile, 0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
   ctx.save();
-  ctx.globalAlpha = 0.52;
-  ctx.fillStyle = wash;
+  ctx.globalAlpha = veil;
+  ctx.fillStyle = veilInk;
   ctx.fillRect(0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
   ctx.restore();
   ctx.save();
@@ -524,12 +528,10 @@ export function paintGround(ctx: CanvasRenderingContext2D): void {
   ctx.globalCompositeOperation = "multiply";
   ctx.fillStyle = shade;
   ctx.fillRect(0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
-  ctx.fillStyle = "rgba(6,10,16,0.72)";
-  ctx.fillRect(280, 240, 400, 280);
-  ctx.restore();
-  ctx.save();
-  ctx.fillStyle = "rgba(14,20,28,0.5)";
-  ctx.fillRect(300, 250, 360, 260);
+  if (bound === ZONE_BRASS) {
+    ctx.fillStyle = "rgba(92,64,38,0.28)";
+    ctx.fillRect(0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
+  }
   ctx.restore();
   for (let r = FLOOR0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {

@@ -24,8 +24,8 @@ function fogSheet(): HTMLCanvasElement {
     ctx.fillRect(0, 0, W, H);
     const vig = ctx.createRadialGradient(W / 2, H * 0.5, 70, W / 2, H * 0.5, 280);
     vig.addColorStop(0, "rgba(0,0,0,0)");
-    vig.addColorStop(0.55, "rgba(18,10,8,0.18)");
-    vig.addColorStop(1, "rgba(6,6,12,0.76)");
+    vig.addColorStop(0.62, "rgba(18,10,8,0.06)");
+    vig.addColorStop(1, "rgba(6,6,12,0.28)");
     ctx.fillStyle = vig;
     ctx.fillRect(0, 0, W, H);
   });

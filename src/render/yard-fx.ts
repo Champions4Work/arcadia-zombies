@@ -12,6 +12,7 @@ const BUILDINGS = [
 
 const BELTS = [
   { x: 336, y: 188, w: 288, vert: 0 },
+  { x: 300, y: 552, w: 360, vert: 0 },
 ];
 
 const PIPE_RUNS = [
@@ -68,6 +69,9 @@ const FLOOR_DECALS = [
   { id: "decal_vent", x: 516, y: 364 },
   { id: "decal_grate", x: 388, y: 348 },
   { id: "decal_vent", x: 572, y: 344 },
+  { id: "decal_grate", x: 430, y: 508 },
+  { id: "decal_vent", x: 530, y: 536 },
+  { id: "decal_grate", x: 470, y: 604 },
 ];
 
 const TANKS = [
@@ -266,34 +270,59 @@ function visible(x: number, y: number, camX: number, camY: number, vw: number, v
 }
 
 function lampPool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  const g = ctx.createRadialGradient(x, y - 8, 3, x, y + 10, 60);
-  g.addColorStop(0, "rgba(255,196,110,0.25)");
-  g.addColorStop(0.45, "rgba(255,150,56,0.12)");
+  const g = ctx.createRadialGradient(x, y - 6, 2, x, y + 8, 48);
+  g.addColorStop(0, "rgba(255,214,140,0.78)");
+  g.addColorStop(0.42, "rgba(255,156,54,0.34)");
   g.addColorStop(1, "rgba(10,10,14,0)");
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.ellipse(x, y + 10, 60, 36, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y + 8, 46, 22, 0, 0, Math.PI * 2);
   ctx.fill();
+  ctx.restore();
+}
+
+function skyShafts(ctx: CanvasRenderingContext2D): void {
+  const rays = [
+    { x: 340, w: 52, lean: 26 },
+    { x: 456, w: 68, lean: 6 },
+    { x: 572, w: 46, lean: -20 },
+  ];
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  for (const ray of rays) {
+    const g = ctx.createLinearGradient(ray.x, 148, ray.x + ray.lean, 470);
+    g.addColorStop(0, "rgba(255,220,170,0.36)");
+    g.addColorStop(0.45, "rgba(255,176,80,0.1)");
+    g.addColorStop(1, "rgba(255,150,60,0)");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(ray.x, 148);
+    ctx.lineTo(ray.x + ray.w, 148);
+    ctx.lineTo(ray.x + ray.w * 0.22 + ray.lean, 470);
+    ctx.lineTo(ray.x + ray.lean * 0.25, 470);
+    ctx.closePath();
+    ctx.fill();
+  }
   ctx.restore();
 }
 
 function lampRay(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
-  ctx.translate(x, y - 6);
-  ctx.rotate(-0.38);
-  const g = ctx.createLinearGradient(0, 0, 0, -96);
-  g.addColorStop(0, "rgba(255,196,110,0.25)");
-  g.addColorStop(0.55, "rgba(255,170,70,0.1)");
+  ctx.translate(x, y - 8);
+  ctx.rotate(-0.22);
+  const g = ctx.createLinearGradient(0, 0, 0, -168);
+  g.addColorStop(0, "rgba(255,214,150,0.55)");
+  g.addColorStop(0.45, "rgba(255,176,80,0.22)");
   g.addColorStop(1, "rgba(255,160,60,0)");
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.moveTo(-7, 0);
-  ctx.lineTo(9, 0);
-  ctx.lineTo(30, -96);
-  ctx.lineTo(-24, -96);
+  ctx.moveTo(-8, 0);
+  ctx.lineTo(10, 0);
+  ctx.lineTo(36, -168);
+  ctx.lineTo(-28, -168);
   ctx.closePath();
   ctx.fill();
   ctx.restore();
@@ -655,6 +684,7 @@ export function paintYardLive(
     }
   }
   if (yardBound === ZONE_BRASS) {
+    lampPool(ctx, 480, 530);
     for (const decal of FLOOR_DECALS) {
       if (!visible(decal.x, decal.y, camX, camY, vw, vh, 40)) continue;
       blitScaled(ctx, decal.id, decal.x, decal.y, 1.55);
@@ -686,6 +716,7 @@ export function paintYardLive(
     ctx.restore();
     steamPuff(ctx, vent.x, vent.y, tick);
   }
+  if (yardBound === ZONE_BRASS) skyShafts(ctx);
 }
 
 export function paintDoorSpawn(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number): void {
