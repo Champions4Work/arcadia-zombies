@@ -124,7 +124,7 @@ function stubCtx(texts: string[]): CanvasRenderingContext2D {
 describe("weapon rack", () => {
   it("paints icon slots and never writes the old text tags", () => {
     const texts: string[] = [];
-    const vp = readViewport({ innerWidth: 390, innerHeight: 844, devicePixelRatio: 3 }, ZERO_INSETS);
+    const vp = readViewport({ innerWidth: 1280, innerHeight: 800, devicePixelRatio: 1 }, ZERO_INSETS);
     const pv = playView(vp.cssW, vp.cssH);
     const fit = computeFit(vp.cssW, vp.cssH, vp.dpr, pv.viewW, pv.viewH, ZERO_INSETS);
     bindHud(layoutHud(vp, fit));
@@ -134,6 +134,17 @@ describe("weapon rack", () => {
     expect(texts).toContain("34/210");
     expect(texts).toContain("6/36");
     expect(texts.filter((t) => /^\d+$/.test(t)).length).toBe(3);
+  });
+
+  it("paints phone power slots without the ammo strip", () => {
+    const texts: string[] = [];
+    const vp = readViewport({ innerWidth: 390, innerHeight: 844, devicePixelRatio: 3 }, ZERO_INSETS);
+    const pv = playView(vp.cssW, vp.cssH);
+    const fit = computeFit(vp.cssW, vp.cssH, vp.dpr, pv.viewW, pv.viewH, ZERO_INSETS);
+    bindHud(layoutHud(vp, fit));
+    drawWeaponRack(stubCtx(texts), createWorld(1));
+    expect(texts).not.toContain("34/210");
+    expect(texts).not.toContain("6/36");
   });
 
   it("keeps the live HUD free of the old GEARHEART and DIFFICULTY plates", () => {
@@ -148,7 +159,7 @@ describe("weapon rack", () => {
     expect(texts).not.toContain("YARD");
     expect(texts).not.toContain("120/120");
     expect(texts).toContain("Objectives");
-    expect(texts).toContain("Chapter 1");
+    expect(texts).toContain("CALM");
     expect(texts.some((t) => /^Wave \d+\/8$/.test(t))).toBe(true);
     expect(texts).toContain("ACTIVATE STEAM GATE");
     expect(texts).toContain("HOLD THE AREA");

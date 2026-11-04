@@ -81,6 +81,7 @@ export function drawWeaponRack(c: CanvasRenderingContext2D, w: World): void {
   const slot = Math.min(box.h, (box.w - gap * (WPN_COUNT - 1)) / WPN_COUNT);
   const row = slot * WPN_COUNT + gap * (WPN_COUNT - 1);
   const x0 = box.x + Math.max(0, (box.w - row) / 2);
+  const phone = layout.phone;
   for (let i = 0; i < WPN_COUNT; i++) {
     const id = IDS[i] ?? 0;
     const lv = w.upgrades[id] ?? 0;
@@ -93,8 +94,12 @@ export function drawWeaponRack(c: CanvasRenderingContext2D, w: World): void {
     const sy = y;
     const cx = sx + sw / 2;
     const cy = sy + sh / 2;
-    const rim = hot ? sw * 0.56 : sw * 0.5;
     blitSheetFit(c, "power_slot", sx - 7, sy - 7, sw + 14, sh + 14);
+    if (phone) {
+      paintSlotIcon(c, i, cx, cy - 2, Math.max(12, sw * 0.44));
+      continue;
+    }
+    const rim = hot ? sw * 0.56 : sw * 0.5;
     c.beginPath();
     c.arc(cx, cy, rim * 0.72, 0, Math.PI * 2);
     c.fillStyle = SOOT;

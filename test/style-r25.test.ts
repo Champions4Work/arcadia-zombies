@@ -20,6 +20,14 @@ import {
   PHONE_FRAME_P95_MS,
 } from "../src/shell/phone-perf";
 import { reviewHorde } from "../src/shell/review-shot";
+import { HERO_DRAW_SCALE, HERO_PACK_H } from "../src/art/look";
+import { HAZARD_MARKS } from "../src/render/ground";
+import { yardPropHits, YARD_CLEAR, PHONE_CAM } from "../src/render/yard-fx";
+import { bindHud, boxesOverlap, hudBoxes, layoutHud } from "../src/shell/hud-layout";
+import { computeFit } from "../src/shell/fit";
+import { playView } from "../src/shell/play-view";
+import { readViewport, ZERO_INSETS } from "../src/shell/viewport";
+import { drawHud, difficultyLabel } from "../src/render/hud";
 
 const walk: Input = { dx: 0.85, dy: 0.45, pick: 0 };
 const frame = new Uint32Array(W * H);
@@ -29,7 +37,7 @@ function p95(samples: number[]): number {
   return ranked[Math.min(ranked.length - 1, (ranked.length * 0.95) | 0)] ?? 0;
 }
 
-function stubCtx(): CanvasRenderingContext2D {
+function stubCtx(texts: string[] = []): CanvasRenderingContext2D {
   const grad = { addColorStop() {} };
   const noop = () => {};
   const ctx: Record<string, unknown> = {
@@ -37,9 +45,17 @@ function stubCtx(): CanvasRenderingContext2D {
     fillStyle: "",
     strokeStyle: "",
     lineWidth: 1,
+    font: "",
+    textAlign: "left",
+    textBaseline: "alphabetic",
     globalAlpha: 1,
+    lineJoin: "round",
+    lineCap: "round",
     globalCompositeOperation: "source-over",
     imageSmoothingEnabled: false,
+    fillText(text: string) { texts.push(text); },
+    strokeText(text: string) { texts.push(text); },
+    measureText(text: string) { return { width: String(text).length * 6 }; },
     createLinearGradient() { return grad; },
     createRadialGradient() { return grad; },
   };
@@ -141,5 +157,75 @@ describe("juice r25 combat read", () => {
     const avg = Math.round(fpsSamples.reduce((sum, v) => sum + v, 0) / fpsSamples.length);
     expect(mid).toBeGreaterThanOrEqual(PHONE_FPS_MID_MIN);
     expect(avg).toBeGreaterThanOrEqual(PHONE_FPS_AVG_MIN);
+  });
+});
+
+describe("r25 art-bible phone pass", () => {
+  it("locks 390 HUD to CALM bar, map, objectives, heart slots, and LV", () => {
+    const texts: string[] = [];
+    const vp = readViewport({ innerWidth: 390, innerHeight: 844, devicePixelRatio: 3 }, ZERO_INSETS);
+    const pv = playView(vp.cssW, vp.cssH);
+    const fit = computeFit(vp.cssW, vp.cssH, vp.dpr, pv.viewW, pv.viewH, ZERO_INSETS);
+    const hud = layoutHud(vp, fit);
+    bindHud(hud);
+    expect(hud.phone).toBe(true);
+    expect(hud.face.w).toBe(0);
+    const w = createWorld(7);
+    drawHud(stubCtx(texts), w);
+    expect(hud.minimap.w).toBeGreaterThan(0);
+    expect(hud.objectives.w).toBeGreaterThan(0);
+    expect(texts.some((t) => t.includes("Objectives") || t.includes("ACTIVATE"))).toBe(true);
+    expect(texts.some((t) => t.startsWith("LV "))).toBe(true);
+    expect(texts).toContain(difficultyLabel(w.rank));
+    expect(texts.some((t) => t.includes("34/210"))).toBe(false);
+    expect(texts).not.toContain("240/240");
+    expect(texts).not.toContain("Q");
+    expect(HERO_DRAW_SCALE).toBe(1.4);
+    expect(HERO_PACK_H).toBe(64);
+    const pack = JSON.parse(readFileSync("src/art/packed/pack.json", "utf8"));
+    expect(pack.hero_px).toBe(64);
+  });
+
+  it("anchors minimap top-left and objectives top-right without HUD overlap", () => {
+    const vp = readViewport({ innerWidth: 390, innerHeight: 844, devicePixelRatio: 3 }, ZERO_INSETS);
+    const pv = playView(vp.cssW, vp.cssH);
+    const fit = computeFit(vp.cssW, vp.cssH, vp.dpr, pv.viewW, pv.viewH, ZERO_INSETS);
+    const hud = layoutHud(vp, fit);
+    expect(hud.minimap.x).toBeLessThan(vp.cssW * 0.08);
+    expect(hud.minimap.y).toBeLessThan(vp.cssH * 0.06);
+    expect(hud.objectives.x + hud.objectives.w).toBeGreaterThan(vp.cssW * 0.55);
+    expect(hud.hero.y).toBeGreaterThan(vp.cssH * 0.68);
+    const boxes = hudBoxes(hud);
+    for (let i = 0; i < boxes.length; i++) {
+      for (let j = i + 1; j < boxes.length; j++) {
+        expect(boxesOverlap(boxes[i]!, boxes[j]!)).toBe(false);
+      }
+    }
+  });
+
+  it("keeps cyan pipes, belt loot, and lit spawn props on the phone cam", () => {
+    const yard = readFileSync("src/render/yard-fx.ts", "utf8");
+    expect(yard.includes("#7ae0d4")).toBe(true);
+    expect(yard.includes("function paintCrossBelt")).toBe(true);
+    expect(yard.includes("BELT_H = 72")).toBe(true);
+    expect(yard.includes("window_lit")).toBe(true);
+    expect(yard.includes("building_wall_door")).toBe(true);
+    expect(HAZARD_MARKS.length).toBeLessThanOrEqual(3);
+    expect(yardPropHits(YARD_CLEAR.x0, YARD_CLEAR.y0, YARD_CLEAR.x1, YARD_CLEAR.y1)).toBe(0);
+    expect(yardPropHits(PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(28);
+  });
+
+  it("draws the pack dive-suit hero and phone power slots without ammo strip", () => {
+    const look = readFileSync("src/art/look.ts", "utf8");
+    expect(look.includes("heroSpriteId")).toBe(true);
+    expect(look.includes("blitSheetLean(ctx, heroSpriteId")).toBe(true);
+    const rack = readFileSync("src/render/weapons.ts", "utf8");
+    expect(rack.includes("layout.phone")).toBe(true);
+    expect(rack.includes("34/210")).toBe(true);
+    const hud = readFileSync("src/render/hud.ts", "utf8");
+    expect(hud.includes("difficultyLabel(w.rank)")).toBe(true);
+    expect(hud.includes("layout.phone")).toBe(true);
+    expect(hud.includes("if (!layout.phone && layout.face.w > 0) portrait")).toBe(true);
+    expect(hud.includes("low ? DANGER : HEALTH")).toBe(true);
   });
 });

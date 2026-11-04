@@ -138,7 +138,7 @@ describe("visual review gates", () => {
     expect(rack.includes("34/210")).toBe(true);
     expect(rack.includes("6/36")).toBe(true);
     expect(rack.includes('blitSheetFit(c, "power_slot"')).toBe(true);
-    expect(rack.includes("c.arc(cx, cy, rim")).toBe(true);
+    expect(rack.includes("layout.phone")).toBe(true);
     expect(rack.includes("Math.max(12, lv * 12)")).toBe(false);
     expect(yard.includes("tick * 2.2")).toBe(true);
     expect(yard.includes("w * 0.42")).toBe(true);
@@ -175,7 +175,7 @@ describe("visual review gates", () => {
     expect(zones.includes("The Brass District")).toBe(true);
     expect(zones.includes("Boiler Works")).toBe(true);
     expect(zones.includes("Tram Depot")).toBe(true);
-    expect(hud.includes("CALM")).toBe(false);
+    expect(hud.includes("difficultyLabel(w.rank)")).toBe(true);
     expect(hud.includes('blitSheetFit(ctx, "minimap_frame"')).toBe(true);
     expect(hud.includes("#1a1612")).toBe(true);
     expect(hud.includes('blitSheetFit(ctx, "heart_ring"')).toBe(true);
@@ -198,16 +198,12 @@ describe("visual review gates", () => {
     expect(hud.includes("function skillKeys")).toBe(true);
     expect(hud.includes("function skillIcon")).toBe(true);
     expect(hud.includes("function phoneHud")).toBe(false);
+    expect(hud.includes("layout.phone")).toBe(true);
     expect(hud.includes("layout.objectives")).toBe(true);
-    expect(hud.includes("phoneHud(layout) ? 10 : 10")).toBe(false);
-    expect(hud.includes("portrait(ctx, w, layout.face)")).toBe(true);
+    expect(hud.includes("if (!layout.phone && layout.face.w > 0) portrait(ctx, w, layout.face)")).toBe(true);
+    expect(hud.includes("if (!layout.phone) {")).toBe(true);
     expect(hud.includes("skillKeys(ctx, layout)")).toBe(true);
-    expect(hud.includes("const r = 24")).toBe(true);
-    expect(hud.includes('"Q"')).toBe(true);
-    expect(hud.includes('"E"')).toBe(true);
-    expect(hud.includes('"R"')).toBe(true);
-    expect(hud.includes("layout.hero.y - 94")).toBe(true);
-    expect(hud.includes("const r = 30")).toBe(true);
+    expect(hud.includes("formatClock(w.tick)")).toBe(true);
     expect(hud.includes("fillRect(cx - r * 0.78")).toBe(true);
     expect(hud.includes("bw * 0.72")).toBe(false);
     expect(hud.includes("#e24a32")).toBe(true);
