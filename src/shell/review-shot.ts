@@ -109,18 +109,18 @@ export function reviewHorde(w: World, zone = ZONE_BRASS): number {
   juiceHit(7, z.x[7] ?? w.px, z.y[7] ?? w.py, 4, Z_BRUTE, false, w.tick, w.px, w.py);
   juiceShot(w.px + 20, w.py - 22, 0.82, -0.42, w.tick);
   tickJuice(70);
-  for (let c = 0; c < 20; c++) {
+  for (let c = 0; c < 24; c++) {
     stampCasing(w.px - 52 + ((c * 37) % 96), w.py + 8 + ((c * 19) % 52), c * 7);
   }
-  stampBlood(w.px + 18, w.py + 14, 5);
-  stampBlood(w.px - 24, w.py + 22, 9);
-  stampBlood(w.px + 8, w.py + 36, 15);
-  stampBlood(w.px - 36, w.py + 44, 21);
-  stampBlood(w.px + 42, w.py + 58, 27);
-  stampBlood(w.px + 28, w.py - 18, 33);
-  stampBlood(w.px - 16, w.py - 12, 39);
-  stampBlood(w.px + 52, w.py + 8, 45);
-  stampBlood(w.px - 44, w.py + 16, 51);
+  stampBlood(w.px + 86, w.py + 48, 5);
+  stampBlood(w.px - 94, w.py + 52, 9);
+  stampBlood(w.px + 78, w.py + 72, 15);
+  stampBlood(w.px - 88, w.py + 68, 21);
+  stampBlood(w.px + 102, w.py + 36, 27);
+  stampBlood(w.px - 76, w.py + 28, 33);
+  stampBlood(w.px + 92, w.py + 18, 39);
+  stampBlood(w.px - 98, w.py + 22, 45);
+  stampBlood(w.px + 68, w.py - 52, 51);
   reviewDepth(w);
   const b = w.bullets;
   for (let j = 0; j < MAX_BULLETS; j++) b.alive[j] = 0;
