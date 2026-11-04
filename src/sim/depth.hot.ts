@@ -1,8 +1,8 @@
 import { emitFx } from "./combat.hot";
 import {
   BELT_SPEED, BELT_UPG_CAP, CARGO_GAP, CARGO_HEAL, CARGO_LAND, CARGO_PWR, CARGO_R2, CARGO_RIDE, CARGO_SCORE,
-  CARGO_SLIDE, CARGO_UPG, DROP_ALONG, FIRST_CARGO, LANE_X, LAND_R2, SLIDE_SPEED, VENT_R2, VENT_SLOW, ZOMBIE_VENT_R2,
-  beltHeal, depthState, grantBeltUpg,
+  CARGO_SLIDE, CARGO_UPG, DROP_ALONG, FIRST_CARGO, LAND_R2, SLIDE_SPEED, VENT_R2, VENT_SLOW, ZOMBIE_VENT_R2,
+  beltDropX, beltDropY, beltHeal, depthState, grantBeltUpg,
 } from "./depth";
 import { applyScore, hasMod, MOD_NOHEAL } from "./modifiers";
 import { chargeUlt } from "./ult";
@@ -53,19 +53,23 @@ function ridePos(w: World, i: number): void {
 
 function slideCargo(w: World, i: number): void {
   const d = depthState(w);
+  const belt = d.cargoBelt[i] ?? 0;
+  const tx = beltDropX(w, belt);
+  const ty = beltDropY(w, belt);
   const x = d.cargoX[i] ?? 0;
   const y = d.cargoY[i] ?? 0;
-  const dx = LANE_X - x;
-  const dy = 0;
-  const dist = Math.abs(dx);
-  if (dist * dist <= LAND_R2) {
-    d.cargoX[i] = LANE_X;
+  const dx = tx - x;
+  const dy = ty - y;
+  if (dx * dx + dy * dy <= LAND_R2) {
+    d.cargoX[i] = tx;
+    d.cargoY[i] = ty;
     d.cargoPhase[i] = CARGO_LAND;
     return;
   }
-  const step = dx < 0 ? -SLIDE_SPEED : SLIDE_SPEED;
-  d.cargoX[i] = x + step;
-  d.cargoY[i] = y + dy;
+  const len = Math.hypot(dx, dy) || 1;
+  const step = SLIDE_SPEED;
+  d.cargoX[i] = x + (dx / len) * step;
+  d.cargoY[i] = y + (dy / len) * step;
 }
 
 function collectCargo(w: World, i: number): void {

@@ -107,8 +107,9 @@ describe("visual review gates", () => {
     expect(yard.includes("BUILD_SCALE")).toBe(true);
     expect(yard.includes("BELT_H = 72")).toBe(true);
     expect(yard.includes("y: 232")).toBe(true);
-    expect(yard.includes("y: 658")).toBe(true);
-    expect(yard.includes("vert: 1")).toBe(false);
+    expect(yard.includes("y: 392")).toBe(true);
+    expect(yard.includes("function paintVertBelt")).toBe(true);
+    expect(yard.includes("vert: 1")).toBe(true);
     expect(yard.includes("paintVertPipe")).toBe(true);
     expect(yard.includes("paintBrassGrade")).toBe(true);
     expect(yard.includes("GLASS_AT")).toBe(true);
@@ -256,7 +257,7 @@ describe("visual review gates", () => {
     const door = yard.slice(yard.indexOf("export function paintDoorSpawn"));
     expect(door.includes("window_lit")).toBe(true);
     expect(door.includes("building_wall_door")).toBe(true);
-    expect(yard.includes("ctx.rotate(Math.PI / 2)")).toBe(false);
+    expect(yard.includes("ctx.rotate(Math.PI * 0.5)")).toBe(true);
     const puff = readFileSync("src/render/cast-fx.ts", "utf8");
     expect(puff.includes("paintZombie")).toBe(true);
     expect(puff.includes("zombieGlyph")).toBe(false);

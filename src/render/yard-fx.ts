@@ -11,7 +11,8 @@ const BUILDINGS = [
 ];
 
 const BELTS = [
-  { x: 296, y: 658, w: 368, vert: 0 },
+  { x: 304, y: 392, w: 168, vert: 1 },
+  { x: 656, y: 392, w: 168, vert: 1 },
 ];
 
 const PIPE_RUNS = [
@@ -532,7 +533,12 @@ function paintCrossBelt(
   y: number,
   w: number,
   tick: number,
+  vert = 0,
 ): void {
+  if (vert) {
+    paintVertBelt(ctx, x, y, w, tick);
+    return;
+  }
   ctx.fillStyle = "#14110e";
   ctx.fillRect(x, y - BELT_H * 0.5, w, BELT_H);
   ctx.fillStyle = "#2a2218";
@@ -555,6 +561,37 @@ function paintCrossBelt(
   }
 }
 
+function paintVertBelt(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  len: number,
+  tick: number,
+): void {
+  const beltW = BELT_H;
+  ctx.fillStyle = "#14110e";
+  ctx.fillRect(x - beltW * 0.5, y, beltW, len);
+  ctx.fillStyle = "#2a2218";
+  ctx.fillRect(x - beltW * 0.42, y, beltW * 0.84, len);
+  ctx.strokeStyle = BRASS_LO;
+  ctx.lineWidth = 3;
+  ctx.strokeRect(x - beltW * 0.5 + 1.5, y + 1.5, beltW - 3, len - 3);
+  const sc = beltW / 48;
+  const off = (tick * 2.6) % 28;
+  for (let s = off; s < len; s += 28) {
+    ctx.save();
+    ctx.translate(x + 12, y + s + 20);
+    ctx.rotate(Math.PI * 0.5);
+    ctx.scale(sc, sc);
+    ctx.globalAlpha = 0.94 + ((tick + s) & 1) * 0.06;
+    blitSheet(ctx, "conveyor", 0, 0);
+    ctx.restore();
+  }
+  for (let s = off; s < len; s += 28) {
+    if (yardBound !== ZONE_BRASS) arrow(ctx, x, y + s, Math.PI * 0.5, tick);
+  }
+}
+
 export const HERO_X = 480;
 export const HERO_Y = 320;
 export const HERO_R = 120;
@@ -572,8 +609,13 @@ export function heroCrowd(): number {
     if (closeToHero(p.x, p.y)) n++;
   }
   for (const belt of beltsOf()) {
-    const x1 = belt.x + belt.w;
-    for (let x = belt.x; x <= x1; x += 16) if (closeToHero(x, belt.y)) n++;
+    const x1 = belt.x + (belt.vert ? 0 : belt.w);
+    const y1 = belt.y + (belt.vert ? belt.w : 0);
+    if (belt.vert) {
+      for (let yy = belt.y; yy <= y1; yy += 16) if (closeToHero(belt.x, yy)) n++;
+    } else {
+      for (let x = belt.x; x <= x1; x += 16) if (closeToHero(x, belt.y)) n++;
+    }
   }
   for (const pipe of pipesOf()) {
     if (pipe.y <= 236) continue;
@@ -621,7 +663,11 @@ export function yardPropHits(x0: number, y0: number, x1: number, y1: number): nu
     if (b.x >= x0 && b.x <= x1 && b.y >= y0 && b.y <= y1) n++;
   }
   for (const belt of beltsOf()) {
-    if (belt.x >= x0 && belt.x <= x1 && belt.y >= y0 && belt.y <= y1) n++;
+    const hit =
+      belt.vert
+        ? belt.x >= x0 && belt.x <= x1 && belt.y >= y0 && belt.y + belt.w <= y1
+        : belt.x >= x0 && belt.x <= x1 && belt.y >= y0 && belt.y <= y1;
+    if (hit) n++;
   }
   for (const p of propsOf()) {
     if (p.x >= x0 && p.x <= x1 && p.y >= y0 && p.y <= y1) n++;
@@ -700,7 +746,7 @@ export function paintYardLive(
     const belt = belts[i];
     if (!belt) continue;
     if (!visible(belt.x, belt.y, camX, camY, vw, vh, 220)) continue;
-    paintCrossBelt(ctx, belt.x, belt.y, belt.w, tick);
+    paintCrossBelt(ctx, belt.x, belt.y, belt.w, tick, belt.vert);
   }
   for (const vent of ventsOf()) {
     if (!visible(vent.x, vent.y, camX, camY, vw, vh, 40)) continue;

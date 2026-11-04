@@ -29,6 +29,15 @@ export const CARGO_SCORE = 12;
 export const CARGO_PWR = 8;
 export const LAND_R2 = 16;
 export const LANE_VENT_N = 3;
+export const FIGHT_CLEAR_X0 = 352;
+export const FIGHT_CLEAR_Y0 = 318;
+export const FIGHT_CLEAR_X1 = 608;
+export const FIGHT_CLEAR_Y1 = 638;
+export const PICKUP_DROP_Y = 648;
+export const SIDE_BELT_LEFT_X = 304;
+export const SIDE_BELT_RIGHT_X = 656;
+export const SIDE_BELT_RIDE_Y = 392;
+export const BELT_PHONE_VISIBLE_Y = 560;
 
 export interface DepthBag {
   beltX: Float32Array;
@@ -56,7 +65,8 @@ export interface DepthBag {
 const bag = new WeakMap<World, DepthBag>();
 
 const BELTS: readonly [number, number, number, number][] = [
-  [296, 658, 368, 0],
+  [SIDE_BELT_LEFT_X, SIDE_BELT_RIDE_Y, DROP_ALONG, 1],
+  [SIDE_BELT_RIGHT_X, SIDE_BELT_RIDE_Y, DROP_ALONG, 1],
 ];
 
 const VENTS: readonly [number, number][] = [
@@ -203,6 +213,23 @@ export function beltVert(w: World, i: number): number {
   return depthState(w).beltVert[i] ?? 0;
 }
 
+export function cargoOutsideFightClear(x: number, y: number): boolean {
+  return x < FIGHT_CLEAR_X0 || x > FIGHT_CLEAR_X1 || y < FIGHT_CLEAR_Y0 || y > FIGHT_CLEAR_Y1;
+}
+
+export function beltDropX(w: World, belt: number): number {
+  const d = depthState(w);
+  const bx = d.beltX[belt] ?? 0;
+  if (d.beltVert[belt]) return bx < LANE_X ? bx + 32 : bx - 32;
+  return LANE_X;
+}
+
+export function beltDropY(w: World, belt: number): number {
+  const d = depthState(w);
+  if (d.beltVert[belt]) return PICKUP_DROP_Y;
+  return d.beltY[belt] ?? 0;
+}
+
 export function cargoOn(w: World, i: number): number {
   return depthState(w).cargoOn[i] ?? 0;
 }
@@ -280,11 +307,11 @@ export function reviewDepth(w: World): void {
   d.cargoBelt[0] = 0;
   d.cargoPhase[0] = CARGO_RIDE;
   d.cargoKind[0] = CARGO_UPG;
-  d.cargoX[0] = 356;
-  d.cargoY[0] = 658;
+  d.cargoX[0] = SIDE_BELT_LEFT_X;
+  d.cargoY[0] = SIDE_BELT_RIDE_Y + 48;
   d.ventX[0] = w.px - 96;
   d.ventY[0] = w.py + 96;
-  d.cargoT[0] = DROP_ALONG * 0.55;
+  d.cargoT[0] = DROP_ALONG * 0.42;
   let slot = -1;
   for (let i = 0; i < MAX_OBS; i++) {
     if (i >= a.obsN || !a.obsAlive[i]) { slot = i; break; }

@@ -20,13 +20,6 @@ describe("r31 open fight floor + perimeter az_art", () => {
   });
 
   it("parks the upgrade belt and review cargo on the bottom perimeter conveyor", () => {
-    const yard = readFileSync("src/render/yard-fx.ts", "utf8");
-    const depth = readFileSync("src/sim/depth.ts", "utf8");
-    expect(yard.includes("y: 658")).toBe(true);
-    expect(depth.includes("[296, 658, 368, 0]")).toBe(true);
-    expect(yard.includes("conveyor")).toBe(true);
-    expect(yard.includes("blue_puddle")).toBe(true);
-    expect(yard.includes("y: 648, len: 368")).toBe(true);
     const w = createWorld(31);
     reviewDepth(w);
     expect(cargoOn(w, 0)).toBe(1);
