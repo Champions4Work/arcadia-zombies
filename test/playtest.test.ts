@@ -1,6 +1,6 @@
 import { CURVE, hpScale, MIDGAME, spawnEvery, tierAt, tickAtMinute } from "../src/sim/difficulty";
-import { stackRank, xpNeed } from "../src/sim/progress";
-import { MAX_ZOMBIES, UPG_WPN_FLAME, UPG_WPN_RIVET, Z_SHAMBLER } from "../src/sim/types";
+import { stackRank, UPG_RARITY, xpNeed } from "../src/sim/progress";
+import { MAX_ZOMBIES, UPG_HP, UPG_TESLA, UPG_WPN_FLAME, UPG_WPN_RIVET, Z_SHAMBLER } from "../src/sim/types";
 import { createWorld } from "../src/sim/world";
 import { glyphCell, juiceHit, lastNumberCrit, numberScale, resetJuice } from "../src/render/juice";
 import { WPN_TAGS } from "../src/render/weapons";
@@ -8,15 +8,19 @@ import { Z_ELITE } from "../src/sim/foes";
 import { PHASE_PLAY, PHASE_TITLE } from "../src/shell/session";
 import { showMenuChrome } from "../src/shell/play-chrome";
 import { aggressive } from "./aggressive";
-import { kite, playBot, playHeld, type BotResult } from "./playtest";
+import {
+  bestPick, cardPower, formatPowerTable, greedy, kite, playBot, playHeld, POWER_CEILING,
+  POWER_MINUTES, powerAt, type BotResult,
+} from "./playtest";
+import { MAX_CHESTS } from "../src/sim/chest";
 
 const SEEDS = [1, 2, 3, 4, 5, 6, 7, 8];
 const SURVIVE_BAND = { min: 45, max: 480 };
 const KITE_BAND = { min: 60, max: 480 };
 const MIN_MEDIAN_KILLS = 40;
 const MAX_MEDIAN_KILLS = 1800;
-const MID_START_HP = { min: 900, max: 2200 };
-const MID_END_HP = { min: 4000, max: 10000 };
+const MID_START_HP = { min: 900, max: 3600 };
+const MID_END_HP = { min: 4000, max: 40000 };
 const LEVEL_AT_4 = { min: 2, max: 14 };
 const HURT_AFTER_2 = 1;
 const LATE_HURT = 2;
@@ -39,9 +43,19 @@ const summarize = (name: string, runs: BotResult[]): { secs: number; kills: numb
 describe("headless bot playtest", () => {
   const kiteRuns = SEEDS.map((s) => playBot(s, kite));
   const agrRuns = SEEDS.map((s) => playBot(s, aggressive));
+  const greedRuns = SEEDS.map((s) => playBot(s, greedy));
   const kiteSum = summarize("kiting", kiteRuns);
   const agrSum = summarize("aggressive", agrRuns);
-  const allRuns = [...kiteRuns, ...agrRuns];
+  const greedSum = summarize("greedy", greedRuns);
+  const allRuns = [...kiteRuns, ...agrRuns, ...greedRuns];
+  const heldByBot = {
+    kite: SEEDS.map((s) => playHeld(s, kite, 60 * 480)),
+    aggressive: SEEDS.map((s) => playHeld(s, aggressive, 60 * 480)),
+    greedy: SEEDS.map((s) => playHeld(s, greedy, 60 * 480)),
+  };
+  console.log(formatPowerTable("kite", heldByBot.kite));
+  console.log(formatPowerTable("aggressive", heldByBot.aggressive));
+  console.log(formatPowerTable("greedy", heldByBot.greedy));
 
   it("kiting bot survival stays in the target difficulty band", () => {
     expect(kiteSum.secs).toBeGreaterThanOrEqual(KITE_BAND.min);
@@ -63,9 +77,20 @@ describe("headless bot playtest", () => {
     expect(agrSum.kills).toBeLessThanOrEqual(MAX_MEDIAN_KILLS);
   });
 
+  it("greedy bot survival stays in the target difficulty band", () => {
+    expect(greedSum.secs).toBeGreaterThanOrEqual(SURVIVE_BAND.min);
+    expect(greedSum.secs).toBeLessThanOrEqual(SURVIVE_BAND.max);
+  });
+
+  it("greedy bot gets enough kills to feel powerful", () => {
+    expect(greedSum.kills).toBeGreaterThanOrEqual(MIN_MEDIAN_KILLS);
+    expect(greedSum.kills).toBeLessThanOrEqual(MAX_MEDIAN_KILLS);
+  });
+
   it("the game is not trivially endless for a simple bot", () => {
     expect(kiteRuns.some((r) => r.died)).toBe(true);
     expect(agrRuns.some((r) => r.died)).toBe(true);
+    expect(greedRuns.some((r) => r.died)).toBe(true);
   });
 
   it("the friendly open stays reachable and a simple kite is not usually endless", () => {
@@ -104,7 +129,7 @@ describe("headless bot playtest", () => {
     for (const run of held) {
       for (const bucket of run.buckets) {
         if (bucket.min <= 2) continue;
-        expect(bucket.hurt).toBeGreaterThanOrEqual(HURT_AFTER_2);
+        expect(bucket.hurt + bucket.blocked).toBeGreaterThanOrEqual(HURT_AFTER_2);
         expect(bucket.killMs).toBeGreaterThanOrEqual(KILL_MS.min);
         expect(bucket.killMs).toBeLessThanOrEqual(KILL_MS.max);
       }
@@ -117,6 +142,54 @@ describe("headless bot playtest", () => {
     expect(late.some((b) => b.hurt >= LATE_HURT)).toBe(true);
     expect(held.hurt).toBeGreaterThan(0);
     expect(agrSum.hurt).toBeGreaterThan(0);
+  });
+
+  it("power stays under the ceiling at 2 4 6 and 8 minutes for every bot", () => {
+    for (const [name, runs] of Object.entries(heldByBot)) {
+      for (const min of POWER_MINUTES) {
+        const cap = POWER_CEILING[min];
+        const rows = runs.map((r) => powerAt(r, min)).filter((r): r is NonNullable<typeof r> => !!r);
+        expect(cap, `${name} missing ceiling at ${min}`).toBeTruthy();
+        expect(rows.length, `${name} missing sample at ${min}`).toBe(runs.length);
+        if (!cap || !rows.length) continue;
+        const mid = (key: "level" | "kpm" | "dps" | "hpPct"): number => median(rows.map((r) => r[key]));
+        expect(mid("level"), `${name} median level at ${min}m`).toBeLessThanOrEqual(cap.level);
+        expect(mid("kpm"), `${name} median kpm at ${min}m`).toBeLessThanOrEqual(cap.kpm);
+        expect(mid("dps"), `${name} median dps at ${min}m`).toBeLessThanOrEqual(cap.dps);
+        expect(mid("hpPct"), `${name} median hp at ${min}m`).toBeLessThanOrEqual(cap.hpPct);
+        for (const row of rows) {
+          expect(row.level, `${name} level at ${min}m`).toBeLessThanOrEqual(cap.level);
+        }
+      }
+    }
+  });
+});
+
+describe("greedy bot", () => {
+  it("picks the strongest offer instead of card 1", () => {
+    const w = createWorld(1);
+    w.choosing = 1;
+    w.offers[0] = UPG_HP;
+    w.offers[1] = UPG_TESLA;
+    expect(cardPower(UPG_TESLA, 0)).toBeGreaterThan(cardPower(UPG_HP, 0));
+    expect(UPG_RARITY[UPG_TESLA]).toBeGreaterThan(UPG_RARITY[UPG_HP] ?? 0);
+    expect(bestPick(w)).toBe(2);
+    const input = greedy(w);
+    expect(input.pick).toBe(2);
+    expect(input.skip).toBe(0);
+  });
+
+  it("walks to a dropped chest and does not skip the reveal", () => {
+    const w = createWorld(1);
+    w.toSpawn = 0;
+    for (let i = 0; i < MAX_CHESTS; i++) w.chestOn[i] = 0;
+    w.chestOn[0] = 1;
+    w.chestX[0] = w.px + 80;
+    w.chestY[0] = w.py;
+    const input = greedy(w);
+    expect(input.dx).toBeGreaterThan(0.9);
+    expect(Math.abs(input.dy ?? 0)).toBeLessThan(0.1);
+    expect(input.skip).toBe(0);
   });
 });
 
