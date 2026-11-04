@@ -41,7 +41,7 @@ describe("visual review gates", () => {
     expect(look.includes("function paintDiveSuit")).toBe(true);
     expect(look.includes("export function paintHitSpark")).toBe(true);
     expect(look.includes("#0ad8d0")).toBe(true);
-    expect(look.includes("ellipse(7.4 * s, -22 * s, 4.4 * s, 7.4 * s")).toBe(true);
+    expect(look.includes("ellipse(8.2 * s, -21 * s, 4.8 * s, 8 * s")).toBe(true);
     expect(look.includes("rgba(48,255,236,0.96)")).toBe(false);
     expect(look.includes("paintRifle(ctx, x, y, nx, ny, s, bob)")).toBe(true);
     expect(look.includes("ctx.transform(1, 0, lean")).toBe(false);
