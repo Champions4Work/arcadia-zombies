@@ -87,19 +87,22 @@ function brassPad(c: number, r: number): number {
     return 0;
   }
   if (r >= 26 && r <= 27 && c >= 18 && c <= 42) return 1;
+  if (r === 24 && c >= 19 && c <= 41) return 1;
+  if (r === 34 && c >= 19 && c <= 41) return 1;
+  if ((c === 19 || c === 41) && r >= 22 && r <= 32) return 1;
   return 0;
 }
 
 function railH(r: number): number {
   if (bound === ZONE_TRAM) return r === 9 || r === 16 || r === 22 || r === 28 || r === 34 ? 1 : 0;
   if (bound === ZONE_BOILER) return r === 22 ? 1 : 0;
-  return r === 26 ? 1 : 0;
+  return r === 24 || r === 26 || r === 34 ? 1 : 0;
 }
 
 function railV(c: number): number {
   if (bound === ZONE_TRAM) return c === 13 || c === 30 || c === 47 ? 1 : 0;
   if (bound === ZONE_BOILER) return c === 8 || c === 52 ? 1 : 0;
-  return 0;
+  return c === 19 || c === 41 ? 1 : 0;
 }
 
 function add(kind: number, x: number, y: number, a: number, b: number): void {
@@ -242,9 +245,22 @@ function build(): void {
     add(FEAT_GEAR, 820, 520, 12, 6);
   } else {
     add(FEAT_PIPE, 296, 132, 368, 0);
+    add(FEAT_PIPE, 308, 248, 176, 1);
+    add(FEAT_PIPE, 652, 248, 176, 1);
+    add(FEAT_PIPE, 296, 548, 368, 0);
     add(FEAT_LAMP, 348, 156, 74, 0);
     add(FEAT_LAMP, 480, 156, 74, 0);
     add(FEAT_LAMP, 612, 156, 74, 0);
+    add(FEAT_LAMP, 324, 280, 70, 0);
+    add(FEAT_LAMP, 636, 280, 70, 0);
+    add(FEAT_LAMP, 324, 520, 68, 0);
+    add(FEAT_LAMP, 636, 520, 68, 0);
+    add(FEAT_GEAR, 320, 380, 15, 7);
+    add(FEAT_GEAR, 640, 380, 14, 6);
+    add(FEAT_GEAR, 380, 580, 16, 8);
+    add(FEAT_GEAR, 580, 580, 15, 7);
+    add(FEAT_GEAR, 310, 460, 13, 6);
+    add(FEAT_GEAR, 650, 460, 13, 6);
   }
   for (let i = 0; i < 14; i++) {
     const hx = hash(i, 9);

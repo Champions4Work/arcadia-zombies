@@ -12,6 +12,8 @@ const BUILDINGS = [
 
 const BELTS = [
   { x: 296, y: 420, w: 368, vert: 0 },
+  { x: 308, y: 248, w: 176, vert: 1 },
+  { x: 652, y: 248, w: 176, vert: 1 },
 ];
 
 const PIPE_RUNS = [
@@ -56,6 +58,20 @@ const PROPS: { id: string; x: number; y: number }[] = [
   { id: "crate_stack", x: 632, y: 548 },
   { id: "pipes_blue_tank", x: 630, y: 596 },
   { id: "breakable_boiler", x: 628, y: 636 },
+  { id: "blue_puddle", x: 318, y: 614 },
+  { id: "blue_puddle", x: 648, y: 614 },
+  { id: "conveyor", x: 310, y: 286 },
+  { id: "conveyor", x: 654, y: 286 },
+  { id: "valve_steam", x: 316, y: 324 },
+  { id: "valve_steam", x: 646, y: 324 },
+  { id: "decal_hazard", x: 318, y: 416 },
+  { id: "decal_hazard", x: 644, y: 416 },
+  { id: "lamp", x: 312, y: 392 },
+  { id: "lamp", x: 658, y: 392 },
+  { id: "crate", x: 316, y: 362 },
+  { id: "crate_stack", x: 646, y: 362 },
+  { id: "barrel", x: 314, y: 532 },
+  { id: "barrel", x: 650, y: 532 },
 ];
 
 const TANKS = [
@@ -71,6 +87,10 @@ const POOLS = [
   { x: 600, y: 208 },
   { x: 332, y: 340 },
   { x: 628, y: 340 },
+  { x: 312, y: 392 },
+  { x: 658, y: 392 },
+  { x: 318, y: 614 },
+  { x: 648, y: 614 },
 ];
 
 const STEAM_VENTS = [
@@ -522,6 +542,45 @@ function paintCrossBelt(
   blitScaled(ctx, "crate", cx, cy, 1.35);
 }
 
+function paintVertBelt(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  h: number,
+  tick: number,
+): void {
+  const w = BELT_H;
+  ctx.fillStyle = "#14110e";
+  ctx.fillRect(x - w * 0.5, y, w, h);
+  ctx.fillStyle = "#2a2218";
+  ctx.fillRect(x - w * 0.42, y, w * 0.84, h);
+  ctx.strokeStyle = BRASS_LO;
+  ctx.lineWidth = 3;
+  ctx.strokeRect(x - w * 0.5 + 1.5, y + 1.5, w - 3, h - 3);
+  const tile = 64;
+  const sc = BELT_H / 48;
+  for (let s = 0; s < h; s += tile) {
+    ctx.save();
+    ctx.translate(x + 12, y + s + 40);
+    ctx.scale(sc, sc);
+    blitSheet(ctx, "conveyor", 0, 0);
+    ctx.restore();
+  }
+  const off = (tick * 2.2) % 28;
+  for (let s = off; s < h; s += 28) {
+    arrow(ctx, x, y + s, Math.PI * 0.5, tick);
+  }
+  const crateT = (tick * 0.9 + h * 0.42) % h;
+  const cx = x - 14;
+  const cy = y + crateT;
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  ctx.globalAlpha = 0.78 + ((tick >> 3) & 1) * 0.2;
+  blitSheet(ctx, "blue_glow", cx, cy - 8);
+  ctx.restore();
+  blitScaled(ctx, "crate", cx, cy, 1.35);
+}
+
 export const HERO_X = 480;
 export const HERO_Y = 320;
 export const HERO_R = 120;
@@ -539,8 +598,13 @@ export function heroCrowd(): number {
     if (closeToHero(p.x, p.y)) n++;
   }
   for (const belt of beltsOf()) {
-    const x1 = belt.x + belt.w;
-    for (let x = belt.x; x <= x1; x += 16) if (closeToHero(x, belt.y)) n++;
+    if (belt.vert) {
+      const y1 = belt.y + belt.w;
+      for (let y = belt.y; y <= y1; y += 16) if (closeToHero(belt.x, y)) n++;
+    } else {
+      const x1 = belt.x + belt.w;
+      for (let x = belt.x; x <= x1; x += 16) if (closeToHero(x, belt.y)) n++;
+    }
   }
   for (const pipe of pipesOf()) {
     if (pipe.y <= 236) continue;
@@ -668,7 +732,8 @@ export function paintYardLive(
     const belt = belts[i];
     if (!belt) continue;
     if (!visible(belt.x, belt.y, camX, camY, vw, vh, 220)) continue;
-    paintCrossBelt(ctx, belt.x, belt.y, belt.w, tick);
+    if (belt.vert) paintVertBelt(ctx, belt.x, belt.y, belt.w, tick);
+    else paintCrossBelt(ctx, belt.x, belt.y, belt.w, tick);
   }
   for (const vent of ventsOf()) {
     if (!visible(vent.x, vent.y, camX, camY, vw, vh, 40)) continue;
