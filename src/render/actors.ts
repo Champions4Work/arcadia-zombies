@@ -119,10 +119,6 @@ function paintOne(ctx: CanvasRenderingContext2D, w: World, i: number): void {
   const flip = w.px - x < 0 ? -1 : 1;
   const glyph = zombieGlyph(kind, fallbackGlyph);
   const flash = enemyFlash(i) > 0;
-  if (flash) {
-    ctx.save();
-    ctx.filter = "grayscale(1) brightness(8)";
-  }
   if (elite) {
     ctx.save();
     ctx.translate(x, y);
@@ -142,7 +138,12 @@ function paintOne(ctx: CanvasRenderingContext2D, w: World, i: number): void {
     ctx.fillRect(x - 12, top + 1, bw, 2);
   }
   if (elite) paintElite(ctx, x, y, glyph.w * 1.28, glyph.h * 1.28, w.tick);
-  if (flash) ctx.restore();
+  if (flash) {
+    ctx.fillStyle = "#fff8e8";
+    ctx.globalAlpha = 0.72;
+    ctx.fillRect(x - glyph.w * 0.45, y - glyph.h * 0.92, glyph.w * 0.9, glyph.h * 0.7);
+    ctx.globalAlpha = 1;
+  }
 }
 
 export function paintActors(ctx: CanvasRenderingContext2D, w: World, moving: boolean): void {

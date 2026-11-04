@@ -1,7 +1,7 @@
 import { H, W, type World } from "../sim/types";
 import { composeHorde } from "./blit.hot";
+import { copyGroundWindow } from "./ground-atlas";
 import { bg, buildSprites } from "./horde-sprites";
-import { drawStage } from "./stage";
 
 let view: HTMLCanvasElement | null = null;
 let viewCtx: CanvasRenderingContext2D | null = null;
@@ -24,25 +24,13 @@ function ensureView(): Uint32Array | null {
   return frame;
 }
 
-function snapGround(ground: HTMLCanvasElement, camX: number, camY: number, tick: number): void {
-  const g = ground.getContext("2d");
-  if (!g) return;
-  g.setTransform(1, 0, 0, 1, 0, 0);
-  g.imageSmoothingEnabled = true;
-  g.clearRect(0, 0, W, H);
-  g.translate(-camX, -camY);
-  drawStage(g, tick);
-  const snap = g.getImageData(0, 0, W, H);
-  bg.set(new Uint32Array(snap.data.buffer, snap.data.byteOffset, W * H));
-}
-
-export function renderHorde(c: CanvasRenderingContext2D, w: World, ground: HTMLCanvasElement): void {
+export function renderHorde(c: CanvasRenderingContext2D, w: World): void {
   buildSprites();
   const pixels = ensureView();
   if (!pixels || !view || !viewCtx || !image) return;
   const camX = Math.round(w.arena.camX);
   const camY = Math.round(w.arena.camY);
-  snapGround(ground, camX, camY, w.tick);
+  copyGroundWindow(bg, camX, camY);
   composeHorde(w, pixels);
   viewCtx.putImageData(image, 0, 0);
   const smooth = c.imageSmoothingEnabled;
