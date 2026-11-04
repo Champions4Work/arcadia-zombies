@@ -107,6 +107,7 @@ export function blitSheetLean(
   flip: boolean,
   bob: number,
   lean: number,
+  scale = 1,
 ): void {
   const spr = spriteOf(id);
   const img = spr ? packed(spr) : undefined;
@@ -115,14 +116,14 @@ export function blitSheetLean(
   const sy = spr["y"];
   const sw = spr["w"];
   const sh = spr["h"];
-  const ax = spr["ax"];
-  const ay = spr["ay"];
+  const ax = spr["ax"] * scale;
+  const ay = spr["ay"] * scale;
   ctx.save();
   ctx.imageSmoothingEnabled = false;
   ctx.translate(Math.round(x), Math.round(y - bob));
   ctx.transform(1, 0, lean, 1, 0, 0);
   if (flip) ctx.scale(-1, 1);
-  ctx.drawImage(img, sx, sy, sw, sh, -ax, -ay, sw, sh);
+  ctx.drawImage(img, sx, sy, sw, sh, -ax, -ay, sw * scale, sh * scale);
   ctx.restore();
 }
 

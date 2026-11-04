@@ -949,6 +949,10 @@ if (location.hash === "#horde") {
   begin(session);
   setRunEndless(world, crown.endless);
 }
+if (wantsReviewShot(location.search, location.hash)) {
+  begin(session);
+  if (session.phase === PHASE_PLAY) session.phase = PHASE_PAUSE;
+}
 mountPicker(rosterEl, (index) => {
   if (session.phase !== PHASE_TITLE && session.phase !== PHASE_OVER) return;
   if (!isUnlocked(index, bestWave)) return;

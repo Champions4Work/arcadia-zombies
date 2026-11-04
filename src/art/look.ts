@@ -2,10 +2,22 @@ import {
   BRASS, BRASS_HI, BRASS_LO, CYAN, FONT_BODY, GLASS, INK, IRON, PANEL, STEAM, XP,
 } from "../shell/theme";
 import { PX } from "./palette";
-import { blitSheet, blitSheetLean, foeSpriteId, heroSpriteId } from "./sheet";
+import { blitSheet, blitSheetLean, foeSpriteId, heroSpriteId, spriteOf } from "./sheet";
 
 export const HERO_LOOK_W = 40;
 export const HERO_LOOK_H = 52;
+export const HERO_PACK_H = 64;
+export const FOE_TO_HERO = 0.45;
+export const BRUTE_TO_HERO = 1.3;
+
+export function foeWorldScale(kind: number, sprH: number): number {
+  const dest = (kind === 2 ? BRUTE_TO_HERO : FOE_TO_HERO) * HERO_PACK_H;
+  return dest / Math.max(1, sprH);
+}
+
+export function foeWorldH(kind: number): number {
+  return (kind === 2 ? BRUTE_TO_HERO : FOE_TO_HERO) * HERO_PACK_H;
+}
 
 export function hudType(
   ctx: CanvasRenderingContext2D,
@@ -110,21 +122,17 @@ export function paintSignatureHero(
   const flip = aimX < 0;
   paintShadow(ctx, x, y, 14, 5.6);
   ctx.beginPath();
-  ctx.arc(x, y, 13, 0, Math.PI * 2);
+  ctx.ellipse(x, y + 2, 16, 6, 0, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(122,224,212,0.28)";
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(x, y + 2, 15, 5.4, 0, 0, Math.PI * 2);
   ctx.strokeStyle = CYAN;
-  ctx.globalAlpha = moving ? 0.42 : 0.22;
-  ctx.lineWidth = 2;
+  ctx.globalAlpha = 0.9;
+  ctx.lineWidth = 2.2;
   ctx.stroke();
   ctx.globalAlpha = 1;
   blitSheetLean(ctx, heroSpriteId(moving, tick), x, y, flip, bob, lean);
-  ctx.save();
-  ctx.globalCompositeOperation = "lighter";
-  ctx.strokeStyle = "rgba(244,234,216,0.55)";
-  ctx.lineWidth = 1.4;
-  ctx.beginPath();
-  ctx.ellipse(x, y - 24 - bob, 12, 22, lean, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.restore();
   if (!shoot) return;
   const dir = flip ? -1 : 1;
   const mx = x + dir * 22;
@@ -161,16 +169,10 @@ export function paintZombie(
 ): void {
   const bob = ((tick >> 3) & 1) * 1.2;
   const id = foeSpriteId(kind, elite);
-  paintShadow(ctx, x, y, 11, 4.2);
-  blitSheetLean(ctx, id, x, y, flip < 0, bob, 0);
-  ctx.save();
-  ctx.globalCompositeOperation = "lighter";
-  ctx.strokeStyle = "rgba(200,208,220,0.28)";
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.ellipse(x, y - 18 - bob, 9, 16, 0, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.restore();
+  const spr = spriteOf(id);
+  const scale = foeWorldScale(kind, spr?.["h"] ?? 32);
+  paintShadow(ctx, x, y, 5 * scale, 2.1 * scale);
+  blitSheetLean(ctx, id, x, y, flip < 0, bob, 0, scale);
 }
 
 export function paintMine(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, spikes: number, elite: boolean): void {

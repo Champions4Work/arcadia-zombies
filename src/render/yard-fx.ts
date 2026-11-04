@@ -4,54 +4,52 @@ import { XP } from "../shell/theme";
 import { FEAT_LAMP, groundFeatureAt, groundFeatureCount } from "./ground";
 
 const BUILDINGS = [
-  { x: 348, y: 168 },
-  { x: 596, y: 168 },
-  { x: 338, y: 430 },
-  { x: 620, y: 430 },
-  { x: 400, y: 548 },
-  { x: 580, y: 548 },
+  { x: 292, y: 118 },
+  { x: 668, y: 118 },
+  { x: 268, y: 508 },
+  { x: 692, y: 508 },
 ];
 
 const BELTS = [
-  { x: 348, y: 198, w: 248, vert: 0 },
-  { x: 338, y: 230, w: 170, vert: 1 },
-  { x: 360, y: 508, w: 250, vert: 0 },
-  { x: 620, y: 230, w: 170, vert: 1 },
+  { x: 260, y: 148, w: 90, vert: 0 },
+  { x: 258, y: 180, w: 140, vert: 1 },
+  { x: 270, y: 580, w: 90, vert: 0 },
+  { x: 700, y: 180, w: 140, vert: 1 },
 ];
 
 const PROPS: { id: string; x: number; y: number }[] = [
-  { id: "pipes_blue_tank", x: 348, y: 248 },
-  { id: "pipes_blue_tank", x: 618, y: 250 },
-  { id: "valve_steam", x: 348, y: 310 },
-  { id: "valve_steam", x: 618, y: 318 },
-  { id: "crate_stack", x: 348, y: 470 },
-  { id: "crate", x: 372, y: 188 },
-  { id: "crate_stack", x: 580, y: 188 },
-  { id: "crate", x: 600, y: 478 },
-  { id: "barrel", x: 360, y: 500 },
-  { id: "barrel", x: 600, y: 500 },
-  { id: "breakable_boiler", x: 338, y: 380 },
-  { id: "breakable_gear_pylon", x: 620, y: 380 },
-  { id: "lamp", x: 348, y: 210 },
-  { id: "lamp", x: 600, y: 210 },
-  { id: "lamp", x: 348, y: 490 },
-  { id: "lamp", x: 620, y: 490 },
-  { id: "window_lit", x: 332, y: 132 },
-  { id: "window_lit", x: 580, y: 132 },
-  { id: "window_lit", x: 322, y: 394 },
-  { id: "window_lit", x: 604, y: 394 },
+  { id: "pipes_blue_tank", x: 292, y: 210 },
+  { id: "pipes_blue_tank", x: 668, y: 214 },
+  { id: "valve_steam", x: 288, y: 280 },
+  { id: "valve_steam", x: 672, y: 286 },
+  { id: "crate_stack", x: 276, y: 548 },
+  { id: "crate", x: 310, y: 132 },
+  { id: "crate_stack", x: 650, y: 132 },
+  { id: "crate", x: 680, y: 540 },
+  { id: "barrel", x: 300, y: 568 },
+  { id: "barrel", x: 660, y: 568 },
+  { id: "breakable_boiler", x: 258, y: 400 },
+  { id: "breakable_gear_pylon", x: 702, y: 400 },
+  { id: "lamp", x: 292, y: 168 },
+  { id: "lamp", x: 668, y: 168 },
+  { id: "lamp", x: 276, y: 560 },
+  { id: "lamp", x: 684, y: 560 },
+  { id: "window_lit", x: 276, y: 86 },
+  { id: "window_lit", x: 652, y: 86 },
+  { id: "window_lit", x: 252, y: 470 },
+  { id: "window_lit", x: 708, y: 470 },
 ];
 
 const POOLS = [
-  { x: 348, y: 210 },
-  { x: 600, y: 210 },
-  { x: 348, y: 490 },
-  { x: 620, y: 490 },
-  { x: 348, y: 248 },
-  { x: 618, y: 250 },
+  { x: 292, y: 168 },
+  { x: 668, y: 168 },
+  { x: 276, y: 560 },
+  { x: 684, y: 560 },
+  { x: 292, y: 210 },
+  { x: 668, y: 214 },
 ];
 
-export const YARD_CLEAR = { x0: 420, y0: 240, x1: 540, y1: 400 };
+export const YARD_CLEAR = { x0: 360, y0: 180, x1: 600, y1: 460 };
 
 function visible(x: number, y: number, camX: number, camY: number, vw: number, vh: number, pad: number): boolean {
   return x >= camX - pad && y >= camY - pad && x <= camX + vw + pad && y <= camY + vh + pad;
@@ -156,8 +154,8 @@ export function paintYardLive(
     blitSheet(ctx, i & 1 ? "crate_stack" : "crate", cx, cy);
   }
   const steam = steamFrame(tick);
-  blitSheet(ctx, steam, 348, 220);
-  blitSheet(ctx, steam, 618, 222);
+  blitSheet(ctx, steam, 292, 178);
+  blitSheet(ctx, steam, 668, 180);
 }
 
 export function paintDoorSpawn(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number): void {

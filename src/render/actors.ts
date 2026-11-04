@@ -14,11 +14,10 @@ import { projectileFor } from "./foes";
 import { POSE_WALK, poseFrame } from "./poses";
 import { paintWeapon } from "./weapons";
 import {
-  bulletPaint, fxPaint, registerBullet, registerFx, registerZombie, zombieGlyph, type BulletPaint, type Glyph,
+  bulletPaint, fxPaint, registerBullet, registerFx, registerZombie, type BulletPaint, type Glyph,
 } from "./plugins";
 import { blitAtlas, foeFrameId } from "../art/atlas";
-import { paintCasing, paintSignatureHero, paintZombie } from "../art/look";
-import { paintShadow } from "./sprites";
+import { foeWorldH, paintCasing, paintSignatureHero, paintZombie } from "../art/look";
 import { stampCasing } from "./stains";
 
 export const BIN_LO = -80;
@@ -38,10 +37,6 @@ function atlasGlyph(kind: number): Glyph {
       blitAtlas(ctx, foeFrameId(kind, poseFrame(tick, pose, false)), x, y, 2, flip < 0);
     },
   };
-}
-
-function fallbackGlyph(kind: number): Glyph {
-  return atlasGlyph(kind);
 }
 
 registerZombie(Z_SHAMBLER, atlasGlyph(Z_SHAMBLER));
@@ -67,14 +62,6 @@ function paintHero(ctx: CanvasRenderingContext2D, w: World, moving: boolean): vo
   }
 }
 
-function paintElite(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, tick: number): void {
-  const bw = w * 0.72;
-  const bh = h * 0.9;
-  ctx.lineWidth = 2.2;
-  ctx.strokeStyle = (tick >> 2) & 1 ? "#e8c46a" : "#c8963a";
-  ctx.strokeRect(x - bw / 2, y - bh, bw, bh);
-}
-
 function paintOne(ctx: CanvasRenderingContext2D, w: World, i: number): void {
   const z = w.zombies;
   const x = (z.x[i] ?? 0) + hitKnockX(i);
@@ -84,31 +71,23 @@ function paintOne(ctx: CanvasRenderingContext2D, w: World, i: number): void {
   const elite = (raw & Z_ELITE) !== 0;
   const hp = z.hp[i] ?? 1;
   const flip = w.px - x < 0 ? -1 : 1;
-  const glyph = zombieGlyph(kind, fallbackGlyph);
   const flash = enemyFlash(i) > 0;
-  if (elite) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.scale(1.28, 1.28);
-    ctx.translate(-x, -y);
-  }
-  paintShadow(ctx, x, y, glyph.w * 0.9);
+  const marked = elite || kind === Z_BRUTE || kind === Z_KNIGHT;
   paintZombie(ctx, x, y, kind, elite, w.tick + i * 3, flip);
   if (kind === Z_KNIGHT) paintKnightShield(ctx, x, y, z.vy[i] ?? 0, hp);
-  if (elite) ctx.restore();
-  if (hp >= 3) {
-    const bw = Math.min(24, 4 + Math.min(hp, 10) * 2);
-    const top = y - glyph.h * (elite ? 1.28 : 1) - 6;
+  if (marked) {
+    const bodyH = foeWorldH(kind) * (elite ? 1.12 : 1);
+    const bw = Math.min(18, 4 + Math.min(hp, 8) * 1.6);
+    const top = y - bodyH - 4;
     ctx.fillStyle = "#1a1410";
-    ctx.fillRect(x - 13, top, 26, 4);
+    ctx.fillRect(x - 10, top, 20, 3);
     ctx.fillStyle = kind === Z_BRUTE ? "#e0a028" : "#e24a32";
-    ctx.fillRect(x - 12, top + 1, bw, 2);
+    ctx.fillRect(x - 9, top + 1, bw, 1.4);
   }
-  if (elite) paintElite(ctx, x, y, glyph.w * 1.28, glyph.h * 1.28, w.tick);
-  if (flash) {
+  if (flash && marked) {
     ctx.fillStyle = "#fff8e8";
-    ctx.globalAlpha = reduceMotionOn() ? FLASH_SOFT : 0.72;
-    ctx.fillRect(x - glyph.w * 0.45, y - glyph.h * 0.92, glyph.w * 0.9, glyph.h * 0.7);
+    ctx.globalAlpha = reduceMotionOn() ? FLASH_SOFT : 0.45;
+    ctx.fillRect(x - 8, y - foeWorldH(kind) * 0.85, 16, 10);
     ctx.globalAlpha = 1;
   }
 }

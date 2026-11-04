@@ -256,23 +256,31 @@ function ability(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   badgeIcon(ctx, weaponBadge(w).kind, cx, cy);
 }
 
+function checkLine(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  text: string,
+  color: string,
+): void {
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.2;
+  ctx.strokeRect(x, y - 4, 7, 7);
+  ink(ctx, text, x + 12, y, 10, color);
+}
+
 function objectives(ctx: CanvasRenderingContext2D, w: World, layout: HudLayout): void {
   const phone = layout.view.w < 720;
-  const x = layout.clock.x - (phone ? 24 : 0);
+  const x = layout.clock.x - (phone ? 16 : 0);
   const y = layout.clock.y + layout.clock.h + 6;
-  const bw = phone ? Math.min(168, layout.view.w - x - 10) : Math.min(200, layout.view.w - x - 16);
-  const bh = phone ? 78 : 96;
+  const bw = phone ? Math.min(156, layout.view.w - x - 8) : Math.min(188, layout.view.w - x - 16);
+  const bh = phone ? 108 : 124;
   const hold = Math.max(0, 240 - ((w.tick / 60) | 0) % 240);
-  plate(ctx, { x, y, w: bw, h: bh }, "objectives_panel");
-  ctx.fillStyle = IRON;
-  ctx.fillRect(x + 4, y + 4, bw - 8, bh - 8);
-  ctx.strokeStyle = BRASS;
-  ctx.lineWidth = 1.6;
-  ctx.strokeRect(x + 4, y + 4, bw - 8, bh - 8);
-  ink(ctx, "OBJECTIVES", x + 12, y + 14, 10, BRASS_HI);
-  ink(ctx, "ACTIVATE THE STEAM GATE", x + 12, y + 30, 9, w.rank > 0 ? HEALTH : STEAM);
-  ink(ctx, `HOLD THE AREA (${hold}s)`, x + 12, y + 46, 9, STEAM);
-  ink(ctx, "SURVIVE ALL WAVES", x + 12, y + 62, 9, STEAM);
+  blitSheetFit(ctx, "objectives_panel", x, y, bw, bh);
+  const inkX = x + bw * 0.14;
+  checkLine(ctx, inkX, y + bh * 0.32, "ACTIVATE STEAM GATE", w.rank > 0 ? HEALTH : "#f6f1e6");
+  checkLine(ctx, inkX, y + bh * 0.52, `HOLD THE AREA (${hold}s)`, "#f6f1e6");
+  checkLine(ctx, inkX, y + bh * 0.72, "SURVIVE ALL WAVES", "#f6f1e6");
 }
 
 export function drawHud(ctx: CanvasRenderingContext2D, w: World): void {
