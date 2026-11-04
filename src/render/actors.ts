@@ -17,7 +17,7 @@ import {
 } from "./plugins";
 import { blitAtlas, foeFrameId } from "../art/atlas";
 import { foeWorldH, paintHitSpark, paintSignatureHero, paintZombie } from "../art/look";
-import { stampCasing } from "./stains";
+import { stampCasing, stainCount, STAIN_LIVE_CAP } from "./stains";
 
 export const BIN_LO = -80;
 export const BIN_HI = ARENA_H + 100;
@@ -59,9 +59,12 @@ function paintHero(ctx: CanvasRenderingContext2D, w: World, moving: boolean): vo
     caseTick = w.tick;
     const ox = -w.aimX * 16 - 8;
     const oy = 8 - w.aimY * 4;
+    const tight = stainCount() > STAIN_LIVE_CAP - 8;
     stampCasing(w.px + ox - 6, w.py + oy + 4, w.tick);
-    stampCasing(w.px + ox - 18, w.py + oy + 11, w.tick + 5);
-    stampCasing(w.px + ox - 28, w.py + oy + 18, w.tick + 11);
+    if (!tight) {
+      stampCasing(w.px + ox - 18, w.py + oy + 11, w.tick + 5);
+      stampCasing(w.px + ox - 28, w.py + oy + 18, w.tick + 11);
+    }
   }
 }
 

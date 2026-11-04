@@ -2,7 +2,7 @@ import { Z_ELITE, Z_KIND, Z_KNIGHT } from "../sim/foes";
 import { Z_BRUTE } from "../sim/types";
 import { reduceMotionOn } from "./motion";
 import { punchShake } from "./shake";
-import { resetStains, stampBlood } from "./stains";
+import { resetStains, stampBlood, stainCount, STAIN_LIVE_CAP } from "./stains";
 
 export const NUMBER_CAP = 256;
 export const FLASH_CAP = 2048;
@@ -10,6 +10,7 @@ export const FLASH_MS = 80;
 export const FLASH_SOFT_MS = 28;
 export const STOP_MAX_MS = 100;
 export const PART_CAP = 128;
+export const PART_LIVE_CAP = 80;
 export const STOP_ELITE_MS = 40;
 export const STOP_BOSS_MS = 60;
 export const STOP_HURT_MS = 50;
@@ -203,6 +204,8 @@ function spawnNumber(x: number, y: number, dmg: number, crit: boolean): void {
 }
 
 function spawnPart(x: number, y: number, vx: number, vy: number, gear: number): void {
+  if (pCount >= PART_LIVE_CAP && gear !== 0) return;
+  if (pCount >= PART_LIVE_CAP - 2 && gear === 0 && (pCursor & 1) === 0) return;
   const i = pCursor;
   pCursor = i + 1 < PART_CAP ? i + 1 : 0;
   if (pOn[i] === 0) pCount++;
@@ -218,6 +221,7 @@ function spawnPart(x: number, y: number, vx: number, vy: number, gear: number): 
 }
 
 function spawnBlood(x: number, y: number, slot: number, tick: number): void {
+  if (pCount >= PART_LIVE_CAP - BLOOD_SPURT) return;
   const base = ((((slot | 0) * 13 + (tick | 0)) % 628) / 100);
   for (let k = 0; k < BLOOD_SPURT; k++) {
     const a = base + (k * 0.7) - 0.9;
@@ -260,7 +264,7 @@ export function juiceHit(
   const boss = body === Z_BRUTE || body === Z_KNIGHT;
   const crit = killed && (elite || boss);
   if (showNumbers) spawnNumber(x, y - 14, dealt, crit);
-  if (dealt > 0) stampBlood(x, y, slot + tick);
+  if (dealt > 0 && stainCount() < STAIN_LIVE_CAP) stampBlood(x, y, slot + tick);
   if (dealt > 0 && !killed) spawnBlood(x, y, slot, tick);
   if (dealt >= 3 && !killed) grant(STOP_CRIT_MS);
   if (crit) punchShake(SHAKE_CRIT);
@@ -278,7 +282,8 @@ export function juiceHit(
     knockY[slot] = (dy / d) * force;
   }
   if (!killed) return;
-  const n = burstCount(slot, tick);
+  let n = burstCount(slot, tick);
+  if (pCount >= PART_LIVE_CAP - 4) n = n < 3 ? n : 3;
   const base = ((((slot | 0) * 17 + (tick | 0)) % 628) / 100);
   for (let k = 0; k < n; k++) {
     const a = base + (k * 6.283185307179586) / n;

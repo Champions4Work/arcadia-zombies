@@ -43,7 +43,8 @@ export function absorbShake(tick: number, events: ArrayLike<number>): void {
 
 export function punchShake(amount: number): void {
   if (amount <= 0 || reduceMotionOn()) return;
-  const next = trauma + amount;
+  const scale = trauma >= 0.55 ? 0.4 : 1;
+  const next = trauma + amount * scale;
   trauma = next > 1 ? 1 : next;
 }
 

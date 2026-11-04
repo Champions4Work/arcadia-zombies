@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { createWorld } from "../src/sim/world";
 import { BRUTE_TO_HERO, FOE_TO_HERO, HERO_DRAW_SCALE, HERO_PACK_H, foeWorldH, foeWorldScale, shambleBob, walkBob } from "../src/art/look";
 import { HAZARD_MARKS } from "../src/render/ground";
-import { stampBlood, stampCasing, stainCount, stainFade, resetStains, STAIN_CAP } from "../src/render/stains";
+import { stampBlood, stampCasing, stainCount, stainFade, resetStains, STAIN_CAP, STAIN_LIVE_CAP } from "../src/render/stains";
 import { reviewHorde, reviewWalkOn, REVIEW_HORDE, REVIEW_RING, wantsFeelShot, wantsReviewShot } from "../src/shell/review-shot";
 import { yardPropHits, YARD_CLEAR, PHONE_CAM } from "../src/render/yard-fx";
 import { playView, SEE_AXIS } from "../src/shell/play-view";
@@ -264,10 +264,10 @@ describe("visual review gates", () => {
     expect(stainCount()).toBeGreaterThanOrEqual(2);
     for (let i = 0; i < 200; i++) stampBlood(i, i, i);
     expect(stainCount()).toBeLessThanOrEqual(STAIN_CAP);
-    expect(stainCount()).toBe(STAIN_CAP);
+    expect(stainCount()).toBe(STAIN_LIVE_CAP);
     let newest = 0;
     let oldest = 1;
-    for (let i = 0; i < STAIN_CAP; i++) {
+    for (let i = 0; i < STAIN_LIVE_CAP; i++) {
       const f = stainFade(i);
       if (f > newest) newest = f;
       if (f > 0 && f < oldest) oldest = f;

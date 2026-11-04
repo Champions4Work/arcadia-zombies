@@ -3,6 +3,7 @@ import { CASE_H, CASE_W } from "../src/art/look";
 import { BLOOD_DROP_RX, BLOOD_DROP_RY, FLASH_MS, GLYPH_CELL, SHAKE_BRUTE, SHAKE_HIT } from "../src/render/juice";
 import { SHAKE_CAP } from "../src/render/shake";
 import { BLOOD_STAIN_BASE } from "../src/render/stains";
+import { PHONE_FPS_AVG_MIN, PHONE_FPS_MID_MIN } from "../src/shell/phone-perf";
 import { CAM_LERP } from "../src/sim/arena";
 import { CURVE } from "../src/sim/difficulty";
 
@@ -19,6 +20,8 @@ describe("phone feel floors", () => {
     expect(GLYPH_CELL).toBeGreaterThanOrEqual(2);
     expect(FLASH_MS).toBeGreaterThanOrEqual(60);
     expect(FLASH_MS).toBeLessThanOrEqual(100);
+    expect(PHONE_FPS_MID_MIN).toBe(55);
+    expect(PHONE_FPS_AVG_MIN).toBe(55);
     const guns = readFileSync("src/sim/weapons.hot.ts", "utf8");
     expect(guns.includes("juiceShot(mx, my, ux, uy, w.tick)")).toBe(true);
   });

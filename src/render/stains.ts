@@ -1,6 +1,7 @@
 import { paintBlood, paintCasing } from "../art/look";
 
 export const STAIN_CAP = 160;
+export const STAIN_LIVE_CAP = 128;
 export const STAIN_BLOOD = 1;
 export const STAIN_CASE = 2;
 export const BLOOD_STAIN_BASE = 8;
@@ -29,6 +30,7 @@ export function stainFade(i: number): number {
 }
 
 function put(x: number, y: number, s: number, kind: number): void {
+  if (live >= STAIN_LIVE_CAP) return;
   const i = cursor;
   cursor = i + 1 < STAIN_CAP ? i + 1 : 0;
   if (sk[i] === 0) live++;
