@@ -67,8 +67,6 @@ const HORDE_OFF = 24;
 const FADE_BED = 0.9;
 const FADE_OUT = 0.28;
 const LOOKAHEAD = 0.14;
-const ORGAN_PARTIAL = [1, 2, 4];
-const ORGAN_SCALE = [1, 0.45, 0.2];
 
 interface Voice {
   timbre: Timbre;
@@ -127,42 +125,42 @@ function bind(score: Score): Score {
 const MENU = bind({
   bed: BED_MENU, bpm: 72, bpmFull: 72, beats: 3, steps: 12, phrases: 4, rootHz: 196,
   voices: [
-    row(TIMBRE_ORGAN, 0.05, 0, 0, 15, [0, 2, 7, 0], [0, REST, 2, REST, 4, REST, 7, REST, 4, REST, 2, 0]),
-    row(TIMBRE_GEAR, 0.035, 2, 0, 15, [0, 0, 0, 0], [0, REST, REST, REST, REST, REST, 0, REST, REST, REST, REST, REST]),
-    row(TIMBRE_STEAM, 0.025, 0, 0, 1, [0, 0, 0, 0], [0, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST]),
+    row(TIMBRE_ORGAN, 0.046, 0, 0, 15, [0, 5, 7, 0], [0, REST, 4, REST, 7, REST, 12, REST, 7, REST, 4, 0]),
+    row(TIMBRE_GEAR, 0.03, 2, 0, 15, [0, 0, 0, 0], [0, REST, REST, REST, REST, REST, 0, REST, REST, REST, REST, REST]),
+    row(TIMBRE_STEAM, 0.022, 0, 0, 1, [0, 0, 0, 0], [0, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST]),
   ],
 });
 
 const WAVE = bind({
   bed: BED_WAVE, bpm: 100, bpmFull: 124, beats: 4, steps: 16, phrases: 4, rootHz: 55,
   voices: [
-    row(TIMBRE_GEAR, 0.028, 2, 0, 15, [0, 0, 0, 0], [0, REST, 0, REST, 0, REST, 0, REST, 0, REST, 0, REST, 0, REST, 0, REST]),
-    row(TIMBRE_THUMP, 0.07, 0, 0, 15, [0, 0, -2, 0], [0, REST, REST, REST, 0, REST, REST, REST, 0, REST, REST, REST, 0, REST, REST, REST]),
-    row(TIMBRE_BRASS, 0.03, 0, 0, 15, [0, 0, -2, 0], [0, REST, REST, 0, REST, REST, 7, REST, REST, 0, REST, REST, 5, REST, REST, 0]),
-    row(TIMBRE_BRASS, 0.034, 1, 0, 15, [0, 5, 7, 0], [0, REST, 3, REST, 7, REST, 10, REST, 12, REST, 7, REST, 3, REST, 0, REST]),
-    row(TIMBRE_BRASS, 0.02, 1, 0.45, 15, [0, 5, 7, 0], [7, REST, 10, REST, 14, REST, 17, REST, 19, REST, 14, REST, 10, REST, 7, REST]),
+    row(TIMBRE_GEAR, 0.026, 2, 0, 15, [0, 0, 0, 0], [0, REST, 0, REST, 0, REST, 0, REST, 0, REST, 0, REST, 0, REST, 0, REST]),
+    row(TIMBRE_THUMP, 0.068, 0, 0, 15, [0, 0, -2, 0], [0, REST, REST, REST, 0, REST, 7, REST, 0, REST, REST, REST, 0, REST, 5, REST]),
+    row(TIMBRE_BRASS, 0.028, 0, 0, 15, [0, 3, -2, 0], [0, REST, REST, 0, REST, REST, 7, REST, REST, 0, REST, 3, 10, REST, REST, 0]),
+    row(TIMBRE_BRASS, 0.032, 1, 0, 15, [0, 3, 7, 0], [0, REST, 3, REST, 7, REST, 12, REST, 10, REST, 7, REST, 3, REST, 0, REST]),
+    row(TIMBRE_BRASS, 0.018, 1, 0.45, 15, [0, 3, 7, 12], [12, REST, 15, REST, 19, REST, 24, REST, 19, REST, 15, REST, 12, REST, 19, REST]),
   ],
 });
 
 const HORDE = bind({
   bed: BED_HORDE, bpm: 132, bpmFull: 148, beats: 4, steps: 16, phrases: 4, rootHz: 55,
   voices: [
-    row(TIMBRE_GEAR, 0.032, 2, 0, 15, [0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
-    row(TIMBRE_THUMP, 0.075, 0, 0, 15, [0, -1, 0, -2], [0, REST, REST, 0, 0, REST, REST, 0, 0, REST, REST, 0, 0, REST, REST, 0]),
-    row(TIMBRE_BRASS, 0.036, 1, 0, 15, [0, 1, 6, 0], [REST, 0, REST, 6, REST, 0, REST, 6, REST, 0, REST, 6, REST, 1, REST, 6]),
-    row(TIMBRE_ORGAN, 0.04, -1, 0.25, 15, [0, 0, 1, 0], [0, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST]),
-    row(TIMBRE_STEAM, 0.03, 0, 0.5, 5, [0, 0, 0, 0], [0, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST]),
+    row(TIMBRE_GEAR, 0.03, 2, 0, 15, [0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+    row(TIMBRE_THUMP, 0.072, 0, 0, 15, [0, -1, 0, -2], [0, REST, REST, 0, 0, REST, 7, 0, 0, REST, REST, 0, 0, REST, 3, 0]),
+    row(TIMBRE_BRASS, 0.034, 1, 0, 15, [0, 1, 6, 0], [REST, 0, REST, 7, REST, 0, REST, 12, REST, 0, REST, 7, REST, 3, REST, 12]),
+    row(TIMBRE_ORGAN, 0.036, -1, 0.25, 15, [0, 0, 1, 0], [0, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST]),
+    row(TIMBRE_STEAM, 0.028, 0, 0.5, 5, [0, 0, 0, 0], [0, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST]),
   ],
 });
 
 const BOSS = bind({
   bed: BED_BOSS, bpm: 80, bpmFull: 88, beats: 4, steps: 16, phrases: 4, rootHz: 55,
   voices: [
-    row(TIMBRE_GEAR, 0.04, 1, 0, 15, [0, 0, 0, 0], [0, REST, REST, REST, REST, REST, REST, REST, 0, REST, REST, REST, REST, REST, REST, REST]),
-    row(TIMBRE_THUMP, 0.08, -1, 0, 15, [0, -2, -5, 0], [0, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST]),
-    row(TIMBRE_ORGAN, 0.05, 1, 0, 15, [0, 3, 7, 10], [0, REST, REST, 3, REST, REST, 7, REST, 12, REST, 7, REST, 3, REST, REST, 0]),
-    row(TIMBRE_BRASS, 0.028, 0, 0.5, 15, [0, -2, -5, 0], [0, REST, REST, REST, 7, REST, REST, REST, REST, REST, REST, REST, 5, REST, REST, REST]),
-    row(TIMBRE_BELL, 0.045, 2, 0.75, 1, [0, 0, 0, 0], [0, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST]),
+    row(TIMBRE_GEAR, 0.036, 1, 0, 15, [0, 0, 0, 0], [0, REST, REST, REST, REST, REST, REST, REST, 0, REST, REST, REST, REST, REST, REST, REST]),
+    row(TIMBRE_THUMP, 0.076, -1, 0, 15, [0, -2, -5, 0], [0, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST]),
+    row(TIMBRE_ORGAN, 0.046, 1, 0, 15, [0, 3, 7, 10], [0, REST, REST, 3, REST, REST, 7, REST, 12, REST, 10, REST, 7, REST, 3, 0]),
+    row(TIMBRE_BRASS, 0.026, 0, 0.5, 15, [0, -2, -5, 0], [0, REST, REST, REST, 7, REST, REST, REST, REST, REST, REST, REST, 10, REST, REST, REST]),
+    row(TIMBRE_BELL, 0.04, 2, 0.75, 1, [0, 0, 0, 0], [0, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST]),
   ],
 });
 
@@ -451,40 +449,46 @@ function hitGear(ctx: AudioContext, dest: AudioNode, t: number, vol: number): vo
   src.loop = true;
   const filter = ctx.createBiquadFilter();
   filter.type = "highpass";
-  filter.frequency.value = 2400;
+  filter.frequency.value = 3400;
   const gain = ctx.createGain();
-  shape(gain.gain, t, vol, 0, 0.02);
+  shape(gain.gain, t, vol, 0, 0.012);
   src.connect(filter).connect(gain).connect(dest);
   src.start(t);
-  src.stop(t + 0.024);
+  src.stop(t + 0.016);
+  const click = ctx.createGain();
+  shape(click.gain, t, vol * 0.5, 0, 0.008);
+  click.connect(dest);
+  tone(ctx, click, "square", 2400, t, t + 0.01);
 }
 
 function hitThump(ctx: AudioContext, dest: AudioNode, t: number, hz: number, vol: number): void {
   const gain = ctx.createGain();
-  shape(gain.gain, t, vol, 0, 0.14);
+  shape(gain.gain, t, vol, 0, 0.1);
   gain.connect(dest);
-  const node = tone(ctx, gain, "sine", hz, t, t + 0.16);
-  node.frequency.exponentialRampToValueAtTime(Math.max(1, hz * 0.5), t + 0.12);
+  const node = tone(ctx, gain, "triangle", hz, t, t + 0.12);
+  node.frequency.exponentialRampToValueAtTime(Math.max(1, hz * 0.42), t + 0.09);
 }
 
 function hitBrass(ctx: AudioContext, dest: AudioNode, t: number, hz: number, vol: number): void {
   const gain = ctx.createGain();
-  shape(gain.gain, t, vol, 0.012, 0.16);
+  shape(gain.gain, t, vol, 0.003, 0.1);
   gain.connect(dest);
-  tone(ctx, gain, "sawtooth", hz, t, t + 0.18);
-  tone(ctx, gain, "square", hz * 1.005, t, t + 0.18);
+  tone(ctx, gain, "square", hz, t, t + 0.12);
+  const mix = ctx.createGain();
+  mix.gain.value = 0.22;
+  mix.connect(gain);
+  tone(ctx, mix, "square", hz * 2, t, t + 0.07);
 }
 
 function hitOrgan(ctx: AudioContext, dest: AudioNode, t: number, hz: number, vol: number): void {
   const gain = ctx.createGain();
-  shape(gain.gain, t, vol, 0.08, 0.48);
+  shape(gain.gain, t, vol, 0.018, 0.34);
   gain.connect(dest);
-  for (let i = 0; i < ORGAN_PARTIAL.length; i++) {
-    const mix = ctx.createGain();
-    mix.gain.value = ORGAN_SCALE[i] ?? 1;
-    mix.connect(gain);
-    tone(ctx, mix, "sine", hz * (ORGAN_PARTIAL[i] ?? 1), t, t + 0.5);
-  }
+  tone(ctx, gain, "triangle", hz, t, t + 0.36);
+  const mix = ctx.createGain();
+  mix.gain.value = 0.26;
+  mix.connect(gain);
+  tone(ctx, mix, "square", hz * 2, t, t + 0.36);
 }
 
 function hitSteam(ctx: AudioContext, dest: AudioNode, t: number, vol: number): void {
@@ -494,24 +498,25 @@ function hitSteam(ctx: AudioContext, dest: AudioNode, t: number, vol: number): v
   src.loop = true;
   const filter = ctx.createBiquadFilter();
   filter.type = "bandpass";
-  filter.frequency.setValueAtTime(700, t);
-  filter.frequency.exponentialRampToValueAtTime(2200, t + 0.3);
+  filter.frequency.setValueAtTime(1100, t);
+  filter.frequency.exponentialRampToValueAtTime(2600, t + 0.18);
   const gain = ctx.createGain();
-  shape(gain.gain, t, vol, 0.04, 0.3);
+  shape(gain.gain, t, vol, 0.02, 0.18);
   src.connect(filter).connect(gain).connect(dest);
   src.start(t);
-  src.stop(t + 0.32);
+  src.stop(t + 0.2);
 }
 
 function hitBell(ctx: AudioContext, dest: AudioNode, t: number, hz: number, vol: number): void {
   const gain = ctx.createGain();
-  shape(gain.gain, t, vol, 0, 0.45);
+  shape(gain.gain, t, vol, 0, 0.26);
   gain.connect(dest);
-  tone(ctx, gain, "sine", hz, t, t + 0.47);
+  tone(ctx, gain, "square", hz, t, t + 0.07);
+  tone(ctx, gain, "square", hz * 1.498, t + 0.055, t + 0.13);
   const mix = ctx.createGain();
-  mix.gain.value = 0.55;
+  mix.gain.value = 0.4;
   mix.connect(gain);
-  tone(ctx, mix, "sine", hz * 2.76, t, t + 0.47);
+  tone(ctx, mix, "triangle", hz * 2, t + 0.11, t + 0.28);
 }
 
 function hit(ctx: AudioContext, timbre: Timbre, dest: AudioNode, t: number, hz: number, vol: number): void {
