@@ -8,6 +8,7 @@ import {
   enemyFlash,
   FLASH_MS,
   FLASH_SOFT_MS,
+  GLYPH_CELL,
   HIT_COLOR,
   hitKnockX,
   hitKnockY,
@@ -18,6 +19,7 @@ import {
   lastNumberCrit,
   lastNumberValue,
   NUMBER_CAP,
+  NUMBER_LIFE,
   numberColor,
   numberCount,
   numberScale,
@@ -97,9 +99,13 @@ describe("damage numbers", () => {
     expect(lastNumberCrit()).toBe(0);
     expect(numberScale(0)).toBe(1);
     expect(numberColor(0)).toBe(HIT_COLOR);
+    expect(HIT_COLOR).toBe("#fff4c8");
+    expect(GLYPH_CELL).toBe(1);
+    expect(NUMBER_LIFE).toBe(180);
     const y0 = numberY(0);
-    tickJuice(180);
+    tickJuice(40);
     expect(numberY(0)).toBeLessThan(y0);
+    expect(numberCount()).toBe(1);
     juiceHit(1, 12, 40, 3, Z_SHAMBLER, true, 1);
     expect(lastNumberCrit()).toBe(0);
     expect(numberScale(1)).toBe(1);

@@ -24,9 +24,9 @@ export const STOP_BUDGET_MS = 100;
 export const STOP_WINDOW_MS = 1000;
 export const JUICE_DT = 1000 / 60;
 export const CRIT_COLOR = "#ffe14a";
-export const HIT_COLOR = "#f4efe2";
-export const NUMBER_LIFE = 420;
-export const GLYPH_CELL = 2;
+export const HIT_COLOR = "#fff4c8";
+export const NUMBER_LIFE = 180;
+export const GLYPH_CELL = 1;
 
 const SOOT = "#120c08";
 const BRASS = "#c8963e";
@@ -193,8 +193,8 @@ function spawnNumber(x: number, y: number, dmg: number, crit: boolean): void {
   numOn[i] = 1;
   numX[i] = x;
   numY[i] = y;
-  numVx[i] = ((i % 5) - 2) * 8;
-  numVy[i] = crit ? -58 : -36;
+  numVx[i] = ((i % 5) - 2) * 5;
+  numVy[i] = crit ? -110 : -88;
   numLife[i] = NUMBER_LIFE;
   numDmg[i] = dmg;
   numCrit[i] = crit ? 1 : 0;
@@ -422,7 +422,7 @@ export function drawJuice(c: CanvasRenderingContext2D): void {
     const val = numDmg[i] ?? 0;
     const x = (numX[i] ?? 0) - digits(val) * 2 * s;
     const y = numY[i] ?? 0;
-    c.globalAlpha = life > 200 ? 1 : Math.max(0, life / 200);
+    c.globalAlpha = Math.max(0, life / NUMBER_LIFE);
     drawValue(c, x + s, y + s, val, SOOT, s);
     drawValue(c, x, y, val, numberColor(crit), s);
   }

@@ -2,7 +2,6 @@ import { ARENA_H } from "../sim/arena";
 import { Z_ELITE, Z_GAS, Z_KIND, Z_KNIGHT, Z_RAT, Z_SPITTER } from "../sim/foes";
 import { fogCover } from "../sim/map-events";
 import { enemyFlash, hitKnockX, hitKnockY } from "./juice";
-import { reduceMotionOn } from "./motion";
 import {
   EV_SHOT, FX_BOOM, FX_FLASH, FX_PUFF, FX_SPARK, FX_XP, Z_BRUTE, Z_GHOUL, Z_SHAMBLER, type World,
 } from "../sim/types";
@@ -17,7 +16,7 @@ import {
   bulletPaint, fxPaint, registerBullet, registerFx, registerZombie, type BulletPaint, type Glyph,
 } from "./plugins";
 import { blitAtlas, foeFrameId } from "../art/atlas";
-import { foeWorldH, paintSignatureHero, paintZombie } from "../art/look";
+import { foeWorldH, paintHitSpark, paintSignatureHero, paintZombie } from "../art/look";
 import { stampCasing } from "./stains";
 
 export const BIN_LO = -80;
@@ -89,15 +88,7 @@ function paintOne(ctx: CanvasRenderingContext2D, w: World, i: number): void {
     ctx.fillStyle = kind === Z_BRUTE ? "#e0a028" : "#e24a32";
     ctx.fillRect(x - 9, top + 1, bw, 1.4);
   }
-  if (flash) {
-    ctx.save();
-    ctx.globalCompositeOperation = "lighter";
-    ctx.fillStyle = reduceMotionOn() ? "rgba(255,244,220,0.35)" : "rgba(255,244,220,0.7)";
-    ctx.beginPath();
-    ctx.ellipse(x, y - foeWorldH(kind) * 0.42, 5.5, foeWorldH(kind) * 0.26, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-  }
+  if (flash) paintHitSpark(ctx, x + 6, y - foeWorldH(kind) * 0.38);
 }
 
 export function paintActors(ctx: CanvasRenderingContext2D, w: World, moving: boolean): void {
