@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { createWorld } from "../src/sim/world";
 import { drawHud } from "../src/render/hud";
 import { bindHud, layoutHud } from "../src/shell/hud-layout";
@@ -166,9 +166,9 @@ describe("wave districts", () => {
     expect(shot.includes("phone_390_tram.png")).toBe(true);
     expect(shot.includes("width: 390")).toBe(true);
     expect(shot.includes("height: 844")).toBe(true);
-    expect(existsSync("docs/reviews/zones/phone_390_brass.png")).toBe(true);
-    expect(existsSync("docs/reviews/zones/phone_390_boiler.png")).toBe(true);
-    expect(existsSync("docs/reviews/zones/phone_390_tram.png")).toBe(true);
+    expect(readFileSync("docs/reviews/zones/phone_390_brass.png", "utf8").length).toBeGreaterThan(1000);
+    expect(readFileSync("docs/reviews/zones/phone_390_boiler.png", "utf8").length).toBeGreaterThan(1000);
+    expect(readFileSync("docs/reviews/zones/phone_390_tram.png", "utf8").length).toBeGreaterThan(1000);
   });
 
   it("puts a signature prop mix in the phone frame of later districts", () => {
