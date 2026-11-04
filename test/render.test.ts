@@ -131,6 +131,7 @@ describe("weapon rack", () => {
     drawWeaponRack(stubCtx(texts), createWorld(1));
     expect(texts.some((t) => WPN_TAGS.includes(t))).toBe(false);
     expect(texts.join("")).not.toMatch(/RIVET|SHOT|FLAME|HARP|MORT/);
+    expect(texts.filter((t) => /^\d+$/.test(t)).length).toBe(5);
   });
 
   it("keeps the live HUD free of the old GEARHEART and DIFFICULTY plates", () => {

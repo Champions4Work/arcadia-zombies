@@ -17,6 +17,7 @@ import { ultFill, ultReady } from "../sim/ult";
 import { heartIcon, hudType, ringMeter } from "../art/look";
 import { blitSheetFit } from "../art/sheet";
 import { BRASS, BRASS_HI, COPPER, CYAN, DANGER, HEALTH, INK, IRON, STEAM, XP } from "../shell/theme";
+import { drawWeaponRack } from "./weapons";
 import { drawXpBar } from "./xp-gain";
 
 export { blurbFor } from "./icons";
@@ -158,6 +159,40 @@ function clockPanel(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   ink(ctx, `${w.kills} KILLS`, box.x + 24, box.y + box.h * 0.68, 12, "#f6f1e6");
 }
 
+function portrait(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
+  const faceS = box.h;
+  const cx = box.x + faceS / 2;
+  const cy = box.y + box.h / 2;
+  const r = faceS * 0.42;
+  blitSheetFit(ctx, "ring_frame_a", box.x - 2, box.y - 2, faceS + 4, faceS + 4);
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fillStyle = IRON;
+  ctx.fill();
+  ctx.clip();
+  const body = faceS * 1.15;
+  blitSheetFit(ctx, "hero_idle", cx - body * 0.5, cy - body * 0.62, body, body);
+  ctx.restore();
+  ctx.strokeStyle = BRASS_HI;
+  ctx.lineWidth = 1.6;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.stroke();
+  const frac = w.maxHp > 0 ? Math.max(0, Math.min(1, w.hp / w.maxHp)) : 0;
+  const bx = box.x + faceS + 4;
+  const by = box.y + box.h * 0.42;
+  const bw = 36;
+  ctx.fillStyle = IRON;
+  ctx.fillRect(bx, by, bw, 7);
+  ctx.fillStyle = frac <= 0.35 ? DANGER : HEALTH;
+  ctx.fillRect(bx, by, bw * frac, 7);
+  ctx.strokeStyle = BRASS;
+  ctx.lineWidth = 1.2;
+  ctx.strokeRect(bx + 0.5, by + 0.5, bw - 1, 6);
+  ink(ctx, `${w.hp}`, bx + bw + 5, by + 4, 11, STEAM);
+}
+
 function pauseButton(ctx: CanvasRenderingContext2D, pause: Circle): void {
   blitSheetFit(ctx, "ring_frame_b", pause.x - pause.r, pause.y - pause.r, pause.r * 2, pause.r * 2);
   ctx.fillStyle = BRASS_HI;
@@ -268,6 +303,8 @@ export function drawHud(ctx: CanvasRenderingContext2D, w: World): void {
   pauseButton(ctx, layout.pause);
   if (!w.choosing) {
     minimap(ctx, w, layout.minimap);
+    portrait(ctx, w, layout.face);
+    drawWeaponRack(ctx, w);
     ability(ctx, w, layout.ability);
     objectives(ctx, w, layout);
     rankCallout(ctx, w, layout);

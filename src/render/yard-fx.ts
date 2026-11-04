@@ -1,6 +1,6 @@
 import { blitSheet, steamFrame } from "../art/sheet";
 import { paintShadow } from "../art/look";
-import { XP } from "../shell/theme";
+import { INK, XP } from "../shell/theme";
 import { FEAT_LAMP, groundFeatureAt, groundFeatureCount } from "./ground";
 
 const BUILDINGS = [
@@ -118,15 +118,18 @@ function arrow(ctx: CanvasRenderingContext2D, x: number, y: number, ang: number,
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(ang);
-  ctx.globalAlpha = 0.45 + ((tick >> 2) & 1) * 0.28;
+  ctx.globalAlpha = 0.82 + ((tick >> 1) & 1) * 0.18;
   ctx.beginPath();
-  ctx.moveTo(7, 0);
-  ctx.lineTo(-3.6, 3.2);
-  ctx.lineTo(-1, 0);
-  ctx.lineTo(-3.6, -3.2);
+  ctx.moveTo(14, 0);
+  ctx.lineTo(-6, 6.5);
+  ctx.lineTo(-1.6, 0);
+  ctx.lineTo(-6, -6.5);
   ctx.closePath();
   ctx.fillStyle = XP;
   ctx.fill();
+  ctx.strokeStyle = INK;
+  ctx.lineWidth = 1.2;
+  ctx.stroke();
   ctx.restore();
 }
 
@@ -191,8 +194,8 @@ export function paintYardLive(
     ctx.restore();
     const ang = belt.vert ? Math.PI / 2 : 0;
     const span = belt.w;
-    const off = (tick * 1.4 + i * 20) % 26;
-    for (let s = off; s < span; s += 26) {
+    const off = (tick * 2.2 + i * 16) % 22;
+    for (let s = off; s < span; s += 22) {
       const ax = belt.vert ? belt.x : belt.x + s;
       const ay = belt.vert ? belt.y + s : belt.y;
       arrow(ctx, ax, ay, ang, tick);

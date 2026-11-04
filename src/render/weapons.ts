@@ -1,7 +1,7 @@
 import { blitSheetFit } from "../art/sheet";
 import { currentHud } from "../shell/hud-layout";
-import { BRASS, BRASS_HI, COPPER, SOOT } from "../shell/theme";
-import { LAYER_HUD, registerFx, registerLayer } from "./plugins";
+import { BRASS, COPPER, INK, SOOT, XP } from "../shell/theme";
+import { registerFx } from "./plugins";
 import {
   FX_BOOM, UPG_WPN_FLAME, UPG_WPN_HARP, UPG_WPN_MORT, UPG_WPN_RIVET, UPG_WPN_SHOT,
   WPN_COUNT, WPN_RIVET, type World,
@@ -21,18 +21,17 @@ export function paintWeapon(c: CanvasRenderingContext2D, w: World, j: number): n
 }
 
 registerFx(FX_BOOM, paintBoom);
-registerLayer(LAYER_HUD, drawWeaponRack);
 
 function wpnGlyph(c: CanvasRenderingContext2D, i: number, x: number, y: number, s: number): void {
   c.save();
   c.translate(x, y);
-  c.fillStyle = BRASS_HI;
-  c.strokeStyle = BRASS;
-  c.lineWidth = 1.2;
+  c.fillStyle = XP;
+  c.strokeStyle = XP;
+  c.lineWidth = 2.2;
   if (i === 0) {
-    c.fillRect(-s * 0.7, -s * 0.18, s * 1.15, s * 0.36);
-    c.fillRect(s * 0.2, -s * 0.32, s * 0.55, s * 0.64);
-    c.fillRect(-s * 0.15, s * 0.1, s * 0.22, s * 0.45);
+    c.fillRect(-s * 0.85, -s * 0.22, s * 1.35, s * 0.44);
+    c.fillRect(s * 0.28, -s * 0.4, s * 0.7, s * 0.8);
+    c.fillRect(-s * 0.22, s * 0.12, s * 0.28, s * 0.55);
   } else if (i === 1) {
     c.beginPath();
     c.moveTo(-s * 0.15, 0);
@@ -85,15 +84,23 @@ export function drawWeaponRack(c: CanvasRenderingContext2D, w: World): void {
     c.lineWidth = 1.8;
     c.strokeRect(x + 0.8, y + 0.8, slot - 1.6, slot - 1.6);
     blitSheetFit(c, "power_slot", x - 1, y - 1, slot + 2, slot + 2);
-    wpnGlyph(c, i, x + slot / 2, y + slot * 0.42, Math.max(8, slot * 0.34));
+    wpnGlyph(c, i, x + slot / 2, y + slot * 0.4, Math.max(12, slot * 0.52));
+    const n = Math.max(1, lv);
+    c.fillStyle = XP;
+    c.fillRect(x + slot - 17, y + 1, 16, 14);
+    c.fillStyle = INK;
+    c.font = "700 14px sans-serif";
+    c.textAlign = "center";
+    c.textBaseline = "middle";
+    c.fillText(`${n}`, x + slot - 9, y + 8);
     const pipW = Math.max(2.2, (slot - 8) / 5 - 1);
     for (let p = 0; p < 5; p++) {
       c.fillStyle = p < lv ? EMBER : SOOT;
-      c.fillRect(x + 4 + p * (pipW + 1), y + slot - 6, pipW, 3);
+      c.fillRect(x + 4 + p * (pipW + 1), y + slot - 5, pipW, 2.4);
     }
     c.strokeStyle = OUTLINE;
     c.lineWidth = 1.2;
-    c.strokeRect(x + 4, y + slot - 6, slot - 8, 3);
+    c.strokeRect(x + 4, y + slot - 5, slot - 8, 2.4);
   }
   c.restore();
 }

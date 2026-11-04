@@ -7,7 +7,7 @@ import { reviewHorde, REVIEW_HORDE, REVIEW_RING, wantsReviewShot } from "../src/
 import { yardPropHits, YARD_CLEAR, PHONE_CAM } from "../src/render/yard-fx";
 import { playView, SEE_AXIS } from "../src/shell/play-view";
 import { ARENA_H, snapArenaCamera } from "../src/sim/arena";
-import { Z_BRUTE } from "../src/sim/types";
+import { UPG_WPN_RIVET, UPG_WPN_SHOT, Z_BRUTE } from "../src/sim/types";
 import { Z_ELITE } from "../src/sim/foes";
 
 describe("visual review gates", () => {
@@ -30,6 +30,12 @@ describe("visual review gates", () => {
     expect(foeWorldScale(0, 62)).toBeCloseTo((64 * 0.45) / 62);
     expect(foeWorldScale(Z_BRUTE, 98)).toBeCloseTo((64 * 1.3) / 98);
     const look = readFileSync("src/art/look.ts", "utf8");
+    expect(look.includes("export function paintRifle")).toBe(true);
+    expect(look.includes("ellipse(x, y + 3, 14, 5")).toBe(true);
+    expect(look.includes("rgba(255,200,96,0.85)")).toBe(true);
+    expect(look.includes("rgba(255,214,130,0.62)")).toBe(true);
+    expect(look.includes("brightness(1.65)")).toBe(true);
+    expect(look.includes("paintRifle(ctx, x, y, nx, ny, s, bob)")).toBe(true);
     expect(look.includes("rgba(200,208,220")).toBe(false);
     expect(look.includes("ellipse(mx, my, 18, 10")).toBe(false);
     expect(look.includes("lineTo(mx + nx * 14")).toBe(true);
@@ -66,6 +72,11 @@ describe("visual review gates", () => {
     const rack = readFileSync("src/render/weapons.ts", "utf8");
     expect(rack.includes("wpnGlyph")).toBe(true);
     expect(rack.includes("drawIcon")).toBe(false);
+    expect(rack.includes("fillText")).toBe(true);
+    expect(rack.includes("Math.max(1, lv)")).toBe(true);
+    expect(rack.includes("`${n}`")).toBe(true);
+    expect(yard.includes("tick * 2.2")).toBe(true);
+    expect(yard.includes("moveTo(14, 0)")).toBe(true);
   });
 
   it("blits the objectives frame without filling a solid plate", () => {
@@ -86,6 +97,10 @@ describe("visual review gates", () => {
     expect(hud.includes("#100c0a")).toBe(true);
     expect(hud.includes('blitSheetFit(ctx, "heart_ring"')).toBe(true);
     expect(hud.includes("heartIcon")).toBe(true);
+    expect(hud.includes("function portrait")).toBe(true);
+    expect(hud.includes('blitSheetFit(ctx, "ring_frame_a"')).toBe(true);
+    expect(hud.includes('blitSheetFit(ctx, "hero_idle"')).toBe(true);
+    expect(hud.includes("layout.face")).toBe(true);
   });
 
   it("keeps spawn telegraphs and kill puffs on pack sprites, and aligns vertical belts", () => {
@@ -139,7 +154,10 @@ describe("visual review gates", () => {
     expect(n).toBe(REVIEW_HORDE);
     expect(marked).toBeLessThanOrEqual(8);
     expect(near).toBe(0);
-    expect(stainCount()).toBeGreaterThanOrEqual(20);
+    expect(stainCount()).toBeGreaterThanOrEqual(80);
+    expect(w.tick).toBe(48);
+    expect(w.upgrades[UPG_WPN_RIVET]).toBe(3);
+    expect(w.upgrades[UPG_WPN_SHOT]).toBe(2);
     expect(w.px).toBe(480);
     expect(w.py).toBe(320);
     expect(w.kills).toBe(47);

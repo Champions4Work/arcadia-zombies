@@ -108,6 +108,32 @@ export function paintShadow(ctx: CanvasRenderingContext2D, x: number, y: number,
   ctx.restore();
 }
 
+export function paintRifle(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  nx: number,
+  ny: number,
+  s: number,
+  bob: number,
+): void {
+  const hx = x + nx * 9 * s;
+  const hy = y - 22 * s - bob + ny * 7;
+  ctx.save();
+  ctx.translate(hx, hy);
+  ctx.rotate(Math.atan2(ny, nx));
+  ctx.fillStyle = PX.n;
+  ctx.fillRect(-9 * s, -4.2 * s, 12 * s, 8.4 * s);
+  ctx.fillRect(-4 * s, 2.4 * s, 4.6 * s, 9 * s);
+  ctx.fillStyle = BRASS;
+  ctx.fillRect(-2 * s, -3.4 * s, 32 * s, 6.8 * s);
+  ctx.fillStyle = BRASS_HI;
+  ctx.fillRect(22 * s, -2.4 * s, 14 * s, 4.8 * s);
+  ctx.fillStyle = INK;
+  ctx.fillRect(8 * s, -1.2 * s, 3 * s, 2.4 * s);
+  ctx.restore();
+}
+
 export function paintSignatureHero(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -122,29 +148,42 @@ export function paintSignatureHero(
   const lean = Math.max(-0.16, Math.min(0.16, aimX * 0.14));
   const flip = aimX < 0;
   const s = HERO_DRAW_SCALE;
-  paintShadow(ctx, x, y, 18, 7.2);
-  ctx.beginPath();
-  ctx.ellipse(x, y + 3, 10, 3.6, 0, 0, Math.PI * 2);
-  ctx.strokeStyle = CYAN;
-  ctx.globalAlpha = 0.72;
-  ctx.lineWidth = 1.6;
-  ctx.stroke();
-  ctx.globalAlpha = 1;
-  blitSheetLean(ctx, heroSpriteId(moving, tick), x, y, flip, bob, lean, s);
-  ctx.save();
-  ctx.globalCompositeOperation = "lighter";
-  ctx.strokeStyle = "rgba(240,176,88,0.42)";
-  ctx.lineWidth = 1.3;
-  ctx.beginPath();
-  ctx.ellipse(x, y - 26 * s - bob, 10 * s, 18 * s, lean, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.restore();
-  if (!shoot) return;
   const mag = Math.max(0.2, Math.hypot(aimX, aimY));
   const nx = aimX / mag;
   const ny = aimY / mag;
-  const mx = x + nx * 22 * s;
-  const my = y - 24 * s - bob + ny * 10;
+  paintShadow(ctx, x, y, 22, 9);
+  ctx.save();
+  ctx.fillStyle = "rgba(62,200,192,0.28)";
+  ctx.beginPath();
+  ctx.ellipse(x, y + 3, 14, 5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = CYAN;
+  ctx.globalAlpha = 0.92;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.restore();
+  ctx.save();
+  ctx.fillStyle = "rgba(255,214,130,0.62)";
+  ctx.beginPath();
+  ctx.ellipse(x, y - 24 * s - bob, 13 * s, 22 * s, lean, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+  ctx.save();
+  ctx.filter = "brightness(1.65) contrast(1.2) saturate(1.15)";
+  blitSheetLean(ctx, heroSpriteId(moving, tick), x, y, flip, bob, lean, s);
+  ctx.restore();
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  ctx.strokeStyle = "rgba(255,200,96,0.85)";
+  ctx.lineWidth = 2.4;
+  ctx.beginPath();
+  ctx.ellipse(x, y - 26 * s - bob, 12 * s, 20 * s, lean, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+  paintRifle(ctx, x, y, nx, ny, s, bob);
+  if (!shoot) return;
+  const mx = x + nx * 32 * s;
+  const my = y - 20 * s - bob + ny * 10;
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
   ctx.fillStyle = "rgba(255,248,220,0.95)";
