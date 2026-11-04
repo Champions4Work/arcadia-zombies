@@ -26,8 +26,6 @@ function paintLaneVent(ctx: CanvasRenderingContext2D, x: number, y: number, tick
   blitSheet(ctx, "decal_grate", x, y);
   ctx.globalAlpha = 0.7 + ((tick >> 3) & 1) * 0.18;
   blitSheet(ctx, "decal_vent", x, y);
-  ctx.globalAlpha = 0.55;
-  blitSheet(ctx, "decal_hazard", x, y + 10);
   ctx.restore();
 }
 

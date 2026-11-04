@@ -113,19 +113,22 @@ function plate(ctx: CanvasRenderingContext2D, box: Box, id = "panel_frame_small"
 }
 
 function drawHealth(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
+  const layout = currentHud();
+  const phone = layout?.phone ?? false;
   const frac = w.maxHp > 0 ? Math.max(0, Math.min(1, w.hp / w.maxHp)) : 0;
   const low = frac <= 0.35;
   const cx = box.x + box.w / 2;
   const cy = box.y + box.h / 2;
   const r = Math.min(box.w, box.h) * 0.42;
+  const heartCol = low ? DANGER : phone ? CYAN : HEALTH;
   blitSheetFit(ctx, "heart_ring", box.x - 8, box.y - 8, box.w + 16, box.h + 16);
   ctx.beginPath();
   ctx.arc(cx, cy, r + 4, 0, Math.PI * 2);
-  ctx.strokeStyle = BRASS;
-  ctx.lineWidth = 3.4;
+  ctx.strokeStyle = phone ? CYAN : BRASS;
+  ctx.lineWidth = phone ? 3 : 3.4;
   ctx.stroke();
-  ringMeter(ctx, cx, cy, r, frac, low ? DANGER : HEALTH);
-  heartIcon(ctx, cx, cy + 1, r * 0.62, low ? DANGER : HEALTH);
+  ringMeter(ctx, cx, cy, r, frac, heartCol);
+  heartIcon(ctx, cx, cy + 1, r * 0.62, heartCol);
   if (w.meta.revive > 0) ink(ctx, "REV", cx, box.y + 8, 9, COPPER, "center");
 }
 

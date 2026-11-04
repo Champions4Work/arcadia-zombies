@@ -18,13 +18,23 @@ export function bindStage(id: number): void {
 }
 
 function drawYard(ctx: CanvasRenderingContext2D): void {
-  const sky = ctx.createLinearGradient(0, 0, 0, 150);
-  sky.addColorStop(0, "#0a0a10");
-  sky.addColorStop(0.55, "#12121a");
-  sky.addColorStop(1, "#1a1a22");
+  const sky = ctx.createLinearGradient(0, 0, 0, 180);
+  sky.addColorStop(0, "#1a1030");
+  sky.addColorStop(0.35, "#3a1838");
+  sky.addColorStop(0.62, "#5a2818");
+  sky.addColorStop(1, "#2a1814");
   ctx.fillStyle = sky;
-  ctx.fillRect(0, 0, ARENA_W, 160);
-  ctx.fillStyle = "rgba(220,224,232,0.45)";
+  ctx.fillRect(0, 0, ARENA_W, 180);
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  const rays = ctx.createLinearGradient(ARENA_W * 0.72, 0, ARENA_W * 0.38, 220);
+  rays.addColorStop(0, "rgba(255,190,110,0.22)");
+  rays.addColorStop(0.4, "rgba(255,140,60,0.08)");
+  rays.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = rays;
+  ctx.fillRect(0, 0, ARENA_W, 220);
+  ctx.restore();
+  ctx.fillStyle = "rgba(244,228,210,0.35)";
   for (let i = 0; i < 36; i++) {
     const x = (i * 97) % ARENA_W;
     const y = (i * 41) % 70;

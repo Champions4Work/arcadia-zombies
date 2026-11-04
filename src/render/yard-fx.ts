@@ -16,6 +16,8 @@ const BELTS = [
 
 const PIPE_RUNS = [
   { x: 296, y: 232, len: 368, vert: 0 },
+  { x: 308, y: 268, len: 372, vert: 1 },
+  { x: 644, y: 268, len: 372, vert: 1 },
 ];
 
 const BELT_H = 72;
@@ -32,17 +34,19 @@ const PROPS: { id: string; x: number; y: number }[] = [
   { id: "lamp", x: 360, y: 208 },
   { id: "lamp", x: 480, y: 204 },
   { id: "lamp", x: 600, y: 208 },
-  { id: "crate_stack", x: 332, y: 340 },
+  { id: "breakable_gear_pylon", x: 332, y: 340 },
   { id: "crate_stack", x: 340, y: 368 },
   { id: "barrel", x: 336, y: 386 },
+  { id: "decal_grate", x: 368, y: 302 },
+  { id: "decal_grate", x: 592, y: 302 },
   { id: "crate", x: 332, y: 428 },
   { id: "valve_steam", x: 334, y: 468 },
   { id: "decal_vent", x: 336, y: 450 },
   { id: "barrel", x: 332, y: 508 },
   { id: "crate_stack", x: 336, y: 548 },
   { id: "pipes_blue_tank", x: 334, y: 596 },
-  { id: "crate", x: 332, y: 636 },
-  { id: "crate_stack", x: 628, y: 340 },
+  { id: "breakable_boiler", x: 332, y: 636 },
+  { id: "breakable_gear_pylon", x: 628, y: 340 },
   { id: "crate_stack", x: 620, y: 368 },
   { id: "barrel", x: 632, y: 386 },
   { id: "crate", x: 628, y: 428 },
@@ -51,24 +55,30 @@ const PROPS: { id: string; x: number; y: number }[] = [
   { id: "barrel", x: 628, y: 508 },
   { id: "crate_stack", x: 632, y: 548 },
   { id: "pipes_blue_tank", x: 630, y: 596 },
-  { id: "crate", x: 628, y: 636 },
+  { id: "breakable_boiler", x: 628, y: 636 },
 ];
 
 const TANKS = [
   { x: 320, y: 588 },
   { x: 640, y: 588 },
+  { x: 348, y: 208 },
+  { x: 612, y: 208 },
 ];
 
 const POOLS = [
   { x: 360, y: 208 },
   { x: 480, y: 204 },
   { x: 600, y: 208 },
+  { x: 332, y: 340 },
+  { x: 628, y: 340 },
 ];
 
 const STEAM_VENTS = [
   { x: 360, y: 226 },
   { x: 424, y: 232 },
   { x: 520, y: 226 },
+  { x: 334, y: 468 },
+  { x: 630, y: 468 },
 ];
 
 export const YARD_CLEAR = { x0: 352, y0: 318, x1: 608, y1: 638 };
@@ -364,7 +374,12 @@ function paintCrossPipe(
   y: number,
   len: number,
   tick: number,
+  vert = 0,
 ): void {
+  if (vert) {
+    paintVertPipe(ctx, x, y, len, tick);
+    return;
+  }
   ctx.fillStyle = "#1a120c";
   ctx.fillRect(x, y - 30, len, 60);
   ctx.fillStyle = "#8a5a20";
@@ -405,6 +420,34 @@ function paintCrossPipe(
   blitScaled(ctx, "pipes_blue_tank", x + 28, y + 22, TANK_SCALE);
   blitScaled(ctx, "pipes_blue_tank", x + len - 28, y + 22, TANK_SCALE);
   paintRedValve(ctx, VALVE.x, VALVE.y);
+}
+
+function paintVertPipe(ctx: CanvasRenderingContext2D, x: number, y: number, len: number, tick: number): void {
+  const w = 60;
+  ctx.fillStyle = "#1a120c";
+  ctx.fillRect(x - w * 0.5, y, w, len);
+  ctx.fillStyle = "#8a5a20";
+  ctx.fillRect(x - w * 0.4, y, w * 0.8, len);
+  ctx.fillStyle = "#e0a040";
+  ctx.fillRect(x - w * 0.3, y, w * 0.6, len);
+  ctx.fillStyle = "#0a4a52";
+  ctx.fillRect(x - 8, y + 4, 16, len - 8);
+  ctx.fillStyle = "#7ae0d4";
+  ctx.fillRect(x - 5, y + 4, 10, len - 8);
+  for (let i = 0; i < GLASS_AT.length; i++) {
+    const t = GLASS_AT[i] ?? 0.5;
+    const py = y + len * t;
+    const pulse = 0.72 + ((tick + i * 7) & 7) * 0.03;
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    ctx.fillStyle = `rgba(70,230,255,${pulse})`;
+    ctx.beginPath();
+    ctx.ellipse(x, py, 12, 28, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+  blitScaled(ctx, "valve_steam", x, y + 24, 1.1);
+  blitScaled(ctx, "valve_steam", x, y + len - 36, 1.1);
 }
 
 function steamPuff(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number): void {
@@ -466,7 +509,7 @@ function paintCrossBelt(
   }
   const off = (tick * 2.2) % 28;
   for (let s = off; s < w; s += 28) {
-    arrow(ctx, x + s, y, 0, tick);
+    if (yardBound !== ZONE_BRASS) arrow(ctx, x + s, y, 0, tick);
   }
   const crateT = (tick * 0.9 + w * 0.42) % w;
   const cx = x + crateT;
@@ -581,7 +624,7 @@ export function paintYardLive(
   paintBrickWall(ctx);
   for (const run of pipesOf()) {
     if (!visible(run.x, run.y, camX, camY, vw, vh, run.len + 20)) continue;
-    paintCrossPipe(ctx, run.x, run.y, run.len, tick);
+    paintCrossPipe(ctx, run.x, run.y, run.len, tick, run.vert);
   }
   for (const b of buildingsOf()) {
     if (!visible(b.x, b.y, camX, camY, vw, vh, 160)) continue;
@@ -608,6 +651,9 @@ export function paintYardLive(
   }
   for (const p of propsOf()) {
     if (!visible(p.x, p.y, camX, camY, vw, vh, 90)) continue;
+    if (p.id === "breakable_gear_pylon" || p.id === "breakable_boiler" || p.id === "pipes_blue_tank") {
+      bluePool(ctx, p.x, p.y + 8);
+    }
     paintShadow(ctx, p.x, p.y, 12, 4);
     blitSheet(ctx, p.id, p.x, p.y);
   }
@@ -632,6 +678,28 @@ export function paintYardLive(
     ctx.restore();
     steamPuff(ctx, vent.x, vent.y, tick);
   }
+  if (yardBound === ZONE_BRASS) paintBrassGrade(ctx, camX, camY, vw, vh);
+}
+
+function paintBrassGrade(ctx: CanvasRenderingContext2D, camX: number, camY: number, vw: number, vh: number): void {
+  ctx.save();
+  ctx.globalCompositeOperation = "multiply";
+  const shade = ctx.createLinearGradient(camX, camY, camX, camY + vh);
+  shade.addColorStop(0, "rgba(72,36,48,0.22)");
+  shade.addColorStop(0.35, "rgba(28,20,16,0.08)");
+  shade.addColorStop(1, "rgba(6,8,14,0.38)");
+  ctx.fillStyle = shade;
+  ctx.fillRect(camX, camY, vw, vh);
+  ctx.restore();
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  const ray = ctx.createLinearGradient(camX + vw * 0.82, camY, camX + vw * 0.2, camY + vh * 0.55);
+  ray.addColorStop(0, "rgba(255,180,90,0.14)");
+  ray.addColorStop(0.45, "rgba(255,140,40,0.05)");
+  ray.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = ray;
+  ctx.fillRect(camX, camY, vw, vh);
+  ctx.restore();
 }
 
 export function paintDoorSpawn(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number): void {

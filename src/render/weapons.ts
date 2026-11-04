@@ -1,6 +1,6 @@
 import { blitSheetFit } from "../art/sheet";
 import { currentHud } from "../shell/hud-layout";
-import { BRASS, COPPER, SOOT, XP } from "../shell/theme";
+import { BRASS, COPPER, CYAN, SOOT, XP } from "../shell/theme";
 import { registerFx } from "./plugins";
 import {
   FX_BOOM, UPG_WPN_FLAME, UPG_WPN_HARP, UPG_WPN_MORT, UPG_WPN_RIVET, UPG_WPN_SHOT,
@@ -20,6 +20,72 @@ export function paintWeapon(c: CanvasRenderingContext2D, w: World, j: number): n
 }
 
 registerFx(FX_BOOM, paintBoom);
+
+function paintPhonePower(c: CanvasRenderingContext2D, i: number, cx: number, cy: number, r: number): void {
+  c.beginPath();
+  c.arc(cx, cy, r, 0, Math.PI * 2);
+  c.fillStyle = "#141820";
+  c.fill();
+  c.strokeStyle = i === 0 ? XP : CYAN;
+  c.lineWidth = 2.6;
+  c.stroke();
+  const s = r * 0.52;
+  if (i === 0) {
+    c.fillStyle = "#f0c040";
+    c.beginPath();
+    c.arc(cx, cy, s * 0.55, 0, Math.PI * 2);
+    c.fill();
+    c.strokeStyle = "#e8a828";
+    c.lineWidth = 1.6;
+    for (let a = 0; a < 8; a++) {
+      const ang = (a / 8) * Math.PI * 2;
+      c.beginPath();
+      c.moveTo(cx + Math.cos(ang) * s * 0.72, cy + Math.sin(ang) * s * 0.72);
+      c.lineTo(cx + Math.cos(ang) * s * 1.05, cy + Math.sin(ang) * s * 1.05);
+      c.stroke();
+    }
+  } else if (i === 1) {
+    c.fillStyle = "#eef2f8";
+    c.beginPath();
+    c.arc(cx, cy, s * 0.22, 0, Math.PI * 2);
+    c.fill();
+    c.fillStyle = CYAN;
+    c.beginPath();
+    c.arc(cx, cy, s * 0.12, 0, Math.PI * 2);
+    c.fill();
+  } else if (i === 2) {
+    c.fillStyle = "#e86820";
+    c.beginPath();
+    c.moveTo(cx, cy - s * 0.62);
+    c.quadraticCurveTo(cx + s * 0.52, cy - s * 0.08, cx, cy + s * 0.58);
+    c.quadraticCurveTo(cx - s * 0.52, cy - s * 0.08, cx, cy - s * 0.62);
+    c.fill();
+    c.fillStyle = "#f8c040";
+    c.beginPath();
+    c.arc(cx, cy - s * 0.18, s * 0.18, 0, Math.PI * 2);
+    c.fill();
+  } else if (i === 3) {
+    c.fillStyle = XP;
+    c.beginPath();
+    c.moveTo(cx + s * 0.55, cy);
+    c.lineTo(cx - s * 0.35, cy + s * 0.42);
+    c.lineTo(cx - s * 0.12, cy);
+    c.lineTo(cx - s * 0.35, cy - s * 0.42);
+    c.closePath();
+    c.fill();
+  } else {
+    c.fillStyle = "#3a9ae8";
+    c.beginPath();
+    c.moveTo(cx, cy - s * 0.55);
+    c.bezierCurveTo(cx + s * 0.48, cy - s * 0.12, cx + s * 0.42, cy + s * 0.52, cx, cy + s * 0.62);
+    c.bezierCurveTo(cx - s * 0.42, cy + s * 0.52, cx - s * 0.48, cy - s * 0.12, cx, cy - s * 0.55);
+    c.fill();
+    c.fillStyle = "#7ae0ff";
+    c.beginPath();
+    c.ellipse(cx - s * 0.12, cy - s * 0.22, s * 0.14, s * 0.1, -0.4, 0, Math.PI * 2);
+    c.fill();
+  }
+}
 
 function paintSlotIcon(c: CanvasRenderingContext2D, i: number, x: number, y: number, s: number): void {
   c.save();
@@ -94,11 +160,11 @@ export function drawWeaponRack(c: CanvasRenderingContext2D, w: World): void {
     const sy = y;
     const cx = sx + sw / 2;
     const cy = sy + sh / 2;
-    blitSheetFit(c, "power_slot", sx - 7, sy - 7, sw + 14, sh + 14);
     if (phone) {
-      paintSlotIcon(c, i, cx, cy - 2, Math.max(12, sw * 0.44));
+      paintPhonePower(c, i, cx, cy, sw * 0.46);
       continue;
     }
+    blitSheetFit(c, "power_slot", sx - 7, sy - 7, sw + 14, sh + 14);
     const rim = hot ? sw * 0.56 : sw * 0.5;
     c.beginPath();
     c.arc(cx, cy, rim * 0.72, 0, Math.PI * 2);

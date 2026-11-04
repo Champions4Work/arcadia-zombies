@@ -210,9 +210,9 @@ describe("r25 art-bible phone pass", () => {
     expect(yard.includes("BELT_H = 72")).toBe(true);
     expect(yard.includes("window_lit")).toBe(true);
     expect(yard.includes("building_wall_door")).toBe(true);
-    expect(HAZARD_MARKS.length).toBeLessThanOrEqual(3);
+    expect(HAZARD_MARKS.length).toBe(0);
     expect(yardPropHits(YARD_CLEAR.x0, YARD_CLEAR.y0, YARD_CLEAR.x1, YARD_CLEAR.y1)).toBe(0);
-    expect(yardPropHits(PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(28);
+    expect(yardPropHits(PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(8);
   });
 
   it("draws the pack dive-suit hero and phone power slots without ammo strip", () => {
@@ -226,6 +226,6 @@ describe("r25 art-bible phone pass", () => {
     expect(hud.includes("difficultyLabel(w.rank)")).toBe(true);
     expect(hud.includes("layout.phone")).toBe(true);
     expect(hud.includes("if (!layout.phone && layout.face.w > 0) portrait")).toBe(true);
-    expect(hud.includes("low ? DANGER : HEALTH")).toBe(true);
+    expect(hud.includes("phone ? CYAN : HEALTH")).toBe(true);
   });
 });

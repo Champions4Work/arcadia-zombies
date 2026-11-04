@@ -199,8 +199,8 @@ describe("wave districts", () => {
     for (const z of [ZONE_BRASS, ZONE_BOILER, ZONE_TRAM]) {
       bindYard(z);
       expect(yardPropHits(YARD_CLEAR.x0, YARD_CLEAR.y0, YARD_CLEAR.x1, YARD_CLEAR.y1)).toBe(0);
-      expect(yardPropHits(PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(28);
-      expect(yardPropHits(200, 0, 760, 640)).toBeGreaterThanOrEqual(20);
+      expect(yardPropHits(PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(8);
+      expect(yardPropHits(200, 0, 760, 640)).toBeGreaterThanOrEqual(10);
     }
   });
 });

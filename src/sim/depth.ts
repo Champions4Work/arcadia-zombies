@@ -53,18 +53,13 @@ export interface DepthBag {
 const bag = new WeakMap<World, DepthBag>();
 
 const BELTS: readonly [number, number, number, number][] = [
-  [336, 176, BELT_SPAN, 1],
-  [620, 176, BELT_SPAN, 1],
+  [296, 420, 368, 0],
 ];
 
 const VENTS: readonly [number, number][] = [
-  [400, 400],
-  [560, 400],
-  [480, 200],
-  [340, 250],
-  [620, 250],
-  [340, 470],
-  [620, 470],
+  [360, 200],
+  [480, 190],
+  [600, 200],
 ];
 
 const LANE: readonly [number, number, number, number, number, number, number][] = [
@@ -285,9 +280,9 @@ export function reviewDepth(w: World): void {
   d.cargoBelt[0] = 0;
   d.cargoPhase[0] = CARGO_LAND;
   d.cargoKind[0] = CARGO_UPG;
-  d.cargoX[0] = w.px + 14;
-  d.cargoY[0] = w.py - 78;
-  d.ventX[0] = w.px - 52;
-  d.ventY[0] = w.py + 88;
+  d.cargoX[0] = 468;
+  d.cargoY[0] = 404;
+  d.ventX[0] = w.px - 96;
+  d.ventY[0] = w.py + 96;
   d.cargoT[0] = DROP_ALONG;
 }

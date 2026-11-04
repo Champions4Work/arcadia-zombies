@@ -86,26 +86,20 @@ function brassPad(c: number, r: number): number {
     if (r >= 33 && r <= 35 && c >= 4 && c <= 56) return 1;
     return 0;
   }
-  if (r >= 8 && r <= 13 && c >= 9 && c <= 20) return 1;
-  if (r >= 10 && r <= 11 && c >= 3 && c <= 52) return 1;
-  if (r >= 12 && r <= 18 && c >= 48 && c <= 57) return 1;
-  if (r >= 20 && r <= 24 && c >= 2 && c <= 10) return 1;
-  if (r >= 20 && r <= 24 && c >= 50 && c <= 58) return 1;
-  if (r >= 18 && r <= 22 && c >= 2 && c <= 10) return 1;
-  if (r >= 30 && r <= 32 && c >= 16 && c <= 28) return 1;
+  if (r >= 26 && r <= 27 && c >= 18 && c <= 42) return 1;
   return 0;
 }
 
 function railH(r: number): number {
   if (bound === ZONE_TRAM) return r === 9 || r === 16 || r === 22 || r === 28 || r === 34 ? 1 : 0;
   if (bound === ZONE_BOILER) return r === 22 ? 1 : 0;
-  return r === 9 || r === 34 ? 1 : 0;
+  return r === 26 ? 1 : 0;
 }
 
 function railV(c: number): number {
   if (bound === ZONE_TRAM) return c === 13 || c === 30 || c === 47 ? 1 : 0;
   if (bound === ZONE_BOILER) return c === 8 || c === 52 ? 1 : 0;
-  return c === 13 || c === 47 ? 1 : 0;
+  return 0;
 }
 
 function add(kind: number, x: number, y: number, a: number, b: number): void {
@@ -247,34 +241,10 @@ function build(): void {
     add(FEAT_GEAR, 480, 360, 12, 6);
     add(FEAT_GEAR, 820, 520, 12, 6);
   } else {
-    add(FEAT_PIPE, 24, 136, 140, 0);
-    add(FEAT_PIPE, 164, 136, 90, 1);
-    add(FEAT_PIPE, 720, 148, 200, 0);
-    add(FEAT_PIPE, 920, 148, 80, 1);
-    add(FEAT_PIPE, 40, 220, 180, 0);
-    add(FEAT_PIPE, 40, 220, 70, 1);
-    add(FEAT_PIPE, 40, 360, 180, 0);
-    add(FEAT_PIPE, 780, 300, 110, 1);
-    add(FEAT_PIPE, 40, 520, 200, 0);
-    add(FEAT_PIPE, 880, 440, 160, 1);
-    add(FEAT_LAMP, 56, 148, 72, 0);
-    add(FEAT_LAMP, 188, 188, 68, 0);
-    add(FEAT_LAMP, 352, 156, 74, 0);
-    add(FEAT_LAMP, 332, 208, 70, 0);
-    add(FEAT_LAMP, 708, 168, 76, 0);
-    add(FEAT_LAMP, 868, 228, 68, 0);
-    add(FEAT_LAMP, 248, 368, 80, 0);
-    add(FEAT_LAMP, 648, 392, 78, 0);
-    add(FEAT_LAMP, 332, 210, 68, 0);
-    add(FEAT_LAMP, 628, 210, 68, 0);
-    add(FEAT_LAMP, 348, 490, 68, 0);
-    add(FEAT_LAMP, 620, 490, 68, 0);
-    add(FEAT_GEAR, 120, 210, 14, 8);
-    add(FEAT_GEAR, 332, 250, 12, 7);
-    add(FEAT_GEAR, 610, 180, 15, 8);
-    add(FEAT_GEAR, 790, 340, 13, 6);
-    add(FEAT_GEAR, 330, 470, 16, 8);
-    add(FEAT_GEAR, 860, 520, 11, 7);
+    add(FEAT_PIPE, 296, 132, 368, 0);
+    add(FEAT_LAMP, 348, 156, 74, 0);
+    add(FEAT_LAMP, 480, 156, 74, 0);
+    add(FEAT_LAMP, 612, 156, 74, 0);
   }
   for (let i = 0; i < 14; i++) {
     const hx = hash(i, 9);
@@ -462,11 +432,7 @@ function fog(ctx: CanvasRenderingContext2D): void {
   ctx.fillRect(0, 100, ARENA_W, 220);
 }
 
-export const HAZARD_MARKS = [
-  [8, 10],
-  [22, 14],
-  [36, 12],
-] as const;
+export const HAZARD_MARKS = [] as const;
 
 const BOILER_MARKS = [
   [8, 10],
@@ -484,11 +450,11 @@ const TRAM_MARKS = [
 
 export function paintGround(ctx: CanvasRenderingContext2D): void {
   build();
-  const wash = bound === ZONE_BOILER ? "#141210" : bound === ZONE_TRAM ? "#1c242c" : "#24303c";
+  const wash = bound === ZONE_BOILER ? "#141210" : bound === ZONE_TRAM ? "#1c242c" : "#181412";
   const tile = bound === ZONE_BOILER ? "tile_metal_seamless" : "tile_stone_seamless";
-  const groutInk = bound === ZONE_BOILER ? "rgba(22,20,18,0.72)" : bound === ZONE_TRAM ? "rgba(20,28,36,0.5)" : "rgba(36,48,62,0.55)";
-  const veil = bound === ZONE_BOILER ? 0.55 : bound === ZONE_TRAM ? 0.28 : 0.08;
-  const veilInk = bound === ZONE_BRASS ? "#3a2a1c" : wash;
+  const groutInk = bound === ZONE_BOILER ? "rgba(22,20,18,0.72)" : bound === ZONE_TRAM ? "rgba(20,28,36,0.5)" : "rgba(28,22,18,0.62)";
+  const veil = bound === ZONE_BOILER ? 0.55 : bound === ZONE_TRAM ? 0.28 : 0.04;
+  const veilInk = bound === ZONE_BRASS ? "#2a1810" : wash;
   ctx.fillStyle = wash;
   ctx.fillRect(0, 108, ARENA_W, ARENA_H - 108);
   tileSheet(ctx, tile, 0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
