@@ -120,7 +120,8 @@ describe("juice r25 combat read", () => {
     const flash = readFileSync("src/render/cast-fx.ts", "utf8");
     expect(flash.includes("age >= 12")).toBe(true);
     const hero = readFileSync("src/art/look.ts", "utf8");
-    expect(hero.includes("if (moving)")).toBe(true);
+    expect(hero.includes("rgba(62,220,220")).toBe(false);
+    expect(hero.includes("walkBob(tick, moving)")).toBe(true);
   });
 
   it("stamps a spent casing when firing without exceeding stain cap", () => {
