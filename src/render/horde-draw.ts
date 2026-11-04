@@ -1,6 +1,5 @@
 import { H, W, type World } from "../sim/types";
 import { composeHorde } from "./blit.hot";
-import { copyGroundWindow } from "./ground-atlas";
 import { bg, buildSprites } from "./horde-sprites";
 
 let view: HTMLCanvasElement | null = null;
@@ -30,7 +29,7 @@ export function renderHorde(c: CanvasRenderingContext2D, w: World): void {
   if (!pixels || !view || !viewCtx || !image) return;
   const camX = Math.round(w.arena.camX);
   const camY = Math.round(w.arena.camY);
-  copyGroundWindow(bg, camX, camY);
+  bg.fill(0);
   composeHorde(w, pixels);
   viewCtx.putImageData(image, 0, 0);
   const smooth = c.imageSmoothingEnabled;
