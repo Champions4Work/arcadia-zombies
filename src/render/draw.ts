@@ -19,6 +19,7 @@ import { absorbShake, shakePixels } from "./shake";
 import { drawStageFx, drawYardWindow } from "./stage";
 import { paintHurt, paintVeil } from "./veil";
 import { paintYardLive } from "./yard-fx";
+import { reviewWalkOn } from "../shell/review-shot";
 
 let lastPx = 0;
 let lastPy = 0;
@@ -50,7 +51,7 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
     countAlive(w.bullets.alive, MAX_BULLETS),
   );
   markCrowdFx(horde);
-  const moving = walk > 0;
+  const moving = walk > 0 || reviewWalkOn();
   const camX = Math.round(w.arena.camX);
   const camY = Math.round(w.arena.camY);
   const viewW = w.arena.viewW || W;

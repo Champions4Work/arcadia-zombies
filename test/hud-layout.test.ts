@@ -95,6 +95,7 @@ describe("viewport chrome", () => {
       expect(hud.face.h).toBeGreaterThanOrEqual(28);
       expect(hud.face.x).toBeGreaterThanOrEqual(hud.minimap.x + hud.minimap.w);
       expect(hud.face.y).toBeGreaterThanOrEqual(hud.minimap.y);
+      expect(hud.face.x + hud.face.w).toBeLessThan(hud.clock.x - 8);
       expect(hud.clock.h).toBeGreaterThanOrEqual(32);
       expect(hud.ability.w).toBeGreaterThanOrEqual(48);
       expect(hud.ability.h).toBeGreaterThanOrEqual(48);

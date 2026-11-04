@@ -16,12 +16,12 @@ const BUILDINGS = [
 ];
 
 const BELTS = [
-  { x: 360, y: 168, w: 90, vert: 0 },
-  { x: 530, y: 168, w: 90, vert: 0 },
-  { x: 348, y: 210, w: 120, vert: 1 },
-  { x: 612, y: 210, w: 120, vert: 1 },
-  { x: 340, y: 448, w: 90, vert: 1 },
-  { x: 620, y: 448, w: 90, vert: 1 },
+  { x: 336, y: 148, w: 90, vert: 0 },
+  { x: 534, y: 148, w: 90, vert: 0 },
+  { x: 338, y: 210, w: 120, vert: 1 },
+  { x: 622, y: 210, w: 120, vert: 1 },
+  { x: 338, y: 448, w: 90, vert: 1 },
+  { x: 622, y: 448, w: 90, vert: 1 },
 ];
 
 const PROPS: { id: string; x: number; y: number }[] = [
@@ -41,7 +41,7 @@ const PROPS: { id: string; x: number; y: number }[] = [
   { id: "crate", x: 338, y: 128 },
   { id: "crate_stack", x: 600, y: 128 },
   { id: "crate_stack", x: 338, y: 480 },
-  { id: "crate", x: 600, y: 480 },
+  { id: "crate", x: 622, y: 480 },
   { id: "barrel", x: 338, y: 540 },
   { id: "barrel", x: 622, y: 540 },
   { id: "breakable_boiler", x: 338, y: 400 },
@@ -55,18 +55,18 @@ const PROPS: { id: string; x: number; y: number }[] = [
   { id: "lamp", x: 622, y: 350 },
   { id: "lamp", x: 350, y: 500 },
   { id: "lamp", x: 610, y: 500 },
-  { id: "crate", x: 400, y: 468 },
-  { id: "barrel", x: 448, y: 492 },
-  { id: "crate_stack", x: 520, y: 476 },
-  { id: "pipes_blue_tank", x: 568, y: 500 },
-  { id: "barrel", x: 392, y: 540 },
-  { id: "crate", x: 470, y: 556 },
-  { id: "barrel", x: 538, y: 548 },
-  { id: "pipes_blue_tank", x: 430, y: 588 },
-  { id: "crate_stack", x: 500, y: 600 },
-  { id: "lamp", x: 420, y: 460 },
-  { id: "lamp", x: 500, y: 520 },
-  { id: "lamp", x: 560, y: 580 },
+  { id: "crate", x: 338, y: 468 },
+  { id: "barrel", x: 338, y: 512 },
+  { id: "crate_stack", x: 622, y: 476 },
+  { id: "pipes_blue_tank", x: 622, y: 520 },
+  { id: "barrel", x: 338, y: 548 },
+  { id: "crate", x: 338, y: 588 },
+  { id: "barrel", x: 622, y: 548 },
+  { id: "pipes_blue_tank", x: 622, y: 588 },
+  { id: "crate_stack", x: 622, y: 620 },
+  { id: "lamp", x: 338, y: 430 },
+  { id: "lamp", x: 338, y: 530 },
+  { id: "lamp", x: 622, y: 530 },
   { id: "pipes_blue_tank", x: 340, y: 360 },
   { id: "pipes_blue_tank", x: 340, y: 440 },
   { id: "pipes_blue_tank", x: 620, y: 360 },
@@ -96,8 +96,8 @@ const TANKS = [
   { x: 348, y: 310 },
   { x: 612, y: 230 },
   { x: 612, y: 310 },
-  { x: 568, y: 500 },
-  { x: 430, y: 588 },
+  { x: 622, y: 520 },
+  { x: 622, y: 588 },
   { x: 340, y: 360 },
   { x: 340, y: 440 },
   { x: 620, y: 360 },
@@ -112,9 +112,9 @@ const POOLS = [
   { x: 622, y: 350 },
   { x: 350, y: 500 },
   { x: 610, y: 500 },
-  { x: 420, y: 460 },
-  { x: 500, y: 520 },
-  { x: 560, y: 580 },
+  { x: 338, y: 430 },
+  { x: 338, y: 530 },
+  { x: 622, y: 530 },
   { x: 340, y: 360 },
   { x: 620, y: 360 },
 ];
@@ -127,7 +127,7 @@ const STEAM_VENTS = [
   { x: 612, y: 348 },
 ];
 
-export const YARD_CLEAR = { x0: 368, y0: 188, x1: 588, y1: 428 };
+export const YARD_CLEAR = { x0: 352, y0: 168, x1: 608, y1: 508 };
 export const PHONE_CAM = { x0: 332, y0: 0, x1: 628, y1: 640 };
 
 function visible(x: number, y: number, camX: number, camY: number, vw: number, vh: number, pad: number): boolean {

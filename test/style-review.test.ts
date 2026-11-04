@@ -1,9 +1,9 @@
 import { readFileSync } from "node:fs";
 import { createWorld } from "../src/sim/world";
-import { BRUTE_TO_HERO, FOE_TO_HERO, HERO_DRAW_SCALE, HERO_PACK_H, foeWorldH, foeWorldScale } from "../src/art/look";
+import { BRUTE_TO_HERO, FOE_TO_HERO, HERO_DRAW_SCALE, HERO_PACK_H, foeWorldH, foeWorldScale, shambleBob, walkBob } from "../src/art/look";
 import { HAZARD_MARKS } from "../src/render/ground";
 import { stampBlood, stampCasing, stainCount, resetStains, STAIN_CAP } from "../src/render/stains";
-import { reviewHorde, REVIEW_HORDE, REVIEW_RING, wantsReviewShot } from "../src/shell/review-shot";
+import { reviewHorde, reviewWalkOn, REVIEW_HORDE, REVIEW_RING, wantsFeelShot, wantsReviewShot } from "../src/shell/review-shot";
 import { yardPropHits, YARD_CLEAR, PHONE_CAM } from "../src/render/yard-fx";
 import { playView, SEE_AXIS } from "../src/shell/play-view";
 import { ARENA_H, snapArenaCamera } from "../src/sim/arena";
@@ -19,7 +19,7 @@ describe("visual review gates", () => {
     expect(sheet.includes('spr["x"]')).toBe(true);
     expect(sheet.includes("imageSmoothingEnabled = false")).toBe(true);
     expect(SEE_AXIS).toBe(360);
-    expect(HERO_DRAW_SCALE).toBe(1.42);
+    expect(HERO_DRAW_SCALE).toBe(1.28);
   });
 
   it("scales normal foes to 0.58 of hero height and brutes to 1.12x", () => {
@@ -31,19 +31,26 @@ describe("visual review gates", () => {
     expect(foeWorldScale(Z_BRUTE, 98)).toBeCloseTo((64 * 1.12) / 98);
     const look = readFileSync("src/art/look.ts", "utf8");
     expect(look.includes("export function paintRifle")).toBe(true);
-    expect(look.includes("ellipse(x, y + 3, 18, 6.5")).toBe(true);
-    expect(look.includes("rgba(90,240,235,0.92)")).toBe(true);
-    expect(look.includes("rgba(255,214,130,0.62)")).toBe(true);
-    expect(look.includes("brightness(1.85)")).toBe(true);
+    expect(look.includes("ellipse(x, y + 3, 14, 5")).toBe(true);
+    expect(look.includes("rgba(90,240,235,0.92)")).toBe(false);
+    expect(look.includes("rgba(255,214,130,0.62)")).toBe(false);
+    expect(look.includes("brightness(1.85)")).toBe(false);
+    expect(look.includes("heroSpriteId")).toBe(false);
     expect(look.includes("function paintDiveSuit")).toBe(true);
     expect(look.includes("rgba(48,255,236,0.96)")).toBe(true);
     expect(look.includes("paintRifle(ctx, x, y, nx, ny, s, bob)")).toBe(true);
+    expect(look.includes("ctx.transform(1, 0, lean")).toBe(false);
     expect(look.includes("rgba(200,208,220")).toBe(false);
     expect(look.includes("ellipse(mx, my, 18, 10")).toBe(false);
     expect(look.includes("lineTo(mx + nx * 56")).toBe(true);
     expect(look.includes("ellipse(mx, my, 16, 10")).toBe(true);
     expect(look.includes("rgba(255,96,16,0.95)")).toBe(true);
-    expect(look.includes("Math.sin(tick * 0.28)")).toBe(true);
+    expect(look.includes("export function walkBob")).toBe(true);
+    expect(look.includes("export function shambleBob")).toBe(true);
+    expect(look.includes("export function shambleSway")).toBe(true);
+    expect(look.includes("(tick >> 3) & 3")).toBe(true);
+    expect(look.includes("kind === 2 ? 0.16 : 0.28")).toBe(true);
+    expect(look.includes("kind === 2 ? 0.09 : 0.17")).toBe(true);
     expect(look.includes("rgba(255,96,16,0.95)")).toBe(true);
     expect(look.includes("kind !== 2")).toBe(true);
     const actors = readFileSync("src/render/actors.ts", "utf8");
@@ -51,6 +58,10 @@ describe("visual review gates", () => {
     expect(actors.includes("paintElite")).toBe(false);
     expect(actors.includes("strokeRect")).toBe(false);
     expect(actors.includes("elite || kind === Z_BRUTE || kind === Z_KNIGHT")).toBe(true);
+    expect(actors.includes("if (flash && marked)")).toBe(false);
+    expect(actors.includes("fillRect(x - 10, y - foeWorldH")).toBe(false);
+    expect(actors.includes("brightness(2.6)")).toBe(false);
+    expect(actors.includes('ctx.ellipse(x, y - foeWorldH(kind) * 0.42')).toBe(true);
     expect(actors.includes("for (let i = 1; i <= 5;")).toBe(false);
     const bolt = readFileSync("src/render/cast-fx.ts", "utf8");
     expect(bolt.includes("fillRect(-16, -3.6, 36, 7.2)")).toBe(false);
@@ -61,8 +72,8 @@ describe("visual review gates", () => {
     expect(yardPropHits(200, 0, 760, 640)).toBeGreaterThanOrEqual(20);
     expect(yardPropHits(PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(28);
     expect(yardPropHits(YARD_CLEAR.x0, YARD_CLEAR.y0, YARD_CLEAR.x1, YARD_CLEAR.y1)).toBe(0);
-    expect(YARD_CLEAR.x1 - YARD_CLEAR.x0).toBeGreaterThanOrEqual(220);
-    expect(YARD_CLEAR.y1 - YARD_CLEAR.y0).toBeGreaterThanOrEqual(240);
+    expect(YARD_CLEAR.x1 - YARD_CLEAR.x0).toBeGreaterThanOrEqual(250);
+    expect(YARD_CLEAR.y1 - YARD_CLEAR.y0).toBeGreaterThanOrEqual(320);
   });
 
   it("keeps dusk dark with local lamp pools and no global orange wash", () => {
@@ -88,9 +99,11 @@ describe("visual review gates", () => {
     expect(yard.includes("blue_glow")).toBe(true);
     expect(yard.includes("pipes_blue_tank")).toBe(true);
     expect(yard.includes("window_lit")).toBe(true);
-    expect(yard.includes("x: 420, y: 460")).toBe(true);
-    expect(yard.includes("x: 500, y: 520")).toBe(true);
-    expect(yard.includes("x: 430, y: 588")).toBe(true);
+    expect(yard.includes("x: 338, y: 430")).toBe(true);
+    expect(yard.includes("x: 338, y: 530")).toBe(true);
+    expect(yard.includes("x: 622, y: 530")).toBe(true);
+    expect(yard.includes("x: 420, y: 460")).toBe(false);
+    expect(yard.includes("x: 448, y: 492")).toBe(false);
     const ground = readFileSync("src/render/ground.ts", "utf8");
     expect(ground.includes("rgba(24,24,32,0.58)")).toBe(false);
     expect(ground.includes("tile_stone_seamless")).toBe(true);
@@ -159,12 +172,15 @@ describe("visual review gates", () => {
     expect(hud.includes("function barCount")).toBe(true);
     expect(hud.includes("strokeText")).toBe(true);
     expect(hud.includes("#fff6df")).toBe(true);
+    expect(hud.includes("Math.max(48, box.w - faceS - 10)")).toBe(true);
+    expect(hud.includes("Math.max(72, box.w - faceS - 10)")).toBe(false);
     expect(hud.includes("bx + bw + 4")).toBe(false);
     expect(hud.includes("72/100")).toBe(false);
     expect(hud.includes("${w.hp}/${w.maxHp}")).toBe(false);
     const look = readFileSync("src/art/look.ts", "utf8");
     expect(look.includes("s * 4.2")).toBe(false);
-    expect(look.includes("const fade = 0.6")).toBe(true);
+    expect(look.includes("const fade = 0.82")).toBe(true);
+    expect(look.includes("#b41c18")).toBe(true);
     expect(look.includes("fillRect(0, 0, 3.4, 1.4)")).toBe(true);
     expect(look.includes("fillRect(-4, -2, 11, 4.2)")).toBe(false);
     const shot = readFileSync("src/shell/review-shot.ts", "utf8");
@@ -199,10 +215,27 @@ describe("visual review gates", () => {
   it("arms a mid-fight review horde without touching spawn tables", () => {
     const boot = readFileSync("src/main.ts", "utf8");
     expect(boot.includes("wantsReviewShot")).toBe(true);
+    expect(boot.includes("wantsFeelShot")).toBe(true);
     expect(boot.includes("shouldStep(session) && !wantsReviewShot")).toBe(true);
+    expect(boot.includes("world.tick++")).toBe(true);
+    const fps = readFileSync("src/render/fps.ts", "utf8");
+    expect(fps.includes("if (!debugHud) return")).toBe(true);
+    const cmp = readFileSync("scripts/compare-shots.mjs", "utf8");
+    expect(cmp.includes("h = max(left.height, right.height)")).toBe(true);
+    expect(cmp.includes("im.resize")).toBe(true);
     expect(boot.includes("snapArenaCamera")).toBe(true);
+    const shake = readFileSync("src/render/shake.ts", "utf8");
+    expect(shake.includes("EV_BOOM")).toBe(true);
+    expect(shake.includes("TRAUMA_BOOM")).toBe(true);
+    const juice = readFileSync("src/render/juice.ts", "utf8");
+    expect(juice.includes("function spawnBlood")).toBe(true);
+    expect(juice.includes("SHAKE_BRUTE")).toBe(true);
+    expect(juice.includes("pGear[i] ?? 0) === 2")).toBe(true);
+    const arena = readFileSync("src/sim/arena.ts", "utf8");
+    expect(arena.includes("CAM_LERP = 0.15")).toBe(true);
     expect(wantsReviewShot("?shot=1", "")).toBe(true);
     expect(wantsReviewShot("", "#review")).toBe(true);
+    expect(wantsReviewShot("?feel=1", "")).toBe(true);
     expect(wantsReviewShot("", "")).toBe(false);
     resetStains();
     const w = createWorld(7);
@@ -249,6 +282,13 @@ describe("visual review gates", () => {
     expect(w.upgrades[UPG_WPN_SHOT]).toBe(2);
     expect(w.px).toBe(480);
     expect(w.py).toBe(320);
+    expect(reviewWalkOn()).toBe(true);
+    expect(w.aimX).not.toBe(0);
+    expect(w.aimY).not.toBe(0);
+    expect(wantsFeelShot("?feel=1", "")).toBe(true);
+    expect(walkBob(8, true)).toBeGreaterThan(walkBob(0, true));
+    expect(walkBob(0, false)).toBe(0);
+    expect(Math.abs(shambleBob(20, 2))).toBeLessThan(Math.abs(shambleBob(20, 0)));
     expect(w.kills).toBe(47);
     expect(w.wave).toBe(4);
     const phone = playView(390, 844);

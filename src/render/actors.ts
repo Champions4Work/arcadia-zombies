@@ -2,7 +2,7 @@ import { ARENA_H } from "../sim/arena";
 import { Z_ELITE, Z_GAS, Z_KIND, Z_KNIGHT, Z_RAT, Z_SPITTER } from "../sim/foes";
 import { fogCover } from "../sim/map-events";
 import { enemyFlash, hitKnockX, hitKnockY } from "./juice";
-import { FLASH_SOFT, reduceMotionOn } from "./motion";
+import { reduceMotionOn } from "./motion";
 import {
   EV_SHOT, FX_BOOM, FX_FLASH, FX_PUFF, FX_SPARK, FX_XP, Z_BRUTE, Z_GHOUL, Z_SHAMBLER, type World,
 } from "../sim/types";
@@ -74,7 +74,8 @@ function paintOne(ctx: CanvasRenderingContext2D, w: World, i: number): void {
   const kind = raw & Z_KIND;
   const elite = (raw & Z_ELITE) !== 0;
   const hp = z.hp[i] ?? 1;
-  const flip = ((i * 17 + (x | 0)) & 1) === 0 ? -1 : 1;
+  const toward = (z.vx[i] ?? 0) !== 0 ? (z.vx[i] ?? 0) : w.px - x;
+  const flip = toward < 0 ? -1 : 1;
   const flash = enemyFlash(i) > 0;
   const marked = elite || kind === Z_BRUTE || kind === Z_KNIGHT;
   paintZombie(ctx, x, y, kind, elite, w.tick + i * 3, flip);
@@ -88,11 +89,14 @@ function paintOne(ctx: CanvasRenderingContext2D, w: World, i: number): void {
     ctx.fillStyle = kind === Z_BRUTE ? "#e0a028" : "#e24a32";
     ctx.fillRect(x - 9, top + 1, bw, 1.4);
   }
-  if (flash && marked) {
-    ctx.fillStyle = "#fff8e8";
-    ctx.globalAlpha = reduceMotionOn() ? FLASH_SOFT : 0.45;
-    ctx.fillRect(x - 8, y - foeWorldH(kind) * 0.85, 16, 10);
-    ctx.globalAlpha = 1;
+  if (flash) {
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    ctx.fillStyle = reduceMotionOn() ? "rgba(255,244,220,0.35)" : "rgba(255,244,220,0.7)";
+    ctx.beginPath();
+    ctx.ellipse(x, y - foeWorldH(kind) * 0.42, 5.5, foeWorldH(kind) * 0.26, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
   }
 }
 

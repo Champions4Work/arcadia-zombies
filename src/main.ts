@@ -1,5 +1,5 @@
 import { awardRun, applyWorkshop, emptyWorkshop, loadWorkshop, saveWorkshop, tryBuy } from "./meta/workshop";
-import { fpsReadout, noteFrame, noteSendFails, setDebugHud, toggleFps, toggleFromKey } from "./render/fps";
+import { fpsEnabled, fpsReadout, noteFrame, noteSendFails, setDebugHud, toggleFps, toggleFromKey } from "./render/fps";
 import { juiceFrame, ownJuiceClock, setNumbersOn, stopRemaining } from "./render/juice";
 import { prefersReduceMotion, setReduceMotion } from "./render/motion";
 import { resetXpGain, syncXpGain, tickXpGain } from "./render/xp-gain";
@@ -99,7 +99,7 @@ import {
 import { chestLanded, dropChest } from "./sim/chest";
 import { armDevJump, isWon, killCount, lichUp, setRunEndless, takeCue } from "./sim/finale";
 import { fillHorde, HORDE_BULLETS, HORDE_ZOMBIES } from "./sim/horde";
-import { reviewHorde, wantsReviewShot } from "./shell/review-shot";
+import { reviewHorde, wantsFeelShot, wantsReviewShot } from "./shell/review-shot";
 import {
   hasMod,
   loadMods,
@@ -936,6 +936,7 @@ function frame(now: number): void {
     }
   } else {
     acc = 0;
+    if (wantsFeelShot(location.search, location.hash)) world.tick++;
   }
   syncMusic(musicSnap());
   fitPlay();
@@ -956,6 +957,15 @@ if (location.hash === "#horde") {
   setRunEndless(world, crown.endless);
 }
 if (wantsReviewShot(location.search, location.hash)) begin(session);
+if (wantsFeelShot(location.search, location.hash) && !fpsEnabled()) {
+  toggleFps();
+}
+(globalThis as unknown as { "__azFps": () => number; "__azAlive": () => number })["__azFps"] = fpsReadout;
+(globalThis as unknown as { "__azFps": () => number; "__azAlive": () => number })["__azAlive"] = () => {
+  let n = 0;
+  for (let i = 0; i < world.zombies.alive.length; i++) if (world.zombies.alive[i]) n++;
+  return n;
+};
 mountPicker(rosterEl, (index) => {
   if (session.phase !== PHASE_TITLE && session.phase !== PHASE_OVER) return;
   if (!isUnlocked(index, bestWave)) return;
