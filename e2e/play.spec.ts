@@ -50,7 +50,28 @@ test("loads the game and plays a few seconds without page errors", async ({ page
   await page.goto("/");
   const skip = page.locator("#guide-skip");
   if (await skip.isVisible()) await skip.click();
+  await expect(page.locator("#daily")).toBeVisible();
+  await expect(page.locator("#daily")).toHaveText("Daily Challenge");
+  await expect(page.locator("#challenge")).toBeVisible();
+  await expect(page.locator("#challenge")).toContainText("Daily Challenge");
+  await expect(page.locator("#challenge")).toContainText(/SEED [0-9A-F]{8}/);
+  const stack = await page.evaluate(() => {
+    const ids = ["go", "daily", "challenge", "quests", "mods"];
+    return ids.map((id) => {
+      const node = document.getElementById(id);
+      const box = node?.getBoundingClientRect();
+      return { id, top: box?.top ?? -1, hidden: node instanceof HTMLElement ? node.hidden : true };
+    });
+  });
+  expect(stack.every((row) => row.hidden === false && row.top >= 0)).toBe(true);
+  for (let i = 1; i < stack.length; i++) {
+    const prev = stack[i - 1];
+    const row = stack[i];
+    expect(row && prev ? row.top : 0).toBeGreaterThan(prev?.top ?? 0);
+  }
   await page.locator("#go").click();
+  await expect(page.locator("#daily")).toBeHidden();
+  await expect(page.locator("#challenge")).toBeHidden();
   await page.waitForTimeout(3000);
   await expect(page.locator("#game")).toBeVisible();
   await expect(page.locator("#veil")).not.toHaveClass(/\bon\b/);

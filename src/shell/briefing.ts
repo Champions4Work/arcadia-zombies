@@ -1,3 +1,4 @@
+import { CHALLENGE_HEADING } from "./challenge";
 import { GUIDE_LINES, GUIDE_SKIP, GUIDE_TITLE } from "./guide";
 import { QUEST_HEADING } from "./quests";
 
@@ -6,6 +7,7 @@ export interface BriefingUi {
   hideGuide(): void;
   guideOpen(): boolean;
   setQuests(text: string, visible: boolean): void;
+  setChallenge(text: string, visible: boolean): void;
 }
 
 export function mountBriefing(onSkip: () => void): BriefingUi {
@@ -43,10 +45,18 @@ export function mountBriefing(onSkip: () => void): BriefingUi {
   quests.id = "quests";
   quests.hidden = true;
   quests.setAttribute("aria-label", QUEST_HEADING);
+  const challenge = document.createElement("pre");
+  challenge.id = "challenge";
+  challenge.hidden = true;
+  challenge.setAttribute("aria-label", CHALLENGE_HEADING);
   const sub = document.getElementById("sub");
   const parent = sub?.parentElement;
-  if (parent) parent.insertBefore(quests, sub.nextSibling);
-  else document.body.append(quests);
+  if (parent) {
+    parent.insertBefore(quests, sub.nextSibling);
+    parent.insertBefore(challenge, quests.nextSibling);
+  } else {
+    document.body.append(quests, challenge);
+  }
   return {
     showGuide() {
       guide.hidden = false;
@@ -61,6 +71,10 @@ export function mountBriefing(onSkip: () => void): BriefingUi {
     setQuests(text: string, visible: boolean) {
       quests.hidden = !visible;
       quests.textContent = visible ? text : "";
+    },
+    setChallenge(text: string, visible: boolean) {
+      challenge.hidden = !visible;
+      challenge.textContent = visible ? text : "";
     },
   };
 }

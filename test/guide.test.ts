@@ -1,3 +1,4 @@
+import { mountBriefing } from "../src/shell/briefing";
 import { GUIDE_KEY, GUIDE_LINES, GUIDE_SKIP, GUIDE_TITLE, guideSeen, loadGuideSeen, saveGuideSeen } from "../src/shell/guide";
 
 const mem = () => {
@@ -42,3 +43,91 @@ describe("how to play", () => {
     expect(() => saveGuideSeen(boom)).not.toThrow();
   });
 });
+
+describe("daily blurb", () => {
+  it("mounts the challenge line after quests and hides it when asked", () => {
+    const ids = new Map<string, FakeNode>();
+    const panel = new FakeNode("div", ids);
+    const sub = new FakeNode("p", ids);
+    sub.id = "sub";
+    panel.append(sub);
+    const body = new FakeNode("body", ids);
+    const previous = globalThis.document;
+    globalThis.document = {
+      createElement: (tag: string) => new FakeNode(tag, ids),
+      createTextNode: (text: string) => new FakeNode("#text", ids, text),
+      body,
+      getElementById: (id: string) => ids.get(id) ?? null,
+    } as unknown as Document;
+    try {
+      const ui = mountBriefing(() => undefined);
+      expect(panel.children.map((node) => node.id)).toEqual(["sub", "quests", "challenge"]);
+      const challenge = ids.get("challenge");
+      expect(challenge?.hidden).toBe(true);
+      ui.setChallenge("Daily Challenge\n2026-11-04 · SEED ABCD1234", true);
+      expect(challenge?.hidden).toBe(false);
+      expect(challenge?.textContent).toContain("SEED ABCD1234");
+      ui.setChallenge("gone", false);
+      expect(challenge?.hidden).toBe(true);
+      expect(challenge?.textContent).toBe("");
+    } finally {
+      globalThis.document = previous;
+    }
+  });
+});
+
+class FakeNode {
+  hidden = false;
+  textContent: string;
+  parentElement: FakeNode | null = null;
+  children: FakeNode[] = [];
+  type = "";
+  private name = "";
+
+  constructor(readonly tag: string, private ids: Map<string, FakeNode>, text = "") {
+    this.textContent = text;
+  }
+
+  get id(): string {
+    return this.name;
+  }
+
+  set id(value: string) {
+    if (this.name) this.ids.delete(this.name);
+    this.name = value;
+    if (value) this.ids.set(value, this);
+  }
+
+  setAttribute(): void {}
+
+  addEventListener(): void {}
+
+  focus(): void {}
+
+  append(...nodes: FakeNode[]): void {
+    for (const node of nodes) this.insertBefore(node, null);
+  }
+
+  insertBefore(node: FakeNode, ref: FakeNode | null): void {
+    if (node.parentElement) {
+      const kids = node.parentElement.children;
+      const at = kids.indexOf(node);
+      if (at >= 0) kids.splice(at, 1);
+    }
+    node.parentElement = this;
+    if (!ref) {
+      this.children.push(node);
+      return;
+    }
+    const at = this.children.indexOf(ref);
+    if (at < 0) this.children.push(node);
+    else this.children.splice(at, 0, node);
+  }
+
+  get nextSibling(): FakeNode | null {
+    const kids = this.parentElement?.children;
+    if (!kids) return null;
+    const at = kids.indexOf(this);
+    return kids[at + 1] ?? null;
+  }
+}

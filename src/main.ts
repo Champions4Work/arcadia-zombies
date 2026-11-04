@@ -39,6 +39,7 @@ import {
   loadLeaderboard,
   noteKills,
   presentBoard,
+  presentDaily,
   resetTracker,
   saveLeaderboard,
   settleRun,
@@ -68,6 +69,7 @@ import {
 } from "./shell/session";
 import { resetShake } from "./render/shake";
 import { mountBriefing } from "./shell/briefing";
+import { CHALLENGE_HEADING, challengeAt, challengeBlurb, utcDayKey } from "./shell/challenge";
 import { devSeconds, loadCrown, markWon, saveCrown, toggleEndless } from "./shell/crown";
 import { loadGuideSeen, saveGuideSeen } from "./shell/guide";
 import {
@@ -127,6 +129,7 @@ const records = store ? loadLeaderboard(store) : emptyLeaderboard();
 const tracker = createTracker();
 let runLineText = "";
 let runShare: string | null = null;
+let runDaily = "";
 let runLog = emptyLog();
 let logTick = 0;
 const fpsBuf: number[] = [];
@@ -153,6 +156,8 @@ const veil = document.getElementById("veil") as HTMLElement;
 const headline = document.getElementById("headline") as HTMLElement;
 const sub = document.getElementById("sub") as HTMLElement;
 const goBtn = document.getElementById("go") as HTMLButtonElement;
+const dailyBtn = document.getElementById("daily") as HTMLButtonElement;
+dailyBtn.textContent = CHALLENGE_HEADING;
 const workshopBtn = document.getElementById("workshop") as HTMLButtonElement;
 const backBtn = document.getElementById("back") as HTMLButtonElement;
 const bench = document.getElementById("bench") as HTMLElement;
@@ -181,7 +186,11 @@ mountMusicRow(sfxBox, {
   },
 });
 const panel = document.getElementById("panel") as HTMLElement;
-const leader = mountLeaderboard(panel, () => presentBoard(records));
+const leader = mountLeaderboard(panel, () => {
+  const view = presentBoard(records);
+  view.daily = presentDaily(records, utcDayKey(new Date()));
+  return view;
+});
 const joy = document.getElementById("joy") as HTMLElement;
 const knob = document.getElementById("knob") as HTMLElement;
 lockPlayGestures(window);
@@ -202,13 +211,13 @@ const briefing = mountBriefing(() => {
 });
 if ((!store || !loadGuideSeen(store)) && location.hash !== "#horde") briefing.showGuide();
 
-function makeWorld(seed: number) {
-  const next = createWorld(seed, survivor, mods);
+function makeWorld(seed: number, runMods: number) {
+  const next = createWorld(seed, survivor, runMods);
   if (location.hash === "#horde") fillHorde(next, HORDE_ZOMBIES, HORDE_BULLETS);
   return next;
 }
 
-let world = makeWorld(1);
+let world = makeWorld(1, mods);
 applyWorkshop(world, shop);
 let fit: Fit = applyCanvas(canvas, ctx, innerWidth, innerHeight, devicePixelRatio || 1, W, H);
 bindHud(layoutHud(viewNow(), fit));
@@ -286,6 +295,7 @@ function paint(): void {
   modsRoot.hidden = !picking;
   modRead.hidden = !picking;
   goBtn.hidden = fitting;
+  dailyBtn.hidden = !picking;
   workshopBtn.hidden = fitting || session.codex || !(session.phase === PHASE_TITLE || session.phase === PHASE_OVER);
   backBtn.hidden = !fitting;
   bench.hidden = !fitting;
@@ -343,7 +353,7 @@ function paint(): void {
         character: characterAt(world.charId).id,
         mods: world.mods,
         workshop: "",
-        daily: "",
+        daily: runDaily,
       },
       records.life,
       records.unlocked,
@@ -387,6 +397,7 @@ function paint(): void {
   questState = rollDay(questState, today());
   const showQuests = session.phase === PHASE_TITLE && !session.codex;
   briefing.setQuests(questBoard(questState), showQuests);
+  briefing.setChallenge(challengeBlurb(challengeAt(new Date())), picking);
   syncMusic(musicSnap());
 }
 
@@ -411,7 +422,12 @@ function leaveWorkshop(): void {
   paint();
 }
 
-function startRun(): void {
+function freeSeed(): number {
+  const seedQuery = import.meta.env.DEV ? Number(new URLSearchParams(location.search).get("seed")) : NaN;
+  return Number.isFinite(seedQuery) && seedQuery > 0 ? seedQuery >>> 0 : Date.now() >>> 0;
+}
+
+function launch(seed: number, runMods: number, daily: string): void {
   if (session.phase === PHASE_WORKSHOP) return;
   dismissGuide();
   unlockAudio();
@@ -419,10 +435,9 @@ function startRun(): void {
   closeCodex(session);
   const reset = begin(session);
   if (reset) {
+    runDaily = daily;
     questState = openRun(rollDay(questState, today()));
-    const seedQuery = import.meta.env.DEV ? Number(new URLSearchParams(location.search).get("seed")) : NaN;
-    const seed = Number.isFinite(seedQuery) && seedQuery > 0 ? seedQuery >>> 0 : Date.now() >>> 0;
-    world = makeWorld(seed);
+    world = makeWorld(seed, runMods);
     applyWorkshop(world, shop);
     const jump = devSeconds(location.search, import.meta.env.DEV);
     if (jump > 0) armDevJump(world, jump);
@@ -453,6 +468,16 @@ function startRun(): void {
   publish(world);
   persist();
   paint();
+}
+
+function startRun(): void {
+  launch(freeSeed(), mods, "");
+}
+
+function startDaily(): void {
+  if (session.phase !== PHASE_TITLE && session.phase !== PHASE_OVER) return;
+  const todayChallenge = challengeAt(new Date());
+  launch(todayChallenge.seed, todayChallenge.mods, todayChallenge.day);
 }
 
 function publish(w: World): void {
@@ -575,6 +600,7 @@ for (let i = 0; i < MOD_LIST.length; i++) {
 }
 
 goBtn.addEventListener("click", startRun);
+dailyBtn.addEventListener("click", startDaily);
 workshopBtn.addEventListener("click", showWorkshop);
 backBtn.addEventListener("click", leaveWorkshop);
 codexBtn.addEventListener("click", codexToggle);
@@ -841,6 +867,7 @@ function frame(now: number): void {
           character: characterAt(world.charId).id,
           mods: world.mods,
           workshop: world.workshop,
+          daily: runDaily,
         }));
         runLineText = settled.line;
         runShare = settled.share;

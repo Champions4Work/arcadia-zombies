@@ -56,9 +56,9 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--brass-hi);outli
 #mods button:hover{filter:brightness(1.1)}
 #summary{margin:0;max-height:42vh;overflow:auto;touch-action:pan-y;font:600 14px/1.45 var(--font-body);color:var(--steam);letter-spacing:0;text-align:center;white-space:pre-line}
 #go{font:700 18px/1 var(--font-display);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);background:linear-gradient(var(--brass-hi),var(--brass) 55%,var(--brass-lo));border:3px solid var(--ink);border-radius:14px;padding:12px 36px;cursor:pointer;box-shadow:inset 0 1px 0 #fff6,0 6px 0 var(--bronze)}
-#workshop,#back,#codex,#shake,#numbers,#debug,#run-copy,#endless,#lb-open,#lb-share,#lb-back,#lb-share-top{font:700 13px/1 var(--font-display);letter-spacing:.07em;text-transform:uppercase;color:var(--steam);background:linear-gradient(var(--panel),var(--iron));border:var(--edge);border-radius:12px;padding:10px 14px;cursor:pointer;box-shadow:inset 0 0 0 1px var(--bronze);transition:transform .12s,filter .12s,background .12s}
-#workshop:hover,#back:hover,#codex:hover,#shake:hover,#numbers:hover,#endless:hover,#lb-open:hover,#lb-share:hover,#lb-back:hover,#lb-share-top:hover,#run-copy:hover{filter:brightness(1.12);background:linear-gradient(#2e2014,var(--panel))}
-#workshop:active,#back:active,#codex:active,#shake:active,#numbers:active,#endless:active,#lb-open:active,#lb-share:active,#lb-back:active,#lb-share-top:active,#run-copy:active{transform:scale(.97)}
+#workshop,#daily,#back,#codex,#shake,#numbers,#debug,#run-copy,#endless,#lb-open,#lb-share,#lb-back,#lb-share-top{font:700 13px/1 var(--font-display);letter-spacing:.07em;text-transform:uppercase;color:var(--steam);background:linear-gradient(var(--panel),var(--iron));border:var(--edge);border-radius:12px;padding:10px 14px;cursor:pointer;box-shadow:inset 0 0 0 1px var(--bronze);transition:transform .12s,filter .12s,background .12s}
+#workshop:hover,#daily:hover,#back:hover,#codex:hover,#shake:hover,#numbers:hover,#endless:hover,#lb-open:hover,#lb-share:hover,#lb-back:hover,#lb-share-top:hover,#run-copy:hover{filter:brightness(1.12);background:linear-gradient(#2e2014,var(--panel))}
+#workshop:active,#daily:active,#back:active,#codex:active,#shake:active,#numbers:active,#endless:active,#lb-open:active,#lb-share:active,#lb-back:active,#lb-share-top:active,#run-copy:active{transform:scale(.97)}
 #bench{display:flex;flex-direction:column;gap:8px;width:min(440px,86vw);max-height:42vh;overflow:auto;touch-action:pan-y}
 #bench[hidden]{display:none}
 .fit{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border:var(--edge);border-radius:12px;background:var(--iron);color:var(--steam);font:600 13px/1.4 var(--font-body);box-shadow:inset 0 0 0 1px var(--bronze)}
@@ -110,7 +110,7 @@ body.play #sfx,body.play #mute{display:none!important}
 @keyframes stat-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 #panel.lb-open>:not(#lb-board){display:none}
 #lb-board{flex-direction:column;width:min(440px,86vw);max-height:70vh;overflow:auto}
-#lb-board[hidden],#guide[hidden],#quests[hidden]{display:none}
+#lb-board[hidden],#guide[hidden],#quests[hidden],#challenge[hidden],#daily[hidden]{display:none}
 #lb-ranks,#lb-achs,#lb-daily{margin:0;padding:0;list-style:none;text-align:left;width:100%;display:flex;flex-direction:column;gap:8px}
 #lb-ranks li,#lb-achs li,#lb-daily li{padding:10px 12px;background:var(--iron);border:2px solid var(--brass-lo);border-radius:12px;color:var(--steam);font:600 14px/1.4 var(--font-body)}
 #lb-achs li.on{border-color:var(--brass);color:var(--brass-hi)}
@@ -119,10 +119,11 @@ body.play #sfx,body.play #mute{display:none!important}
 #guide{position:fixed;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;background:var(--veil)}
 #guide-card{width:min(420px,92vw);padding:20px;background:linear-gradient(var(--panel),var(--soot));border:4px solid var(--brass);color:var(--steam);text-align:center;font:16px/1.45 var(--font-body);border-radius:18px;box-shadow:var(--inset)}
 #guide-card h2{margin:0 0 12px;font:700 26px/1.15 var(--font-display);color:var(--brass-hi);letter-spacing:.04em}
-#guide-list{margin:0 0 16px;padding:0;list-style:none;text-align:left}
+#guide-list{margin:0;padding:0;list-style:none;text-align:left}
 #guide-list li{margin:0 0 10px;padding:8px 10px;background:var(--iron);border:2px solid var(--brass-lo);border-radius:10px}
 #guide-list strong{display:block;font:700 14px/1.2 var(--font-display);color:var(--brass-hi);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
 #quests{white-space:pre-line;font:600 14px/1.45 var(--font-body);color:var(--steam-dim);text-align:center}
+#challenge{margin:0;max-width:520px;font:600 14px/1.45 var(--font-body);color:var(--brass-hi);letter-spacing:.02em;text-align:center;white-space:pre-line}
 @media (max-width:720px){
 html,body{height:100dvh}
 #panel{box-sizing:border-box;gap:12px;padding:16px max(20px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));max-height:100%;width:min(100%,100vw)}
@@ -132,22 +133,24 @@ html,body{height:100dvh}
 #headline{font-size:clamp(28px,8vw,36px);order:1}
 #sub{font-size:17px;line-height:1.45;order:2}
 #go{font-size:20px;min-height:48px;padding:14px 36px;order:3}
+#daily{order:4}
 #panel.over #results{order:1}
 #panel.over #roster{order:3}
-#quests{max-width:100%;text-align:center;order:4}
-#mod-read{font-size:15px;line-height:1.45;order:5}
-#mods{order:6}
-#roster{order:7}
-#workshop{order:8}
-#codex{order:9}
-#opts{order:10}
-#sfx{order:11}
-#summary{order:12}
-#back{order:13}
-#bench{order:14}
-#book{order:15}
-#lb-line,#lb-actions,#lb-status,#lb-board{order:16}
-#workshop,#back,#codex,#shake,#numbers,#endless,#sfx-mute,#music-mute{font-size:15px;min-height:44px;padding:12px 16px}
+#challenge{max-width:100%;text-align:center;order:5}
+#quests{max-width:100%;text-align:center;order:6}
+#mod-read{font-size:15px;line-height:1.45;order:7}
+#mods{order:8}
+#roster{order:9}
+#workshop{order:10}
+#codex{order:11}
+#opts{order:12}
+#sfx{order:13}
+#summary{order:14}
+#back{order:15}
+#bench{order:16}
+#book{order:17}
+#lb-line,#lb-actions,#lb-status,#lb-board{order:18}
+#workshop,#daily,#back,#codex,#shake,#numbers,#endless,#sfx-mute,#music-mute{font-size:15px;min-height:44px;padding:12px 16px}
 button{min-height:44px}
 #mods button,.fit button{font-size:13px;min-height:44px;padding:10px 12px}
 .survivor{font-size:15px;flex-basis:140px;min-height:168px;padding:8px}
@@ -173,6 +176,7 @@ button{min-height:44px}
     <pre id="summary" hidden></pre>
     <div id="roster" role="group" aria-label="Choose survivor"></div>
     <button id="go" type="button">Play</button>
+    <button id="daily" type="button">Daily Challenge</button>
     <button id="workshop" type="button">Workshop</button>
     <button id="back" type="button" hidden>Back</button>
     <div id="bench" hidden></div>

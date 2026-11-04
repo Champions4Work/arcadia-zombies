@@ -1,3 +1,4 @@
+import html from "../index.html?raw";
 import { aimStick, createStick, moveStick, pressStick, STICK_DEAD, STICK_R } from "../src/shell/stick";
 import {
   DESK_JOY_R,
@@ -31,6 +32,43 @@ describe("phone chrome", () => {
     expect(phone.knobTravel).toBeCloseTo(PHONE_JOY_R * 0.625);
   });
 });
+
+describe("phone title stack", () => {
+  it("puts Play, Daily Challenge, the blurb, quests, then mods on a 390px screen", () => {
+    expect(isPhone(390)).toBe(true);
+    const block = phoneBlock(html);
+    const order = ["#go", "#daily", "#challenge", "#quests", "#mod-read", "#mods"].map((sel) => flexOrder(block, sel));
+    for (let i = 1; i < order.length; i++) expect(order[i] ?? 0).toBeGreaterThan(order[i - 1] ?? 0);
+    expect(html).toContain('<button id="daily" type="button">Daily Challenge</button>');
+    expect(block).toContain("button{min-height:44px}");
+    expect(block).toMatch(/#workshop,#daily[^{]*\{[^}]*min-height:44px/);
+    expect(html).toMatch(/#challenge\[hidden\][^{]*\{[^}]*display:none/);
+    expect(html).toMatch(/#daily\[hidden\][^{]*\{[^}]*display:none/);
+    const look = html.slice(html.indexOf("#workshop,"), html.indexOf("{", html.indexOf("#workshop,")));
+    expect(look).toContain("#daily");
+  });
+});
+
+function phoneBlock(html: string): string {
+  const start = html.indexOf("@media (max-width:720px)");
+  const open = html.indexOf("{", start);
+  let depth = 0;
+  for (let i = open; i < html.length; i++) {
+    const ch = html[i];
+    if (ch === "{") depth += 1;
+    else if (ch === "}") {
+      depth -= 1;
+      if (depth === 0) return html.slice(open + 1, i);
+    }
+  }
+  return "";
+}
+
+function flexOrder(block: string, selector: string): number {
+  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const hit = block.match(new RegExp(`${escaped}\\{[^}]*order:\\s*(\\d+)`));
+  return Number(hit?.[1] ?? "NaN");
+}
 
 describe("stick deadzone", () => {
   it("maps full throw to the drawn radius, not the old 56px handle", () => {
