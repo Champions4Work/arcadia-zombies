@@ -25,7 +25,7 @@ describe("r27 art-bible pass", () => {
   it("declutters brass yard perimeter breakables and drops center cyan pipe runs", () => {
     const yard = readFileSync("src/render/yard-fx.ts", "utf8");
     const brassProps = yard.slice(yard.indexOf("const PROPS:"), yard.indexOf("const TANKS"));
-    const brassPipes = yard.slice(yard.indexOf("const PIPE_RUNS = ["), yard.indexOf("const BELT_H"));
+    const brassPipes = yard.slice(yard.indexOf("const PIPE_RUNS:"), yard.indexOf("const BELT_H"));
     expect(yard.includes("y: 658")).toBe(true);
     expect(yard.includes("paintBrassGrade")).toBe(true);
     expect(brassProps.includes("breakable_gear_pylon")).toBe(true);

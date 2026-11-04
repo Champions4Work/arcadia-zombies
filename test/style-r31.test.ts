@@ -26,7 +26,7 @@ describe("r31 open fight floor + perimeter az_art", () => {
     expect(depth.includes("[296, 658, 368, 0]")).toBe(true);
     expect(yard.includes("conveyor")).toBe(true);
     expect(yard.includes("blue_puddle")).toBe(true);
-    expect(yard.includes("y: 648, len: 368")).toBe(true);
+    expect(yard.includes("const PIPE_RUNS:")).toBe(true);
     const w = createWorld(31);
     reviewDepth(w);
     expect(cargoOn(w, 0)).toBe(1);

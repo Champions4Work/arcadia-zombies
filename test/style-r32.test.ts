@@ -18,7 +18,7 @@ describe("r32 fx-only phone read", () => {
   it("limits blue glow to tanks and pipe props without breakable halos", () => {
     const yard = readFileSync("src/render/yard-fx.ts", "utf8");
     expect(yard.includes("function bluePuddle")).toBe(true);
-    expect(yard.includes("BLUE_GLOW_ALPHA = 0.3")).toBe(true);
+    expect(yard.includes("BLUE_GLOW_ALPHA = 0.34")).toBe(true);
     expect(yard.includes('p.id === "pipes_blue_tank"')).toBe(true);
     expect(yard.includes('p.id === "blue_puddle"')).toBe(true);
     expect(yard.includes('breakable_gear_pylon" || p.id === "breakable_boiler" || p.id === "pipes_blue_tank"')).toBe(false);

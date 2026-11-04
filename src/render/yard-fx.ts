@@ -1,32 +1,34 @@
 import { blitSheet, steamFrame } from "../art/sheet";
 import { paintShadow } from "../art/look";
-import { BRASS, BRASS_HI, BRASS_LO, DANGER, INK, XP } from "../shell/theme";
+import { BRASS_HI, BRASS_LO, INK, XP } from "../shell/theme";
 import { ZONE_BOILER, ZONE_BRASS, ZONE_TRAM } from "../sim/zones";
 import { FEAT_LAMP, groundFeatureAt, groundFeatureCount } from "./ground";
 
 const BUILDINGS = [
-  { x: 368, y: 214 },
-  { x: 480, y: 212 },
-  { x: 592, y: 214 },
+  { x: 332, y: 216 },
+  { x: 396, y: 210 },
+  { x: 480, y: 208 },
+  { x: 564, y: 210 },
+  { x: 628, y: 216 },
+  { x: 302, y: 272 },
+  { x: 658, y: 272 },
 ];
 
 const BELTS = [
   { x: 296, y: 658, w: 368, vert: 0 },
 ];
 
-const PIPE_RUNS = [
-  { x: 296, y: 232, len: 368, vert: 0 },
-  { x: 296, y: 648, len: 368, vert: 0 },
-];
+const PIPE_RUNS: { x: number; y: number; len: number; vert: number }[] = [];
 
 const BELT_H = 72;
 const GLASS_AT = [0.22, 0.5, 0.78];
-const VALVE = { x: 424, y: 232 };
-const BUILD_SCALE = 1.28;
-const TANK_SCALE = 1.2;
+const BUILD_SCALE = 1.48;
+const TANK_SCALE = 1.68;
+const VALVE_SCALE = 1.42;
+const PUDDLE_SCALE = 1.28;
 const STEAM_VENT_SCALE = 0.76;
 const STEAM_VENT_ALPHA = 0.24;
-const BLUE_GLOW_ALPHA = 0.3;
+const BLUE_GLOW_ALPHA = 0.34;
 
 const PROPS: { id: string; x: number; y: number }[] = [
   { id: "window_lit", x: 324, y: 188 },
@@ -43,28 +45,42 @@ const PROPS: { id: string; x: number; y: number }[] = [
   { id: "decal_grate", x: 368, y: 302 },
   { id: "decal_grate", x: 592, y: 302 },
   { id: "decal_grate", x: 656, y: 640 },
-  { id: "valve_steam", x: 308, y: 468 },
-  { id: "valve_steam", x: 308, y: 612 },
+  { id: "pipes_blue_tank", x: 308, y: 278 },
+  { id: "valve_steam", x: 308, y: 348 },
+  { id: "blue_puddle", x: 310, y: 336 },
+  { id: "pipes_blue_tank", x: 308, y: 418 },
+  { id: "valve_steam", x: 308, y: 488 },
+  { id: "blue_puddle", x: 310, y: 476 },
+  { id: "pipes_blue_tank", x: 308, y: 558 },
+  { id: "valve_steam", x: 308, y: 628 },
+  { id: "blue_puddle", x: 310, y: 616 },
   { id: "decal_vent", x: 310, y: 450 },
   { id: "decal_vent", x: 310, y: 628 },
   { id: "conveyor", x: 304, y: 656 },
-  { id: "pipes_blue_tank", x: 308, y: 596 },
-  { id: "blue_puddle", x: 312, y: 584 },
   { id: "breakable_boiler", x: 306, y: 648 },
+  { id: "pipes_blue_tank", x: 654, y: 278 },
+  { id: "valve_steam", x: 654, y: 348 },
+  { id: "blue_puddle", x: 648, y: 336 },
+  { id: "pipes_blue_tank", x: 654, y: 418 },
+  { id: "valve_steam", x: 654, y: 488 },
+  { id: "blue_puddle", x: 648, y: 476 },
+  { id: "pipes_blue_tank", x: 654, y: 558 },
+  { id: "valve_steam", x: 654, y: 628 },
+  { id: "blue_puddle", x: 648, y: 616 },
   { id: "breakable_gear_pylon", x: 652, y: 520 },
-  { id: "valve_steam", x: 654, y: 468 },
-  { id: "valve_steam", x: 654, y: 612 },
   { id: "decal_vent", x: 656, y: 450 },
   { id: "decal_vent", x: 656, y: 628 },
   { id: "conveyor", x: 656, y: 656 },
-  { id: "pipes_blue_tank", x: 654, y: 596 },
-  { id: "blue_puddle", x: 648, y: 584 },
   { id: "breakable_boiler", x: 656, y: 648 },
 ];
 
 const TANKS = [
-  { x: 320, y: 588 },
-  { x: 640, y: 588 },
+  { x: 308, y: 278 },
+  { x: 654, y: 278 },
+  { x: 308, y: 418 },
+  { x: 654, y: 418 },
+  { x: 308, y: 558 },
+  { x: 654, y: 558 },
   { x: 348, y: 208 },
   { x: 612, y: 208 },
 ];
@@ -78,11 +94,13 @@ const POOLS = [
 ];
 
 const STEAM_VENTS = [
-  { x: 360, y: 226 },
-  { x: 424, y: 232 },
-  { x: 520, y: 226 },
-  { x: 334, y: 468 },
-  { x: 630, y: 468 },
+  { x: 308, y: 348 },
+  { x: 308, y: 488 },
+  { x: 308, y: 628 },
+  { x: 654, y: 348 },
+  { x: 654, y: 488 },
+  { x: 654, y: 628 },
+  { x: 480, y: 224 },
 ];
 
 export const YARD_CLEAR = { x0: 352, y0: 318, x1: 608, y1: 638 };
@@ -343,20 +361,20 @@ function doorPool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
 }
 
 function bluePool(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number): void {
-  const pulse = 0.34 + ((tick >> 3) & 3) * 0.05;
-  const g = ctx.createRadialGradient(x, y - 4, 1, x, y, 24);
-  g.addColorStop(0, "rgba(42,168,188,0.42)");
-  g.addColorStop(0.55, "rgba(22,96,112,0.18)");
+  const pulse = 0.38 + ((tick >> 3) & 3) * 0.05;
+  const g = ctx.createRadialGradient(x, y - 6, 2, x, y, 38);
+  g.addColorStop(0, "rgba(42,168,188,0.48)");
+  g.addColorStop(0.55, "rgba(22,96,112,0.22)");
   g.addColorStop(1, "rgba(10,10,14,0)");
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
   ctx.globalAlpha = pulse;
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.ellipse(x, y, 22, 16, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y, 34, 24, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.globalAlpha = BLUE_GLOW_ALPHA;
-  blitSheet(ctx, "blue_glow", x, y - 6);
+  blitScaled(ctx, "blue_glow", x, y - 8, 1.35);
   ctx.restore();
 }
 
@@ -366,33 +384,6 @@ function bluePuddle(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   blitSheet(ctx, "blue_puddle", x, y);
   ctx.globalAlpha = 0.26;
   blitSheet(ctx, "blue_glow", x, y - 4);
-  ctx.restore();
-}
-
-function paintRedValve(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  ctx.save();
-  ctx.translate(x, y - 6);
-  ctx.fillStyle = "#5a1814";
-  ctx.beginPath();
-  ctx.arc(0, 0, 18, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = DANGER;
-  ctx.beginPath();
-  ctx.arc(0, 0, 15, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = "#7a2018";
-  ctx.lineWidth = 3.2;
-  for (let i = 0; i < 6; i++) {
-    const a = (i / 6) * Math.PI * 2;
-    ctx.beginPath();
-    ctx.moveTo(Math.cos(a) * 4, Math.sin(a) * 4);
-    ctx.lineTo(Math.cos(a) * 14, Math.sin(a) * 14);
-    ctx.stroke();
-  }
-  ctx.fillStyle = BRASS;
-  ctx.beginPath();
-  ctx.arc(0, 0, 4.2, 0, Math.PI * 2);
-  ctx.fill();
   ctx.restore();
 }
 
@@ -447,7 +438,6 @@ function paintCrossPipe(
   }
   blitScaled(ctx, "pipes_blue_tank", x + 28, y + 22, TANK_SCALE);
   blitScaled(ctx, "pipes_blue_tank", x + len - 28, y + 22, TANK_SCALE);
-  paintRedValve(ctx, VALVE.x, VALVE.y);
 }
 
 function paintVertPipe(ctx: CanvasRenderingContext2D, x: number, y: number, len: number, tick: number): void {
@@ -683,9 +673,24 @@ export function paintYardLive(
     }
   }
   for (const p of propsOf()) {
-    if (!visible(p.x, p.y, camX, camY, vw, vh, 90)) continue;
-    if (p.id === "pipes_blue_tank") bluePool(ctx, p.x, p.y + 8, tick);
-    if (p.id === "blue_puddle") bluePuddle(ctx, p.x, p.y + 4);
+    if (!visible(p.x, p.y, camX, camY, vw, vh, 120)) continue;
+    if (p.id === "pipes_blue_tank") {
+      bluePool(ctx, p.x, p.y + 10, tick);
+      paintShadow(ctx, p.x, p.y, 28, 8);
+      blitScaled(ctx, p.id, p.x, p.y, TANK_SCALE);
+      continue;
+    }
+    if (p.id === "valve_steam") {
+      paintShadow(ctx, p.x, p.y, 22, 6);
+      blitScaled(ctx, p.id, p.x, p.y, VALVE_SCALE);
+      continue;
+    }
+    if (p.id === "blue_puddle") {
+      bluePuddle(ctx, p.x, p.y + 4);
+      paintShadow(ctx, p.x, p.y, 16, 4);
+      blitScaled(ctx, p.id, p.x, p.y, PUDDLE_SCALE);
+      continue;
+    }
     paintShadow(ctx, p.x, p.y, 12, 4);
     blitSheet(ctx, p.id, p.x, p.y);
   }
@@ -731,7 +736,7 @@ function paintBrassGrade(ctx: CanvasRenderingContext2D, camX: number, camY: numb
 }
 
 export function paintDoorSpawn(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number): void {
-  blitSheet(ctx, "building_wall_door", x, y);
+  blitScaled(ctx, "building_wall_door", x, y, BUILD_SCALE);
   blitSheet(ctx, "window_lit", x - 26, y - 36);
   blitSheet(ctx, "lamp", x + 34, y - 18);
   ctx.save();

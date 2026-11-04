@@ -39,6 +39,10 @@ FX-only tuning on current main (#90 stone, #92 HUD, #93 perimeter). Do **not** r
 
 Review **`docs/reviews/fx-r32/`** (`phone_390_play.png` 390×844, `?shot=1`) vs **`docs/target_look.jpg`** and **`docs/target_look2.png`**. Coordinator **Read-compare** before merge; **no auto-merge**.
 
+## Round 33 — painted spawn buildings + big blue rails
+
+Closed densify/tint passes still read procedural on phone. **Attack the premise:** blit **`building_wall_door`** at **`BUILD_SCALE`** for five-plus lit perimeter spawn facades (top wall plus side rails), not more center props. **`PIPE_RUNS`** stays **empty** on brass—**no** full-width cyan glass runway or brass pad strip through the fight floor. **`pipes_blue_tank`**, **`valve_steam`**, and **`blue_puddle`** stack on **both** left and right rails at **`TANK_SCALE` / `VALVE_SCALE`** so cyan liquid reads like image 2, not edge glitter. Keep **`window_lit`** / **`lamp`** amber pools on the wall band. **`YARD_CLEAR`** still bans **`crate` / `barrel` / `crate_stack`**; horde density stays actors and blood. Review **`docs/reviews/r33/`** (`phone_390_play.png`, compares, trio) vs both art-bible frames. Coordinator **Read-compare** before merge; **no auto-merge**.
+
 ## References (art bible)
 
 Review size is 390×844 CSS pixels. These two files are the art bible. Every visual PR compares against both.
