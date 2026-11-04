@@ -95,9 +95,9 @@ export function drawWeaponRack(c: CanvasRenderingContext2D, w: World): void {
     c.fillStyle = SOOT;
     c.fillRect(sx, sy, sw, sh);
     c.strokeStyle = hot ? XP : BRASS;
-    c.lineWidth = hot ? 2.4 : 1.8;
+    c.lineWidth = hot ? 3.4 : 2.6;
     c.strokeRect(sx + 0.8, sy + 0.8, sw - 1.6, sh - 1.6);
-    blitSheetFit(c, "power_slot", sx - 1, sy - 1, sw + 2, sh + 2);
+    blitSheetFit(c, "power_slot", sx - 3, sy - 3, sw + 6, sh + 6);
     paintSlotIcon(c, i, sx + sw / 2, sy + sh * 0.36, Math.max(11, sw * (hot ? 0.62 : 0.46)));
     const label = i === 0 ? "34/210" : i === 1 ? "6/36" : `${Math.max(1, lv)}`;
     c.fillStyle = "rgba(8,6,4,0.88)";

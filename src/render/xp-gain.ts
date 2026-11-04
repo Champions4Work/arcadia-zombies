@@ -175,7 +175,10 @@ export function drawXpBar(ctx: CanvasRenderingContext2D, layout: HudLayout, need
   const box = layout.xp;
   const t = xpFillT(need);
   ctx.save();
-  blitSheetFit(ctx, "xp_bar_frame", box.x - 2, box.y - 6, box.w + 4, box.h + 12);
+  blitSheetFit(ctx, "xp_bar_frame", box.x - 4, box.y - 8, box.w + 8, box.h + 16);
+  ctx.strokeStyle = BRASS_HI;
+  ctx.lineWidth = 2.4;
+  ctx.strokeRect(box.x + 1, box.y + 1, box.w - 2, box.h - 2);
   pixelWell(ctx, box.x + 4, box.y + 2, box.w - 62, box.h - 4);
   const pad = 4;
   const badge = Math.min(58, box.w * 0.15);

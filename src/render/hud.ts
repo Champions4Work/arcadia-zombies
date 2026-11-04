@@ -98,12 +98,15 @@ function plate(ctx: CanvasRenderingContext2D, box: Box, id = "panel_frame_small"
   ctx.save();
   ctx.fillStyle = IRON;
   ctx.fillRect(box.x, box.y, box.w, box.h);
-  blitSheetFit(ctx, id, box.x - 2, box.y - 2, box.w + 4, box.h + 4);
+  blitSheetFit(ctx, id, box.x - 4, box.y - 4, box.w + 8, box.h + 8);
   ctx.fillStyle = "rgba(12,12,16,0.62)";
   ctx.fillRect(box.x + 1, box.y + 1, box.w - 2, box.h - 2);
   ctx.strokeStyle = BRASS;
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 3.2;
   ctx.strokeRect(box.x + 0.8, box.y + 0.8, box.w - 1.6, box.h - 1.6);
+  ctx.strokeStyle = BRASS_HI;
+  ctx.lineWidth = 1.2;
+  ctx.strokeRect(box.x + 2.4, box.y + 2.4, box.w - 4.8, box.h - 4.8);
   ctx.restore();
 }
 
@@ -283,8 +286,13 @@ function portrait(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   ctx.clip();
   paintHeroBust(ctx, cx, cy + r * 0.06, r);
   ctx.restore();
+  ctx.strokeStyle = BRASS;
+  ctx.lineWidth = 3.4;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r + 1.2, 0, Math.PI * 2);
+  ctx.stroke();
   ctx.strokeStyle = BRASS_HI;
-  ctx.lineWidth = 1.6;
+  ctx.lineWidth = 1.8;
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
   ctx.stroke();
@@ -543,9 +551,12 @@ function objectives(ctx: CanvasRenderingContext2D, w: World, layout: HudLayout):
   const hold = Math.max(0, 240 - ((w.tick / 60) | 0) % 240);
   ctx.fillStyle = "rgba(8,10,16,0.78)";
   ctx.fillRect(x, y, bw, bh);
-  ctx.strokeStyle = "rgba(212,168,72,0.72)";
-  ctx.lineWidth = 1.4;
+  ctx.strokeStyle = "rgba(212,168,72,0.92)";
+  ctx.lineWidth = 2.6;
   ctx.strokeRect(x + 0.5, y + 0.5, bw - 1, bh - 1);
+  ctx.strokeStyle = "rgba(240,200,120,0.55)";
+  ctx.lineWidth = 1.2;
+  ctx.strokeRect(x + 3, y + 3, bw - 6, bh - 6);
   stampInk(ctx, "Objectives", x + bw * 0.5, y + 16, 13, "#f0d080");
   ctx.fillStyle = "#e8c46a";
   ctx.fillRect(x + 10, y + 24, bw - 20, 2);

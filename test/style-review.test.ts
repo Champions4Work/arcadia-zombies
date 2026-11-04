@@ -34,12 +34,14 @@ describe("visual review gates", () => {
     expect(look.includes("ellipse(x, y + 3, 18, 6.5")).toBe(true);
     expect(look.includes("rgba(90,240,235,0.92)")).toBe(true);
     expect(look.includes("rgba(255,214,130,0.62)")).toBe(true);
-    expect(look.includes("brightness(1.65)")).toBe(true);
+    expect(look.includes("brightness(1.85)")).toBe(true);
+    expect(look.includes("function paintDiveSuit")).toBe(true);
+    expect(look.includes("rgba(48,255,236,0.96)")).toBe(true);
     expect(look.includes("paintRifle(ctx, x, y, nx, ny, s, bob)")).toBe(true);
     expect(look.includes("rgba(200,208,220")).toBe(false);
     expect(look.includes("ellipse(mx, my, 18, 10")).toBe(false);
-    expect(look.includes("lineTo(mx + nx * 40")).toBe(true);
-    expect(look.includes("ellipse(mx, my, 10.5, 6.8")).toBe(true);
+    expect(look.includes("lineTo(mx + nx * 56")).toBe(true);
+    expect(look.includes("ellipse(mx, my, 16, 10")).toBe(true);
     expect(look.includes("rgba(255,96,16,0.95)")).toBe(true);
     expect(look.includes("Math.sin(tick * 0.28)")).toBe(true);
     expect(look.includes("rgba(255,96,16,0.95)")).toBe(true);
@@ -57,7 +59,7 @@ describe("visual review gates", () => {
 
   it("keeps props on the walls and the spawn floor open", () => {
     expect(yardPropHits(200, 0, 760, 640)).toBeGreaterThanOrEqual(20);
-    expect(yardPropHits(PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(16);
+    expect(yardPropHits(PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(28);
     expect(yardPropHits(YARD_CLEAR.x0, YARD_CLEAR.y0, YARD_CLEAR.x1, YARD_CLEAR.y1)).toBe(0);
     expect(YARD_CLEAR.x1 - YARD_CLEAR.x0).toBeGreaterThanOrEqual(220);
     expect(YARD_CLEAR.y1 - YARD_CLEAR.y0).toBeGreaterThanOrEqual(240);
@@ -65,15 +67,19 @@ describe("visual review gates", () => {
 
   it("keeps dusk dark with local lamp pools and no global orange wash", () => {
     const draw = readFileSync("src/render/draw.ts", "utf8");
-    expect(draw.includes("rgba(4,6,12,0.68)")).toBe(true);
+    expect(draw.includes("rgba(4,6,12,0.72)")).toBe(true);
+    expect(draw.includes("rgba(24,14,8,0.08)")).toBe(true);
     expect(draw.includes("rgba(6,6,10,0.16)")).toBe(false);
     expect(draw.includes("rgba(220,132,52,0.34)")).toBe(false);
     expect(draw.includes("rgba(255,186,88,0.42)")).toBe(false);
     const yard = readFileSync("src/render/yard-fx.ts", "utf8");
-    expect(yard.includes("ellipse(x, y + 10, 52, 32")).toBe(true);
+    expect(yard.includes("ellipse(x, y + 10, 72, 44")).toBe(true);
+    expect(yard.includes("function lampRay")).toBe(true);
+    expect(yard.includes("decal_vent")).toBe(true);
+    expect(yard.includes("valve_steam")).toBe(true);
     expect(yard.includes("function doorPool")).toBe(true);
     expect(yard.includes("function steamPuff")).toBe(true);
-    expect(yard.includes("#7a8088")).toBe(true);
+    expect(yard.includes("#8a9098")).toBe(true);
     expect(yard.includes("{ x: 348, y: 188 }")).toBe(true);
     expect(yard.includes("{ x: 348, y: 268 }")).toBe(true);
     expect(yard.includes("{ x: 612, y: 188 }")).toBe(false);
@@ -130,6 +136,8 @@ describe("visual review gates", () => {
     expect(hud.includes("LV 12")).toBe(true);
     expect(hud.includes("#0ad8d0")).toBe(true);
     expect(hud.includes('blitSheetFit(ctx, "ring_frame_a"')).toBe(true);
+    expect(hud.includes("ctx.lineWidth = 3.4")).toBe(true);
+    expect(hud.includes("ctx.lineWidth = 3.2")).toBe(true);
     expect(hud.includes('blitSheetFit(ctx, "hero_idle"')).toBe(false);
     expect(hud.includes("layout.face")).toBe(true);
     expect(hud.includes("const local = 170")).toBe(true);

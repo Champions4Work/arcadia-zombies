@@ -358,7 +358,7 @@ export function paintGround(ctx: CanvasRenderingContext2D): void {
   ctx.fillRect(0, 108, ARENA_W, ARENA_H - 108);
   tileSheet(ctx, "tile_stone_seamless", 0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
   ctx.save();
-  ctx.globalAlpha = 0.74;
+  ctx.globalAlpha = 0.52;
   ctx.fillStyle = "#24303c";
   ctx.fillRect(0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
   ctx.restore();
