@@ -17,7 +17,8 @@ import "./map-events";
 import "./objectives";
 import "./boss";
 import "./depth";
-import { absorbShake, shakePixels } from "./shake";
+import { absorbShake, setShakeView, shakePixels } from "./shake";
+import { tickTrail } from "./trail";
 import { drawStageFx, drawYardWindow } from "./stage";
 import { paintHurt, paintVeil } from "./veil";
 import { bindYard, paintYardLive } from "./yard-fx";
@@ -40,15 +41,20 @@ export function fieldPlan(horde: boolean, viewW = W, viewH = H): { yard: boolean
   return { yard: true, sprites: false };
 }
 
-export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boolean; shake?: boolean }): void {
+export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boolean; shake?: boolean; blendMs?: number }): void {
   c.imageSmoothingEnabled = false;
   c.lineJoin = "round";
   c.lineCap = "round";
   if (Math.abs(w.px - lastPx) + Math.abs(w.py - lastPy) > 0.2) walk = 8;
-  else if (walk > 0) walk--;
+  else if (walk > 0) walk -= 2;
   lastPx = w.px;
   lastPy = w.py;
+  const viewW = w.arena.viewW || W;
+  const viewH = w.arena.viewH || H;
   absorbShake(w.tick, w.events);
+  setShakeView(viewW);
+  tickTrail();
+  const blendMs = opts?.blendMs ?? 0;
   const [sx, sy] = shakePixels(w.tick, opts?.shake !== false);
   const horde = shouldBlitHorde(
     countAlive(w.zombies.alive, MAX_ZOMBIES),
@@ -58,8 +64,6 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
   const moving = walk > 0 || reviewWalkOn();
   const camX = Math.round(w.arena.camX);
   const camY = Math.round(w.arena.camY);
-  const viewW = w.arena.viewW || W;
-  const viewH = w.arena.viewH || H;
   c.save();
   c.beginPath();
   c.rect(0, 0, viewW, viewH);
@@ -78,7 +82,7 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
     paintDecals(c, w);
     drawWarns(c, w);
     paintProps(c, w);
-    paintPlayer(c, w, moving);
+    paintPlayer(c, w, moving, blendMs);
     drawSaws(c, w);
     drawShield(c, w);
     drawTesla(c, w);
@@ -88,7 +92,7 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
     paintLayers(c, w, LAYER_BACK);
     paintDecals(c, w);
     drawWarns(c, w);
-    paintActors(c, w, moving);
+    paintActors(c, w, moving, blendMs);
     drawSaws(c, w);
     drawShield(c, w);
     paintBullets(c, w);

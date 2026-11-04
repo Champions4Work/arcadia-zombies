@@ -1,7 +1,8 @@
 import { ARENA_H } from "../sim/arena";
 import { Z_ELITE, Z_GAS, Z_KIND, Z_KNIGHT, Z_RAT, Z_SPITTER } from "../sim/foes";
 import { fogCover } from "../sim/map-events";
-import { enemyFlash, hitKnockX, hitKnockY } from "./juice";
+import { enemyFlash, hitKnockX, hitKnockY, playerFlashAlpha } from "./juice";
+import { dashActive } from "../sim/dash";
 import {
   EV_SHOT, FX_BOOM, FX_FLASH, FX_PUFF, FX_SPARK, FX_XP, Z_BRUTE, Z_GHOUL, Z_SHAMBLER, type World,
 } from "../sim/types";
@@ -18,6 +19,8 @@ import {
 import { blitAtlas, foeFrameId } from "../art/atlas";
 import { foeWorldH, paintHitSpark, paintSignatureHero, paintZombie } from "../art/look";
 import { stampCasing, stainCount, STAIN_LIVE_CAP } from "./stains";
+import { drawPose } from "./smooth";
+import { paintTrail, stampTrail } from "./trail";
 
 export const BIN_LO = -80;
 export const BIN_HI = ARENA_H + 100;
@@ -47,24 +50,29 @@ registerZombie(Z_GAS, atlasGlyph(Z_GAS));
 registerZombie(Z_KNIGHT, atlasGlyph(Z_KNIGHT));
 registerZombie(Z_RAT, atlasGlyph(Z_RAT));
 
-export function paintPlayer(ctx: CanvasRenderingContext2D, w: World, moving: boolean): void {
-  if (w.hurtCd > 0 && w.hurtCd % 6 >= 3) return;
-  paintHero(ctx, w, moving);
+export function paintPlayer(ctx: CanvasRenderingContext2D, w: World, moving: boolean, blendMs = 0): void {
+  paintHero(ctx, w, moving, blendMs);
 }
 
-function paintHero(ctx: CanvasRenderingContext2D, w: World, moving: boolean): void {
+function paintHero(ctx: CanvasRenderingContext2D, w: World, moving: boolean, blendMs: number): void {
+  const pose = drawPose(w.px, w.py, w.tick, blendMs);
+  const dash = dashActive(w);
+  if (dash) stampTrail(pose.x, pose.y, w.tick, moving);
   const shoot = (w.events[EV_SHOT] ?? 0) !== 0;
-  paintSignatureHero(ctx, w.px, w.py, w.aimX, w.aimY, moving, shoot, w.tick);
+  const flip = w.aimX < 0;
+  paintTrail(ctx, w.tick, flip, moving || dash);
+  const flash = playerFlashAlpha();
+  paintSignatureHero(ctx, pose.x, pose.y, w.aimX, w.aimY, moving || dash, shoot, w.tick, flash);
   if (shoot && w.tick !== caseTick) {
     caseTick = w.tick;
     const ox = -w.aimX * 16 - 8;
     const oy = 8 - w.aimY * 4;
     const tight = stainCount() > STAIN_LIVE_CAP - 12;
-    stampCasing(w.px + ox - 6, w.py + oy + 4, w.tick);
-    stampCasing(w.px + ox - 14, w.py + oy + 9, w.tick + 3);
+    stampCasing(pose.x + ox - 6, pose.y + oy + 4, w.tick);
+    stampCasing(pose.x + ox - 14, pose.y + oy + 9, w.tick + 3);
     if (!tight) {
-      stampCasing(w.px + ox - 22, w.py + oy + 14, w.tick + 7);
-      stampCasing(w.px + ox - 30, w.py + oy + 20, w.tick + 11);
+      stampCasing(pose.x + ox - 22, pose.y + oy + 14, w.tick + 7);
+      stampCasing(pose.x + ox - 30, pose.y + oy + 20, w.tick + 11);
     }
   }
 }
@@ -95,7 +103,7 @@ function paintOne(ctx: CanvasRenderingContext2D, w: World, i: number): void {
   if (flash) paintHitSpark(ctx, x + 6, y - foeWorldH(kind) * 0.38);
 }
 
-export function paintActors(ctx: CanvasRenderingContext2D, w: World, moving: boolean): void {
+export function paintActors(ctx: CanvasRenderingContext2D, w: World, moving: boolean, blendMs = 0): void {
   const z = w.zombies;
   const cap = z.alive.length;
   const obs = w.arena;
@@ -128,7 +136,7 @@ export function paintActors(ctx: CanvasRenderingContext2D, w: World, moving: boo
     bin[key] = slot + 1;
     seq[slot] = id;
   }
-  const hidden = w.hurtCd > 0 && w.hurtCd % 6 >= 3;
+  const hidden = false;
   const cover = fogCover(w);
   const shade = cover > 0 ? 1 - cover : 1;
   for (let i = 0; i < n; i++) {
@@ -136,7 +144,7 @@ export function paintActors(ctx: CanvasRenderingContext2D, w: World, moving: boo
     if (id < -1) paintProp(ctx, w, -2 - id);
     else if (id < 0) {
       ctx.globalAlpha = 1;
-      if (!hidden) paintHero(ctx, w, moving);
+      if (!hidden) paintHero(ctx, w, moving, blendMs);
     } else if (!offScreen(z.x[id] ?? 0, z.y[id] ?? 0, 96, obs.camX, obs.camY, obs.viewW, obs.viewH)) {
       if (shade < 1) ctx.globalAlpha = shade;
       paintOne(ctx, w, id);

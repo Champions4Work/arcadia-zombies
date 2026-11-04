@@ -1,5 +1,6 @@
 import { JUICE_DT, juiceClockOwned, juiceFrame, juicePlayerHurt, stopRemaining, tickJuice } from "../render/juice";
 import { chargeUlt, stepUlt, tryUlt } from "./ult";
+import { stepDash, tryDash } from "./dash.hot";
 import { stepWarn, tickEliteCharge } from "./warn";
 import { bossSpeedMul, hurtBoss, stepBoss } from "./boss.hot";
 import { indexProps } from "./arena";
@@ -205,7 +206,10 @@ export function step(w: World, input: Input): void {
     w.events[EV_RANK] = 1;
   }
   if (w.teslaFlash > 0) w.teslaFlash--;
-  slidePlayer(w, input.dx, input.dy, moveSpeed(w) * bossSpeedMul(w) * ventSlowMul(w));
+  tryDash(w, input);
+  if (!stepDash(w)) {
+    slidePlayer(w, input.dx, input.dy, moveSpeed(w) * bossSpeedMul(w) * ventSlowMul(w));
+  }
   updateCamera(w);
   stepObjectives(w);
   const z = w.zombies;

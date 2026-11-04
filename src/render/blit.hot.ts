@@ -4,7 +4,17 @@ import {
   Y_BIAS, Y_SLOTS, bg, bulletSprite, yHead, yNext, zombieSprite, type Sprite,
 } from "./horde-sprites";
 
-const FLASH = 0xffffffff;
+
+function flashPix(p: number): number {
+  if (p === 0) return 0;
+  const r = (p >>> 16) & 0xff;
+  const g = (p >>> 8) & 0xff;
+  const b = p & 0xff;
+  const nr = r + ((255 - r) * 11 >> 4) + 18;
+  const ng = g + ((255 - g) * 9 >> 4) + 10;
+  const nb = b + ((255 - b) * 5 >> 4);
+  return ((nr > 255 ? 255 : nr) << 16) | ((ng > 255 ? 255 : ng) << 8) | (nb > 255 ? 255 : nb);
+}
 
 function blit(frame: Uint32Array, spr: Sprite, dx: number, dy: number): void {
   const sw = spr.w;
@@ -71,7 +81,7 @@ function blitFlash(frame: Uint32Array, spr: Sprite, dx: number, dy: number, flip
       const srow = y * sw;
       for (let x = 0; x < sw; x++) {
         const sx = flip ? sw - 1 - x : x;
-        if ((pix[srow + sx] ?? 0) !== 0) frame[drow + x] = FLASH;
+        if ((pix[srow + sx] ?? 0) !== 0) frame[drow + x] = flashPix(pix[srow + sx] ?? 0);
       }
     }
     return;
@@ -89,7 +99,7 @@ function blitFlash(frame: Uint32Array, spr: Sprite, dx: number, dy: number, flip
     const srow = y * sw;
     for (let x = x0; x < x1; x++) {
       const sx = flip ? sw - 1 - x : x;
-      if ((pix[srow + sx] ?? 0) !== 0) frame[drow + x] = FLASH;
+      if ((pix[srow + sx] ?? 0) !== 0) frame[drow + x] = flashPix(pix[srow + sx] ?? 0);
     }
   }
 }

@@ -192,9 +192,9 @@ describe("weapon rack", () => {
 });
 
 describe("hurt veil", () => {
-  it("keeps a hit as strong as the old 0.4 edge", () => {
-    expect(hurtAlpha(45)).toBe(0.4);
-    expect(hurtAlpha(90)).toBe(0.4);
+  it("caps the edge wash so the yard still reads on phone", () => {
+    expect(hurtAlpha(45)).toBe(0.28);
+    expect(hurtAlpha(90)).toBe(0.28);
     expect(hurtAlpha(18)).toBe(0.2);
     expect(hurtAlpha(0)).toBe(0);
   });

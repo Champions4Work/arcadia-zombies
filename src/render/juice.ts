@@ -8,6 +8,7 @@ export const NUMBER_CAP = 256;
 export const FLASH_CAP = 2048;
 export const FLASH_MS = 80;
 export const FLASH_SOFT_MS = 28;
+export const PLAYER_FLASH_MS = 72;
 export const STOP_MAX_MS = 100;
 export const PART_CAP = 128;
 export const PART_LIVE_CAP = 80;
@@ -72,6 +73,7 @@ let usedMs = 0;
 let windowMs = 0;
 let showNumbers = true;
 let clockOwned = false;
+let playerFlash = 0;
 
 export function damageNumbersOn(): boolean {
   return showNumbers;
@@ -99,6 +101,7 @@ export function resetJuice(): void {
   stopMs = 0;
   usedMs = 0;
   windowMs = 0;
+  playerFlash = 0;
   numOn.fill(0);
   pOn.fill(0);
   flash.fill(0);
@@ -135,6 +138,16 @@ export function stopUsed(): number {
 export function enemyFlash(slot: number): number {
   if (slot < 0 || slot >= FLASH_CAP) return 0;
   return flash[slot] ?? 0;
+}
+
+export function playerFlashMs(): number {
+  return playerFlash;
+}
+
+export function playerFlashAlpha(): number {
+  if (playerFlash <= 0) return 0;
+  const t = playerFlash / PLAYER_FLASH_MS;
+  return t > 1 ? 1 : t;
 }
 
 export function flashesLive(): number {
@@ -242,6 +255,8 @@ export function juiceShot(x: number, y: number, ux: number, uy: number, tick: nu
 
 export function juicePlayerHurt(): void {
   grant(STOP_HURT_MS);
+  playerFlash = reduceMotionOn() ? FLASH_SOFT_MS : PLAYER_FLASH_MS;
+  punchShake(0.38);
 }
 
 function killStop(raw: number, killed: boolean): number {
@@ -311,6 +326,9 @@ export function juiceFrame(dt: number): boolean {
 
 export function tickJuice(dt: number): void {
   const scale = dt * 0.001;
+  if (playerFlash > 0) {
+    playerFlash = playerFlash > dt ? playerFlash - dt : 0;
+  }
   if (flashOn > 0) {
     for (let i = 0; i < flashScan; i++) {
       const t = flash[i] ?? 0;

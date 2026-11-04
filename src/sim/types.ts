@@ -57,7 +57,7 @@ export interface RunMods {
   hp: number; dmg: number; spd: number; gun: number;
   revive: number; reroll: number; rerollLeft: number; banked: number;
 }
-export interface Input { dx: number; dy: number; pick?: number; reroll?: number; skip?: number; ult?: number }
+export interface Input { dx: number; dy: number; pick?: number; reroll?: number; skip?: number; ult?: number; dash?: number }
 export interface Pool {
   x: Float32Array; y: Float32Array; vx: Float32Array; vy: Float32Array;
   hp: Int16Array; alive: Uint8Array; kind: Uint8Array;
@@ -95,6 +95,7 @@ export interface World {
   chestOpen: number; chestCount: number; chestT: number; chestDur: number;
   chestGold: number; chestLinger: number; chestCursor: number; chestSeal: number;
   ult: number; ultBlast: number; ultCd: number;
+  dashT: number; dashCd: number; dashUx: number; dashUy: number;
   boss: Boss;
 }
 export const EV_SHOT = 0;

@@ -138,6 +138,7 @@ export function paintSignatureHero(
   moving: boolean,
   shoot: boolean,
   tick: number,
+  hitFlash = 0,
 ): void {
   const bob = walkBob(tick, moving);
   const flip = aimX < 0;
@@ -160,6 +161,16 @@ export function paintSignatureHero(
   }
   ctx.restore();
   blitSheetLean(ctx, heroSpriteId(moving, tick), x, y, flip, bob, 0, s);
+  if (hitFlash > 0) {
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    ctx.globalAlpha = hitFlash * 0.55;
+    ctx.fillStyle = "rgba(255,120,48,0.92)";
+    ctx.beginPath();
+    ctx.ellipse(x, y - 18 * s, 16 * s, 22 * s, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
   if (!shoot) return;
   const side = flip ? -1 : 1;
   const mx = x + side * 34 * s + nx * 4;
