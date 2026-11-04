@@ -8,6 +8,7 @@ import { paintFps } from "./fps";
 import { drawLich } from "./finale";
 import { renderHorde } from "./horde-draw";
 import { drawJuice } from "./juice";
+import { drawWarns } from "./warn";
 import { drawCards, drawHud } from "./hud";
 import { drawReroll } from "./reroll";
 import { drawSaws, drawShield, drawTesla } from "./progress";
@@ -65,6 +66,7 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
     renderHorde(c, w);
     drawStageFx(c, w.tick, camX, camY);
     paintDecals(c, w);
+    drawWarns(c, w);
     paintProps(c, w);
     paintPlayer(c, w, moving);
     drawSaws(c, w);
@@ -75,6 +77,7 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
     drawStageFx(c, w.tick, camX, camY);
     paintLayers(c, w, LAYER_BACK);
     paintDecals(c, w);
+    drawWarns(c, w);
     paintActors(c, w, moving);
     drawSaws(c, w);
     drawShield(c, w);
@@ -88,6 +91,11 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
   drawChestGround(c, w);
   c.restore();
   paintVeil(c, viewW, viewH);
+  if ((w.ultBlast ?? 0) > 0) {
+    const a = Math.min(0.42, (w.ultBlast ?? 0) * 0.03);
+    c.fillStyle = `rgba(210,228,235,${a})`;
+    c.fillRect(0, 0, viewW, viewH);
+  }
   if (w.hurtCd > 0) paintHurt(c, w.hurtCd, viewW, viewH);
   paintLayers(c, w, LAYER_FRONT);
   if (w.choosing) {

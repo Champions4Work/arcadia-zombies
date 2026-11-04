@@ -1,5 +1,5 @@
 import { H, MAX_BULLETS, MAX_ZOMBIES, W, type World } from "../sim/types";
-import { enemyFlash, flashesLive } from "./juice";
+import { enemyFlash, flashesLive, hitKnockX, hitKnockY } from "./juice";
 import {
   Y_BIAS, Y_SLOTS, bg, bulletSprite, yHead, yNext, zombieSprite, type Sprite,
 } from "./horde-sprites";
@@ -108,8 +108,8 @@ export function composeHorde(w: World, frame: Uint32Array): void {
   const base = zombieSprite(0, bob);
   for (let i = 0; i < MAX_ZOMBIES; i++) {
     if (!z.alive[i]) continue;
-    const x = (z.x[i] ?? 0) - camX;
-    const y = (z.y[i] ?? 0) - camY;
+    const x = (z.x[i] ?? 0) - camX + hitKnockX(i);
+    const y = (z.y[i] ?? 0) - camY + hitKnockY(i);
     const kind = z.kind[i] ?? 0;
     const spr = kind === 0 ? base : zombieSprite(kind, bob);
     if (culled((x - spr.ox) | 0, (y - spr.oy) | 0, spr.w, spr.h)) continue;
@@ -124,8 +124,8 @@ export function composeHorde(w: World, frame: Uint32Array): void {
   for (let slot = 0; slot < Y_SLOTS; slot++) {
     let i = yHead[slot] ?? -1;
     while (i >= 0) {
-      const x = (z.x[i] ?? 0) - camX;
-      const y = (z.y[i] ?? 0) - camY;
+      const x = (z.x[i] ?? 0) - camX + hitKnockX(i);
+      const y = (z.y[i] ?? 0) - camY + hitKnockY(i);
       const spr = zombieSprite(z.kind[i] ?? 0, bob);
       const dx = (x - spr.ox) | 0;
       const dy = (y - spr.oy) | 0;

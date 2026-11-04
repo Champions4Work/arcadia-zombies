@@ -13,6 +13,7 @@ import {
   bulletDmg, canUpgrade, rollOffers, sawAngle, sawCount, sawDamage, sawRadius, sawSpin, shieldReload, takeXp,
 } from "./progress";
 import { nextFloat } from "./rng";
+import { plantBossWarn } from "./warn";
 import {
   EV_HURT, EV_KILL, EV_LEVEL, EV_SHIELD, EV_SIREN, FX_FLASH, FX_PUFF, FX_SPARK,
   MAX_BULLETS, MAX_FX, MAX_ZOMBIES, TELE_BOSS, Z_GHOUL, type Boss, type World,
@@ -72,6 +73,7 @@ function nextPattern(w: World, wind: number): void {
   b.mode = 1;
   b.timer = wind;
   aimAtPlayer(w);
+  plantBossWarn(w, wind);
 }
 function hurtPlayer(w: World, dmg: number): void {
   if (w.over || w.hurtCd > 0 || dmg <= 0) return;
@@ -502,6 +504,7 @@ function spawnBoss(w: World): void {
   b.slow = 0;
   clampBoss(b);
   aimAtPlayer(w);
+  plantBossWarn(w, 36);
   clearVolley(b);
   w.events[EV_SIREN] = 1;
   puff(w, FX_PUFF, b.x, b.y, kind + 4);

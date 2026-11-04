@@ -1,4 +1,6 @@
 import { JUICE_DT, juiceFrame, juicePlayerHurt, tickJuice } from "../render/juice";
+import { chargeUlt, stepUlt, tryUlt } from "./ult";
+import { stepWarn, tickEliteCharge } from "./warn";
 import { bossSpeedMul, hurtBoss, stepBoss } from "./boss.hot";
 import { indexProps } from "./arena";
 import {
@@ -28,7 +30,7 @@ import { fell } from "./revive";
 import { stepMapEvents } from "./map-events.hot";
 import { clearMapStrike, mapStrikeDmg, mapStrikeOn, mapStrikeR, mapStrikeX, mapStrikeY } from "./map-events";
 import {
-  EV_HURT, EV_RANK, EV_SAW, EV_SHIELD, EV_TESLA, EV_WAVE, FX_FLASH, FX_SPARK,
+  EV_HURT, EV_KILL, EV_RANK, EV_SAW, EV_SHIELD, EV_TESLA, EV_WAVE, FX_FLASH, FX_SPARK,
   MAX_ZOMBIES, TESLA_BOSS, UPG_COOLANT, UPG_MORTAR, UPG_SPIKES, UPG_TESLA,
   UPG_VENT, UPG_WHISTLE, EVOL_AEGIS, type Input, type World,
 } from "./types";
@@ -185,6 +187,8 @@ export function step(w: World, input: Input): void {
     tryPick(w, input.pick ?? 0);
     return;
   }
+  tryUlt(w, input.ult ?? 0);
+  if (w.over) return;
   indexProps(w.arena);
   w.tick++;
   if (w.rankFlash > 0) w.rankFlash--;
@@ -253,7 +257,7 @@ export function step(w: World, input: Input): void {
           if (w.over) return;
         }
       }
-      chaseZombie(w, i);
+      if (tickEliteCharge(w, i) === 0) chaseZombie(w, i);
       z.vx[i] = saved;
       if (kind === Z_KNIGHT) tickKnight(w, i);
     }
@@ -323,6 +327,9 @@ export function step(w: World, input: Input): void {
   tickTelegraphs(w);
   stepBoss(w);
   if (!hasMod(w.mods, MOD_NOHEAL)) pickupHeals(w);
+  chargeUlt(w, w.events[EV_KILL] ?? 0);
+  stepUlt(w);
+  stepWarn(w);
   tickJuice(JUICE_DT);
   openTouchedChest(w);
 }

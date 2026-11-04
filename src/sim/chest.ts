@@ -150,6 +150,10 @@ export function openTouchedChest(w: World): void {
   }
 }
 
+export function chestLanded(w: World): boolean {
+  return w.chestOpen !== 0 && w.chestT >= w.chestDur;
+}
+
 export function stepChest(w: World, input: Input): boolean {
   if (!w.chestOpen) {
     if (w.chestLinger > 0) w.chestLinger--;
@@ -160,24 +164,22 @@ export function stepChest(w: World, input: Input): boolean {
     }
     return true;
   }
-  const skip = (input.skip ?? 0) > 0;
-  if (skip) {
+  if (w.chestT < w.chestDur) {
+    w.chestT++;
+    if (!w.chestGold && w.chestT >= chestGoldAt(w.chestDur)) {
+      w.chestGold = 1;
+      w.events[EV_CHEST_END] = 1;
+    }
+    return true;
+  }
+  w.chestT = w.chestDur;
+  if ((input.skip ?? 0) > 0) {
     if (!w.chestGold) {
       w.chestGold = 1;
       w.events[EV_CHEST_END] = 1;
     }
     w.chestOpen = 0;
     w.chestLinger = 18;
-    return true;
-  }
-  w.chestT++;
-  if (!w.chestGold && w.chestT >= chestGoldAt(w.chestDur)) {
-    w.chestGold = 1;
-    w.events[EV_CHEST_END] = 1;
-  }
-  if (w.chestT >= w.chestDur) {
-    w.chestOpen = 0;
-    w.chestLinger = 16;
   }
   return true;
 }

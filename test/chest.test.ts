@@ -1,7 +1,8 @@
-import { chestSkipKey } from "../src/render/chestFx";
+import { chestContinueHit, chestSkipKey, CONT_H, CONT_W, continueRect } from "../src/render/chestFx";
+import { atlasHas, blurbFor } from "../src/render/icons";
 import { ARENA_H, ARENA_W } from "../src/sim/arena";
 import {
-  CHEST_SLOTS, dropChest, ELITE_DROP, ELITE_MARK, MAX_CHESTS, REVEAL_HI, REVEAL_LO,
+  CHEST_SLOTS, chestLanded, dropChest, ELITE_DROP, ELITE_MARK, MAX_CHESTS, REVEAL_HI, REVEAL_LO,
   rollChestCount, rollEliteDrop, TIER_FIVE, TIER_ONE, TIER_THREE,
 } from "../src/sim/chest";
 import { killZombie } from "../src/sim/combat.hot";
@@ -9,7 +10,7 @@ import { armDevJump, FINALE_SEC, harmLich, lichUp, lichX, lichY, setRunEndless }
 import { createRng, nextFloat } from "../src/sim/rng";
 import { step } from "../src/sim/step.hot";
 import {
-  EV_CHEST, EVOL_AEGIS, EVOL_CANNON, EVOL_STORM, UPG_FIRE, UPG_HP, UPG_MAX,
+  EV_CHEST, EVOL_AEGIS, EVOL_CANNON, EVOL_STORM, UPG_COUNT, UPG_FIRE, UPG_HP, UPG_MAX,
   UPG_PIERCE, UPG_SAWS, UPG_SHIELD, UPG_SHOTGUN, UPG_TESLA, UPG_VENT, Z_BRUTE, Z_SHAMBLER,
   type Input, type World,
 } from "../src/sim/types";
@@ -170,10 +171,12 @@ describe("chest rewards", () => {
     expect(prizes(only)).toEqual([UPG_FIRE]);
     expect(only.upgrades[UPG_FIRE]).toBe(UPG_MAX - 1);
     dropChest(only, only.px, only.py);
+    while (!chestLanded(only)) step(only, idle());
     step(only, idle(1));
     step(only, idle());
     expect(prizes(only)).toEqual([UPG_FIRE]);
     expect(only.upgrades[UPG_FIRE]).toBe(UPG_MAX);
+    while (!chestLanded(only)) step(only, idle());
     step(only, idle(1));
     dropChest(only, only.px, only.py);
     step(only, idle());
@@ -219,12 +222,23 @@ describe("opening a chest", () => {
     expect(w.chestDur).toBeGreaterThanOrEqual(REVEAL_LO);
     expect(w.chestDur).toBeLessThanOrEqual(REVEAL_HI);
     let n = 1;
-    while (w.chestOpen && n < 200) {
+    while (!chestLanded(w) && n < 200) {
       step(w, idle());
       n++;
     }
-    expect(w.chestOpen).toBe(0);
+    expect(w.chestOpen).toBe(1);
+    expect(chestLanded(w)).toBe(true);
     expect(n).toBe(w.chestDur);
+    const granted = prizes(w);
+    expect(granted.length).toBeGreaterThan(0);
+    const levels = Array.from(w.upgrades);
+    step(w, idle());
+    expect(w.chestOpen).toBe(1);
+    expect(w.tick).toBe(tick);
+    expect(Array.from(w.upgrades)).toEqual(levels);
+    step(w, idle(1));
+    expect(w.chestOpen).toBe(0);
+    expect(Array.from(w.upgrades)).toEqual(levels);
     const moved = w.px;
     step(w, { dx: 1, dy: 0, pick: 0 });
     expect(w.tick).toBe(tick + 1);
@@ -239,13 +253,25 @@ describe("opening a chest", () => {
     expect(chestSkipKey("ArrowRight", false)).toBe(false);
     expect(chestSkipKey("d", false)).toBe(false);
     expect(chestSkipKey("Escape", false)).toBe(false);
+    const btn = continueRect();
+    expect(btn.w).toBe(CONT_W);
+    expect(btn.h).toBe(CONT_H);
+    expect(chestContinueHit(btn.x + 4, btn.y + 4)).toBe(true);
+    expect(chestContinueHit(0, 0)).toBe(false);
   });
 
-  it("a tap or key skips the reveal and keeps the gears", () => {
+  it("a tap or key during the spin does not close, and continue after the land resumes", () => {
     const w = openAtFeet(11);
     const granted = prizes(w);
     const levels = Array.from(w.upgrades);
     const tick = w.tick;
+    expect(chestLanded(w)).toBe(false);
+    step(w, idle(1));
+    expect(w.chestOpen).toBe(1);
+    expect(chestLanded(w)).toBe(false);
+    expect(w.tick).toBe(tick);
+    while (!chestLanded(w)) step(w, idle());
+    expect(w.chestOpen).toBe(1);
     step(w, idle(1));
     expect(w.chestOpen).toBe(0);
     expect(w.tick).toBe(tick);
@@ -349,5 +375,16 @@ describe("opening a chest", () => {
     expect(chestCount(endless)).toBe(1);
     expect(endless.chestX[0] ?? 0).toBeCloseTo(lichX(endless), 4);
     expect(endless.chestY[0] ?? 0).toBeCloseTo(lichY(endless), 4);
+  });
+});
+
+describe("chest cards", () => {
+  it("keeps every upgrade on the icon atlas with a name and a description", () => {
+    for (let id = 0; id < UPG_COUNT; id++) {
+      expect(atlasHas(id)).toBe(true);
+      expect(blurbFor(id).length).toBeGreaterThan(8);
+    }
+    expect(atlasHas(-1)).toBe(false);
+    expect(blurbFor(99)).toBe("A new gear for the boiler heart.");
   });
 });

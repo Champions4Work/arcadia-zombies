@@ -5,7 +5,8 @@ import { resetXpGain, syncXpGain, tickXpGain } from "./render/xp-gain";
 import { bootMusic, mountMusicRow, musicMuted, persistMusic, syncMusic, type MusicSnap } from "./render/music";
 import { chestSkipKey } from "./render/chestFx";
 import { draw } from "./render/draw";
-import { pauseHit } from "./render/hud";
+import { abilityHit, pauseHit } from "./render/hud";
+import { ULT_KEY } from "./sim/ult";
 import { bootSfx, persistSfx, playSfxCue, playUiClick, playWorldSfx, resetSfxPlayback, setSfxVolume, sfxMuted, sfxVolume, toggleSfxMuted } from "./render/sfx";
 import { CUE_BOSS, CUE_CLICK, CUE_LEVEL, CUE_PICK, CUE_SHIELD, sfxMuteLabel, sfxVolumePercent } from "./render/sfx-cues";
 import { setMuted, unlockAudio } from "./render/sound";
@@ -227,12 +228,13 @@ results.onCopy(() => {
   }
 });
 const keys = new Set<string>();
-const input: Input = { dx: 0, dy: 0, pick: 0, reroll: 0, skip: 0 };
+const input: Input = { dx: 0, dy: 0, pick: 0, reroll: 0, skip: 0, ult: 0 };
 const stick = createStick();
 let stickId = -1;
 let pendingPick = 0;
 let pendingReroll = 0;
 let pendingSkip = 0;
+let pendingUlt = 0;
 let lastScrap = 0;
 const STEP_MS = 1000 / 60;
 let acc = 0;
@@ -425,6 +427,7 @@ function startRun(): void {
     pendingPick = 0;
     pendingReroll = 0;
     pendingSkip = 0;
+    pendingUlt = 0;
     if (import.meta.env.DEV && location.search.includes("chest=1")) {
       dropChest(world, world.px + 56, world.py);
       world.toSpawn = 8;
@@ -645,6 +648,11 @@ addEventListener("keydown", (e) => {
     pendingSkip = 1;
     return;
   }
+  if (session.phase === PHASE_PLAY && !world.chestOpen && !world.choosing && k === ULT_KEY && !e.repeat) {
+    e.preventDefault();
+    pendingUlt = 1;
+    return;
+  }
   if (k === " " || k === "enter") {
     if (session.phase !== PHASE_PLAY) {
       const target = e.target;
@@ -695,6 +703,10 @@ addEventListener("pointerdown", (e) => {
     playUiClick();
     persist();
     paint();
+    return;
+  }
+  if (abilityHit(e.clientX, e.clientY) && !world.chestOpen && !world.choosing) {
+    pendingUlt = 1;
     return;
   }
   if (world.chestOpen) {
@@ -768,6 +780,7 @@ function frame(now: number): void {
       input.pick = pendingPick;
       input.reroll = pendingReroll;
       input.skip = pendingSkip;
+      input.ult = pendingUlt;
       step(world, input);
       noteKills(tracker, world.events[EV_KILL] ?? 0);
       if (shouldSample(world.tick, logTick)) {
@@ -778,9 +791,11 @@ function frame(now: number): void {
       pendingPick = 0;
       pendingReroll = 0;
       pendingSkip = 0;
+      pendingUlt = 0;
       input.pick = 0;
       input.reroll = 0;
       input.skip = 0;
+      input.ult = 0;
       acc -= STEP_MS;
       const reached = noteWave(bestWave, world.wave);
       const waveUp = reached !== bestWave;
