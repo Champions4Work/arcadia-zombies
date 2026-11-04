@@ -85,29 +85,29 @@ function visible(x: number, y: number, camX: number, camY: number, vw: number, v
 }
 
 function lampPool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  const g = ctx.createRadialGradient(x, y - 18, 3, x, y + 6, 58);
-  g.addColorStop(0, "rgba(255,200,96,0.5)");
-  g.addColorStop(0.4, "rgba(232,148,56,0.18)");
+  const g = ctx.createRadialGradient(x, y - 18, 3, x, y + 6, 96);
+  g.addColorStop(0, "rgba(255,220,140,0.88)");
+  g.addColorStop(0.4, "rgba(255,186,80,0.42)");
   g.addColorStop(1, "rgba(10,10,14,0)");
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.ellipse(x, y + 6, 54, 30, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y + 6, 88, 50, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
 
 function bluePool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  const g = ctx.createRadialGradient(x, y - 12, 2, x, y, 42);
-  g.addColorStop(0, "rgba(80,200,255,0.42)");
-  g.addColorStop(0.45, "rgba(40,120,220,0.16)");
+  const g = ctx.createRadialGradient(x, y - 12, 2, x, y, 70);
+  g.addColorStop(0, "rgba(120,240,255,0.88)");
+  g.addColorStop(0.45, "rgba(64,190,255,0.42)");
   g.addColorStop(1, "rgba(10,10,14,0)");
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.ellipse(x, y, 28, 22, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y, 52, 38, 0, 0, Math.PI * 2);
   ctx.fill();
   blitSheet(ctx, "blue_puddle", x, y + 10);
   blitSheet(ctx, "blue_glow", x, y - 8);

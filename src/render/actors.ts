@@ -59,8 +59,20 @@ function paintHero(ctx: CanvasRenderingContext2D, w: World, moving: boolean): vo
     const ox = -w.aimX * 16 - 8;
     const oy = 8 - w.aimY * 4;
     paintCasing(ctx, w.px + ox, w.py + oy);
-    paintCasing(ctx, w.px + ox - 6, w.py + oy + 4);
+    paintCasing(ctx, w.px + ox - 8, w.py + oy + 5);
+    paintCasing(ctx, w.px + ox - 16, w.py + oy + 9);
+    paintCasing(ctx, w.px + ox + 6, w.py + oy + 7);
+    paintCasing(ctx, w.px + ox - 4, w.py + oy + 12);
+    paintCasing(ctx, w.px + ox - 20, w.py + oy + 3);
     stampCasing(w.px + ox - 4, w.py + oy + 2, w.tick);
+    stampCasing(w.px + ox - 10, w.py + oy + 7, w.tick + 3);
+    stampCasing(w.px + ox - 16, w.py + oy + 11, w.tick + 6);
+    const mag = Math.max(0.2, Math.hypot(w.aimX, w.aimY));
+    const nx = w.aimX / mag;
+    const ny = w.aimY / mag;
+    for (let i = 1; i <= 5; i++) {
+      paintRivetBolt(ctx, w.px + nx * (30 + i * 12), w.py - 18 + ny * (30 + i * 12), nx * 8, ny * 8);
+    }
   }
 }
 
