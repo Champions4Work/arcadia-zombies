@@ -12,6 +12,7 @@ import {
   xpGlow,
   xpPop,
   xpShown,
+  xpLevelText,
 } from "../src/render/xp-gain";
 import { EV_LEVEL, FX_XP } from "../src/sim/types";
 import { pacedXpNeed } from "../src/sim/modifiers";
@@ -49,6 +50,11 @@ describe("xp gain juice", () => {
     syncXpGain(w, hud, fit);
     expect(xpPop().level).toBe(2);
     expect(xpPop().ms).toBeGreaterThan(0);
+  });
+
+  it("prints a 1-based LV label from the 0-based sim level", () => {
+    expect(xpLevelText(0)).toBe("LV 1");
+    expect(xpLevelText(2)).toBe("LV 3");
   });
 
   it("maps a world gem onto the CSS bar", () => {

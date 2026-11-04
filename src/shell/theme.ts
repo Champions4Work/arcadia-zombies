@@ -1,18 +1,41 @@
-export const SOOT = "#100c08";
-export const IRON = "#1a120c";
-export const PANEL = "#24180e";
-export const BRASS = "#d4a04a";
-export const BRASS_HI = "#f3d58a";
-export const BRASS_LO = "#8a5a18";
-export const COPPER = "#c46a32";
-export const BRONZE = "#7a4a1c";
-export const STEAM = "#f6eee2";
-export const STEAM_DIM = "#d8c8a8";
-export const INK = "#120c08";
-export const DANGER = "#e24a32";
-export const XP = "#f0b43a";
-export const HEALTH = "#3ec86e";
-export const VEIL = "#080604cc";
+import {
+  BRASS as PAL_BRASS,
+  BRASS_HI as PAL_BRASS_HI,
+  BRASS_LO as PAL_BRASS_LO,
+  BRONZE as PAL_BRONZE,
+  COPPER as PAL_COPPER,
+  DANGER as PAL_DANGER,
+  HEALTH as PAL_HEALTH,
+  INK as PAL_INK,
+  IRON as PAL_IRON,
+  PANEL as PAL_PANEL,
+  SOOT as PAL_SOOT,
+  STEAM as PAL_STEAM,
+  STEAM_DIM as PAL_STEAM_DIM,
+  VEIL as PAL_VEIL,
+  XP as PAL_XP,
+  CYAN as PAL_CYAN,
+  GLASS as PAL_GLASS,
+  hexRgb as palHexRgb,
+} from "../art/palette";
+
+export const SOOT = PAL_SOOT;
+export const IRON = PAL_IRON;
+export const PANEL = PAL_PANEL;
+export const BRASS = PAL_BRASS;
+export const BRASS_HI = PAL_BRASS_HI;
+export const BRASS_LO = PAL_BRASS_LO;
+export const COPPER = PAL_COPPER;
+export const BRONZE = PAL_BRONZE;
+export const STEAM = PAL_STEAM;
+export const STEAM_DIM = PAL_STEAM_DIM;
+export const INK = PAL_INK;
+export const DANGER = PAL_DANGER;
+export const XP = PAL_XP;
+export const HEALTH = PAL_HEALTH;
+export const VEIL = PAL_VEIL;
+export const CYAN = PAL_CYAN;
+export const GLASS = PAL_GLASS;
 
 export const THEME = {
   soot: SOOT,
@@ -30,10 +53,12 @@ export const THEME = {
   xp: XP,
   health: HEALTH,
   veil: VEIL,
+  cyan: CYAN,
+  glass: GLASS,
 } as const;
 
-export const FONT_DISPLAY = '"Iowan Old Style", Palatino, "Palatino Linotype", "Book Antiqua", Georgia, "Times New Roman", serif';
-export const FONT_BODY = 'ui-sans-serif, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+export const FONT_DISPLAY = 'system-ui, "Segoe UI", "Helvetica Neue", sans-serif';
+export const FONT_BODY = FONT_DISPLAY;
 
 export const TYPE_MIN = {
   display: 22,
@@ -60,6 +85,8 @@ export const THEME_VARS: Readonly<Record<string, string>> = {
   xp: XP,
   health: HEALTH,
   veil: VEIL,
+  cyan: CYAN,
+  glass: GLASS,
   "font-display": FONT_DISPLAY,
   "font-body": FONT_BODY,
 };
@@ -74,14 +101,13 @@ const FORBIDDEN = [
   /#c45ad4/i,
   /#6e2484/i,
   /#7ad0ff/i,
+  /Iowan Old Style/,
+  /Palatino/,
 ];
 
 export function hexRgb(hex: string): [number, number, number] {
-  const h = hex.replace("#", "");
-  const n = h.length === 3
-    ? [h[0]! + h[0]!, h[1]! + h[1]!, h[2]! + h[2]!].join("")
-    : h.slice(0, 6);
-  return [parseInt(n.slice(0, 2), 16), parseInt(n.slice(2, 4), 16), parseInt(n.slice(4, 6), 16)];
+  const [r, g, b] = palHexRgb(hex);
+  return [r, g, b];
 }
 
 function channel(c: number): number {

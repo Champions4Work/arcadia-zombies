@@ -40,8 +40,8 @@ describe("stick deadzone", () => {
     expect(s.dx).toBeCloseTo(0.5);
     moveStick(s, PHONE_JOY_R, 0, PHONE_JOY_R);
     expect(s.dx).toBe(1);
-    moveStick(s, STICK_R, 0, PHONE_JOY_R);
-    expect(s.dx).toBeCloseTo(STICK_R / PHONE_JOY_R);
+    moveStick(s, PHONE_JOY_R * 0.7, 0, PHONE_JOY_R);
+    expect(s.dx).toBeCloseTo(0.7);
     expect(s.dx).toBeLessThan(1);
   });
 

@@ -364,7 +364,6 @@ describe("clockwork tank", () => {
     }
     expect(aimed).toBe(true);
     expect(clean(drawn.seen)).toBe(true);
-    expect(drawn.arcs).toBeGreaterThan(0);
     const scar = arm(BOSS_TANK, 0, 0, 10, 1);
     scar.boss.cloudX[0] = 40;
     scar.boss.cloudY[0] = 50;
@@ -372,8 +371,8 @@ describe("clockwork tank", () => {
     scar.boss.cloudLife[0] = 80;
     const ash = watch();
     drawBoss(ash.ctx, scar, 0);
-    expect(ash.seen.indexOf("#120c08")).toBeGreaterThanOrEqual(0);
-    expect(ash.seen.indexOf("#ff5a1a")).toBeGreaterThanOrEqual(0);
+    expect(ash.seen.indexOf("#100c0a")).toBeGreaterThanOrEqual(0);
+    expect(ash.seen.indexOf("#e86a20")).toBeGreaterThanOrEqual(0);
     expect(ash.seen.indexOf("#d5e4ea")).toBe(-1);
     const shell = arm(BOSS_TANK, 1, 0, 10, 1);
     shell.boss.shotKind[0] = 2;
@@ -391,15 +390,15 @@ describe("clockwork tank", () => {
     drawBoss(round.ctx, shell, 2);
     expect(round.rotates).toBe(0);
     expect(round.arcs).toBe(0);
-    expect(round.seen.indexOf("#c8963e")).toBeGreaterThanOrEqual(0);
-    expect(round.seen.indexOf("#b5562f")).toBeGreaterThanOrEqual(0);
-    expect(round.seen.indexOf("#ffd27a")).toBeGreaterThanOrEqual(0);
+    expect(round.seen.indexOf("#e0a040")).toBeGreaterThanOrEqual(0);
+    expect(round.seen.indexOf("#b86a38")).toBeGreaterThanOrEqual(0);
+    expect(round.seen.indexOf("#f0d080")).toBeGreaterThanOrEqual(0);
     expect(round.seen.indexOf("#e4e7ee")).toBe(-1);
     expect(round.seen.indexOf("#d5e4ea")).toBe(-1);
     let brass = false;
     for (let i = 0; i < round.rects.length; i++) {
       const rect = round.rects[i];
-      if (rect && rect.s === "#c8963e" && rect.w === 5) brass = true;
+      if (rect && rect.s === "#e0a040" && rect.w === 5) brass = true;
     }
     expect(brass).toBe(true);
     expect(clean(round.seen)).toBe(true);

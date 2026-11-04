@@ -1,51 +1,32 @@
+import { blitAtlas } from "../art/atlas";
 import { MAX_BOSS_SHOTS, MAX_CLOUDS } from "../sim/boss";
 import {
   PHASE_CANNON, PHASE_RAM, PHASE_SCAR, SCAR_LIFE, SHOT_SHELL, TELL_CANNON, TELL_RAM,
   scarAnchorX, scarAnchorY,
 } from "../sim/tank";
 import type { World } from "../sim/types";
-import { boiler, cog, pill, plate } from "./paint";
+import { PX } from "../art/palette";
+import { BRASS, BRONZE, COPPER, IRON, SOOT } from "../shell/theme";
 
-const SOOT = "#120c08";
-const BRASS = "#c8963e";
-const BRASS_HI = "#e8c878";
-const BRASS_LO = "#7a5420";
-const COPPER = "#b5562f";
-const IRON = "#6a727c";
-const IRON_HI = "#c5ccd4";
-const IRON_LO = "#2c3238";
-const FURNACE = "#ff5a1a";
-const EMBER = "#ffd27a";
+const FURNACE = PX.f;
+const EMBER = PX.F;
 
 function px(c: CanvasRenderingContext2D, x: number, y: number, s: string, w = 1, h = 1): void {
   c.fillStyle = s;
   c.fillRect(x | 0, y | 0, w, h);
 }
-function stud(c: CanvasRenderingContext2D, x: number, y: number): void {
-  px(c, x, y, BRASS_HI, 2, 2);
-  px(c, x + 1, y + 1, BRASS_LO, 1, 1);
-}
+
 function shadow(c: CanvasRenderingContext2D, x: number, y: number, w: number): void {
   c.globalAlpha = 0.4;
   px(c, x - w / 2, y + 4, SOOT, w, 5);
   c.globalAlpha = 1;
 }
-function doorOn(tick: number, scarWind: boolean): boolean {
-  if (scarWind) return (tick & 1) === 0;
-  return (tick & 3) === 0;
-}
-function cleats(c: CanvasRenderingContext2D, tick: number, fast: boolean): void {
-  const scroll = (fast ? tick >> 1 : tick >> 2) & 7;
-  for (let i = 0; i < 6; i++) {
-    const x = -22 + ((i * 8 + scroll) % 44);
-    px(c, x, -24, SOOT, 4, 6);
-    px(c, x, 18, SOOT, 4, 6);
-  }
-}
+
 function mark(c: CanvasRenderingContext2D, x: number, y: number): void {
   px(c, x - 3, y - 2, EMBER, 6, 4);
   px(c, x - 1, y - 4, EMBER, 3, 3);
 }
+
 function capsule(c: CanvasRenderingContext2D, x: number, y: number, vx: number, vy: number): void {
   const ix = x | 0;
   const iy = y | 0;
@@ -61,6 +42,7 @@ function capsule(c: CanvasRenderingContext2D, x: number, y: number, vx: number, 
   px(c, ix - 1, iy - 1, COPPER, 2, 3);
   px(c, ix, iy + nose, EMBER, 1, 1);
 }
+
 function paintScars(c: CanvasRenderingContext2D, w: World): void {
   const b = w.boss;
   for (let i = 0; i < MAX_CLOUDS; i++) {
@@ -76,9 +58,6 @@ function paintScars(c: CanvasRenderingContext2D, w: World): void {
     c.globalAlpha = 1;
   }
 }
-const IRON_M = { hi: IRON_HI, mid: IRON, lo: IRON_LO, edge: SOOT };
-const BRASS_M = { hi: BRASS_HI, mid: BRASS, lo: BRASS_LO, edge: SOOT };
-const COPPER_M = { hi: "#d07040", mid: COPPER, lo: "#6a2414", edge: SOOT };
 
 function paintBody(c: CanvasRenderingContext2D, w: World): void {
   const b = w.boss;
@@ -101,26 +80,16 @@ function paintBody(c: CanvasRenderingContext2D, w: World): void {
   c.save();
   c.translate(b.x, b.y);
   c.rotate(Math.atan2(b.aimY, b.aimX));
-  plate(c, 0, -22, 50, 12, 0, IRON_M, 1.8);
-  plate(c, 0, 22, 50, 12, 0, IRON_M, 1.8);
-  cleats(c, w.tick, b.phase === PHASE_RAM && b.mode === 2);
-  plate(c, -16, 0, 20, 26, 0, COPPER_M, 2);
-  px(c, -22, -6, SOOT, 10, 12);
-  if (doorOn(w.tick, scarWind)) px(c, -20, -4, EMBER, 6, 8);
-  boiler(c, -16, 0, 5.5, 6.2, doorOn(w.tick, scarWind) ? 1 : 0.25);
-  plate(c, 2, 0, 38, 30, 0, IRON_M, 2.2);
-  plate(c, 2, -12, 36, 4, 0, BRASS_M, 1.2);
-  stud(c, -12, -10);
-  stud(c, 14, -10);
-  stud(c, -12, 10);
-  stud(c, 14, 10);
-  cog(c, 0, 0, 8.5, w.tick * 0.08, BRASS_M, 8, true);
-  const len = b.phase === PHASE_CANNON && b.mode === 2 ? 12 : 18;
-  pill(c, 8 + len / 2, 0, len, 7, 0, IRON_M, 1.6);
-  plate(c, 8 + len - 2, 0, 6, 10, 0, BRASS_M, 1.3);
-  if (ramWind) plate(c, 16 + TELL_RAM / 2, 0, TELL_RAM, 28, 0, IRON_M, 1.6);
+  blitAtlas(c, `tank-${(w.tick >> 3) & 3}`, 0, 0, 2);
+  if (ramWind) {
+    c.fillStyle = IRON;
+    c.fillRect(16, -14, TELL_RAM, 28);
+    c.fillStyle = BRONZE;
+    c.fillRect(16, -10, TELL_RAM, 4);
+  }
   c.restore();
 }
+
 function paintShells(c: CanvasRenderingContext2D, w: World): void {
   const b = w.boss;
   for (let i = 0; i < MAX_BOSS_SHOTS; i++) {
@@ -133,6 +102,7 @@ function paintShells(c: CanvasRenderingContext2D, w: World): void {
     px(c, w.px + 2, w.py + 10, SOOT, 6, 3);
   }
 }
+
 export function paintTank(c: CanvasRenderingContext2D, w: World, layer: number): void {
   if (layer === 0) {
     paintScars(c, w);

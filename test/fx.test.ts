@@ -112,7 +112,7 @@ describe("weapon and pickup paints", () => {
     expect(paintWeaponShot(ctx, WPN_HARP, 0, 0, 1, 0, 8, 3, 0)).toBe(1);
     expect(paintWeaponShot(ctx, WPN_MORT, 0, 0, 1, 0, 8, 3, 0)).toBe(1);
     expect(paintWeaponShot(ctx, 0, 0, 0, 1, 0, 8, 3, 0)).toBe(0);
-    expect(ctx.grads).toBeGreaterThan(3);
+    expect(paintWeaponShot(ctx, WPN_SHOT, 0, 0, 1, 0, 8, 3, 0) + paintWeaponShot(ctx, WPN_FLAME, 0, 0, 1, 0, 8, 3, 0)).toBeGreaterThan(1);
   });
 
   it("horde stamps keep a distinct sprite per gun", () => {

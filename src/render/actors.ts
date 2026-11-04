@@ -7,20 +7,18 @@ import {
   EV_SHOT, FX_BOOM, FX_FLASH, FX_PUFF, FX_SPARK, FX_XP, Z_BRUTE, Z_GHOUL, Z_SHAMBLER, type World,
 } from "../sim/types";
 import { paintProp } from "./arena";
-import { charKitId, paintKnightShield, paintSurvivor } from "./cast";
+import { paintKnightShield } from "./cast";
 import { paintBoom, paintFlash, paintLevelBurst, paintPuff, paintRivetBolt, paintSpark, paintXp } from "./cast-fx";
 import { offScreen } from "./cull";
-import { gasGlyph, knightGlyph, projectileFor, ratGearGlyph, spitterGlyph } from "./foes";
-import { blit, roundRect } from "./paint";
-import { foePose, foeStriking, heroPose, POSE_WALK, poseFrame } from "./poses";
+import { projectileFor } from "./foes";
+import { POSE_WALK, poseFrame } from "./poses";
 import { paintWeapon } from "./weapons";
 import {
-  bulletPaint, fxPaint, registerBullet, registerFx, registerZombie, zombieGlyph, type BulletPaint, type Glyph,
+  bulletPaint, fxPaint, registerBullet, registerFx, registerZombie, type BulletPaint, type Glyph,
 } from "./plugins";
-import {
-  BRUTE, creepFrames, fallbackFrames, fallbackSpec, GHOUL, HERO_H, HERO_W, heroFrames,
-  paintShadow, SHAMBLER,
-} from "./sprites";
+import { blitAtlas, foeFrameId } from "../art/atlas";
+import { foeWorldH, paintCasing, paintSignatureHero, paintZombie } from "../art/look";
+import { stampCasing } from "./stains";
 
 export const BIN_LO = -80;
 export const BIN_HI = ARENA_H + 100;
@@ -31,34 +29,23 @@ const bin = new Uint16Array(SPAN);
 let seq = new Int32Array(256);
 let tmp = new Int32Array(256);
 
-function creepGlyph(spec: typeof SHAMBLER, slow: boolean): Glyph {
+function atlasGlyph(kind: number): Glyph {
   return {
-    w: spec.w,
-    h: spec.h,
+    w: 32,
+    h: 40,
     draw(ctx, x, y, tick, flip, _hp, pose = POSE_WALK) {
-      blit(ctx, creepFrames(spec, pose), spec.w, spec.h, poseFrame(tick, pose, slow), x, y, flip);
+      blitAtlas(ctx, foeFrameId(kind, poseFrame(tick, pose, false)), x, y, 2, flip < 0);
     },
   };
 }
 
-function fallbackGlyph(kind: number): Glyph {
-  const spec = fallbackSpec(kind);
-  return {
-    w: spec.w,
-    h: spec.h,
-    draw(ctx, x, y, tick, flip, _hp, pose = POSE_WALK) {
-      blit(ctx, fallbackFrames(kind, pose), spec.w, spec.h, poseFrame(tick, pose, false), x, y, flip);
-    },
-  };
-}
-
-registerZombie(Z_SHAMBLER, creepGlyph(SHAMBLER, false));
-registerZombie(Z_GHOUL, creepGlyph(GHOUL, false));
-registerZombie(Z_BRUTE, creepGlyph(BRUTE, true));
-registerZombie(Z_SPITTER, spitterGlyph);
-registerZombie(Z_GAS, gasGlyph);
-registerZombie(Z_KNIGHT, knightGlyph);
-registerZombie(Z_RAT, ratGearGlyph);
+registerZombie(Z_SHAMBLER, atlasGlyph(Z_SHAMBLER));
+registerZombie(Z_GHOUL, atlasGlyph(Z_GHOUL));
+registerZombie(Z_BRUTE, atlasGlyph(Z_BRUTE));
+registerZombie(Z_SPITTER, atlasGlyph(Z_SPITTER));
+registerZombie(Z_GAS, atlasGlyph(Z_GAS));
+registerZombie(Z_KNIGHT, atlasGlyph(Z_KNIGHT));
+registerZombie(Z_RAT, atlasGlyph(Z_RAT));
 
 export function paintPlayer(ctx: CanvasRenderingContext2D, w: World, moving: boolean): void {
   if (w.hurtCd > 0 && w.hurtCd % 6 >= 3) return;
@@ -67,20 +54,14 @@ export function paintPlayer(ctx: CanvasRenderingContext2D, w: World, moving: boo
 
 function paintHero(ctx: CanvasRenderingContext2D, w: World, moving: boolean): void {
   const shoot = (w.events[EV_SHOT] ?? 0) !== 0;
-  const pose = heroPose(moving, shoot, w.hurtCd > 0, w.over);
-  const id = charKitId(w.charId);
-  paintSurvivor(ctx, w, moving, (frame, flip) => {
-    blit(ctx, heroFrames(id, pose), HERO_W, HERO_H, frame, w.px, w.py, flip);
-  });
-}
-
-function paintElite(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, tick: number): void {
-  const bw = w * 0.72;
-  const bh = h * 0.9;
-  ctx.lineWidth = 2.2;
-  ctx.strokeStyle = (tick >> 2) & 1 ? "#fff1c2" : "#f0b03a";
-  roundRect(ctx, x - bw / 2, y - bh, bw, bh, 8);
-  ctx.stroke();
+  paintSignatureHero(ctx, w.px, w.py, w.aimX, w.aimY, moving, shoot, w.tick);
+  if (shoot) {
+    const ox = -w.aimX * 16 - 8;
+    const oy = 8 - w.aimY * 4;
+    paintCasing(ctx, w.px + ox, w.py + oy);
+    paintCasing(ctx, w.px + ox - 6, w.py + oy + 4);
+    stampCasing(w.px + ox - 4, w.py + oy + 2, w.tick);
+  }
 }
 
 function paintOne(ctx: CanvasRenderingContext2D, w: World, i: number): void {
@@ -92,32 +73,23 @@ function paintOne(ctx: CanvasRenderingContext2D, w: World, i: number): void {
   const elite = (raw & Z_ELITE) !== 0;
   const hp = z.hp[i] ?? 1;
   const flip = w.px - x < 0 ? -1 : 1;
-  const glyph = zombieGlyph(kind, fallbackGlyph);
   const flash = enemyFlash(i) > 0;
-  if (elite) {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.scale(1.28, 1.28);
-    ctx.translate(-x, -y);
-  }
-  paintShadow(ctx, x, y, glyph.w * 0.9);
-  const striking = foeStriking(kind, z.vx[i] ?? 0, z.vy[i] ?? 0, w.px - x, w.py - y);
-  glyph.draw(ctx, x, y, w.tick + i * 3, flip, hp, foePose(flash, striking, true));
+  const marked = elite || kind === Z_BRUTE || kind === Z_KNIGHT;
+  paintZombie(ctx, x, y, kind, elite, w.tick + i * 3, flip);
   if (kind === Z_KNIGHT) paintKnightShield(ctx, x, y, z.vy[i] ?? 0, hp);
-  if (elite) ctx.restore();
-  if (hp >= 3) {
-    const bw = Math.min(24, 4 + Math.min(hp, 10) * 2);
-    const top = y - glyph.h * (elite ? 1.28 : 1) - 6;
-    ctx.fillStyle = "#1c120c";
-    ctx.fillRect(x - 13, top, 26, 4);
-    ctx.fillStyle = kind === Z_BRUTE ? "#ffb040" : "#ff5a4a";
-    ctx.fillRect(x - 12, top + 1, bw, 2);
+  if (marked) {
+    const bodyH = foeWorldH(kind) * (elite ? 1.12 : 1);
+    const bw = Math.min(18, 4 + Math.min(hp, 8) * 1.6);
+    const top = y - bodyH - 4;
+    ctx.fillStyle = "#1a1410";
+    ctx.fillRect(x - 10, top, 20, 3);
+    ctx.fillStyle = kind === Z_BRUTE ? "#e0a028" : "#e24a32";
+    ctx.fillRect(x - 9, top + 1, bw, 1.4);
   }
-  if (elite) paintElite(ctx, x, y, glyph.w * 1.28, glyph.h * 1.28, w.tick);
-  if (flash) {
+  if (flash && marked) {
     ctx.fillStyle = "#fff8e8";
-    ctx.globalAlpha = reduceMotionOn() ? FLASH_SOFT : 0.72;
-    ctx.fillRect(x - glyph.w * 0.45, y - glyph.h * 0.92, glyph.w * 0.9, glyph.h * 0.7);
+    ctx.globalAlpha = reduceMotionOn() ? FLASH_SOFT : 0.45;
+    ctx.fillRect(x - 8, y - foeWorldH(kind) * 0.85, 16, 10);
     ctx.globalAlpha = 1;
   }
 }

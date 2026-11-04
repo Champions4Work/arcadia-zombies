@@ -18,6 +18,7 @@ import "./boss";
 import { absorbShake, shakePixels } from "./shake";
 import { drawStageFx, drawYardWindow } from "./stage";
 import { paintHurt, paintVeil } from "./veil";
+import { paintYardLive } from "./yard-fx";
 
 let lastPx = 0;
 let lastPy = 0;
@@ -30,12 +31,12 @@ function countAlive(flag: Uint8Array, n: number): number {
 }
 
 export function fieldPlan(horde: boolean, viewW = W, viewH = H): { yard: boolean; sprites: boolean } {
-  return { yard: true, sprites: horde && viewW === W && viewH === H };
+  if (horde && viewW === W && viewH === H) return { yard: true, sprites: false };
+  return { yard: true, sprites: false };
 }
 
 export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boolean; shake?: boolean }): void {
-  c.imageSmoothingEnabled = true;
-  c.imageSmoothingQuality = "high";
+  c.imageSmoothingEnabled = false;
   c.lineJoin = "round";
   c.lineCap = "round";
   if (Math.abs(w.px - lastPx) + Math.abs(w.py - lastPy) > 0.2) walk = 8;
@@ -62,6 +63,7 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
   c.translate(-camX, -camY);
   const plan = fieldPlan(horde, viewW, viewH);
   if (plan.yard) drawYardWindow(c, camX, camY, viewW, viewH);
+  paintYardLive(c, w.tick, camX, camY, viewW, viewH);
   if (plan.sprites) {
     renderHorde(c, w);
     drawStageFx(c, w.tick, camX, camY);
@@ -93,19 +95,25 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
   paintVeil(c, viewW, viewH);
   if ((w.ultBlast ?? 0) > 0) {
     const a = Math.min(0.42, (w.ultBlast ?? 0) * 0.03);
-    c.fillStyle = `rgba(210,228,235,${a})`;
+    c.fillStyle = `rgba(239,230,212,${a})`;
     c.fillRect(0, 0, viewW, viewH);
   }
   if (w.hurtCd > 0) paintHurt(c, w.hurtCd, viewW, viewH);
+  const vig = c.createRadialGradient(viewW * 0.5, viewH * 0.48, viewH * 0.18, viewW * 0.5, viewH * 0.5, viewH * 0.82);
+  vig.addColorStop(0, "rgba(0,0,0,0)");
+  vig.addColorStop(0.62, "rgba(8,8,12,0.14)");
+  vig.addColorStop(1, "rgba(6,6,10,0.52)");
+  c.fillStyle = vig;
+  c.fillRect(0, 0, viewW, viewH);
   paintLayers(c, w, LAYER_FRONT);
   if (w.choosing) {
-    c.fillStyle = "rgba(8,6,16,0.42)";
+    c.fillStyle = "rgba(8,6,4,0.42)";
     c.fillRect(0, 0, viewW, viewH);
   }
   if (opts?.hud !== false) drawHud(c, w);
   paintArrows(c, w);
   if (w.over) {
-    c.fillStyle = "rgba(8,4,14,0.5)";
+    c.fillStyle = "rgba(8,6,4,0.5)";
     c.fillRect(0, 0, viewW, viewH);
   }
   paintLayers(c, w, LAYER_HUD);

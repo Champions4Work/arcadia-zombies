@@ -1,22 +1,22 @@
 import { ARENA_H, ARENA_W } from "../sim/arena";
 import { tierFrac, tierName } from "../sim/difficulty";
 import { lichUp, lichX, lichY } from "../sim/finale";
-import { Z_GAS, Z_KIND, Z_KNIGHT, Z_RAT, Z_SPITTER } from "../sim/foes";
 import { offerCount } from "../sim/characters";
 import { pacedXpNeed } from "../sim/modifiers";
 import { CARD_Y, cardFrame, offerId, xpNeed } from "../sim/progress";
 import {
-  EVOL_AEGIS, EVOL_CANNON, EVOL_STORM, H, UNION_BELLOWS, UNION_BRIAR, UNION_CALLIOPE,
+  EVOL_AEGIS, EVOL_CANNON, EVOL_STORM, UNION_BELLOWS, UNION_BRIAR, UNION_CALLIOPE,
   UNION_CROWN, UNION_HALO, UNION_HEART, UNION_HOWITZER, UPG_DMG, UPG_FIRE, UPG_MORTAR,
-  UPG_SAWS, UPG_SHOTGUN, UPG_TESLA, UPG_VENT, W, Z_BRUTE, Z_GHOUL, type World,
+  UPG_SAWS, UPG_SHOTGUN, UPG_TESLA, UPG_VENT, W, type World,
 } from "../sim/types";
 import { currentHud, offerCards, pauseHitAt } from "../shell/hud-layout";
 import type { Box, Circle, HudLayout } from "../shell/hud-layout";
 import { drawRewardCard } from "./cards";
 import { drawIcon } from "./icons";
 import { ultFill, ultReady } from "../sim/ult";
-import { BRASS_HI, COPPER, DANGER, HEALTH, INK, IRON, SOOT, STEAM, STEAM_DIM, XP } from "../shell/theme";
-import { BRASS, cog, copyFont, font, heart, lit, OUTLINE, rivet, roundRect } from "./paint";
+import { heartIcon, hudType, ringMeter } from "../art/look";
+import { blitSheetFit } from "../art/sheet";
+import { BRASS, BRASS_HI, COPPER, CYAN, DANGER, HEALTH, INK, IRON, STEAM, XP } from "../shell/theme";
 import { drawXpBar } from "./xp-gain";
 
 export { blurbFor } from "./icons";
@@ -73,114 +73,42 @@ export function weaponBadge(w: World): { name: string; pips: number; kind: numbe
   return { name: "RIVETER", pips: Math.max(1, w.upgrades[UPG_DMG] ?? 0), kind: -1 };
 }
 
-function ink(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, size: number, color: string, align: CanvasTextAlign = "left", weight = 700): void {
-  ctx.font = font(size, weight);
-  ctx.textAlign = align;
-  ctx.textBaseline = "top";
-  ctx.lineJoin = "round";
-  ctx.lineWidth = Math.max(1.4, size * 0.12);
-  ctx.strokeStyle = OUTLINE;
-  ctx.strokeText(text, x, y);
-  ctx.fillStyle = color;
-  ctx.fillText(text, x, y);
+function ink(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, size: number, color: string, align: CanvasTextAlign = "left"): void {
+  hudType(ctx, text, x, y, size, color, align);
 }
 
-function brassPanel(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number, inner: string): void {
-  roundRect(ctx, x, y, w, h, r);
-  ctx.fillStyle = OUTLINE;
-  ctx.fill();
-  roundRect(ctx, x + 2, y + 2, w - 4, h - 4, Math.max(1, r - 2));
-  ctx.fillStyle = lit(ctx, x, y, w, h, BRASS);
-  ctx.fill();
-  roundRect(ctx, x + 5, y + 5, w - 10, h - 10, Math.max(1, r - 4));
-  ctx.fillStyle = inner;
-  ctx.fill();
-}
-
-function brassRing(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, inner: string): void {
-  ctx.beginPath();
-  ctx.arc(x, y, r, 0, Math.PI * 2);
-  ctx.fillStyle = OUTLINE;
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(x, y, r - 2.2, 0, Math.PI * 2);
-  const g = ctx.createLinearGradient(x - r, y - r, x + r, y + r);
-  g.addColorStop(0, BRASS.hi);
-  g.addColorStop(0.45, BRASS.mid);
-  g.addColorStop(1, BRASS.lo);
-  ctx.fillStyle = g;
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(x, y, r - 5.5, 0, Math.PI * 2);
-  ctx.fillStyle = inner;
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(x, y, r - 3.4, Math.PI * 1.15, Math.PI * 1.9);
-  ctx.strokeStyle = "rgba(255,255,255,0.65)";
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-}
-
-function plate(ctx: CanvasRenderingContext2D, box: Box, r: number, inner: string): void {
-  brassPanel(ctx, box.x, box.y, box.w, box.h, r, inner);
-  const pad = Math.min(6, box.w * 0.18, box.h * 0.18);
-  rivet(ctx, box.x + pad, box.y + pad, 1.6);
-  rivet(ctx, box.x + box.w - pad, box.y + pad, 1.6);
-  rivet(ctx, box.x + pad, box.y + box.h - pad, 1.6);
-  rivet(ctx, box.x + box.w - pad, box.y + box.h - pad, 1.6);
-}
-
-function chip(ctx: CanvasRenderingContext2D, box: Box, r: number, inner: string): void {
-  brassPanel(ctx, box.x, box.y, box.w, box.h, r, inner);
+function plate(ctx: CanvasRenderingContext2D, box: Box, id = "panel_frame_small"): void {
+  ctx.save();
+  ctx.fillStyle = IRON;
+  ctx.fillRect(box.x, box.y, box.w, box.h);
+  blitSheetFit(ctx, id, box.x - 2, box.y - 2, box.w + 4, box.h + 4);
+  ctx.fillStyle = "rgba(12,12,16,0.62)";
+  ctx.fillRect(box.x + 1, box.y + 1, box.w - 2, box.h - 2);
+  ctx.strokeStyle = BRASS;
+  ctx.lineWidth = 2;
+  ctx.strokeRect(box.x + 0.8, box.y + 0.8, box.w - 1.6, box.h - 1.6);
+  ctx.restore();
 }
 
 function drawHealth(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   const frac = w.maxHp > 0 ? Math.max(0, Math.min(1, w.hp / w.maxHp)) : 0;
   const low = frac <= 0.35;
-  const pulse = low ? 0.7 + 0.3 * (0.5 + 0.5 * Math.sin(w.tick * 0.28)) : 1;
   const cx = box.x + box.w / 2;
   const cy = box.y + box.h / 2;
-  const r = Math.min(box.w, box.h) * 0.46;
-  ctx.save();
-  ctx.globalAlpha = pulse;
-  brassRing(ctx, cx, cy, r, IRON);
+  const r = Math.min(box.w, box.h) * 0.42;
+  blitSheetFit(ctx, "heart_ring", box.x - 3, box.y - 3, box.w + 6, box.h + 6);
   ctx.beginPath();
-  ctx.arc(cx, cy, r - 3, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * frac);
-  ctx.strokeStyle = low ? DANGER : HEALTH;
-  ctx.lineWidth = 3.4;
+  ctx.arc(cx, cy, r + 3, 0, Math.PI * 2);
+  ctx.strokeStyle = BRASS;
+  ctx.lineWidth = 2.4;
   ctx.stroke();
-  ctx.restore();
-  ctx.save();
+  ringMeter(ctx, cx, cy, r, frac, low ? DANGER : HEALTH);
   ctx.beginPath();
-  ctx.arc(cx, cy, r - 6.5, 0, Math.PI * 2);
-  ctx.clip();
-  const well = ctx.createRadialGradient(cx - 4, cy - 5, 2, cx, cy, r);
-  well.addColorStop(0, low ? DANGER : HEALTH);
-  well.addColorStop(1, SOOT);
-  ctx.fillStyle = well;
-  ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
-  heart(ctx, cx, cy + 1, r * 0.38);
-  const hg = ctx.createLinearGradient(cx, cy - r * 0.5, cx, cy + r * 0.55);
-  hg.addColorStop(0, STEAM);
-  hg.addColorStop(0.4, low ? DANGER : HEALTH);
-  hg.addColorStop(1, IRON);
-  ctx.fillStyle = hg;
+  ctx.arc(cx, cy, r * 0.58, 0, Math.PI * 2);
+  ctx.fillStyle = low ? DANGER : HEALTH;
   ctx.fill();
-  ctx.lineWidth = 1.2;
-  ctx.strokeStyle = OUTLINE;
-  ctx.stroke();
-  ctx.restore();
-  if (w.meta.revive > 0) ink(ctx, "REV", box.x + 2, box.y + 4, 8, COPPER);
-  if (w.shield > 0) {
-    for (let i = 0; i < w.shield; i++) {
-      ctx.beginPath();
-      ctx.arc(box.x + 5 + i * 6, box.y + 5, 2.2, 0, Math.PI * 2);
-      ctx.fillStyle = BRASS_HI;
-      ctx.fill();
-      ctx.strokeStyle = OUTLINE;
-      ctx.stroke();
-    }
-  }
+  heartIcon(ctx, cx, cy + 1, r * 1.05, low ? DANGER : HEALTH);
+  if (w.meta.revive > 0) ink(ctx, "REV", cx, box.y + 8, 9, COPPER, "center");
 }
 
 function drawXp(ctx: CanvasRenderingContext2D, w: World, layout: HudLayout): void {
@@ -188,62 +116,21 @@ function drawXp(ctx: CanvasRenderingContext2D, w: World, layout: HudLayout): voi
   drawXpBar(ctx, layout, need);
 }
 
-function barInk(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, size: number, color: string, align: CanvasTextAlign = "left"): void {
-  ctx.font = copyFont(size, 800);
-  ctx.textAlign = align;
-  ctx.textBaseline = "top";
-  ctx.fillStyle = color;
-  ctx.fillText(text, x, y);
-}
-
-function fitInk(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, size: number, max: number, color: string): void {
-  ctx.font = copyFont(size, 800);
-  let s = size;
-  while (s > 10 && ctx.measureText(text).width > max) {
-    s -= 1;
-    ctx.font = copyFont(s, 800);
-  }
-  barInk(ctx, text, x, y, s, color, "center");
+function fitInk(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, _size: number, max: number, color: string): void {
+  const size = text.length * 7 > max ? 10 : 12;
+  ink(ctx, text, x, y, size, color, "center");
 }
 
 function banner(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   const name = difficultyLabel(w.rank);
   const flash = w.rankFlash > 0 && ((w.tick >> 2) & 1) === 0;
-  chip(ctx, box, 8, SOOT);
-  const pip = 3.4;
-  const pipSpan = Math.min(11, (box.w * 0.42) / 6);
-  const pipX = box.x + 8;
-  const pipY = box.y + box.h * 0.5;
-  const litN = Math.max(1, Math.min(6, Math.ceil(tierFrac(w.tick) * 6)));
-  for (let i = 0; i < 6; i++) {
-    const on = i < litN;
-    cog(ctx, pipX + i * pipSpan, pipY, pip, w.tick * 0.015 + i, on ? BRASS : { hi: "#6a5430", mid: "#4a381c", lo: "#2a2014", edge: "#1a120c" }, 6, on);
-  }
-  const nameX = pipX + 6 * pipSpan + 8;
-  const nameW = Math.max(24, box.x + box.w - 8 - nameX);
-  ctx.font = copyFont(12, 800);
-  let s = 12;
-  while (s > 10 && ctx.measureText(name).width > nameW) {
-    s -= 1;
-    ctx.font = copyFont(s, 800);
-  }
-  barInk(ctx, name, nameX, box.y + Math.max(2, (box.h - s) / 2), s, flash ? BRASS_HI : STEAM);
-}
-
-function clockIcon(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  ctx.beginPath();
-  ctx.arc(x, y, 6.2, 0, Math.PI * 2);
-  ctx.fillStyle = IRON;
-  ctx.fill();
-  ctx.lineWidth = 1.5;
-  ctx.strokeStyle = BRASS_HI;
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(x, y);
-  ctx.lineTo(x, y - 3.6);
-  ctx.moveTo(x, y);
-  ctx.lineTo(x + 2.6, y + 1.2);
-  ctx.stroke();
+  plate(ctx, box, "panel_frame_pipes");
+  const fill = Math.max(0.12, Math.min(1, tierFrac(w.tick)));
+  ctx.fillStyle = BRASS;
+  ctx.globalAlpha = 0.55;
+  ctx.fillRect(box.x + 8, box.y + box.h * 0.62, (box.w - 16) * fill, 3);
+  ctx.globalAlpha = 1;
+  fitInk(ctx, name, box.x + box.w / 2, box.y + box.h * 0.38, 12, box.w - 16, flash ? BRASS_HI : STEAM);
 }
 
 function skull(ctx: CanvasRenderingContext2D, x: number, y: number): void {
@@ -252,9 +139,9 @@ function skull(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   ctx.fillStyle = STEAM;
   ctx.fill();
   ctx.lineWidth = 1.2;
-  ctx.strokeStyle = OUTLINE;
+  ctx.strokeStyle = INK;
   ctx.stroke();
-  ctx.fillStyle = "#1c120c";
+  ctx.fillStyle = INK;
   ctx.beginPath();
   ctx.arc(x - 1.8, y - 1.4, 1.2, 0, Math.PI * 2);
   ctx.arc(x + 1.8, y - 1.4, 1.2, 0, Math.PI * 2);
@@ -265,37 +152,29 @@ function skull(ctx: CanvasRenderingContext2D, x: number, y: number): void {
 }
 
 function clockPanel(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
-  chip(ctx, box, 8, SOOT);
-  const mid = box.y + box.h * 0.5;
-  clockIcon(ctx, box.x + 10, mid);
-  const ty = box.y + Math.max(2, (box.h - 11) / 2);
-  barInk(ctx, formatClock(w.tick), box.x + 20, ty, 11, STEAM);
-  const kill = String(w.kills);
-  skull(ctx, box.x + box.w - 18 - kill.length * 6.2, mid);
-  barInk(ctx, kill, box.x + box.w - 8, ty, 11, STEAM, "right");
+  plate(ctx, box, "panel_frame_small");
+  ink(ctx, `WAVE ${Math.max(1, w.wave)}`, box.x + 10, box.y + box.h * 0.32, 11, STEAM);
+  skull(ctx, box.x + 14, box.y + box.h * 0.68);
+  ink(ctx, `${w.kills} KILLS`, box.x + 24, box.y + box.h * 0.68, 12, "#f6f1e6");
 }
 
 function pauseButton(ctx: CanvasRenderingContext2D, pause: Circle): void {
-  brassRing(ctx, pause.x, pause.y, pause.r, SOOT);
+  blitSheetFit(ctx, "ring_frame_b", pause.x - pause.r, pause.y - pause.r, pause.r * 2, pause.r * 2);
   ctx.fillStyle = BRASS_HI;
-  ctx.fillRect(pause.x - 4.6, pause.y - 6, 3, 12);
-  ctx.fillRect(pause.x + 1.6, pause.y - 6, 3, 12);
+  ctx.fillRect(pause.x - 5, pause.y - 6, 3, 12);
+  ctx.fillRect(pause.x + 2, pause.y - 6, 3, 12);
 }
 
 function minimap(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
-  const r = Math.max(10, Math.min(box.w, box.h) / 2);
+  const r = Math.max(16, Math.min(box.w, box.h) / 2 - 1);
   const cx = box.x + box.w / 2;
   const cy = box.y + box.h / 2;
-  brassRing(ctx, cx, cy, r, SOOT);
   ctx.save();
   ctx.beginPath();
-  ctx.arc(cx, cy, r - 6, 0, Math.PI * 2);
+  ctx.arc(cx, cy, r - 2, 0, Math.PI * 2);
+  ctx.fillStyle = "#100c0a";
+  ctx.fill();
   ctx.clip();
-  ctx.fillStyle = IRON;
-  ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
-  ctx.strokeStyle = "rgba(243,213,138,0.28)";
-  ctx.lineWidth = 1;
-  ctx.strokeRect(cx - r * 0.55, cy - r * 0.55, r * 1.1, r * 1.1);
   const z = w.zombies;
   const span = r * 1.45;
   let alive = 0;
@@ -307,42 +186,21 @@ function minimap(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
     if (step > 1 && seen++ % step !== 0) continue;
     const mx = cx + ((z.x[i] ?? 0) / ARENA_W - 0.5) * span;
     const my = cy + ((z.y[i] ?? 0) / ARENA_H - 0.5) * span;
-    const kind = (z.kind[i] ?? 0) & Z_KIND;
-    ctx.fillStyle = kind === Z_BRUTE ? "#d06aff"
-      : kind === Z_GHOUL ? "#3ad4f0"
-      : kind === Z_SPITTER ? "#c6f25a"
-      : kind === Z_GAS ? "#e08a30"
-      : kind === Z_KNIGHT ? "#e07040"
-      : kind === Z_RAT ? "#f0b03a"
-      : "#9ae046";
-    ctx.fillRect(mx - 1.4, my - 1.4, 2.8, 2.8);
+    ctx.fillStyle = DANGER;
+    ctx.fillRect(mx - 1.6, my - 1.6, 3.2, 3.2);
   }
   if (lichUp(w)) {
     const lx = cx + (lichX(w) / ARENA_W - 0.5) * span;
     const ly = cy + (lichY(w) / ARENA_H - 0.5) * span;
-    ctx.fillStyle = "#e4c0ff";
+    ctx.fillStyle = BRASS_HI;
     ctx.fillRect(lx - 2, ly - 2, 4, 4);
   }
-  const vx = cx + (w.arena.camX / ARENA_W - 0.5) * span;
-  const vy = cy + (w.arena.camY / ARENA_H - 0.5) * span;
-  ctx.strokeStyle = BRASS_HI;
-  ctx.lineWidth = 1.4;
-  ctx.strokeRect(vx, vy, (W / ARENA_W) * span, (H / ARENA_H) * span);
-  ctx.save();
-  ctx.translate(cx + (w.px / ARENA_W - 0.5) * span, cy + (w.py / ARENA_H - 0.5) * span);
-  ctx.rotate(Math.atan2(w.aimY, w.aimX || 1));
+  ctx.fillStyle = CYAN;
   ctx.beginPath();
-  ctx.moveTo(6, 0);
-  ctx.lineTo(-3.6, 2.8);
-  ctx.lineTo(-3.6, -2.8);
-  ctx.closePath();
-  ctx.fillStyle = STEAM;
+  ctx.arc(cx + (w.px / ARENA_W - 0.5) * span, cy + (w.py / ARENA_H - 0.5) * span, 2.4, 0, Math.PI * 2);
   ctx.fill();
-  ctx.lineWidth = 1.2;
-  ctx.strokeStyle = OUTLINE;
-  ctx.stroke();
   ctx.restore();
-  ctx.restore();
+  blitSheetFit(ctx, "minimap_frame", box.x - 6, box.y - 6, box.w + 12, box.h + 12);
 }
 
 function badgeIcon(ctx: CanvasRenderingContext2D, kind: number, x: number, y: number): void {
@@ -357,27 +215,44 @@ export function abilityHit(x: number, y: number): boolean {
 }
 
 function ability(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
-  const info = weaponBadge(w);
   const cx = box.x + box.w / 2;
   const cy = box.y + box.h / 2;
-  const r = Math.min(box.w, box.h) * 0.46;
-  brassRing(ctx, cx, cy, r, SOOT);
-  badgeIcon(ctx, info.kind, cx, cy);
-  const fill = ultFill(w);
+  const r = Math.min(box.w, box.h) * 0.42;
+  blitSheetFit(ctx, "ultimate_button", box.x - 3, box.y - 3, box.w + 6, box.h + 6);
   ctx.beginPath();
-  ctx.arc(cx, cy, r - 1.5, -Math.PI / 2, -Math.PI / 2 + fill * Math.PI * 2);
-  ctx.strokeStyle = ultReady(w) || (w.ultBlast ?? 0) > 0 ? XP : STEAM_DIM;
-  ctx.lineWidth = 3.6;
+  ctx.arc(cx, cy, r + 3, 0, Math.PI * 2);
+  ctx.strokeStyle = BRASS;
+  ctx.lineWidth = 2.4;
   ctx.stroke();
-  if (ultReady(w) || (w.ultBlast ?? 0) > 0) {
-    ctx.globalAlpha = 0.4 + 0.25 * Math.sin(w.tick * 0.28);
-    ctx.beginPath();
-    ctx.arc(cx, cy, r + 3, 0, Math.PI * 2);
-    ctx.strokeStyle = XP;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-  }
+  ringMeter(ctx, cx, cy, r, ultFill(w), ultReady(w) || (w.ultBlast ?? 0) > 0 ? XP : CYAN);
+  badgeIcon(ctx, weaponBadge(w).kind, cx, cy);
+}
+
+function checkLine(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  text: string,
+  color: string,
+): void {
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.2;
+  ctx.strokeRect(x, y - 4, 7, 7);
+  ink(ctx, text, x + 12, y, 10, color);
+}
+
+function objectives(ctx: CanvasRenderingContext2D, w: World, layout: HudLayout): void {
+  const phone = layout.view.w < 720;
+  const x = layout.clock.x - (phone ? 16 : 0);
+  const y = layout.clock.y + layout.clock.h + 6;
+  const bw = phone ? Math.min(156, layout.view.w - x - 8) : Math.min(188, layout.view.w - x - 16);
+  const bh = phone ? 108 : 124;
+  const hold = Math.max(0, 240 - ((w.tick / 60) | 0) % 240);
+  blitSheetFit(ctx, "objectives_panel", x, y, bw, bh);
+  const inkX = x + bw * 0.14;
+  checkLine(ctx, inkX, y + bh * 0.32, "ACTIVATE STEAM GATE", w.rank > 0 ? HEALTH : "#f6f1e6");
+  checkLine(ctx, inkX, y + bh * 0.52, `HOLD THE AREA (${hold}s)`, "#f6f1e6");
+  checkLine(ctx, inkX, y + bh * 0.72, "SURVIVE ALL WAVES", "#f6f1e6");
 }
 
 export function drawHud(ctx: CanvasRenderingContext2D, w: World): void {
@@ -394,6 +269,7 @@ export function drawHud(ctx: CanvasRenderingContext2D, w: World): void {
   if (!w.choosing) {
     minimap(ctx, w, layout.minimap);
     ability(ctx, w, layout.ability);
+    objectives(ctx, w, layout);
     rankCallout(ctx, w, layout);
   }
   ctx.restore();
@@ -409,7 +285,7 @@ function rankCallout(ctx: CanvasRenderingContext2D, w: World, layout: HudLayout)
   const bh = 52;
   const x = (layout.view.w - bw) / 2;
   const y = layout.difficulty.y + layout.difficulty.h + 10;
-  plate(ctx, { x, y, w: bw, h: bh }, 14, SOOT);
+  plate(ctx, { x, y, w: bw, h: bh });
   ink(ctx, "RANK UP", x + bw / 2, y + 6, 12, flash ? COPPER : BRASS_HI, "center");
   fitInk(ctx, name, x + bw / 2, y + 22, 16, bw - 24, flash ? BRASS_HI : STEAM);
 }
@@ -432,16 +308,8 @@ export function drawCards(ctx: CanvasRenderingContext2D, w: World): void {
   const by = cards?.[0] ? cards[0].y - 28 : CARD_Y - 24;
   const bw = 168;
   const bx = midX - bw / 2;
-  roundRect(ctx, bx, by, bw, 20, 9);
-  const ribbon = ctx.createLinearGradient(bx, by, bx, by + 20);
-  ribbon.addColorStop(0, BRASS_HI);
-  ribbon.addColorStop(1, COPPER);
-  ctx.fillStyle = ribbon;
-  ctx.fill();
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = OUTLINE;
-  ctx.stroke();
-  ink(ctx, "CHOOSE YOUR UPGRADE", midX, by + 4, 12, INK, "center");
+  blitSheetFit(ctx, "panel_frame_glow", bx, by, bw, 20);
+  ink(ctx, "CHOOSE YOUR UPGRADE", midX, by + 10, 11, INK, "center");
   for (let i = 0; i < slots; i++) {
     const f = cards?.[i] ?? cardFrame(i, slots);
     drawCard(ctx, f.x, f.y, f.w, f.h, offerId(w, i), i, w);

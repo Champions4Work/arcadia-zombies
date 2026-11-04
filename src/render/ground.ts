@@ -1,6 +1,7 @@
 import { ARENA_H, ARENA_W } from "../sim/arena";
 import { H, W } from "../sim/types";
-import { BRASS, cog, COPPER, type Metal, OUTLINE, rivet, STEEL } from "./paint";
+import { blitSheet, tileSheet } from "../art/sheet";
+import { BRASS, cog, COPPER, type Metal, OUTLINE, rivet } from "./paint";
 
 export const TILE = 16;
 export const KIND_SKY = 0;
@@ -28,9 +29,6 @@ const ROWS = (ARENA_H / TILE) | 0;
 const FLOOR0 = 7;
 const MAX_FEAT = 80;
 const MAX_VENT = 16;
-const STONE = ["#4a3e34", "#40362e", "#56483c", "#362e28", "#5c4e42", "#2c2620"];
-const STONE_D = ["#2a2420", "#221c1a", "#322820", "#241c18"];
-const STONE_W = ["#3a3e34", "#32362c", "#44483c", "#2c3028"];
 const cells = new Uint8Array(COLS * ROWS);
 const fk = new Uint8Array(MAX_FEAT);
 const fx = new Float32Array(MAX_FEAT);
@@ -152,6 +150,10 @@ function build(): void {
   add(FEAT_LAMP, 868, 228, 68, 0);
   add(FEAT_LAMP, 248, 368, 80, 0);
   add(FEAT_LAMP, 648, 392, 78, 0);
+  add(FEAT_LAMP, 348, 210, 68, 0);
+  add(FEAT_LAMP, 600, 210, 68, 0);
+  add(FEAT_LAMP, 348, 490, 68, 0);
+  add(FEAT_LAMP, 620, 490, 68, 0);
   add(FEAT_GEAR, 120, 210, 14, 8);
   add(FEAT_GEAR, 410, 250, 12, 7);
   add(FEAT_GEAR, 610, 180, 15, 8);
@@ -241,49 +243,6 @@ export function ventFxCount(camX: number, camY: number, tick = 0): number {
   return eachVentFx(camX, camY, tick, () => {});
 }
 
-function cobbleField(ctx: CanvasRenderingContext2D): void {
-  ctx.fillStyle = "#2a221c";
-  ctx.fillRect(0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
-  for (let row = 0, y = FLOOR0 * TILE; y < ARENA_H; y += 7, row++) {
-    const ox = row & 1 ? 5 : 0;
-    for (let x = -8; x < ARENA_W; x += 10) {
-      const sx = x + ox;
-      const h = hash(sx, y);
-      const pal = h % 17 < 2 ? STONE_W : h % 17 < 6 ? STONE_D : STONE;
-      ctx.fillStyle = pal[h % pal.length] ?? "#4a3e34";
-      ctx.fillRect(sx + 1, y + 1, 8 + (h & 1), 5);
-      ctx.fillStyle = "rgba(255,236,210,0.05)";
-      ctx.fillRect(sx + 1, y + 1, 8, 1);
-      ctx.fillStyle = "rgba(0,0,0,0.28)";
-      ctx.fillRect(sx + 1, y + 5, 8, 1);
-    }
-  }
-}
-
-function plate(ctx: CanvasRenderingContext2D, x: number, y: number, worn: number): void {
-  ctx.fillStyle = "#4a2c08";
-  ctx.fillRect(x, y, TILE, TILE);
-  ctx.fillStyle = worn ? "#6a5428" : "#8a6830";
-  ctx.fillRect(x + 1, y + 1, 14, 14);
-  ctx.fillStyle = "rgba(255,241,194,0.14)";
-  ctx.fillRect(x + 2, y + 2, 12, 2);
-  ctx.fillStyle = "rgba(0,0,0,0.32)";
-  ctx.fillRect(x + 2, y + 12, 12, 2);
-  if ((hash(x, y) & 3) === 0) {
-    ctx.strokeStyle = "rgba(255,241,194,0.08)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(x + 4, y + 4);
-    ctx.lineTo(x + 12, y + 12);
-    ctx.stroke();
-  }
-  ctx.fillStyle = "#c4a878";
-  ctx.fillRect(x + 2, y + 2, 1.6, 1.6);
-  ctx.fillRect(x + 12, y + 2, 1.6, 1.6);
-  ctx.fillRect(x + 2, y + 12, 1.6, 1.6);
-  ctx.fillRect(x + 12, y + 12, 1.6, 1.6);
-}
-
 function rail(ctx: CanvasRenderingContext2D, x: number, y: number, vert: number): void {
   ctx.fillStyle = "#1c1610";
   ctx.fillRect(x, y, TILE, TILE);
@@ -291,34 +250,24 @@ function rail(ctx: CanvasRenderingContext2D, x: number, y: number, vert: number)
   if (vert) {
     ctx.fillRect(x + 1, y + 1, 4, 14);
     ctx.fillRect(x + 11, y + 1, 4, 14);
-    ctx.fillStyle = "#8a96a0";
+    ctx.fillStyle = "#3a3230";
     ctx.fillRect(x + 5, y, 2, TILE);
     ctx.fillRect(x + 9, y, 2, TILE);
-    ctx.fillStyle = "#b8c0c6";
+    ctx.fillStyle = "#8a8478";
     ctx.fillRect(x + 5, y, 1, TILE);
+    ctx.fillStyle = "#8a5a20";
+    ctx.fillRect(x + 6, y + 4, 4, 2);
   } else {
     ctx.fillRect(x + 1, y + 1, 14, 4);
     ctx.fillRect(x + 1, y + 11, 14, 4);
-    ctx.fillStyle = "#8a96a0";
+    ctx.fillStyle = "#2c2620";
     ctx.fillRect(x, y + 5, TILE, 2);
     ctx.fillRect(x, y + 9, TILE, 2);
-    ctx.fillStyle = "#b8c0c6";
+    ctx.fillStyle = "#8a8478";
     ctx.fillRect(x, y + 5, TILE, 1);
+    ctx.fillStyle = "#8a5a20";
+    ctx.fillRect(x + 5, y + 6, 4, 2);
   }
-}
-
-function grate(ctx: CanvasRenderingContext2D, x: number, y: number, vent: number): void {
-  ctx.fillStyle = "#1a1410";
-  ctx.fillRect(x, y, TILE, TILE);
-  ctx.fillStyle = "#3a2a18";
-  ctx.fillRect(x + 2, y + 2, 12, 12);
-  ctx.fillStyle = "#8a6830";
-  for (let i = 0; i < 4; i++) ctx.fillRect(x + 3, y + 3 + i * 3, 10, 1.2);
-  if (!vent) return;
-  ctx.fillStyle = "#0c0806";
-  ctx.beginPath();
-  ctx.ellipse(x + 8, y + 8, 3.2, 2.2, 0, 0, Math.PI * 2);
-  ctx.fill();
 }
 
 function rubbleTile(ctx: CanvasRenderingContext2D, x: number, y: number): void {
@@ -329,7 +278,7 @@ function rubbleTile(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   ctx.fillRect(x + 2 + (h % 6), y + 3 + ((h >>> 3) % 5), 5, 4);
   ctx.fillStyle = "#8a7462";
   ctx.fillRect(x + 7 + ((h >>> 5) % 4), y + 8, 4, 3);
-  ctx.fillStyle = "#8a6830";
+  ctx.fillStyle = "#5a3a18";
   ctx.fillRect(x + 4 + ((h >>> 7) % 7), y + 6, 2, 2);
 }
 
@@ -384,77 +333,72 @@ function rubblePile(ctx: CanvasRenderingContext2D, x: number, y: number, s: numb
     ctx.fillStyle = i & 1 ? "#6a5848" : "#4e4238";
     ctx.fillRect(x + ox * 2, y + oy * 2, 4 + (i & 2), 3 + (i & 1));
   }
-  ctx.fillStyle = "#7a5a20";
+  ctx.fillStyle = "#7a5418";
   ctx.fillRect(x + (s & 3), y - 1, 3, 2);
-}
-
-function lamp(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  ctx.fillStyle = "#2a2218";
-  ctx.beginPath();
-  ctx.ellipse(x, y + 10, 5, 2.2, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = STEEL.lo;
-  ctx.fillRect(x - 1.4, y - 18, 2.8, 26);
-  ctx.fillStyle = BRASS.mid;
-  ctx.fillRect(x - 4, y - 24, 8, 8);
-  ctx.fillStyle = "#ffe29a";
-  ctx.fillRect(x - 3, y - 23, 6, 6);
-  ctx.fillStyle = "rgba(255,241,194,0.55)";
-  ctx.fillRect(x - 2, y - 22, 2, 4);
-  ctx.strokeStyle = OUTLINE;
-  ctx.lineWidth = 1;
-  ctx.strokeRect(x - 4, y - 24, 8, 8);
-}
-
-function pool(ctx: CanvasRenderingContext2D, x: number, y: number, r: number): void {
-  const g = ctx.createRadialGradient(x, y, 4, x, y, r);
-  g.addColorStop(0, "rgba(255,180,70,0.16)");
-  g.addColorStop(0.45, "rgba(255,140,40,0.06)");
-  g.addColorStop(1, "rgba(255,120,30,0)");
-  ctx.fillStyle = g;
-  ctx.beginPath();
-  ctx.ellipse(x, y + 6, r, r * 0.62, 0, 0, Math.PI * 2);
-  ctx.fill();
 }
 
 function fog(ctx: CanvasRenderingContext2D): void {
   const haze = ctx.createLinearGradient(0, 100, 0, 280);
-  haze.addColorStop(0, "rgba(48,28,52,0.2)");
-  haze.addColorStop(0.4, "rgba(80,40,28,0.06)");
-  haze.addColorStop(1, "rgba(20,12,16,0)");
+  haze.addColorStop(0, "rgba(16,16,22,0.28)");
+  haze.addColorStop(0.5, "rgba(20,20,28,0.1)");
+  haze.addColorStop(1, "rgba(10,10,14,0)");
   ctx.fillStyle = haze;
   ctx.fillRect(0, 100, ARENA_W, 220);
-  ctx.fillStyle = "rgba(40,24,36,0.08)";
-  ctx.beginPath();
-  ctx.ellipse(180, 160, 90, 18, 0, 0, Math.PI * 2);
-  ctx.ellipse(620, 200, 110, 20, 0, 0, Math.PI * 2);
-  ctx.ellipse(400, 420, 140, 24, 0, 0, Math.PI * 2);
-  ctx.fill();
 }
+
+export const HAZARD_MARKS = [
+  [8, 10],
+  [22, 14],
+  [36, 12],
+] as const;
 
 export function paintGround(ctx: CanvasRenderingContext2D): void {
   build();
-  const dirt = ctx.createLinearGradient(0, 108, 0, ARENA_H);
-  dirt.addColorStop(0, "#3a2e28");
-  dirt.addColorStop(0.45, "#2e2620");
-  dirt.addColorStop(1, "#241c18");
-  ctx.fillStyle = dirt;
+  ctx.fillStyle = "#3a342c";
   ctx.fillRect(0, 108, ARENA_W, ARENA_H - 108);
-  cobbleField(ctx);
+  tileSheet(ctx, "tile_stone_seamless", 0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
+  ctx.save();
+  ctx.strokeStyle = "rgba(62,52,40,0.42)";
+  ctx.lineWidth = 1;
+  const grout = TILE * 2;
+  for (let x = 0; x <= ARENA_W; x += grout) {
+    ctx.beginPath();
+    ctx.moveTo(x + 0.5, FLOOR0 * TILE);
+    ctx.lineTo(x + 0.5, ARENA_H);
+    ctx.stroke();
+  }
+  for (let y = FLOOR0 * TILE; y <= ARENA_H; y += grout) {
+    ctx.beginPath();
+    ctx.moveTo(0, y + 0.5);
+    ctx.lineTo(ARENA_W, y + 0.5);
+    ctx.stroke();
+  }
+  ctx.restore();
+  ctx.save();
+  ctx.globalCompositeOperation = "multiply";
+  ctx.fillStyle = "rgba(48,36,24,0.18)";
+  ctx.fillRect(0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
+  ctx.restore();
   for (let r = FLOOR0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
       const k = cells[r * COLS + c] ?? KIND_COBBLE;
       const x = c * TILE;
       const y = r * TILE;
       if (k === KIND_COBBLE || k === KIND_COBBLE_D || k === KIND_COBBLE_W) continue;
-      else if (k === KIND_BRASS) plate(ctx, x, y, 0);
-      else if (k === KIND_BRASS_W) plate(ctx, x, y, 1);
+      else if (k === KIND_BRASS || k === KIND_BRASS_W) {
+        tileSheet(ctx, "tile_metal_seamless", x, y, TILE, TILE);
+      }
       else if (k === KIND_RAIL_H) rail(ctx, x, y, 0);
       else if (k === KIND_RAIL_V) rail(ctx, x, y, 1);
-      else if (k === KIND_GRATE) grate(ctx, x, y, 0);
-      else if (k === KIND_VENT) grate(ctx, x, y, 1);
+      else if (k === KIND_GRATE) blitSheet(ctx, "decal_grate", x + 8, y + 14);
+      else if (k === KIND_VENT) blitSheet(ctx, "decal_vent", x + 8, y + 14);
       else if (k === KIND_RUBBLE) rubbleTile(ctx, x, y);
     }
+  }
+  for (let i = 0; i < HAZARD_MARKS.length; i++) {
+    const mark = HAZARD_MARKS[i];
+    if (!mark) continue;
+    blitSheet(ctx, "decal_hazard", mark[0] * TILE + 8, mark[1] * TILE + 14);
   }
   for (let i = 0; i < featN; i++) {
     if (fk[i] !== FEAT_STAIN) continue;
@@ -472,14 +416,6 @@ export function paintGround(ctx: CanvasRenderingContext2D): void {
   for (let i = 0; i < featN; i++) {
     if (fk[i] !== FEAT_RUBBLE) continue;
     rubblePile(ctx, fx[i] ?? 0, fy[i] ?? 0, fa[i] ?? 8);
-  }
-  for (let i = 0; i < featN; i++) {
-    if (fk[i] !== FEAT_LAMP) continue;
-    pool(ctx, fx[i] ?? 0, fy[i] ?? 0, fa[i] ?? 70);
-  }
-  for (let i = 0; i < featN; i++) {
-    if (fk[i] !== FEAT_LAMP) continue;
-    lamp(ctx, fx[i] ?? 0, fy[i] ?? 0);
   }
   fog(ctx);
   ctx.fillStyle = "rgba(12,8,8,0.22)";

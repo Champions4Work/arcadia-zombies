@@ -1,5 +1,3 @@
-import { PHONE_MAX_W } from "./phone";
-
 export const STICK_R = 56;
 export const STICK_DEAD = 0.12;
 
@@ -47,5 +45,5 @@ export function liftStick(s: Stick): void {
 }
 
 export function showRestStick(vw: number, coarse: boolean, hoverNone: boolean): boolean {
-  return coarse || hoverNone || vw <= PHONE_MAX_W;
+  return vw < 0 && coarse && hoverNone;
 }

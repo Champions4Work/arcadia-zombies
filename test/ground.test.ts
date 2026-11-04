@@ -169,14 +169,17 @@ describe("yard floor paint", () => {
         radials.push(1);
         return { addColorStop() {} };
       },
+      createPattern() {
+        return null;
+      },
     } as unknown as CanvasRenderingContext2D;
     paintGround(ctx);
     const blob = fills.join(" ");
     expect(blob.includes("#5c6e7e")).toBe(false);
     expect(blob.includes("#7f93a4")).toBe(false);
-    expect(/#4a3e34|#40362e|#56483c/.test(blob)).toBe(true);
-    expect(/#8a6830|#6a5428|#7a5a20/.test(blob)).toBe(true);
-    expect(radials.length).toBeGreaterThanOrEqual(6);
+    expect(/#3a342c|rgba\(48,36,24/.test(blob)).toBe(true);
+    expect(/#2a2a30|rgba\(24,24,32/.test(blob)).toBe(false);
+    expect(/#c49038|#f0b03a|#fff1c2/.test(blob)).toBe(false);
   });
 });
 

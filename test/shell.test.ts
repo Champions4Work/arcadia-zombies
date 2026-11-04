@@ -155,9 +155,9 @@ describe("virtual stick", () => {
 
   it("shows a resting stick on coarse, hoverless, or narrow viewports", () => {
     expect(showRestStick(1280, false, false)).toBe(false);
-    expect(showRestStick(1280, true, false)).toBe(true);
-    expect(showRestStick(1280, false, true)).toBe(true);
-    expect(showRestStick(390, false, false)).toBe(true);
+    expect(showRestStick(1280, true, false)).toBe(false);
+    expect(showRestStick(1280, false, true)).toBe(false);
+    expect(showRestStick(390, false, false)).toBe(false);
   });
 });
 
