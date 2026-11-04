@@ -23,7 +23,7 @@ export const FEAT_STAIN = 3;
 export const FEAT_RUBBLE = 4;
 export const VENT_FX_CAP = 4;
 export const VENT_PUFFS = 2;
-export const VENT_SLOW = 0.63;
+export const VENT_SLOW = 0.55;
 
 const COLS = (ARENA_W / TILE) | 0;
 const ROWS = (ARENA_H / TILE) | 0;
@@ -130,10 +130,6 @@ function build(): void {
   }
   forceVent(8, 10);
   forceVent(8, 14);
-  forceVent(22, 14);
-  forceVent(36, 12);
-  forceVent(22, 30);
-  forceVent(36, 30);
   forceVent(52, 12);
   forceVent(52, 20);
   forceVent(18, 28);

@@ -134,9 +134,7 @@ describe("yard floor map", () => {
 
   it("slows units that stand on a vent or grate and leaves the kite pocket open", () => {
     expect(ventSlow(8 * TILE + 8, 10 * TILE + 8)).toBe(VENT_SLOW);
-    expect(ventSlow(22 * TILE + 8, 14 * TILE + 8)).toBe(VENT_SLOW);
     expect(groundKind(8, 10)).toBe(KIND_VENT);
-    expect(groundKind(22, 14)).toBe(KIND_VENT);
     let grate = 0;
     const cols = groundCols();
     const rows = groundRows();
@@ -153,7 +151,7 @@ describe("yard floor map", () => {
     expect(groundKind(30, 20)).not.toBe(KIND_VENT);
     expect(groundKind(30, 20)).not.toBe(KIND_GRATE);
     expect(VENT_SLOW).toBeLessThan(1);
-    expect(VENT_SLOW).toBeGreaterThan(0.6);
+    expect(VENT_SLOW).toBeGreaterThan(0.4);
   });
 });
 
