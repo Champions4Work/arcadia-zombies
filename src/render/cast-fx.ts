@@ -57,6 +57,16 @@ function blitShot(ctx: CanvasRenderingContext2D, gun: number, x: number, y: numb
 }
 
 export function paintRivetBolt(ctx: CanvasRenderingContext2D, x: number, y: number, vx: number, vy: number): void {
+  const ang = Math.atan2(vy, vx || 1);
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(ang);
+  ctx.globalCompositeOperation = "lighter";
+  ctx.fillStyle = "#ffd24a";
+  ctx.fillRect(-16, -3.6, 36, 7.2);
+  ctx.fillStyle = "rgba(255,252,220,0.98)";
+  ctx.fillRect(10, -2, 18, 4);
+  ctx.restore();
   blitShot(ctx, 0, x, y, vx, vy);
 }
 

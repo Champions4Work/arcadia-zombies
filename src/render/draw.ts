@@ -102,7 +102,7 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
   const vig = c.createRadialGradient(viewW * 0.5, viewH * 0.48, viewH * 0.18, viewW * 0.5, viewH * 0.5, viewH * 0.82);
   vig.addColorStop(0, "rgba(0,0,0,0)");
   vig.addColorStop(0.62, "rgba(8,8,12,0.14)");
-  vig.addColorStop(1, "rgba(6,6,10,0.52)");
+  vig.addColorStop(1, "rgba(6,6,10,0.16)");
   c.fillStyle = vig;
   c.fillRect(0, 0, viewW, viewH);
   paintLayers(c, w, LAYER_FRONT);

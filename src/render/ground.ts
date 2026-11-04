@@ -354,7 +354,7 @@ export const HAZARD_MARKS = [
 
 export function paintGround(ctx: CanvasRenderingContext2D): void {
   build();
-  ctx.fillStyle = "#3a342c";
+  ctx.fillStyle = "#6a5e48";
   ctx.fillRect(0, 108, ARENA_W, ARENA_H - 108);
   tileSheet(ctx, "tile_stone_seamless", 0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
   ctx.save();
@@ -376,7 +376,12 @@ export function paintGround(ctx: CanvasRenderingContext2D): void {
   ctx.restore();
   ctx.save();
   ctx.globalCompositeOperation = "multiply";
-  ctx.fillStyle = "rgba(48,36,24,0.18)";
+  ctx.fillStyle = "rgba(48,36,24,0.04)";
+  ctx.fillRect(0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
+  ctx.restore();
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  ctx.fillStyle = "rgba(255,214,150,0.22)";
   ctx.fillRect(0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
   ctx.restore();
   for (let r = FLOOR0; r < ROWS; r++) {

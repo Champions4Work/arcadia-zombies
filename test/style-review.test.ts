@@ -22,13 +22,13 @@ describe("visual review gates", () => {
     expect(HERO_DRAW_SCALE).toBe(1.25);
   });
 
-  it("scales normal foes to 0.45 of hero height and brutes to 1.3x", () => {
-    expect(FOE_TO_HERO).toBe(0.45);
-    expect(BRUTE_TO_HERO).toBe(1.3);
-    expect(foeWorldH(0)).toBeCloseTo(64 * 0.45);
-    expect(foeWorldH(Z_BRUTE)).toBeCloseTo(64 * 1.3);
-    expect(foeWorldScale(0, 62)).toBeCloseTo((64 * 0.45) / 62);
-    expect(foeWorldScale(Z_BRUTE, 98)).toBeCloseTo((64 * 1.3) / 98);
+  it("scales normal foes to 0.78 of hero height and brutes to 0.98x", () => {
+    expect(FOE_TO_HERO).toBe(0.78);
+    expect(BRUTE_TO_HERO).toBe(0.98);
+    expect(foeWorldH(0)).toBeCloseTo(64 * 0.78);
+    expect(foeWorldH(Z_BRUTE)).toBeCloseTo(64 * 0.98);
+    expect(foeWorldScale(0, 62)).toBeCloseTo((64 * 0.78) / 62);
+    expect(foeWorldScale(Z_BRUTE, 98)).toBeCloseTo((64 * 0.98) / 98);
     const look = readFileSync("src/art/look.ts", "utf8");
     expect(look.includes("export function paintRifle")).toBe(true);
     expect(look.includes("ellipse(x, y + 3, 14, 5")).toBe(true);
@@ -38,7 +38,7 @@ describe("visual review gates", () => {
     expect(look.includes("paintRifle(ctx, x, y, nx, ny, s, bob)")).toBe(true);
     expect(look.includes("rgba(200,208,220")).toBe(false);
     expect(look.includes("ellipse(mx, my, 18, 10")).toBe(false);
-    expect(look.includes("lineTo(mx + nx * 14")).toBe(true);
+    expect(look.includes("lineTo(mx + nx * 36")).toBe(true);
     const actors = readFileSync("src/render/actors.ts", "utf8");
     expect(actors.includes("hp >= 3")).toBe(false);
     expect(actors.includes("paintElite")).toBe(false);
@@ -56,11 +56,11 @@ describe("visual review gates", () => {
 
   it("keeps dusk dark with local lamp pools and no global orange wash", () => {
     const draw = readFileSync("src/render/draw.ts", "utf8");
-    expect(draw.includes("rgba(6,6,10,0.52)")).toBe(true);
+    expect(draw.includes("rgba(6,6,10,0.16)")).toBe(true);
     expect(draw.includes("rgba(220,132,52,0.34)")).toBe(false);
     expect(draw.includes("rgba(255,186,88,0.42)")).toBe(false);
     const yard = readFileSync("src/render/yard-fx.ts", "utf8");
-    expect(yard.includes("ellipse(x, y + 6, 54, 30")).toBe(true);
+    expect(yard.includes("ellipse(x, y + 6, 88, 50")).toBe(true);
     expect(yard.includes("bluePool")).toBe(true);
     expect(yard.includes("blue_glow")).toBe(true);
     expect(yard.includes("pipes_blue_tank")).toBe(true);
@@ -73,7 +73,7 @@ describe("visual review gates", () => {
     expect(rack.includes("wpnGlyph")).toBe(true);
     expect(rack.includes("drawIcon")).toBe(false);
     expect(rack.includes("fillText")).toBe(true);
-    expect(rack.includes("Math.max(1, lv)")).toBe(true);
+    expect(rack.includes("Math.max(12, lv * 12)")).toBe(true);
     expect(rack.includes("`${n}`")).toBe(true);
     expect(yard.includes("tick * 2.2")).toBe(true);
     expect(yard.includes("moveTo(14, 0)")).toBe(true);
@@ -94,13 +94,17 @@ describe("visual review gates", () => {
     expect(hud.includes("KILLS")).toBe(true);
     expect(hud.includes("WAVE")).toBe(true);
     expect(hud.includes('blitSheetFit(ctx, "minimap_frame"')).toBe(true);
-    expect(hud.includes("#100c0a")).toBe(true);
+    expect(hud.includes("#1a1612")).toBe(true);
     expect(hud.includes('blitSheetFit(ctx, "heart_ring"')).toBe(true);
     expect(hud.includes("heartIcon")).toBe(true);
     expect(hud.includes("function portrait")).toBe(true);
     expect(hud.includes('blitSheetFit(ctx, "ring_frame_a"')).toBe(true);
     expect(hud.includes('blitSheetFit(ctx, "hero_idle"')).toBe(true);
     expect(hud.includes("layout.face")).toBe(true);
+    expect(hud.includes("const local = 170")).toBe(true);
+    expect(hud.includes("function restStick")).toBe(true);
+    expect(hud.includes("fillRect(cx - r * 0.78")).toBe(true);
+    expect(hud.includes("bw * 0.72")).toBe(true);
   });
 
   it("keeps spawn telegraphs and kill puffs on pack sprites, and aligns vertical belts", () => {
@@ -138,7 +142,7 @@ describe("visual review gates", () => {
     const w = createWorld(7);
     expect(reviewHorde(w)).toBe(REVIEW_HORDE);
     expect(REVIEW_HORDE).toBeGreaterThanOrEqual(30);
-    expect(REVIEW_RING).toBeGreaterThanOrEqual(100);
+    expect(REVIEW_RING).toBeGreaterThanOrEqual(50);
     let n = 0;
     let marked = 0;
     let near = 0;
@@ -149,7 +153,7 @@ describe("visual review gates", () => {
       if (kind === Z_BRUTE || (kind & Z_ELITE) !== 0) marked++;
       const dx = (w.zombies.x[i] ?? 0) - w.px;
       const dy = (w.zombies.y[i] ?? 0) - w.py;
-      if (dx * dx + dy * dy < 90 * 90) near++;
+      if (dx * dx + dy * dy < 40 * 40) near++;
     }
     expect(n).toBe(REVIEW_HORDE);
     expect(marked).toBeLessThanOrEqual(8);

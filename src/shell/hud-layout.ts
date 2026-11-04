@@ -131,7 +131,7 @@ export function layoutHud(vp: Viewport, fit: Fit): HudLayout {
     w: clockW,
     h: clockH,
   };
-  const mapS = Math.round((portrait ? 72 : 64) * u);
+  const mapS = Math.round((portrait ? 80 : 70) * u);
   const minimap = { x: inner.x + gap, y: topY, w: mapS, h: mapS };
   const difficulty = {
     x: minimap.x + minimap.w + gap,
@@ -139,11 +139,11 @@ export function layoutHud(vp: Viewport, fit: Fit): HudLayout {
     w: Math.max(72, clock.x - gap - (minimap.x + minimap.w + gap)),
     h: rowH,
   };
-  const faceS = Math.round((portrait ? 36 : 32) * u);
+  const faceS = Math.round((portrait ? 48 : 40) * u);
   const face = {
     x: minimap.x + minimap.w + gap,
     y: difficulty.y + difficulty.h + gap,
-    w: faceS + 70,
+    w: faceS + 86,
     h: faceS,
   };
   return { view, frame: frameBox(fit), hero, xp, difficulty, clock, pause, minimap, face, weapons, ability };

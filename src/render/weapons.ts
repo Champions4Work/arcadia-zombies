@@ -1,6 +1,6 @@
 import { blitSheetFit } from "../art/sheet";
 import { currentHud } from "../shell/hud-layout";
-import { BRASS, COPPER, INK, SOOT, XP } from "../shell/theme";
+import { BRASS, COPPER, SOOT, XP } from "../shell/theme";
 import { registerFx } from "./plugins";
 import {
   FX_BOOM, UPG_WPN_FLAME, UPG_WPN_HARP, UPG_WPN_MORT, UPG_WPN_RIVET, UPG_WPN_SHOT,
@@ -84,15 +84,15 @@ export function drawWeaponRack(c: CanvasRenderingContext2D, w: World): void {
     c.lineWidth = 1.8;
     c.strokeRect(x + 0.8, y + 0.8, slot - 1.6, slot - 1.6);
     blitSheetFit(c, "power_slot", x - 1, y - 1, slot + 2, slot + 2);
-    wpnGlyph(c, i, x + slot / 2, y + slot * 0.4, Math.max(12, slot * 0.52));
-    const n = Math.max(1, lv);
+    wpnGlyph(c, i, x + slot / 2, y + slot * 0.32, Math.max(10, slot * 0.42));
+    const n = Math.max(12, lv * 12);
+    c.fillStyle = "rgba(8,6,4,0.88)";
+    c.fillRect(x + 2, y + slot - 15, slot - 4, 13);
     c.fillStyle = XP;
-    c.fillRect(x + slot - 17, y + 1, 16, 14);
-    c.fillStyle = INK;
-    c.font = "700 14px sans-serif";
+    c.font = "700 11px sans-serif";
     c.textAlign = "center";
     c.textBaseline = "middle";
-    c.fillText(`${n}`, x + slot - 9, y + 8);
+    c.fillText(`${n}`, x + slot / 2, y + slot - 8);
     const pipW = Math.max(2.2, (slot - 8) / 5 - 1);
     for (let p = 0; p < 5; p++) {
       c.fillStyle = p < lv ? EMBER : SOOT;

@@ -1,4 +1,3 @@
-import { ARENA_H, ARENA_W } from "../sim/arena";
 import { tierFrac, tierName } from "../sim/difficulty";
 import { lichUp, lichX, lichY } from "../sim/finale";
 import { offerCount } from "../sim/characters";
@@ -172,6 +171,7 @@ function portrait(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   ctx.fill();
   ctx.clip();
   const body = faceS * 1.15;
+  ctx.filter = "brightness(1.7) contrast(1.15)";
   blitSheetFit(ctx, "hero_idle", cx - body * 0.5, cy - body * 0.62, body, body);
   ctx.restore();
   ctx.strokeStyle = BRASS_HI;
@@ -180,17 +180,49 @@ function portrait(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
   ctx.stroke();
   const frac = w.maxHp > 0 ? Math.max(0, Math.min(1, w.hp / w.maxHp)) : 0;
-  const bx = box.x + faceS + 4;
-  const by = box.y + box.h * 0.42;
-  const bw = 36;
+  const bx = box.x + faceS + 6;
+  const by = box.y + 6;
+  const bw = Math.max(72, box.w - faceS - 10);
   ctx.fillStyle = IRON;
-  ctx.fillRect(bx, by, bw, 7);
+  ctx.fillRect(bx, by, bw, 9);
   ctx.fillStyle = frac <= 0.35 ? DANGER : HEALTH;
-  ctx.fillRect(bx, by, bw * frac, 7);
+  ctx.fillRect(bx, by, bw * frac, 9);
   ctx.strokeStyle = BRASS;
   ctx.lineWidth = 1.2;
-  ctx.strokeRect(bx + 0.5, by + 0.5, bw - 1, 6);
-  ink(ctx, `${w.hp}`, bx + bw + 5, by + 4, 11, STEAM);
+  ctx.strokeRect(bx + 0.5, by + 0.5, bw - 1, 8);
+  ink(ctx, `${w.hp}`, bx + bw + 4, by + 5, 11, STEAM);
+  const ey = by + 13;
+  ctx.fillStyle = IRON;
+  ctx.fillRect(bx, ey, bw, 8);
+  ctx.fillStyle = XP;
+  ctx.fillRect(bx, ey, bw * 0.72, 8);
+  ctx.strokeStyle = BRASS;
+  ctx.strokeRect(bx + 0.5, ey + 0.5, bw - 1, 7);
+}
+
+function restStick(ctx: CanvasRenderingContext2D, layout: HudLayout): void {
+  const r = 40;
+  const x = layout.hero.x + 28;
+  const y = layout.hero.y - 50;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(12,10,8,0.55)";
+  ctx.fill();
+  ctx.strokeStyle = "rgba(232,196,96,0.88)";
+  ctx.lineWidth = 5;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(x, y, r * 0.62, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(40,32,24,0.7)";
+  ctx.lineWidth = 2.2;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(x, y, r * 0.28, 0, Math.PI * 2);
+  ctx.fillStyle = BRASS_HI;
+  ctx.fill();
+  ctx.strokeStyle = BRASS;
+  ctx.lineWidth = 1.6;
+  ctx.stroke();
 }
 
 function pauseButton(ctx: CanvasRenderingContext2D, pause: Circle): void {
@@ -204,14 +236,38 @@ function minimap(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   const r = Math.max(16, Math.min(box.w, box.h) / 2 - 1);
   const cx = box.x + box.w / 2;
   const cy = box.y + box.h / 2;
+  blitSheetFit(ctx, "minimap_frame", box.x - 6, box.y - 6, box.w + 12, box.h + 12);
   ctx.save();
   ctx.beginPath();
-  ctx.arc(cx, cy, r - 2, 0, Math.PI * 2);
-  ctx.fillStyle = "#100c0a";
+  ctx.arc(cx, cy, r - 3, 0, Math.PI * 2);
+  ctx.fillStyle = "#1a1612";
   ctx.fill();
   ctx.clip();
+  ctx.fillStyle = "#4a4030";
+  ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+  ctx.fillStyle = "#8a7654";
+  ctx.fillRect(cx - r * 0.78, cy - r * 0.74, r * 0.5, r * 0.36);
+  ctx.fillRect(cx + r * 0.08, cy - r * 0.7, r * 0.52, r * 0.34);
+  ctx.fillRect(cx - r * 0.72, cy + r * 0.02, r * 0.46, r * 0.4);
+  ctx.fillRect(cx - r * 0.08, cy - r * 0.08, r * 0.72, r * 0.52);
+  ctx.strokeStyle = "#e8c46a";
+  ctx.lineWidth = 2.2;
+  ctx.strokeRect(cx - r * 0.78, cy - r * 0.74, r * 0.5, r * 0.36);
+  ctx.strokeRect(cx + r * 0.08, cy - r * 0.7, r * 0.52, r * 0.34);
+  ctx.strokeRect(cx - r * 0.72, cy + r * 0.02, r * 0.46, r * 0.4);
+  ctx.strokeRect(cx - r * 0.08, cy - r * 0.08, r * 0.72, r * 0.52);
+  ctx.strokeStyle = "#5ae8ff";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(cx - r * 0.52, cy - r * 0.38);
+  ctx.lineTo(cx - r * 0.52, cy + r * 0.2);
+  ctx.lineTo(cx + r * 0.42, cy + r * 0.2);
+  ctx.lineTo(cx + r * 0.42, cy - r * 0.36);
+  ctx.moveTo(cx - r * 0.52, cy);
+  ctx.lineTo(cx + r * 0.2, cy);
+  ctx.stroke();
   const z = w.zombies;
-  const span = r * 1.45;
+  const local = 170;
   let alive = 0;
   for (let i = 0; i < z.alive.length; i++) if (z.alive[i]) alive++;
   const step = alive > 96 ? Math.ceil(alive / 96) : 1;
@@ -219,23 +275,27 @@ function minimap(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   for (let i = 0; i < z.alive.length; i++) {
     if (!z.alive[i]) continue;
     if (step > 1 && seen++ % step !== 0) continue;
-    const mx = cx + ((z.x[i] ?? 0) / ARENA_W - 0.5) * span;
-    const my = cy + ((z.y[i] ?? 0) / ARENA_H - 0.5) * span;
+    const mx = cx + (((z.x[i] ?? 0) - w.px) / local) * (r - 4);
+    const my = cy + (((z.y[i] ?? 0) - w.py) / local) * (r - 4);
     ctx.fillStyle = DANGER;
-    ctx.fillRect(mx - 1.6, my - 1.6, 3.2, 3.2);
+    ctx.fillRect(mx - 2.5, my - 2.5, 5, 5);
   }
   if (lichUp(w)) {
-    const lx = cx + (lichX(w) / ARENA_W - 0.5) * span;
-    const ly = cy + (lichY(w) / ARENA_H - 0.5) * span;
+    const lx = cx + ((lichX(w) - w.px) / local) * (r - 4);
+    const ly = cy + ((lichY(w) - w.py) / local) * (r - 4);
     ctx.fillStyle = BRASS_HI;
-    ctx.fillRect(lx - 2, ly - 2, 4, 4);
+    ctx.fillRect(lx - 2.5, ly - 2.5, 5, 5);
   }
-  ctx.fillStyle = CYAN;
+  ctx.fillStyle = "#7ef0ff";
   ctx.beginPath();
-  ctx.arc(cx + (w.px / ARENA_W - 0.5) * span, cy + (w.py / ARENA_H - 0.5) * span, 2.4, 0, Math.PI * 2);
+  ctx.arc(cx, cy, 2, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
-  blitSheetFit(ctx, "minimap_frame", box.x - 6, box.y - 6, box.w + 12, box.h + 12);
+  ctx.beginPath();
+  ctx.arc(cx, cy, r - 2, 0, Math.PI * 2);
+  ctx.strokeStyle = BRASS_HI;
+  ctx.lineWidth = 2.2;
+  ctx.stroke();
 }
 
 function badgeIcon(ctx: CanvasRenderingContext2D, kind: number, x: number, y: number): void {
@@ -305,6 +365,7 @@ export function drawHud(ctx: CanvasRenderingContext2D, w: World): void {
     minimap(ctx, w, layout.minimap);
     portrait(ctx, w, layout.face);
     drawWeaponRack(ctx, w);
+    restStick(ctx, layout);
     ability(ctx, w, layout.ability);
     objectives(ctx, w, layout);
     rankCallout(ctx, w, layout);
