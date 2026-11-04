@@ -59,11 +59,12 @@ function paintHero(ctx: CanvasRenderingContext2D, w: World, moving: boolean): vo
     caseTick = w.tick;
     const ox = -w.aimX * 16 - 8;
     const oy = 8 - w.aimY * 4;
-    const tight = stainCount() > STAIN_LIVE_CAP - 8;
+    const tight = stainCount() > STAIN_LIVE_CAP - 12;
     stampCasing(w.px + ox - 6, w.py + oy + 4, w.tick);
+    stampCasing(w.px + ox - 14, w.py + oy + 9, w.tick + 3);
     if (!tight) {
-      stampCasing(w.px + ox - 18, w.py + oy + 11, w.tick + 5);
-      stampCasing(w.px + ox - 28, w.py + oy + 18, w.tick + 11);
+      stampCasing(w.px + ox - 22, w.py + oy + 14, w.tick + 7);
+      stampCasing(w.px + ox - 30, w.py + oy + 20, w.tick + 11);
     }
   }
 }

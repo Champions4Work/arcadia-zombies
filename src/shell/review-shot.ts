@@ -103,7 +103,7 @@ export function reviewHorde(w: World, zone = ZONE_BRASS): number {
   juiceHit(7, z.x[7] ?? w.px, z.y[7] ?? w.py, 4, Z_BRUTE, false, w.tick, w.px, w.py);
   juiceShot(w.px + 20, w.py - 22, 0.82, -0.42, w.tick);
   tickJuice(70);
-  for (let c = 0; c < 12; c++) {
+  for (let c = 0; c < 20; c++) {
     stampCasing(w.px - 52 + ((c * 37) % 96), w.py + 8 + ((c * 19) % 52), c * 7);
   }
   stampBlood(w.px + 18, w.py + 14, 5);
