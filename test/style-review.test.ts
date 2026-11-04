@@ -162,6 +162,8 @@ describe("visual review gates", () => {
     expect(obj.includes("ACTIVATE STEAM GATE")).toBe(true);
     expect(obj.includes("HOLD THE AREA")).toBe(true);
     expect(obj.includes("SURVIVE ALL WAVES")).toBe(true);
+    expect(obj.includes("objectiveRows")).toBe(true);
+    expect(obj.includes("w.rank > 0")).toBe(false);
     expect(obj.includes("strokeRect")).toBe(true);
     expect(obj.includes("#f6f1e6")).toBe(true);
     expect(hud.includes("Wave ${wave}/${cap}")).toBe(true);
@@ -189,8 +191,9 @@ describe("visual review gates", () => {
     expect(hud.includes("function restStick")).toBe(true);
     expect(hud.includes("function skillKeys")).toBe(true);
     expect(hud.includes("function skillIcon")).toBe(true);
-    expect(hud.includes("function phoneHud")).toBe(true);
-    expect(hud.includes("if (!phoneHud(layout))")).toBe(false);
+    expect(hud.includes("function phoneHud")).toBe(false);
+    expect(hud.includes("layout.objectives")).toBe(true);
+    expect(hud.includes("phoneHud(layout) ? 10 : 10")).toBe(false);
     expect(hud.includes("portrait(ctx, w, layout.face)")).toBe(true);
     expect(hud.includes("skillKeys(ctx, layout)")).toBe(true);
     expect(hud.includes("const r = 24")).toBe(true);

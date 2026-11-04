@@ -29,6 +29,7 @@ import { hasMod, hordeBudget, hordeGap, MOD_NOHEAL } from "./modifiers";
 import { tryReroll } from "./reroll";
 import { fell } from "./revive";
 import { stepMapEvents } from "./map-events.hot";
+import { stepObjectives } from "./objectives";
 import { clearMapStrike, mapStrikeDmg, mapStrikeOn, mapStrikeR, mapStrikeX, mapStrikeY } from "./map-events";
 import {
   EV_HURT, EV_KILL, EV_RANK, EV_SAW, EV_SHIELD, EV_TESLA, EV_WAVE, FX_FLASH, FX_SPARK,
@@ -206,6 +207,7 @@ export function step(w: World, input: Input): void {
   if (w.teslaFlash > 0) w.teslaFlash--;
   slidePlayer(w, input.dx, input.dy, moveSpeed(w) * bossSpeedMul(w) * ventSlowMul(w));
   updateCamera(w);
+  stepObjectives(w);
   const z = w.zombies;
   let alive = 0;
   for (let i = 0; i < MAX_ZOMBIES; i++) if (z.alive[i]) alive++;

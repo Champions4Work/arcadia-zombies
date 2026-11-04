@@ -149,6 +149,45 @@ describe("weapon rack", () => {
     expect(texts).not.toContain("120/120");
     expect(texts).toContain("Objectives");
     expect(texts).toContain("Chapter 1");
+    expect(texts.some((t) => /^Wave \d+\/8$/.test(t))).toBe(true);
+    expect(texts).toContain("ACTIVATE STEAM GATE");
+    expect(texts).toContain("HOLD THE AREA");
+    expect(texts).toContain("SURVIVE ALL WAVES");
+  });
+
+  it("binds wave kills and hold clock to live chapter state", () => {
+    const texts: string[] = [];
+    const vp = readViewport({ innerWidth: 390, innerHeight: 844, devicePixelRatio: 3 }, ZERO_INSETS);
+    const pv = playView(vp.cssW, vp.cssH);
+    const fit = computeFit(vp.cssW, vp.cssH, vp.dpr, pv.viewW, pv.viewH, ZERO_INSETS);
+    bindHud(layoutHud(vp, fit));
+    const w = createWorld(9);
+    w.wave = 4;
+    w.kills = 72;
+    w.gate = 1;
+    w.holdLeft = 180 * 60;
+    w.rank = 0;
+    drawHud(stubCtx(texts), w);
+    expect(texts).toContain("Wave 4/8");
+    expect(texts).toContain("72");
+    expect(texts).toContain("HOLD THE AREA (03:00)");
+  });
+
+  it("leaves the steam gate open when only rank has risen", () => {
+    const texts: string[] = [];
+    const vp = readViewport({ innerWidth: 390, innerHeight: 844, devicePixelRatio: 3 }, ZERO_INSETS);
+    const pv = playView(vp.cssW, vp.cssH);
+    const fit = computeFit(vp.cssW, vp.cssH, vp.dpr, pv.viewW, pv.viewH, ZERO_INSETS);
+    bindHud(layoutHud(vp, fit));
+    const w = createWorld(10);
+    w.rank = 4;
+    w.wave = 1;
+    w.gate = 0;
+    w.holdLeft = 0;
+    drawHud(stubCtx(texts), w);
+    expect(texts).toContain("Wave 1/8");
+    expect(texts).toContain("HOLD THE AREA");
+    expect(texts.some((t) => t.includes("HOLD THE AREA ("))).toBe(false);
   });
 });
 
