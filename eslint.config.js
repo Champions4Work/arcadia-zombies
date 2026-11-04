@@ -46,4 +46,13 @@ export default tseslint.config(
   },
   { files: ["scripts/**", "*.config.*"], languageOptions: { globals: { process: "readonly", console: "readonly" } } },
   { files: ["scripts/ui-shots.mjs"], languageOptions: { globals: { localStorage: "readonly" } } },
+  {
+    files: ["src/api/**"],
+    rules: {
+      "no-restricted-syntax": ["error", {
+        selector: "CallExpression[callee.property.name='includes'][arguments.0.value=/^(ip|email|userAgent)$/]",
+        message: "Reject personal fields by key name, not substring.",
+      }],
+    },
+  },
 );

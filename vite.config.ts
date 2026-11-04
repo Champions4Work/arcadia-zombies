@@ -1,5 +1,7 @@
 import { defineConfig } from "vite";
+import { runsPreviewPlugin } from "./scripts/runs-preview";
 export default defineConfig({
+  plugins: [runsPreviewPlugin()],
   build: {
     target: "es2022",
     assetsInlineLimit: 0,
