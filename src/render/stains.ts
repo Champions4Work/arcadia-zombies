@@ -36,7 +36,7 @@ export function stampBlood(x: number, y: number, salt: number): void {
   for (let k = 0; k < n; k++) {
     const ox = ((salt + k * 17) % 11) - 5;
     const oy = ((salt + k * 9) % 9) - 4;
-    put(x + ox, y + oy, 3 + ((salt + k) & 3), STAIN_BLOOD);
+    put(x + ox, y + oy, 8 + ((salt + k) & 7), STAIN_BLOOD);
   }
 }
 

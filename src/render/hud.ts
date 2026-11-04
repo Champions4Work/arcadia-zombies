@@ -185,19 +185,20 @@ function portrait(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   const bw = Math.max(72, box.w - faceS - 10);
   ctx.fillStyle = IRON;
   ctx.fillRect(bx, by, bw, 9);
-  ctx.fillStyle = frac <= 0.35 ? DANGER : HEALTH;
+  ctx.fillStyle = "#e24a32";
   ctx.fillRect(bx, by, bw * frac, 9);
   ctx.strokeStyle = BRASS;
   ctx.lineWidth = 1.2;
   ctx.strokeRect(bx + 0.5, by + 0.5, bw - 1, 8);
-  ink(ctx, `${w.hp}`, bx + bw + 4, by + 5, 11, STEAM);
+  ink(ctx, `${w.hp}/${w.maxHp}`, bx + bw + 4, by + 5, 11, "#e24a32");
   const ey = by + 13;
   ctx.fillStyle = IRON;
   ctx.fillRect(bx, ey, bw, 8);
-  ctx.fillStyle = XP;
+  ctx.fillStyle = "#3d8cff";
   ctx.fillRect(bx, ey, bw * 0.72, 8);
   ctx.strokeStyle = BRASS;
   ctx.strokeRect(bx + 0.5, ey + 0.5, bw - 1, 7);
+  ink(ctx, "72/100", bx + bw + 4, ey + 4, 11, "#3d8cff");
 }
 
 function restStick(ctx: CanvasRenderingContext2D, layout: HudLayout): void {

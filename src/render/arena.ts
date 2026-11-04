@@ -9,7 +9,7 @@ import { blitSheet, steamFrame } from "../art/sheet";
 import { paintHealVial } from "./cast";
 import { BRASS, OUTLINE } from "./paint";
 import { paintStains } from "./stains";
-import { paintDoorSpawn, YARD_CLEAR } from "./yard-fx";
+import { paintDoorSpawn } from "./yard-fx";
 
 const SCR = new Float32Array(4);
 const PROP_ORDER = new Int16Array(MAX_OBS);
@@ -106,8 +106,7 @@ export function paintDecals(ctx: CanvasRenderingContext2D, w: World): void {
   for (let i = 0; i < 12; i++) {
     const hx = 80 + ((i * 97) % (ARENA_W - 160));
     const hy = 140 + ((i * 53) % (ARENA_H - 200));
-    if (hx > YARD_CLEAR.x0 && hx < YARD_CLEAR.x1 && hy > YARD_CLEAR.y0 && hy < YARD_CLEAR.y1) continue;
-    paintBlood(ctx, hx, hy, 4 + (i & 3));
+    paintBlood(ctx, hx, hy, 6 + (i & 5));
   }
   paintStains(ctx);
   const a = w.arena;

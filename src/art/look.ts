@@ -8,8 +8,8 @@ export const HERO_LOOK_W = 40;
 export const HERO_LOOK_H = 52;
 export const HERO_PACK_H = 64;
 export const HERO_DRAW_SCALE = 1.25;
-export const FOE_TO_HERO = 0.78;
-export const BRUTE_TO_HERO = 0.98;
+export const FOE_TO_HERO = 0.58;
+export const BRUTE_TO_HERO = 0.74;
 
 export function foeWorldScale(kind: number, sprH: number): number {
   const dest = (kind === 2 ? BRUTE_TO_HERO : FOE_TO_HERO) * HERO_PACK_H;
@@ -122,20 +122,13 @@ export function paintRifle(
   ctx.save();
   ctx.translate(hx, hy);
   ctx.rotate(Math.atan2(ny, nx));
-  ctx.fillStyle = INK;
-  ctx.fillRect(-11 * s, -6 * s, 16 * s, 12 * s);
-  ctx.fillRect(-5 * s, 2 * s, 6.4 * s, 12 * s);
   ctx.fillStyle = PX.n;
-  ctx.fillRect(-10 * s, -5 * s, 14 * s, 10 * s);
-  ctx.fillRect(-4 * s, 3 * s, 5.4 * s, 11 * s);
-  ctx.fillStyle = INK;
-  ctx.fillRect(-3 * s, -5.2 * s, 44 * s, 10.4 * s);
+  ctx.fillRect(-8 * s, -3.2 * s, 10 * s, 6.4 * s);
+  ctx.fillRect(-3 * s, 2 * s, 3.6 * s, 7 * s);
+  ctx.fillStyle = BRASS;
+  ctx.fillRect(-1 * s, -2.2 * s, 28 * s, 4.4 * s);
   ctx.fillStyle = BRASS_HI;
-  ctx.fillRect(-2 * s, -4.2 * s, 42 * s, 8.4 * s);
-  ctx.fillStyle = "#fff3c8";
-  ctx.fillRect(26 * s, -3 * s, 16 * s, 6 * s);
-  ctx.fillStyle = INK;
-  ctx.fillRect(8 * s, -1.2 * s, 3 * s, 2.4 * s);
+  ctx.fillRect(20 * s, -1.6 * s, 10 * s, 3.2 * s);
   ctx.restore();
 }
 
@@ -191,19 +184,17 @@ export function paintSignatureHero(
   const my = y - 20 * s - bob + ny * 10;
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
-  ctx.fillStyle = "rgba(255,248,220,0.95)";
+  ctx.fillStyle = "rgba(255,96,16,0.95)";
   ctx.beginPath();
-  ctx.ellipse(mx, my, 9.4, 5.2, Math.atan2(ny, nx), 0, Math.PI * 2);
+  ctx.ellipse(mx, my, 7.2, 4.6, Math.atan2(ny, nx), 0, Math.PI * 2);
   ctx.fill();
-  ctx.strokeStyle = "#f0b44a";
-  ctx.lineWidth = 7.2;
-  ctx.lineCap = "round";
+  ctx.fillStyle = "rgba(255,180,40,0.95)";
   ctx.beginPath();
-  ctx.moveTo(mx, my);
-  ctx.lineTo(mx + nx * 48, my + ny * 48);
-  ctx.stroke();
-  ctx.strokeStyle = "rgba(255,248,220,0.95)";
-  ctx.lineWidth = 3.2;
+  ctx.ellipse(mx, my, 3.6, 2.2, Math.atan2(ny, nx), 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "#ffb43c";
+  ctx.lineWidth = 1.8;
+  ctx.lineCap = "round";
   ctx.beginPath();
   ctx.moveTo(mx, my);
   ctx.lineTo(mx + nx * 36, my + ny * 36);
@@ -220,7 +211,7 @@ export function paintZombie(
   tick: number,
   flip: number,
 ): void {
-  const bob = ((tick >> 3) & 1) * 1.2;
+  const bob = Math.sin(tick * 0.28) * 1.8;
   const id = foeSpriteId(kind, elite);
   const spr = spriteOf(id);
   const scale = foeWorldScale(kind, spr?.["h"] ?? 32);
@@ -283,14 +274,22 @@ export function paintEnergyTank(ctx: CanvasRenderingContext2D, x: number, y: num
 }
 
 export function paintBlood(ctx: CanvasRenderingContext2D, x: number, y: number, s: number): void {
-  ctx.fillStyle = "#7a2218";
-  ctx.globalAlpha = 0.82;
+  ctx.fillStyle = "#6a0c08";
+  ctx.globalAlpha = 0.9;
   ctx.beginPath();
-  ctx.ellipse(x, y, s * 2.2, s * 1.1, 0.35, 0, Math.PI * 2);
+  ctx.ellipse(x, y, s * 4.2, s * 2.2, 0.45, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = "#4a120e";
-  ctx.fillRect(x + s, y - 1, 5, 2);
-  ctx.fillRect(x - s * 0.7, y + 2, 4, 2);
+  ctx.fillStyle = "#c81814";
+  ctx.beginPath();
+  ctx.ellipse(x - s * 0.15, y - s * 0.1, s * 2.4, s * 1.2, 0.25, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#f03020";
+  ctx.beginPath();
+  ctx.ellipse(x - s * 0.3, y - s * 0.2, s * 1.1, s * 0.55, 0.15, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#4a0808";
+  ctx.fillRect(x + s * 1.4, y - 1, 8, 3);
+  ctx.fillRect(x - s * 1.1, y + 4, 7, 2);
   ctx.globalAlpha = 1;
 }
 
