@@ -28,8 +28,8 @@ function countAlive(flag: Uint8Array, n: number): number {
   return k;
 }
 
-export function fieldPlan(horde: boolean): { yard: boolean; sprites: boolean } {
-  return { yard: true, sprites: horde };
+export function fieldPlan(horde: boolean, viewW = W, viewH = H): { yard: boolean; sprites: boolean } {
+  return { yard: true, sprites: horde && viewW === W && viewH === H };
 }
 
 export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boolean; shake?: boolean }): void {
@@ -51,14 +51,16 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
   const moving = walk > 0;
   const camX = Math.round(w.arena.camX);
   const camY = Math.round(w.arena.camY);
+  const viewW = w.arena.viewW || W;
+  const viewH = w.arena.viewH || H;
   c.save();
   c.beginPath();
-  c.rect(0, 0, W, H);
+  c.rect(0, 0, viewW, viewH);
   c.clip();
   if (sx !== 0 || sy !== 0) c.translate(sx, sy);
   c.translate(-camX, -camY);
-  const plan = fieldPlan(horde);
-  if (plan.yard) drawYardWindow(c, camX, camY);
+  const plan = fieldPlan(horde, viewW, viewH);
+  if (plan.yard) drawYardWindow(c, camX, camY, viewW, viewH);
   if (plan.sprites) {
     renderHorde(c, w);
     drawStageFx(c, w.tick, camX, camY);
@@ -85,12 +87,12 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
   drawLich(c, w);
   drawChestGround(c, w);
   c.restore();
-  paintVeil(c);
-  if (w.hurtCd > 0) paintHurt(c, w.hurtCd);
+  paintVeil(c, viewW, viewH);
+  if (w.hurtCd > 0) paintHurt(c, w.hurtCd, viewW, viewH);
   paintLayers(c, w, LAYER_FRONT);
   if (w.choosing) {
     c.fillStyle = "rgba(8,6,16,0.42)";
-    c.fillRect(0, 0, W, H);
+    c.fillRect(0, 0, viewW, viewH);
   }
   if (opts?.hud !== false) drawHud(c, w);
   paintArrows(c, w);
@@ -99,7 +101,7 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
   drawChestReveal(c, w);
   if (w.over) {
     c.fillStyle = "rgba(8,4,14,0.5)";
-    c.fillRect(0, 0, W, H);
+    c.fillRect(0, 0, viewW, viewH);
   }
   paintLayers(c, w, LAYER_HUD);
   paintFps(c);

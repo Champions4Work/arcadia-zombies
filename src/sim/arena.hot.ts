@@ -9,7 +9,7 @@ import { foeHp, foePack, foeSpeed, Z_ELITE, Z_GAS, Z_KIND, Z_KNIGHT, Z_RAT, Z_SP
 import { pacedSpeed } from "./modifiers";
 import { nextFloat } from "./rng";
 import {
-  FX_PUFF, FX_SPARK, H, MAX_FX, MAX_ZOMBIES, TELE_BOSS, W, Z_BRUTE, Z_GHOUL, type World,
+  FX_PUFF, FX_SPARK, MAX_FX, MAX_ZOMBIES, TELE_BOSS, Z_BRUTE, Z_GHOUL, type World,
 } from "./types";
 
 function emitFx(w: World, kind: number, x: number, y: number, a: number): void {
@@ -205,7 +205,7 @@ export function slidePlayer(w: World, dx: number, dy: number, sp: number): void 
 
 export function updateCamera(w: World): void {
   const a = w.arena;
-  cameraTarget(w.px, w.py, a.scratch);
+  cameraTarget(w.px, w.py, a.scratch, a.viewW, a.viewH);
   const tx = a.scratch[0] ?? 0;
   const ty = a.scratch[1] ?? 0;
   a.camX += (tx - a.camX) * CAM_LERP;
@@ -256,20 +256,20 @@ function pointOK(w: World, x: number, y: number): boolean {
   if (dx * dx + dy * dy < MIN_SPAWN_R2) return false;
   const camX = w.arena.camX;
   const camY = w.arena.camY;
-  if (x < camX - SPAWN_MARGIN || x > camX + W + SPAWN_MARGIN) return false;
-  if (y < camY - SPAWN_MARGIN || y > camY + H + SPAWN_MARGIN) return false;
+  if (x < camX - SPAWN_MARGIN || x > camX + w.arena.viewW + SPAWN_MARGIN) return false;
+  if (y < camY - SPAWN_MARGIN || y > camY + w.arena.viewH + SPAWN_MARGIN) return false;
   if (spawnHidden(camX, camY, x, y)) return false;
   return true;
 }
 
 function keepClear(w: World, i: number): void {
   const a = w.arena;
-  edgePoint(a.camX, a.camY, a.teleEdge[i] ?? 0, a.teleU[i] ?? 0.5, a.scratch);
+  edgePoint(a.camX, a.camY, a.teleEdge[i] ?? 0, a.teleU[i] ?? 0.5, a.scratch, a.viewW, a.viewH);
   if (pointOK(w, a.scratch[0] ?? 0, a.scratch[1] ?? 0)) return;
   let bestE = a.teleEdge[i] ?? 0;
   let bestD = -1;
   for (let e = 0; e < 4; e++) {
-    edgePoint(a.camX, a.camY, e, 0.5, a.scratch);
+    edgePoint(a.camX, a.camY, e, 0.5, a.scratch, a.viewW, a.viewH);
     const ex = (a.scratch[0] ?? 0) - w.px;
     const ey = (a.scratch[1] ?? 0) - w.py;
     const d2 = ex * ex + ey * ey;
@@ -288,7 +288,7 @@ function pickOpen(w: World, edge: number, u: number): void {
   for (let k = 0; k < 6; k++) {
     const uu = u + k * 0.137;
     const wrapped = uu - Math.floor(uu);
-    edgePoint(a.camX, a.camY, edge, wrapped, a.scratch);
+    edgePoint(a.camX, a.camY, edge, wrapped, a.scratch, a.viewW, a.viewH);
     const x = a.scratch[0] ?? 0;
     const y = a.scratch[1] ?? 0;
     if (!pointOK(w, x, y)) continue;
@@ -299,8 +299,8 @@ function pickOpen(w: World, edge: number, u: number): void {
     return;
   }
   if (best) {
-    const cx = a.camX + W * 0.5;
-    const cy = a.camY + H * 0.5;
+    const cx = a.camX + a.viewW * 0.5;
+    const cy = a.camY + a.viewH * 0.5;
     const nx = bestX + (cx - bestX) * 0.2;
     const ny = bestY + (cy - bestY) * 0.2;
     if (pointOK(w, nx, ny) && !blocked(w, nx, ny, 11)) {
@@ -312,13 +312,13 @@ function pickOpen(w: World, edge: number, u: number): void {
     a.scratch[1] = bestY;
     return;
   }
-  edgePoint(a.camX, a.camY, edge, 0.5, a.scratch);
+  edgePoint(a.camX, a.camY, edge, 0.5, a.scratch, a.viewW, a.viewH);
   if (pointOK(w, a.scratch[0] ?? 0, a.scratch[1] ?? 0)) return;
   let farX = a.scratch[0] ?? 0;
   let farY = a.scratch[1] ?? 0;
   let farD = -1;
   for (let e = 0; e < 4; e++) {
-    edgePoint(a.camX, a.camY, e, 0.5, a.scratch);
+    edgePoint(a.camX, a.camY, e, 0.5, a.scratch, a.viewW, a.viewH);
     const sx = a.scratch[0] ?? 0;
     const sy = a.scratch[1] ?? 0;
     if (!pointOK(w, sx, sy)) continue;
@@ -344,7 +344,7 @@ export function queueSpawn(w: World, kind: number): void {
   for (let n = 0; n < 8; n++) {
     const e = (nextFloat(w.rng) * 4) | 0;
     const uu = nextFloat(w.rng);
-    edgePoint(a.camX, a.camY, e, uu, a.scratch);
+    edgePoint(a.camX, a.camY, e, uu, a.scratch, a.viewW, a.viewH);
     const x = a.scratch[0] ?? 0;
     const y = a.scratch[1] ?? 0;
     if (!pointOK(w, x, y)) continue;
@@ -357,7 +357,7 @@ export function queueSpawn(w: World, kind: number): void {
   if (!found) {
     let bestD = -1;
     for (let e = 0; e < 4; e++) {
-      edgePoint(a.camX, a.camY, e, 0.5, a.scratch);
+      edgePoint(a.camX, a.camY, e, 0.5, a.scratch, a.viewW, a.viewH);
       const dx = (a.scratch[0] ?? 0) - w.px;
       const dy = (a.scratch[1] ?? 0) - w.py;
       const d2 = dx * dx + dy * dy;
@@ -397,9 +397,9 @@ function packPoint(w: World, x: number, y: number, s: number): void {
     py += (nextFloat(w.rng) - 0.5) * 16;
   }
   const loX = a.camX + SPAWN_INSET;
-  const hiX = a.camX + W - SPAWN_INSET;
+  const hiX = a.camX + a.viewW - SPAWN_INSET;
   const loY = a.camY + SPAWN_TOP;
-  const hiY = a.camY + H - SPAWN_BOT;
+  const hiY = a.camY + a.viewH - SPAWN_BOT;
   if (px < loX) px = loX;
   if (px > hiX) px = hiX;
   if (py < loY) py = loY;

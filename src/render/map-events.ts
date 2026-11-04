@@ -164,7 +164,7 @@ function fogPlate(): HTMLCanvasElement {
 }
 
 export function fogCoverBox(w: World): { x: number; y: number; w: number; h: number } {
-  return { x: w.arena.camX, y: w.arena.camY, w: W, h: H };
+  return { x: w.arena.camX, y: w.arena.camY, w: w.arena.viewW || W, h: w.arena.viewH || H };
 }
 
 function fog(ctx: CanvasRenderingContext2D, w: World): void {

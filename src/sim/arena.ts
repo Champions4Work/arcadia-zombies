@@ -40,6 +40,8 @@ export const PROP_NODES = MAX_OBS * 16;
 export interface Arena {
   camX: number;
   camY: number;
+  viewW: number;
+  viewH: number;
   obsN: number;
   obsX: Float32Array;
   obsY: Float32Array;
@@ -120,9 +122,11 @@ export function clamp(v: number, lo: number, hi: number): number {
   return v;
 }
 
-export function cameraTarget(px: number, py: number, out: Float32Array): void {
-  out[0] = clamp(px - W * 0.5, 0, ARENA_W - W);
-  out[1] = clamp(py - H * 0.5, 0, ARENA_H - H);
+export function cameraTarget(px: number, py: number, out: Float32Array, vw = W, vh = H): void {
+  const viewW = clamp(vw, 1, ARENA_W);
+  const viewH = clamp(vh, 1, ARENA_H);
+  out[0] = clamp(px - viewW * 0.5, 0, ARENA_W - viewW);
+  out[1] = clamp(py - viewH * 0.5, 0, ARENA_H - viewH);
 }
 
 export function hitsProp(
@@ -144,20 +148,20 @@ export function hitsProp(
   return ex * ex + ey * ey < pr * pr;
 }
 
-export function edgePoint(camX: number, camY: number, edge: number, u: number, out: Float32Array): void {
+export function edgePoint(camX: number, camY: number, edge: number, u: number, out: Float32Array, vw = W, vh = H): void {
   const side = SPAWN_INSET;
   const uu = clamp(u, 0, 1);
-  const spanX = W - side * 2;
-  const spanY = H - SPAWN_TOP - SPAWN_BOT;
-  let x = camX + W * 0.5;
-  let y = camY + H * 0.5;
+  const spanX = vw - side * 2;
+  const spanY = vh - SPAWN_TOP - SPAWN_BOT;
+  let x = camX + vw * 0.5;
+  let y = camY + vh * 0.5;
   if (edge === 0) { x = camX + side + uu * spanX; y = camY + SPAWN_TOP; }
-  else if (edge === 1) { x = camX + W - side; y = camY + SPAWN_TOP + uu * spanY; }
-  else if (edge === 2) { x = camX + side + uu * spanX; y = camY + H - SPAWN_BOT; }
+  else if (edge === 1) { x = camX + vw - side; y = camY + SPAWN_TOP + uu * spanY; }
+  else if (edge === 2) { x = camX + side + uu * spanX; y = camY + vh - SPAWN_BOT; }
   else { x = camX + side; y = camY + SPAWN_TOP + uu * spanY; }
   const lo = 12;
-  x = clamp(x, Math.max(lo, camX - SPAWN_MARGIN), Math.min(ARENA_W - lo, camX + W + SPAWN_MARGIN));
-  y = clamp(y, Math.max(lo, camY - SPAWN_MARGIN), Math.min(ARENA_H - lo, camY + H + SPAWN_MARGIN));
+  x = clamp(x, Math.max(lo, camX - SPAWN_MARGIN), Math.min(ARENA_W - lo, camX + vw + SPAWN_MARGIN));
+  y = clamp(y, Math.max(lo, camY - SPAWN_MARGIN), Math.min(ARENA_H - lo, camY + vh + SPAWN_MARGIN));
   out[0] = x;
   out[1] = y;
 }
@@ -173,9 +177,9 @@ export function spawnHidden(camX: number, camY: number, x: number, y: number): b
   return false;
 }
 
-export function showsArrow(kind: number, sx: number, sy: number): number {
+export function showsArrow(kind: number, sx: number, sy: number, vw = W, vh = H): number {
   if ((kind & Z_ELITE) === 0) return 0;
-  if (sx >= 0 && sy >= 0 && sx <= W && sy <= H) return 0;
+  if (sx >= 0 && sy >= 0 && sx <= vw && sy <= vh) return 0;
   return 1;
 }
 
@@ -328,6 +332,8 @@ export function createArena(seed: number, px: number, py: number): Arena {
   const arena: Arena = {
     camX: scratch[0] ?? 0,
     camY: scratch[1] ?? 0,
+    viewW: W,
+    viewH: H,
     obsN: n,
     obsX, obsY, obsHW, obsHH, obsR, obsKind, obsHp, obsAlive,
     healX: new Float32Array(MAX_HEAL),

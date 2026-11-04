@@ -9,6 +9,8 @@ export interface Fit {
   cssH: number;
   bufW: number;
   bufH: number;
+  viewW: number;
+  viewH: number;
 }
 
 export function computeFit(
@@ -28,16 +30,20 @@ export function computeFit(
   const sb = Math.max(0, safe.b);
   const availW = Math.max(1, w - sl - sr);
   const availH = Math.max(1, h - st - sb);
-  const scale = Math.min(availW / gameW, availH / gameH);
+  const gw = Math.max(1, gameW);
+  const gh = Math.max(1, gameH);
+  const scale = Math.min(availW / gw, availH / gh);
   return {
     dpr: px,
     scale,
-    ox: sl + (availW - gameW * scale) / 2,
-    oy: st + (availH - gameH * scale) / 2,
+    ox: sl + (availW - gw * scale) / 2,
+    oy: st + (availH - gh * scale) / 2,
     cssW: w,
     cssH: h,
     bufW: Math.max(1, Math.round(w * px)),
     bufH: Math.max(1, Math.round(h * px)),
+    viewW: gw,
+    viewH: gh,
   };
 }
 
@@ -69,4 +75,8 @@ export function applyCanvas(
 
 export function screenToGame(f: Fit, x: number, y: number): { x: number; y: number } {
   return { x: (x - f.ox) / f.scale, y: (y - f.oy) / f.scale };
+}
+
+export function worldToCss(f: Fit, camX: number, camY: number, x: number, y: number): { x: number; y: number } {
+  return { x: f.ox + (x - camX) * f.scale, y: f.oy + (y - camY) * f.scale };
 }

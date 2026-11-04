@@ -183,7 +183,7 @@ export function paintDecals(ctx: CanvasRenderingContext2D, w: World): void {
     if (!a.healAlive[i]) continue;
     const x = a.healX[i] ?? 0;
     const y = a.healY[i] ?? 0;
-    if (x < camX - 24 || y < camY - 24 || x > camX + W + 24 || y > camY + H + 24) continue;
+    if (x < camX - 24 || y < camY - 24 || x > camX + a.viewW + 24 || y > camY + a.viewH + 24) continue;
     heal(ctx, x, y, w.tick, i);
   }
   for (let i = 0; i < a.teleAlive.length; i++) {
@@ -222,14 +222,14 @@ export function paintArrows(ctx: CanvasRenderingContext2D, w: World): void {
     const kind = z.kind[i] ?? 0;
     const sx = (z.x[i] ?? 0) - camX;
     const sy = (z.y[i] ?? 0) - camY;
-    if (!showsArrow(kind, sx, sy)) continue;
+    if (!showsArrow(kind, sx, sy, w.arena.viewW || W, w.arena.viewH || H)) continue;
     arrowTip(sx, sy, SCR);
     chevron(ctx, w.tick, "#fff1c2");
   }
   if (!lichUp(w)) return;
   const sx = lichX(w) - camX;
   const sy = lichY(w) - camY;
-  if (sx >= 0 && sy >= 0 && sx <= W && sy <= H) return;
+  if (sx >= 0 && sy >= 0 && sx <= (w.arena.viewW || W) && sy <= (w.arena.viewH || H)) return;
   arrowTip(sx, sy, SCR);
   chevron(ctx, w.tick, "#e4c0ff");
 }

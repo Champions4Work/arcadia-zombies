@@ -1,5 +1,6 @@
 import { musicBpm, musicVoices } from "../src/render/music";
 import { computeFit, screenToGame } from "../src/shell/fit";
+import { playView } from "../src/shell/play-view";
 import {
   begin,
   BEST_KEY,
@@ -162,13 +163,19 @@ describe("virtual stick", () => {
 });
 
 describe("fullscreen fit", () => {
-  it("letterboxes the playfield and scales the backing store by devicePixelRatio", () => {
+  it("fills a matching play view and still letterboxes a fixed 480x320 window", () => {
     const wide = computeFit(960, 640, 2, 480, 320);
     expect(wide.scale).toBe(2);
     expect(wide.ox).toBe(0);
     expect(wide.oy).toBe(0);
     expect(wide.bufW).toBe(1920);
     expect(wide.bufH).toBe(1280);
+    const pv = playView(390, 844);
+    const filled = computeFit(390, 844, 3, pv.viewW, pv.viewH);
+    expect(filled.ox).toBeCloseTo(0);
+    expect(filled.oy).toBeCloseTo(0);
+    expect(filled.scale * pv.viewW).toBeCloseTo(390);
+    expect(filled.scale * pv.viewH).toBeCloseTo(844);
     const phone = computeFit(390, 844, 3, 480, 320);
     expect(phone.scale).toBeCloseTo(390 / 480);
     expect(phone.ox).toBe(0);

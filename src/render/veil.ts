@@ -42,8 +42,8 @@ function hurtSheet(): HTMLCanvasElement {
   return hurt;
 }
 
-export function paintVeil(ctx: CanvasRenderingContext2D): void {
-  ctx.drawImage(fogSheet(), 0, 0);
+export function paintVeil(ctx: CanvasRenderingContext2D, vw = W, vh = H): void {
+  ctx.drawImage(fogSheet(), 0, 0, vw, vh);
 }
 
 export function hurtAlpha(cd: number): number {
@@ -52,10 +52,10 @@ export function hurtAlpha(cd: number): number {
   return a > 0.4 ? 0.4 : a;
 }
 
-export function paintHurt(ctx: CanvasRenderingContext2D, cd: number): void {
+export function paintHurt(ctx: CanvasRenderingContext2D, cd: number, vw = W, vh = H): void {
   const amt = hurtAlpha(cd);
   if (amt <= 0) return;
   ctx.globalAlpha = amt;
-  ctx.drawImage(hurtSheet(), 0, 0);
+  ctx.drawImage(hurtSheet(), 0, 0, vw, vh);
   ctx.globalAlpha = 1;
 }

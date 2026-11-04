@@ -426,9 +426,9 @@ export function drawStageFx(ctx: CanvasRenderingContext2D, tick: number, camX: n
   embers(ctx, tick);
 }
 
-export function drawYardWindow(ctx: CanvasRenderingContext2D, camX: number, camY: number): void {
+export function drawYardWindow(ctx: CanvasRenderingContext2D, camX: number, camY: number, vw = W, vh = H): void {
   const src = background();
-  ctx.drawImage(src, camX * STAGE, camY * STAGE, W * STAGE, H * STAGE, camX, camY, W, H);
+  ctx.drawImage(src, camX * STAGE, camY * STAGE, vw * STAGE, vh * STAGE, camX, camY, vw, vh);
 }
 
 export function drawStage(ctx: CanvasRenderingContext2D, tick: number, camX = 0, camY = 0): void {
