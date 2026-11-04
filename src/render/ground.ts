@@ -92,6 +92,8 @@ function brassPad(c: number, r: number): number {
   if (r >= 20 && r <= 24 && c >= 2 && c <= 10) return 1;
   if (r >= 20 && r <= 24 && c >= 50 && c <= 58) return 1;
   if (r >= 18 && r <= 22 && c >= 2 && c <= 10) return 1;
+  if (r >= 14 && r <= 34 && c >= 2 && c <= 11) return 1;
+  if (r >= 14 && r <= 34 && c >= 49 && c <= 58) return 1;
   if (r >= 30 && r <= 32 && c >= 16 && c <= 28) return 1;
   return 0;
 }
@@ -177,6 +179,10 @@ function build(): void {
   forceVent(52, 20);
   forceVent(18, 28);
   forceVent(40, 32);
+  forceVent(10, 26);
+  forceVent(50, 26);
+  forceVent(12, 34);
+  forceVent(48, 34);
   if (bound === ZONE_BOILER) {
     forceVent(12, 18);
     forceVent(20, 24);

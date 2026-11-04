@@ -169,12 +169,21 @@ describe("wave districts", () => {
     expect(readFileSync("docs/reviews/zones/phone_390_brass.png", "utf8").length).toBeGreaterThan(1000);
     expect(readFileSync("docs/reviews/zones/phone_390_boiler.png", "utf8").length).toBeGreaterThan(1000);
     expect(readFileSync("docs/reviews/zones/phone_390_tram.png", "utf8").length).toBeGreaterThan(1000);
+    const r25 = readFileSync("scripts/world-props-shot.mjs", "utf8");
+    expect(r25.includes("world-props-r25")).toBe(true);
+    expect(r25.includes("phone_390_play.png")).toBe(true);
   });
 
   it("puts a signature prop mix in the phone frame of later districts", () => {
     const yard = readFileSync("src/render/yard-fx.ts", "utf8");
+    const brass = yard.slice(yard.indexOf("const PROPS"), yard.indexOf("const TANKS"));
     const boiler = yard.slice(yard.indexOf("const BOILER_PROPS"), yard.indexOf("const BOILER_TANKS"));
     const tram = yard.slice(yard.indexOf("const TRAM_PROPS"), yard.indexOf("const TRAM_TANKS"));
+    expect(brass.includes("breakable_boiler")).toBe(true);
+    expect(brass.includes("breakable_gear_pylon")).toBe(true);
+    expect(brass.includes("decal_hazard")).toBe(true);
+    expect(brass.includes("conveyor")).toBe(true);
+    expect(brass.includes("decal_grate")).toBe(true);
     expect(boiler.includes("breakable_boiler")).toBe(true);
     expect(boiler.includes("valve_steam")).toBe(true);
     expect(tram.includes("crate_stack")).toBe(true);

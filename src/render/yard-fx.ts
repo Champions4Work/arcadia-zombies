@@ -12,10 +12,15 @@ const BUILDINGS = [
 
 const BELTS = [
   { x: 296, y: 420, w: 368, vert: 0 },
+  { x: 304, y: 308, w: 148, vert: 0 },
+  { x: 508, y: 308, w: 148, vert: 0 },
 ];
 
 const PIPE_RUNS = [
   { x: 296, y: 232, len: 368, vert: 0 },
+  { x: 304, y: 528, len: 352, vert: 0 },
+  { x: 304, y: 308, len: 92, vert: 0 },
+  { x: 564, y: 308, len: 92, vert: 0 },
 ];
 
 const BELT_H = 72;
@@ -32,22 +37,30 @@ const PROPS: { id: string; x: number; y: number }[] = [
   { id: "lamp", x: 360, y: 208 },
   { id: "lamp", x: 480, y: 204 },
   { id: "lamp", x: 600, y: 208 },
-  { id: "crate_stack", x: 332, y: 340 },
+  { id: "breakable_boiler", x: 332, y: 340 },
+  { id: "breakable_gear_pylon", x: 328, y: 388 },
   { id: "crate_stack", x: 340, y: 368 },
   { id: "barrel", x: 336, y: 386 },
+  { id: "decal_hazard", x: 336, y: 418 },
+  { id: "conveyor", x: 334, y: 308 },
   { id: "crate", x: 332, y: 428 },
   { id: "valve_steam", x: 334, y: 468 },
   { id: "decal_vent", x: 336, y: 450 },
+  { id: "decal_grate", x: 332, y: 492 },
   { id: "barrel", x: 332, y: 508 },
   { id: "crate_stack", x: 336, y: 548 },
   { id: "pipes_blue_tank", x: 334, y: 596 },
   { id: "crate", x: 332, y: 636 },
-  { id: "crate_stack", x: 628, y: 340 },
+  { id: "breakable_boiler", x: 628, y: 340 },
+  { id: "breakable_gear_pylon", x: 632, y: 388 },
   { id: "crate_stack", x: 620, y: 368 },
   { id: "barrel", x: 632, y: 386 },
+  { id: "decal_hazard", x: 632, y: 418 },
+  { id: "conveyor", x: 630, y: 308 },
   { id: "crate", x: 628, y: 428 },
   { id: "valve_steam", x: 630, y: 468 },
   { id: "decal_vent", x: 632, y: 450 },
+  { id: "decal_grate", x: 628, y: 492 },
   { id: "barrel", x: 628, y: 508 },
   { id: "crate_stack", x: 632, y: 548 },
   { id: "pipes_blue_tank", x: 630, y: 596 },
@@ -55,7 +68,9 @@ const PROPS: { id: string; x: number; y: number }[] = [
 ];
 
 const TANKS = [
+  { x: 320, y: 340 },
   { x: 320, y: 588 },
+  { x: 640, y: 340 },
   { x: 640, y: 588 },
 ];
 
@@ -425,6 +440,11 @@ function paintCrossPipe(
   blitScaled(ctx, "pipes_blue_tank", x + 28, y + 22, TANK_SCALE);
   blitScaled(ctx, "pipes_blue_tank", x + len - 28, y + 22, TANK_SCALE);
   paintRedValve(ctx, VALVE.x, VALVE.y);
+  if (len > 96) paintRedValve(ctx, x + (len >> 1), y);
+  if (len > 200) {
+    paintRedValve(ctx, x + 48, y);
+    paintRedValve(ctx, x + len - 48, y);
+  }
 }
 
 function steamPuff(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number): void {
@@ -497,6 +517,15 @@ function paintCrossBelt(
   blitSheet(ctx, "blue_glow", cx, cy - 8);
   ctx.restore();
   blitScaled(ctx, "crate", cx, cy, 1.35);
+  if (w > 200) {
+    const cx2 = x + ((crateT + w * 0.46) % w);
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    ctx.globalAlpha = 0.62 + ((tick >> 2) & 1) * 0.22;
+    blitSheet(ctx, "blue_glow", cx2, cy - 6);
+    ctx.restore();
+    blitScaled(ctx, "crate_stack", cx2, cy - 2, 1.12);
+  }
 }
 
 export const HERO_X = 480;
