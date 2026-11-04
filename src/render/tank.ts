@@ -4,6 +4,7 @@ import {
   scarAnchorX, scarAnchorY,
 } from "../sim/tank";
 import type { World } from "../sim/types";
+import { boiler, cog, pill, plate } from "./paint";
 
 const SOOT = "#120c08";
 const BRASS = "#c8963e";
@@ -20,7 +21,7 @@ function px(c: CanvasRenderingContext2D, x: number, y: number, s: string, w = 1,
   c.fillStyle = s;
   c.fillRect(x | 0, y | 0, w, h);
 }
-function rivet(c: CanvasRenderingContext2D, x: number, y: number): void {
+function stud(c: CanvasRenderingContext2D, x: number, y: number): void {
   px(c, x, y, BRASS_HI, 2, 2);
   px(c, x + 1, y + 1, BRASS_LO, 1, 1);
 }
@@ -75,12 +76,16 @@ function paintScars(c: CanvasRenderingContext2D, w: World): void {
     c.globalAlpha = 1;
   }
 }
+const IRON_M = { hi: IRON_HI, mid: IRON, lo: IRON_LO, edge: SOOT };
+const BRASS_M = { hi: BRASS_HI, mid: BRASS, lo: BRASS_LO, edge: SOOT };
+const COPPER_M = { hi: "#d07040", mid: COPPER, lo: "#6a2414", edge: SOOT };
+
 function paintBody(c: CanvasRenderingContext2D, w: World): void {
   const b = w.boss;
   const scarWind = b.phase === PHASE_SCAR && b.mode === 1;
   const cannonWind = b.phase === PHASE_CANNON && b.mode === 1;
   const ramWind = b.phase === PHASE_RAM && b.mode === 1;
-  shadow(c, b.x, b.y, 62);
+  shadow(c, b.x, b.y, 72);
   if (scarWind) {
     mark(c, scarAnchorX(b.x, b.aimX, b.aimY, -1), scarAnchorY(b.y, b.aimX, b.aimY, -1));
     mark(c, scarAnchorX(b.x, b.aimX, b.aimY, 1), scarAnchorY(b.y, b.aimX, b.aimY, 1));
@@ -96,23 +101,24 @@ function paintBody(c: CanvasRenderingContext2D, w: World): void {
   c.save();
   c.translate(b.x, b.y);
   c.rotate(Math.atan2(b.aimY, b.aimX));
-  px(c, -22, -26, IRON_LO, 44, 10);
-  px(c, -22, 16, IRON_LO, 44, 10);
+  plate(c, 0, -22, 50, 12, 0, IRON_M, 1.8);
+  plate(c, 0, 22, 50, 12, 0, IRON_M, 1.8);
   cleats(c, w.tick, b.phase === PHASE_RAM && b.mode === 2);
-  px(c, -24, -11, COPPER, 16, 22);
+  plate(c, -16, 0, 20, 26, 0, COPPER_M, 2);
   px(c, -22, -6, SOOT, 10, 12);
   if (doorOn(w.tick, scarWind)) px(c, -20, -4, EMBER, 6, 8);
-  px(c, -17, -14, IRON, 34, 28);
-  px(c, -17, -14, IRON_HI, 34, 3);
-  rivet(c, -15, -12);
-  rivet(c, 13, -12);
-  rivet(c, -15, 10);
-  rivet(c, 13, 10);
-  px(c, -8, -8, BRASS, 16, 16);
+  boiler(c, -16, 0, 5.5, 6.2, doorOn(w.tick, scarWind) ? 1 : 0.25);
+  plate(c, 2, 0, 38, 30, 0, IRON_M, 2.2);
+  plate(c, 2, -12, 36, 4, 0, BRASS_M, 1.2);
+  stud(c, -12, -10);
+  stud(c, 14, -10);
+  stud(c, -12, 10);
+  stud(c, 14, 10);
+  cog(c, 0, 0, 8.5, w.tick * 0.08, BRASS_M, 8, true);
   const len = b.phase === PHASE_CANNON && b.mode === 2 ? 12 : 18;
-  px(c, 8, -3, IRON, len, 6);
-  px(c, 8 + len - 4, -4, BRASS, 4, 8);
-  if (ramWind) px(c, 16, -14, IRON, TELL_RAM, 28);
+  pill(c, 8 + len / 2, 0, len, 7, 0, IRON_M, 1.6);
+  plate(c, 8 + len - 2, 0, 6, 10, 0, BRASS_M, 1.3);
+  if (ramWind) plate(c, 16 + TELL_RAM / 2, 0, TELL_RAM, 28, 0, IRON_M, 1.6);
   c.restore();
 }
 function paintShells(c: CanvasRenderingContext2D, w: World): void {

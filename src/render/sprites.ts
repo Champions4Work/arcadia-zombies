@@ -7,7 +7,7 @@ export {
   BRUTE, drawCreep, drawHero, fallbackSpec, GHOUL, HERO_H, HERO_W, SHAMBLER, type CreepSpec,
 };
 
-const creepSheets = new Map<CreepSpec, HTMLCanvasElement[]>();
+const creepSheets = new Map<string, HTMLCanvasElement[]>();
 const heroSheets = new Map<string, HTMLCanvasElement[]>();
 let shadow: HTMLCanvasElement | null = null;
 let gun: HTMLCanvasElement | null = null;
@@ -17,7 +17,6 @@ let saw: HTMLCanvasElement | null = null;
 const STEEL_SAW: Metal = { hi: "#f4f7fa", mid: "#c5ced6", lo: "#7d8b98", edge: "#2c3842" };
 let puff: HTMLCanvasElement | null = null;
 let star: HTMLCanvasElement | null = null;
-const fallbackSheets = new Map<number, HTMLCanvasElement[]>();
 
 function frames(w: number, h: number, draw: (ctx: CanvasRenderingContext2D, frame: number) => void): HTMLCanvasElement[] {
   return [0, 1, 2, 3].map((frame) => bakeActor(w, h, (ctx) => draw(ctx, frame)));
@@ -33,21 +32,25 @@ export function heroFrames(id = 0, pose = 0): HTMLCanvasElement[] {
   return hit;
 }
 
-export function creepFrames(spec: CreepSpec): HTMLCanvasElement[] {
-  let hit = creepSheets.get(spec);
+export function creepFrames(spec: CreepSpec, pose = 0): HTMLCanvasElement[] {
+  const key = `${spec.w}:${spec.h}:${spec.fat}:${spec.head}:${spec.helmet ? 1 : 0}:${spec.gearEye ? 1 : 0}:${pose}`;
+  let hit = creepSheets.get(key);
   if (!hit) {
-    hit = frames(spec.w, spec.h, (ctx, frame) => drawCreep(ctx, frame, spec));
-    creepSheets.set(spec, hit);
+    hit = frames(spec.w, spec.h, (ctx, frame) => drawCreep(ctx, frame, spec, pose));
+    creepSheets.set(key, hit);
   }
   return hit;
 }
 
-export function fallbackFrames(kind: number): HTMLCanvasElement[] {
-  let hit = fallbackSheets.get(kind);
+const fallbackSheets = new Map<string, HTMLCanvasElement[]>();
+
+export function fallbackFrames(kind: number, pose = 0): HTMLCanvasElement[] {
+  const key = `${kind}:${pose}`;
+  let hit = fallbackSheets.get(key);
   if (!hit) {
     const spec = fallbackSpec(kind);
-    hit = frames(spec.w, spec.h, (ctx, frame) => drawCreep(ctx, frame, spec));
-    fallbackSheets.set(kind, hit);
+    hit = frames(spec.w, spec.h, (ctx, frame) => drawCreep(ctx, frame, spec, pose));
+    fallbackSheets.set(key, hit);
   }
   return hit;
 }

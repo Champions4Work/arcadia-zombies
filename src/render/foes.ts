@@ -1,5 +1,6 @@
 import { B_ACID } from "../sim/foes";
-import { bakeActor, bakeRaw, blit, blob, BRASS, cog, COPPER, eye, GREEN, grin, pill, rivet, type Metal } from "./paint";
+import { bakeActor, bakeRaw, blit, blob, boiler, BRASS, cog, COPPER, eye, GREEN, grin, pill, plate, rivet, type Metal } from "./paint";
+import { FRAME_N, POSE_DIE, POSE_N, POSE_WALK, poseFrame } from "./poses";
 import { drawCreep, type CreepSpec } from "./sprites";
 import type { BulletPaint, Glyph } from "./plugins";
 
@@ -21,50 +22,56 @@ const KNIGHT: CreepSpec = {
 
 function nozzle(ctx: CanvasRenderingContext2D, frame: number): void {
   const bob = frame & 1 ? -1.4 : 0;
-  pill(ctx, 16, -30 + bob, 12, 4.4, -0.15, BRASS, 1.5);
-  blob(ctx, 23, -30 + bob, 3.4, 3.2, ACID, 1.6);
+  plate(ctx, 16, -31 + bob, 14, 5.2, -0.12, BRASS, 1.5);
+  blob(ctx, 24, -31 + bob, 3.8, 3.4, ACID, 1.6);
   ctx.beginPath();
-  ctx.arc(24, -30 + bob, 1.2, 0, Math.PI * 2);
+  ctx.arc(25, -31 + bob, 1.4, 0, Math.PI * 2);
   ctx.fillStyle = frame & 2 ? "#f4ffd0" : "#c6f25a";
   ctx.fill();
 }
 
 function tank(ctx: CanvasRenderingContext2D, frame: number): void {
   const bob = frame & 1 ? -1.4 : 0;
-  pill(ctx, -4, -32 + bob, 18, 12, 0.2, TANK, 2);
-  rivet(ctx, -10, -34 + bob, 1.2);
-  rivet(ctx, 2, -30 + bob, 1.2);
-  pill(ctx, 6, -40 + bob, 4, 6, 0.4, BRASS, 1.2);
-  blob(ctx, -10, -46 + bob - (frame & 2 ? 2 : 0), 3.2, 2.6, ACID, 1.2);
-  ctx.beginPath();
-  ctx.arc(8, -28 + bob, 1.6, 0, Math.PI * 2);
-  ctx.fillStyle = frame & 1 ? "#ffb040" : "#ffe08a";
-  ctx.fill();
+  plate(ctx, -4, -33 + bob, 20, 14, 0.18, TANK, 2);
+  rivet(ctx, -10, -36 + bob, 1.25);
+  rivet(ctx, 2, -30 + bob, 1.25);
+  rivet(ctx, -8, -28 + bob, 1.1);
+  pill(ctx, 7, -42 + bob, 4.4, 7, 0.35, BRASS, 1.2);
+  boiler(ctx, 6, -28 + bob, 2.6, 2.4, frame & 1 ? 1 : 0.3);
+  blob(ctx, -11, -48 + bob - (frame & 2 ? 2 : 0), 3.4, 2.8, ACID, 1.2);
 }
 
-function drawRat(ctx: CanvasRenderingContext2D, frame: number): void {
-  const bob = frame & 1 ? -1 : 0;
-  const step = frame & 1 ? 1.4 : -0.6;
-  blob(ctx, -1, -8 + bob, 11, 6.2, BRASS, 1.8);
-  cog(ctx, -2, -9 + bob, 3.2, frame * 0.4, COPPER, 6, false);
-  blob(ctx, 8, -9 + bob, 4.2, 3.4, BRASS, 1.4);
-  eye(ctx, 9.2, -9.4 + bob, 1.3, 0.2);
+function drawRat(ctx: CanvasRenderingContext2D, frame: number, pose = POSE_WALK): void {
+  const bob = (pose === POSE_DIE ? 4 : 0) + (frame & 1 ? -1.2 : 0);
+  const step = frame & 1 ? 1.6 : -0.8;
+  blob(ctx, -1, -9 + bob, 12, 6.8, BRASS, 1.8);
+  cog(ctx, -2, -10 + bob, 3.6, frame * 0.45, COPPER, 6, true);
+  blob(ctx, 9, -10 + bob, 4.6, 3.8, BRASS, 1.4);
+  eye(ctx, 10.2, -10.4 + bob, 1.4, 0.2);
   ctx.beginPath();
-  ctx.arc(10.4, -9.2 + bob, 0.7, 0, Math.PI * 2);
+  ctx.arc(11.4, -10.2 + bob, 0.75, 0, Math.PI * 2);
   ctx.fillStyle = "#ff4450";
   ctx.fill();
-  pill(ctx, -12, -7 + bob, 7, 1.6, 0.4, COPPER, 1);
-  blob(ctx, -4, -3 + step, 1.6, 1.4, { hi: "#3a2414", mid: "#24160c", lo: "#120c08", edge: "#120c08" }, 0.8);
-  blob(ctx, 3, -3 - step, 1.6, 1.4, { hi: "#3a2414", mid: "#24160c", lo: "#120c08", edge: "#120c08" }, 0.8);
-  grin(ctx, 8.4, -7.2 + bob, 1.4);
+  plate(ctx, -13, -8 + bob, 8, 2, 0.4, COPPER, 1);
+  blob(ctx, -4, -3 + step, 1.8, 1.5, { hi: "#3a2414", mid: "#24160c", lo: "#120c08", edge: "#120c08" }, 0.8);
+  blob(ctx, 3, -3 - step, 1.8, 1.5, { hi: "#3a2414", mid: "#24160c", lo: "#120c08", edge: "#120c08" }, 0.8);
+  grin(ctx, 9.2, -8 + bob, 1.5);
+  rivet(ctx, 2, -7 + bob, 0.8);
 }
 
-const sheets = new Map<string, HTMLCanvasElement[]>();
+const sheets = new Map<string, HTMLCanvasElement[][]>();
 
-function sheet(key: string, w: number, h: number, draw: (ctx: CanvasRenderingContext2D, frame: number) => void): HTMLCanvasElement[] {
+function sheet(key: string, w: number, h: number, draw: (ctx: CanvasRenderingContext2D, frame: number, pose: number) => void): HTMLCanvasElement[][] {
   let hit = sheets.get(key);
   if (!hit) {
-    hit = [0, 1, 2, 3].map((frame) => bakeActor(w, h, (ctx) => draw(ctx, frame)));
+    hit = [];
+    for (let pose = 0; pose < POSE_N; pose++) {
+      const row: HTMLCanvasElement[] = [];
+      for (let frame = 0; frame < FRAME_N; frame++) {
+        row.push(bakeActor(w, h, (ctx) => draw(ctx, frame, pose)));
+      }
+      hit.push(row);
+    }
     sheets.set(key, hit);
   }
   return hit;
@@ -75,21 +82,22 @@ function baked(spec: CreepSpec, extra?: (ctx: CanvasRenderingContext2D, frame: n
   return {
     w: spec.w,
     h: spec.h,
-    draw(ctx, x, y, tick, flip) {
-      const frames = sheet(key + (extra ? "-x" : ""), spec.w, spec.h, (c, frame) => {
-        drawCreep(c, frame, spec);
+    draw(ctx, x, y, tick, flip, _hp, pose = POSE_WALK) {
+      const frames = sheet(key + (extra ? "-x" : ""), spec.w, spec.h, (c, frame, p) => {
+        drawCreep(c, frame, spec, p);
         extra?.(c, frame);
       });
-      blit(ctx, frames, spec.w, spec.h, (tick >> (spec.fat > 1.2 ? 4 : 3)) & 3, x, y, flip);
+      blit(ctx, frames[pose] ?? frames[POSE_WALK] ?? [], spec.w, spec.h, poseFrame(tick, pose, spec.fat > 1.2), x, y, flip);
     },
   };
 }
 
 const ratGlyph: Glyph = {
-  w: 40,
-  h: 36,
-  draw(ctx, x, y, tick, flip) {
-    blit(ctx, sheet("rat", 40, 36, drawRat), 40, 36, (tick >> 2) & 3, x, y, flip);
+  w: 42,
+  h: 38,
+  draw(ctx, x, y, tick, flip, _hp, pose = POSE_WALK) {
+    const frames = sheet("rat", 42, 38, drawRat);
+    blit(ctx, frames[pose] ?? frames[POSE_WALK] ?? [], 42, 38, poseFrame(tick, pose, false), x, y, flip);
   },
 };
 

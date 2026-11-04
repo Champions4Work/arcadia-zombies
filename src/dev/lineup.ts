@@ -1,13 +1,14 @@
+import { BOSS_TANK, bossMaxHp } from "../sim/boss";
 import { UNIONS } from "../sim/evolve";
 import {
   B_ACID, foeHp, Z_ELITE, Z_GAS, Z_KIND, Z_KNIGHT, Z_RAT, Z_SPITTER,
 } from "../sim/foes";
 import { beginLevel, xpNeed } from "../sim/progress";
 import {
-  MAX_BULLETS, MAX_ZOMBIES, UNION_BRIAR, UPG_DYNAMO, UPG_MAX, UPG_TESLA, Z_SHAMBLER, type World,
+  MAX_BULLETS, MAX_ZOMBIES, UNION_BRIAR, UPG_DYNAMO, UPG_MAX, UPG_TESLA, Z_BRUTE, Z_GHOUL, Z_SHAMBLER, type World,
 } from "../sim/types";
 
-const ROW = [Z_SPITTER, Z_GAS, Z_KNIGHT, Z_RAT];
+const ROW = [Z_SHAMBLER, Z_GHOUL, Z_BRUTE, Z_SPITTER, Z_GAS, Z_KNIGHT, Z_RAT];
 
 export function lineup(w: World): void {
   w.toSpawn = 0;
@@ -33,8 +34,8 @@ export function lineup(w: World): void {
         const i = n++;
         z.alive[i] = 1;
         z.kind[i] = raw;
-        z.x[i] = 70 + k * 100 + (base === Z_RAT ? (p - 1.5) * 14 : 0);
-        z.y[i] = (elite ? 230 : 130) + (base === Z_RAT ? (p & 1) * 10 : 0);
+        z.x[i] = 56 + k * 58 + (base === Z_RAT ? (p - 1.5) * 12 : 0);
+        z.y[i] = (elite ? 230 : 128) + (base === Z_RAT ? (p & 1) * 10 : 0);
         z.vx[i] = 0;
         z.vy[i] = base === Z_KNIGHT ? Math.PI : base === Z_SPITTER ? 40 : 0;
         z.hp[i] = foeHp(raw & Z_KIND, 8, elite === 1);
@@ -50,6 +51,17 @@ export function lineup(w: World): void {
   b.y[0] = 108;
   b.vx[0] = -1.4;
   b.vy[0] = 0.2;
+  const boss = w.boss;
+  boss.on = 1;
+  boss.kind = BOSS_TANK;
+  boss.phase = 1;
+  boss.mode = 1;
+  boss.x = 400;
+  boss.y = 300;
+  boss.aimX = -1;
+  boss.aimY = 0;
+  boss.hp = bossMaxHp(BOSS_TANK, 1, 0);
+  boss.maxHp = boss.hp;
 }
 
 export function stageOffer(w: World): void {

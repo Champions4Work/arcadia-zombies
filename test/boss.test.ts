@@ -440,6 +440,9 @@ describe("boss attacks", () => {
       get(_t, prop) {
         if (prop === "fillStyle") return style;
         if (prop === "fill" || prop === "fillRect") return () => { if (style === "#d5e4ea") steam++; };
+        if (prop === "createLinearGradient" || prop === "createRadialGradient") {
+          return () => ({ addColorStop() {} });
+        }
         return () => undefined;
       },
       set(_t, prop, value) {

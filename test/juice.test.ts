@@ -362,6 +362,43 @@ describe("horde blit flash", () => {
     expect(white).toBe(ink);
     expect(stopRemaining()).toBe(0);
   });
+
+  it("mirrors a flashing knight the same way as the stamp", () => {
+    buildSprites();
+    bg.fill(0);
+    resetJuice();
+    const w = createWorld(3);
+    w.toSpawn = 0;
+    w.arena.camX = 0;
+    w.arena.camY = 0;
+    w.px = 40;
+    w.py = 100;
+    w.zombies.alive[0] = 1;
+    w.zombies.kind[0] = Z_KNIGHT;
+    w.zombies.x[0] = 80;
+    w.zombies.y[0] = 100;
+    const spr = zombieSprite(Z_KNIGHT, (w.tick >> 4) & 1);
+    let sx = -1;
+    let sy = -1;
+    for (let y = 0; y < spr.h && sx < 0; y++) {
+      for (let x = 0; x < spr.w; x++) {
+        const src = spr.pix[y * spr.w + x] ?? 0;
+        const mirror = spr.pix[y * spr.w + (spr.w - 1 - x)] ?? 0;
+        if (src !== 0 && mirror === 0) {
+          sx = x;
+          sy = y;
+          break;
+        }
+      }
+    }
+    expect(sx).toBeGreaterThanOrEqual(0);
+    juiceHit(0, 80, 100, 1, Z_KNIGHT, false, w.tick);
+    composeHorde(w, stamp);
+    const dx = (80 - spr.ox) | 0;
+    const dy = (100 - spr.oy) | 0;
+    expect(stamp[(dy + sy) * W + dx + (spr.w - 1 - sx)]).toBe(0xffffffff);
+    expect(stamp[(dy + sy) * W + dx + sx]).not.toBe(0xffffffff);
+  });
 });
 
 describe("splashes and the lich", () => {

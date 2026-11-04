@@ -2,6 +2,7 @@ import { H, MAX_BULLETS, MAX_ZOMBIES, W, type World } from "../sim/types";
 import { paintActors, paintBullets, paintFx, paintPlayer } from "./actors";
 import { drawChestGround, drawChestReveal } from "./chestFx";
 import { paintArrows, paintDecals, paintProps } from "./arena";
+import { markCrowdFx } from "./cast-fx";
 import { shouldBlitHorde } from "./cull";
 import { paintFps } from "./fps";
 import { drawLich } from "./finale";
@@ -46,6 +47,7 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
     countAlive(w.zombies.alive, MAX_ZOMBIES),
     countAlive(w.bullets.alive, MAX_BULLETS),
   );
+  markCrowdFx(horde);
   const moving = walk > 0;
   const camX = Math.round(w.arena.camX);
   const camY = Math.round(w.arena.camY);

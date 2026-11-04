@@ -1,6 +1,11 @@
-import { paintAura, paintBoom, paintFlash, paintLevelBurst, paintPuff, paintSpark, paintWeaponShot } from "../src/render/cast-fx";
+import {
+  markCrowdFx, paintAura, paintBoom, paintFlash, paintLevelBurst, paintPuff, paintSpark, paintWeaponShot,
+  puffDrawsCorpse,
+} from "../src/render/cast-fx";
+import { SHAMBLER } from "../src/render/cast";
+import { Z_GAS } from "../src/sim/foes";
 import { paintHealVial } from "../src/render/cast";
-import { buildSprites, bulletSprite } from "../src/render/horde-sprites";
+import { buildSprites, bulletSprite, zombieSprite } from "../src/render/horde-sprites";
 import { hurtZombie } from "../src/sim/combat.hot";
 import { tickProjectiles } from "../src/sim/weapons.hot";
 import {
@@ -140,5 +145,17 @@ describe("weapon and pickup paints", () => {
     paintLevelBurst(ctx, w);
     expect(ctx.grads).toBeGreaterThan(4);
     expect(ctx.arcs).toBeGreaterThan(4);
+  });
+
+  it("keeps a canvas corpse off the horde blit", () => {
+    buildSprites();
+    markCrowdFx(false);
+    expect(puffDrawsCorpse(3, 0)).toBe(true);
+    expect(puffDrawsCorpse(3, Z_GAS)).toBe(false);
+    expect(puffDrawsCorpse(14, 0)).toBe(false);
+    markCrowdFx(true);
+    expect(puffDrawsCorpse(3, 0)).toBe(false);
+    expect(SHAMBLER.h).toBeGreaterThan(zombieSprite(0, 0).h * 2);
+    markCrowdFx(false);
   });
 });

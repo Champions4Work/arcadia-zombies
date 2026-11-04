@@ -2,10 +2,12 @@ import { CHAR_ALCHEMIST, CHAR_BRUTE, CHAR_GUNSLINGER } from "../sim/characters";
 import { MUZZLE_HAND_X, MUZZLE_HAND_Y } from "../sim/muzzle";
 import { EV_SHOT, WPN_FLAME, WPN_HARP, WPN_MORT, WPN_SHOT, type World } from "../sim/types";
 import { paintAura } from "./cast-fx";
+import { drawHeroKit } from "./heroes";
 import {
-  blob, BRASS, cog, COPPER, eye, GREEN, GREEN_BOOT, grin, pill, PURPLE, rivet, SKIN, STEEL,
-  type Metal,
+  blob, boiler, BRASS, cog, COPPER, eye, GREEN, GREEN_BOOT, grin, goggles as lens, pill, plate,
+  PURPLE, rivet, SKIN, STEEL, type Metal,
 } from "./paint";
+import { heroPose, motionOf, POSE_WALK } from "./poses";
 function groundShadow(ctx: CanvasRenderingContext2D, x: number, y: number, w: number): void {
   const h = w * 0.38;
   ctx.save();
@@ -48,143 +50,66 @@ export const BRUTE: CreepSpec = {
 
 export const HERO_W = 66;
 export const HERO_H = 84;
-const SWING = [0.55, 0.12, -0.55, -0.08];
-const GOG: Metal = { hi: "#e8ffff", mid: "#4ad0ee", lo: "#186888", edge: "#0a2838" };
-const RUST: Metal = { hi: "#ffb090", mid: "#a84828", lo: "#6a2414", edge: "#2a1008" };
-const DUSTER: Metal = { hi: "#e8c8a0", mid: "#8a5a32", lo: "#4a2c18", edge: "#241408" };
-const MINT: Metal = { hi: "#e8ffe8", mid: "#6ab86a", lo: "#2e6a32", edge: "#123018" };
-const CLOTH: Metal = { hi: "#d8b090", mid: "#6a4430", lo: "#3a2418", edge: "#1a100c" };
 const IRON: Metal = { hi: "#d8dee4", mid: "#6a727c", lo: "#2c3238", edge: "#121418" };
 
-interface Kit {
-  coat: Metal;
-  lining: Metal;
-  pant: Metal;
-  boot: Metal;
-  wide: number;
-  hat: number;
-  vials: boolean;
-  plate: boolean;
-}
-
-const KITS: Kit[] = [
-  { coat: CLOTH, lining: BRASS, pant: { hi: "#c4b090", mid: "#5a4830", lo: "#2e2418", edge: "#14100c" }, boot: COPPER, wide: 1, hat: 1, vials: false, plate: false },
-  { coat: DUSTER, lining: COPPER, pant: { hi: "#3a2a22", mid: "#241810", lo: "#140c08", edge: "#0a0604" }, boot: { hi: "#2a1c14", mid: "#1a100c", lo: "#0c0806", edge: "#060402" }, wide: 1.04, hat: 2, vials: false, plate: false },
-  { coat: MINT, lining: BRASS, pant: GREEN_BOOT, boot: BRASS, wide: 0.94, hat: 3, vials: true, plate: false },
-  { coat: RUST, lining: COPPER, pant: { hi: "#6a4030", mid: "#3a2018", lo: "#1e100c", edge: "#0c0806" }, boot: IRON, wide: 1.22, hat: 0, vials: false, plate: true },
-];
-
-function kitOf(id: number): Kit {
-  return KITS[id] ?? KITS[0] ?? KITS[0]!;
-}
-
-function goggles(ctx: CanvasRenderingContext2D, x: number, y: number, s: number): void {
-  pill(ctx, x, y, 14 * s, 4.6 * s, 0, BRASS, 1.2);
-  blob(ctx, x - 3.6 * s, y, 3.3 * s, 3.2 * s, GOG, 1.1);
-  blob(ctx, x + 3.6 * s, y, 3.3 * s, 3.2 * s, GOG, 1.1);
-  ctx.beginPath();
-  ctx.ellipse(x - 4.4 * s, y - 0.8 * s, 1.1 * s, 0.7 * s, -0.5, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(255,255,255,0.85)";
-  ctx.fill();
-  ctx.beginPath();
-  ctx.ellipse(x + 2.8 * s, y - 0.8 * s, 1.1 * s, 0.7 * s, -0.5, 0, Math.PI * 2);
-  ctx.fill();
-}
-
 export function drawHero(ctx: CanvasRenderingContext2D, frame: number, id = 0, pose = 0): void {
-  const kit = kitOf(id);
-  const moving = pose === 1;
-  const shoot = pose === 2;
-  const bob = moving && (frame & 1) ? -1.8 : shoot ? 0.8 : (frame & 1) ? -0.7 : 0;
-  const swing = moving ? (SWING[frame] ?? 0) : shoot ? 0.18 : 0.05;
-  const fat = kit.wide;
-  pill(ctx, -10 * fat, -30 + bob, 5.2, 15, 0.55 + swing * 0.7, kit.coat, 1.6);
-  blob(ctx, -12 * fat, -18 + bob + swing * 7, 2.8, 2.6, SKIN, 1.2);
-  pill(ctx, -5.4 * fat, -15 + bob * 0.2, 6, 17, swing, kit.pant, 1.7);
-  pill(ctx, 5.2 * fat, -15, 6, 17, -swing, kit.pant, 1.7);
-  pill(ctx, -6.2 * fat, -3.2, 8, 5.2, 0.1, kit.boot, 1.4);
-  pill(ctx, 6 * fat, -3.2, 8, 5.2, -0.08, kit.boot, 1.4);
-  blob(ctx, 0, -30 + bob, 12.2 * fat, 15.2, kit.coat, 2.2);
-  pill(ctx, -4.2 * fat, -34 + bob, 4, 12, 0.4, kit.lining, 1.3);
-  pill(ctx, 4 * fat, -34 + bob, 4, 12, -0.28, kit.lining, 1.3);
-  pill(ctx, 0, -19 + bob, 20 * fat, 3.6, 0, BRASS, 1.3);
-  blob(ctx, 0, -19 + bob, 2.4, 2.3, COPPER, 1.1);
-  rivet(ctx, -7 * fat, -26 + bob, 1.2);
-  rivet(ctx, 7 * fat, -26 + bob, 1.2);
-  if (kit.vials) {
-    pill(ctx, -6, -22 + bob, 3.2, 6, 0.2, GOG, 1);
-    pill(ctx, 6, -22 + bob, 3.2, 6, -0.2, COPPER, 1);
-  }
-  if (kit.plate) {
-    pill(ctx, -8 * fat, -36 + bob, 8, 8, 0.4, STEEL, 1.5);
-    rivet(ctx, -9 * fat, -38 + bob, 1.3);
-  }
-  pill(ctx, 0, -41 + bob, 11, 5, 0, kit.coat, 1.4);
-  blob(ctx, 0, -48 + bob, 7.4, 7.8, SKIN, 1.5);
-  blob(ctx, -7.2, -47 + bob, 1.7, 2.2, SKIN, 1);
-  blob(ctx, 7.2, -47 + bob, 1.7, 2.2, SKIN, 1);
-  goggles(ctx, 0, -48.4 + bob, 1);
-  if (kit.hat === 1) {
-    cog(ctx, -11, -56 + bob, 5.6, frame * 0.3, BRASS, 8, true);
-    pill(ctx, 0, -57 + bob, 16, 4, 0, BRASS, 1.4);
-  } else if (kit.hat === 2) {
-    pill(ctx, 0, -56 + bob, 22, 3.2, 0, { hi: "#3a2a22", mid: "#1c1410", lo: "#0e0a08", edge: "#060404" }, 1.4);
-    blob(ctx, 0, -60 + bob, 7.2, 4.4, { hi: "#4a3428", mid: "#241810", lo: "#120c08", edge: "#080604" }, 1.4);
-  } else if (kit.hat === 3) {
-    blob(ctx, 0, -58 + bob, 8.5, 5.2, MINT, 1.5);
-    pill(ctx, 0, -54 + bob, 15, 3, 0, BRASS, 1.2);
-  }
-  if (id === 0) {
-    blob(ctx, -13, -38 + bob, 5.2, 6.4, COPPER, 1.4);
-    pill(ctx, -13, -44 + bob, 3, 6, -0.3, BRASS, 1.1);
-  }
+  drawHeroKit(ctx, frame, pose, id);
 }
 
-export function drawCreep(ctx: CanvasRenderingContext2D, frame: number, spec: CreepSpec): void {
-  const bob = frame & 1 ? -1.5 : 0;
-  const swing = SWING[frame] ?? 0;
+export function drawCreep(ctx: CanvasRenderingContext2D, frame: number, spec: CreepSpec, pose = POSE_WALK): void {
+  const m = motionOf(pose, frame);
+  const bob = m.bob;
+  const swing = m.swing;
   const fat = spec.fat;
-  const hy = -42 + bob;
-  pill(ctx, -11 * fat, -24 + bob, 5.5, 16, 0.7 + swing * 0.5, spec.arm, 1.6);
-  blob(ctx, -13 * fat, -14 + bob + swing * 5, spec.fists ? 5 : 3.2, spec.fists ? 4.6 : 2.8, spec.fists ? COPPER : spec.arm, 1.4);
-  pill(ctx, -5.4 * fat, -14 + bob, 7 * Math.min(fat, 1.2), 16, swing, spec.metal, 1.8);
-  pill(ctx, 5.6 * fat, -14 + bob, 7 * Math.min(fat, 1.2), 16, -swing, spec.metal, 1.8);
-  pill(ctx, -5.8 * fat, -4, 8.4 * Math.min(fat, 1.15), 6.2, 0.05, spec.boot, 1.5);
-  pill(ctx, 5.8 * fat, -4, 8.4 * Math.min(fat, 1.15), 6.2, -0.04, spec.boot, 1.5);
-  blob(ctx, 0, -26 + bob, 11.4 * fat, 13.4, spec.metal, 2.3);
-  cog(ctx, 1, -24 + bob, 4.8, frame * 0.35, BRASS, 6, true);
-  if (spec.helmet) cog(ctx, 0, hy - 11, 9.2, 0.12, BRASS, 8, true);
-  blob(ctx, 0, hy, 9.6 * spec.head, 8.8 * spec.head, spec.metal, 2.2);
-  blob(ctx, -8.4 * spec.head, hy + 1, 2.4, 2.8, spec.metal, 1.2);
-  blob(ctx, 8.4 * spec.head, hy + 1, 2.4, 2.8, spec.metal, 1.2);
+  const hy = -42 + bob + m.drop;
+  ctx.save();
+  ctx.scale(1, m.squash);
+  pill(ctx, -11 * fat + m.lean * 3, -24 + bob + m.drop, 5.5, 16, 0.7 + swing * 0.5, spec.arm, 1.6);
+  blob(ctx, -13 * fat + m.lean * 2, -14 + bob + swing * 5 + m.drop, spec.fists ? 5 : 3.2, spec.fists ? 4.6 : 2.8, spec.fists ? COPPER : spec.arm, 1.4);
+  pill(ctx, -5.4 * fat + m.lean * 3, -14 + bob + m.drop, 7 * Math.min(fat, 1.2), 16, swing, spec.metal, 1.8);
+  pill(ctx, 5.6 * fat + m.lean * 3, -14 + bob + m.drop, 7 * Math.min(fat, 1.2), 16, -swing, spec.metal, 1.8);
+  pill(ctx, -5.8 * fat + m.lean * 3, -4 + m.drop, 8.4 * Math.min(fat, 1.15), 6.2, 0.05, spec.boot, 1.5);
+  pill(ctx, 5.8 * fat + m.lean * 3, -4 + m.drop, 8.4 * Math.min(fat, 1.15), 6.2, -0.04, spec.boot, 1.5);
+  blob(ctx, m.lean * 4, -26 + bob + m.drop, 11.4 * fat, 13.4, spec.metal, 2.3);
+  boiler(ctx, m.lean * 4, -24 + bob + m.drop, 4.2 * Math.min(fat, 1.15), 4.6, frame & 1 ? 1 : 0.35);
+  cog(ctx, 1.2 + m.lean * 4, -24 + bob + m.drop, 4.8, frame * 0.35, BRASS, 6, true);
+  if (spec.helmet) cog(ctx, m.lean * 4, hy - 11, 9.2, 0.12 + frame * 0.12, BRASS, 8, true);
+  blob(ctx, m.lean * 5, hy, 9.6 * spec.head, 8.8 * spec.head, spec.metal, 2.2);
+  blob(ctx, -8.4 * spec.head + m.lean * 5, hy + 1, 2.4, 2.8, spec.metal, 1.2);
+  blob(ctx, 8.4 * spec.head + m.lean * 5, hy + 1, 2.4, 2.8, spec.metal, 1.2);
   if (spec.gearEye) {
-    eye(ctx, -3.4 * spec.head, hy - 1, 2.6, 0.36);
-    cog(ctx, 3.6 * spec.head, hy - 1, 3, frame * 0.7, BRASS, 6, true);
+    eye(ctx, -3.4 * spec.head + m.lean * 5, hy - 1, 2.6, 0.36);
+    cog(ctx, 3.6 * spec.head + m.lean * 5, hy - 1, 3, frame * 0.7, BRASS, 6, true);
+  } else if (spec.helmet) {
+    lens(ctx, m.lean * 5, hy - 0.4, 3.1, "rgba(255,150,50,0.7)");
   } else {
-    eye(ctx, -3.6 * spec.head, hy - 1.2, 2.8 * spec.head, 0.4);
-    eye(ctx, 3.8 * spec.head, hy - 0.4, 1.9 * spec.head, 0.48);
+    eye(ctx, -3.6 * spec.head + m.lean * 5, hy - 1.2, 2.8 * spec.head, 0.4);
+    eye(ctx, 3.8 * spec.head + m.lean * 5, hy - 0.4, 1.9 * spec.head, 0.48);
   }
-  if (spec.jaw) pill(ctx, 0, hy + 5.8, 10, 4.4, 0, BRASS, 1.3);
-  else grin(ctx, 0, hy + 4.4, 3.5 * spec.head);
+  if (spec.jaw) plate(ctx, m.lean * 5, hy + 5.8, 10, 4.4, 0, BRASS, 1.3);
+  else grin(ctx, m.lean * 5, hy + 4.4, 3.5 * spec.head);
   if (spec.stitch) {
     ctx.strokeStyle = "#1c120c";
     ctx.lineWidth = 0.9;
     ctx.beginPath();
-    ctx.moveTo(-4.5, hy - 6);
-    ctx.lineTo(5, hy - 5);
-    ctx.moveTo(-2.2, hy - 8.4);
-    ctx.lineTo(-2.2, hy - 3.6);
-    ctx.moveTo(1.8, hy - 8);
-    ctx.lineTo(1.8, hy - 3.4);
+    ctx.moveTo(-4.5 + m.lean * 5, hy - 6);
+    ctx.lineTo(5 + m.lean * 5, hy - 5);
+    ctx.moveTo(-2.2 + m.lean * 5, hy - 8.4);
+    ctx.lineTo(-2.2 + m.lean * 5, hy - 3.6);
+    ctx.moveTo(1.8 + m.lean * 5, hy - 8);
+    ctx.lineTo(1.8 + m.lean * 5, hy - 3.4);
     ctx.stroke();
   }
-  rivet(ctx, 6.6 * spec.head, hy + 2.6, 1.2);
+  rivet(ctx, 6.6 * spec.head + m.lean * 5, hy + 2.6, 1.2);
+  rivet(ctx, -6.2 * spec.head + m.lean * 5, hy + 3.2, 1);
   if (spec.fists) {
-    blob(ctx, 13 * fat, -18 + bob + swing * 4, 5.4, 5, COPPER, 2);
+    blob(ctx, -14 * fat + m.lean * 2, -18 + bob + m.drop, 5.4, 5, COPPER, 2);
+    blob(ctx, 13 * fat + m.lean * 6, -18 + bob + swing * 4 + m.drop, 5.4, 5, COPPER, 2);
   } else {
-    pill(ctx, 12 * fat, -28 + bob, 5.6, 13, -0.35 - swing * 0.35, spec.arm, 1.6);
-    blob(ctx, 14.4 * fat, -20 + bob, 3.2, 2.8, spec.arm, 1.3);
+    pill(ctx, 12 * fat + m.lean * 6, -28 + bob + m.drop, 5.6, 13, -0.35 - swing * 0.35, spec.arm, 1.6);
+    blob(ctx, 14.4 * fat + m.lean * 6, -20 + bob + m.drop, 3.2, 2.8, spec.arm, 1.3);
   }
+  ctx.restore();
 }
 
 export function fallbackSpec(kind: number): CreepSpec {
@@ -282,10 +207,8 @@ export function paintSurvivor(ctx: CanvasRenderingContext2D, w: World, moving: b
   }
 }
 
-export function poseOf(moving: boolean, shoot: boolean): number {
-  if (shoot) return 2;
-  if (moving) return 1;
-  return 0;
+export function poseOf(moving: boolean, shoot: boolean, hurt = false, dead = false): number {
+  return heroPose(moving, shoot, hurt, dead);
 }
 
 export function paintKnightShield(ctx: CanvasRenderingContext2D, x: number, y: number, face: number, hp: number): void {
