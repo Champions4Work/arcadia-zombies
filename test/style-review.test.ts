@@ -4,7 +4,7 @@ import { BRUTE_TO_HERO, FOE_TO_HERO, HERO_DRAW_SCALE, HERO_PACK_H, foeWorldH, fo
 import { HAZARD_MARKS } from "../src/render/ground";
 import { stampBlood, stampCasing, stainCount, resetStains, STAIN_CAP } from "../src/render/stains";
 import { reviewHorde, REVIEW_HORDE, REVIEW_RING, wantsReviewShot } from "../src/shell/review-shot";
-import { yardPropHits, YARD_CLEAR, PHONE_CAM } from "../src/render/yard-fx";
+import { yardFillHits, yardKindHits, yardPropHits, YARD_CLEAR, PHONE_CAM } from "../src/render/yard-fx";
 import { playView, SEE_AXIS } from "../src/shell/play-view";
 import { ARENA_H, snapArenaCamera } from "../src/sim/arena";
 import { UPG_WPN_RIVET, UPG_WPN_SHOT, Z_BRUTE } from "../src/sim/types";
@@ -58,11 +58,23 @@ describe("visual review gates", () => {
   });
 
   it("keeps props on the walls and the spawn floor open", () => {
-    expect(yardPropHits(200, 0, 760, 640)).toBeGreaterThanOrEqual(20);
-    expect(yardPropHits(PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(28);
+    expect(yardPropHits(200, 0, 760, 640)).toBeGreaterThanOrEqual(40);
+    expect(yardPropHits(PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(36);
+    expect(yardFillHits(PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(50);
     expect(yardPropHits(YARD_CLEAR.x0, YARD_CLEAR.y0, YARD_CLEAR.x1, YARD_CLEAR.y1)).toBe(0);
-    expect(YARD_CLEAR.x1 - YARD_CLEAR.x0).toBeGreaterThanOrEqual(220);
-    expect(YARD_CLEAR.y1 - YARD_CLEAR.y0).toBeGreaterThanOrEqual(240);
+    expect(YARD_CLEAR.x1 - YARD_CLEAR.x0).toBeGreaterThanOrEqual(120);
+    expect(YARD_CLEAR.y1 - YARD_CLEAR.y0).toBeGreaterThanOrEqual(140);
+    expect(yardKindHits("pipes_blue_tank", PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(4);
+    expect(yardKindHits("valve_steam", PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(4);
+    expect(yardKindHits("conveyor", PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(4);
+    expect(yardKindHits("building_wall_door", PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(4);
+    expect(yardKindHits("window_lit", PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(6);
+    expect(yardKindHits("crate_stack", PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(3);
+    expect(yardKindHits("breakable_boiler", PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(2);
+    expect(yardKindHits("breakable_gear_pylon", PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(2);
+    expect(yardKindHits("lamp", PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(6);
+    expect(yardKindHits("decal_vent", PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(4);
+    expect(yardKindHits("barrel", PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(4);
   });
 
   it("keeps dusk dark with local lamp pools and no global orange wash", () => {
@@ -82,7 +94,8 @@ describe("visual review gates", () => {
     expect(yard.includes("#8a9098")).toBe(true);
     expect(yard.includes("{ x: 348, y: 188 }")).toBe(true);
     expect(yard.includes("{ x: 348, y: 268 }")).toBe(true);
-    expect(yard.includes("{ x: 612, y: 188 }")).toBe(false);
+    expect(yard.includes("{ x: 612, y: 188 }")).toBe(true);
+    expect(yard.includes("steamFrame(tick)")).toBe(true);
     expect(yard.includes("ellipse(x, y, 68, 50")).toBe(true);
     expect(yard.includes("bluePool")).toBe(true);
     expect(yard.includes("blue_glow")).toBe(true);
@@ -94,7 +107,10 @@ describe("visual review gates", () => {
     const ground = readFileSync("src/render/ground.ts", "utf8");
     expect(ground.includes("rgba(24,24,32,0.58)")).toBe(false);
     expect(ground.includes("tile_stone_seamless")).toBe(true);
-    expect(HAZARD_MARKS.length).toBeLessThanOrEqual(3);
+    expect(HAZARD_MARKS.length).toBeGreaterThanOrEqual(4);
+    const drawSrc = readFileSync("src/render/draw.ts", "utf8");
+    expect(drawSrc.includes("paintProps(c, w)")).toBe(true);
+    expect(drawSrc.includes("paintYardLive(c, w.tick, camX, camY, viewW, viewH)")).toBe(true);
     const rack = readFileSync("src/render/weapons.ts", "utf8");
     expect(rack.includes("paintSlotIcon")).toBe(true);
     expect(rack.includes("wpnGlyph")).toBe(false);

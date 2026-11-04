@@ -21,7 +21,7 @@ export const FEAT_LAMP = 1;
 export const FEAT_GEAR = 2;
 export const FEAT_STAIN = 3;
 export const FEAT_RUBBLE = 4;
-export const VENT_FX_CAP = 4;
+export const VENT_FX_CAP = 8;
 export const VENT_PUFFS = 2;
 
 const COLS = (ARENA_W / TILE) | 0;
@@ -128,9 +128,14 @@ function build(): void {
   }
   forceVent(8, 10);
   forceVent(22, 14);
+  forceVent(25, 17);
+  forceVent(30, 20);
+  forceVent(35, 17);
   forceVent(36, 12);
   forceVent(52, 20);
   forceVent(18, 28);
+  forceVent(27, 26);
+  forceVent(33, 26);
   forceVent(40, 32);
   add(FEAT_PIPE, 24, 136, 140, 0);
   add(FEAT_PIPE, 164, 136, 90, 1);
@@ -142,6 +147,14 @@ function build(): void {
   add(FEAT_PIPE, 780, 300, 110, 1);
   add(FEAT_PIPE, 300, 500, 260, 0);
   add(FEAT_PIPE, 880, 440, 160, 1);
+  add(FEAT_PIPE, 340, 240, 90, 0);
+  add(FEAT_PIPE, 540, 240, 90, 0);
+  add(FEAT_PIPE, 340, 400, 80, 0);
+  add(FEAT_PIPE, 540, 400, 80, 0);
+  add(FEAT_GEAR, 400, 256, 13, 7);
+  add(FEAT_GEAR, 560, 256, 13, 7);
+  add(FEAT_GEAR, 400, 400, 12, 6);
+  add(FEAT_GEAR, 560, 400, 12, 6);
   add(FEAT_LAMP, 56, 148, 72, 0);
   add(FEAT_LAMP, 188, 188, 68, 0);
   add(FEAT_LAMP, 352, 156, 74, 0);
@@ -151,8 +164,12 @@ function build(): void {
   add(FEAT_LAMP, 248, 368, 80, 0);
   add(FEAT_LAMP, 648, 392, 78, 0);
   add(FEAT_LAMP, 348, 210, 68, 0);
+  add(FEAT_LAMP, 400, 168, 68, 0);
+  add(FEAT_LAMP, 560, 168, 68, 0);
   add(FEAT_LAMP, 600, 210, 68, 0);
   add(FEAT_LAMP, 348, 490, 68, 0);
+  add(FEAT_LAMP, 400, 448, 68, 0);
+  add(FEAT_LAMP, 560, 448, 68, 0);
   add(FEAT_LAMP, 620, 490, 68, 0);
   add(FEAT_GEAR, 120, 210, 14, 8);
   add(FEAT_GEAR, 410, 250, 12, 7);
@@ -349,6 +366,9 @@ function fog(ctx: CanvasRenderingContext2D): void {
 export const HAZARD_MARKS = [
   [8, 10],
   [22, 14],
+  [25, 17],
+  [30, 20],
+  [35, 17],
   [36, 12],
 ] as const;
 

@@ -1,6 +1,6 @@
 import {
   ARENA_H, ARENA_W, CAM_LERP, EDGE_PAD, HEAL_HP, HEAL_R2, MAX_HEAL, MAX_TELE, MIN_SPAWN_R2,
-  OB_BARREL, PROP_CELL, PROP_COLS, PROP_REACH, PROP_ROWS, PUFF_BARREL, SPAWN_BOT, SPAWN_INSET, SPAWN_MARGIN, SPAWN_TOP, TELE_LIFE, cameraTarget, edgePoint, hitsProp, spawnHidden,
+  OB_BARREL, OB_BOILER, OB_CRATE, OB_GEAR, PROP_CELL, PROP_COLS, PROP_REACH, PROP_ROWS, PUFF_BARREL, SPAWN_BOT, SPAWN_INSET, SPAWN_MARGIN, SPAWN_TOP, TELE_LIFE, cameraTarget, edgePoint, hitsProp, spawnHidden,
   type Arena,
 } from "./arena";
 import { scaleSpeed, scaleThreat } from "./director";
@@ -70,7 +70,11 @@ export function blocked(w: World, x: number, y: number, rad: number): boolean {
   return propHit(a, x, y, rad) >= 0;
 }
 
-function breakBarrel(w: World, i: number): void {
+function canBreak(kind: number): boolean {
+  return kind === OB_BARREL || kind === OB_BOILER || kind === OB_GEAR || kind === OB_CRATE;
+}
+
+function breakProp(w: World, i: number): void {
   const a = w.arena;
   if (!a.obsAlive[i]) return;
   a.obsAlive[i] = 0;
@@ -78,6 +82,7 @@ function breakBarrel(w: World, i: number): void {
   const y = a.obsY[i] ?? 0;
   emitFx(w, FX_SPARK, x, y, 0);
   emitFx(w, FX_PUFF, x, y, PUFF_BARREL);
+  if ((a.obsKind[i] ?? 0) !== OB_BARREL) return;
   for (let k = 0; k < MAX_HEAL; k++) {
     if (a.healAlive[k]) continue;
     a.healX[k] = x;
@@ -89,9 +94,9 @@ function breakBarrel(w: World, i: number): void {
 
 function harmProp(w: World, i: number, dmg: number): void {
   const a = w.arena;
-  if ((a.obsKind[i] ?? 0) !== OB_BARREL) return;
+  if (!canBreak(a.obsKind[i] ?? 0)) return;
   a.obsHp[i] = (a.obsHp[i] ?? 1) - (dmg > 0 ? dmg : 1);
-  if ((a.obsHp[i] ?? 0) <= 0) breakBarrel(w, i);
+  if ((a.obsHp[i] ?? 0) <= 0) breakProp(w, i);
 }
 
 export function bulletBlocks(w: World, bx: number, by: number, dmg: number): boolean {
@@ -104,7 +109,7 @@ export function bulletBlocks(w: World, bx: number, by: number, dmg: number): boo
 export function cutProps(w: World, x: number, y: number): void {
   const a = w.arena;
   for (let i = 0; i < a.obsN; i++) {
-    if (!a.obsAlive[i] || (a.obsKind[i] ?? 0) !== OB_BARREL) continue;
+    if (!a.obsAlive[i] || !canBreak(a.obsKind[i] ?? 0)) continue;
     if (!hitsProp(x, y, 6, a.obsX[i] ?? 0, a.obsY[i] ?? 0, a.obsHW[i] ?? 0, a.obsHH[i] ?? 0, a.obsR[i] ?? 0)) continue;
     harmProp(w, i, 1);
   }

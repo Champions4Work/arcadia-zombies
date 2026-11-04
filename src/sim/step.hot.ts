@@ -6,6 +6,7 @@ import { indexProps } from "./arena";
 import {
   chaseZombie, cutProps, pickupHeals, queueSpawn, slidePlayer, teleCount, tickTelegraphs, updateCamera,
 } from "./arena.hot";
+import { stepBelts } from "./belts";
 import { openTouchedChest, stepChest } from "./chest";
 import { emitFx, hurtZombie, killZombie } from "./combat.hot";
 import { directorFloor, directorPack, directorSpawn, scaleThreat } from "./director";
@@ -329,6 +330,7 @@ export function step(w: World, input: Input): void {
   tickTelegraphs(w);
   stepBoss(w);
   if (!hasMod(w.mods, MOD_NOHEAL)) pickupHeals(w);
+  stepBelts(w);
   chargeUlt(w, w.events[EV_KILL] ?? 0);
   stepUlt(w);
   stepWarn(w);

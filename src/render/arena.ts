@@ -69,8 +69,20 @@ export function paintProp(ctx: CanvasRenderingContext2D, w: World, i: number): v
 
 export function paintProps(ctx: CanvasRenderingContext2D, w: World): void {
   const a = w.arena;
+  const camX = a.camX;
+  const camY = a.camY;
+  const x0 = camX - 80;
+  const y0 = camY - 80;
+  const x1 = camX + (a.viewW || W) + 80;
+  const y1 = camY + (a.viewH || H) + 80;
   let n = 0;
-  for (let i = 0; i < a.obsN; i++) if (a.obsAlive[i]) PROP_ORDER[n++] = i;
+  for (let i = 0; i < a.obsN; i++) {
+    if (!a.obsAlive[i]) continue;
+    const x = a.obsX[i] ?? 0;
+    const y = a.obsY[i] ?? 0;
+    if (x < x0 || y < y0 || x > x1 || y > y1) continue;
+    PROP_ORDER[n++] = i;
+  }
   for (let i = 1; i < n; i++) {
     const id = PROP_ORDER[i] ?? 0;
     const y = a.obsY[id] ?? 0;

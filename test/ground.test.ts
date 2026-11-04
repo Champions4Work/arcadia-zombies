@@ -127,7 +127,7 @@ describe("yard floor map", () => {
   it("caps live vent puffs in the camera window", () => {
     expect(ventFxCount(0, 0)).toBeLessThanOrEqual(VENT_FX_CAP * VENT_PUFFS);
     expect(VENT_PUFFS).toBe(2);
-    expect(VENT_FX_CAP).toBe(4);
+    expect(VENT_FX_CAP).toBe(8);
   });
 });
 
