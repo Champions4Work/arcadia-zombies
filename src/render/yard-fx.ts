@@ -1,27 +1,26 @@
-import { blitSheet } from "../art/sheet";
+import { blitSheet, steamFrame } from "../art/sheet";
 import { paintShadow } from "../art/look";
-import { INK, XP } from "../shell/theme";
+import { BRASS, BRASS_LO, INK, XP } from "../shell/theme";
 import { FEAT_LAMP, groundFeatureAt, groundFeatureCount } from "./ground";
 
 const BUILDINGS = [
-  { x: 380, y: 100 },
-  { x: 500, y: 94 },
-  { x: 620, y: 100 },
-  { x: 350, y: 200 },
-  { x: 610, y: 200 },
-  { x: 340, y: 300 },
-  { x: 620, y: 300 },
-  { x: 355, y: 510 },
-  { x: 605, y: 510 },
+  { x: 312, y: 200 },
+  { x: 648, y: 200 },
+  { x: 480, y: 118 },
 ];
 
 const BELTS = [
-  { x: 336, y: 148, w: 90, vert: 0 },
-  { x: 534, y: 148, w: 90, vert: 0 },
-  { x: 338, y: 210, w: 120, vert: 1 },
-  { x: 622, y: 210, w: 120, vert: 1 },
-  { x: 338, y: 448, w: 90, vert: 1 },
-  { x: 622, y: 448, w: 90, vert: 1 },
+  { x: 336, y: 176, w: 320, vert: 1 },
+  { x: 620, y: 176, w: 320, vert: 1 },
+];
+
+const PIPE_RUNS = [
+  { x: 344, y: 148, len: 380, vert: 1 },
+  { x: 616, y: 148, len: 380, vert: 1 },
+  { x: 344, y: 152, len: 36, vert: 0 },
+  { x: 580, y: 152, len: 36, vert: 0 },
+  { x: 344, y: 528, len: 48, vert: 0 },
+  { x: 568, y: 528, len: 48, vert: 0 },
 ];
 
 const PROPS: { id: string; x: number; y: number }[] = [
@@ -36,6 +35,9 @@ const PROPS: { id: string; x: number; y: number }[] = [
   { id: "window_lit", x: 594, y: 58 },
   { id: "window_lit", x: 406, y: 62 },
   { id: "window_lit", x: 526, y: 56 },
+  { id: "window_lit", x: 368, y: 88 },
+  { id: "window_lit", x: 448, y: 84 },
+  { id: "window_lit", x: 528, y: 88 },
   { id: "window_lit", x: 338, y: 168 },
   { id: "window_lit", x: 622, y: 168 },
   { id: "crate", x: 338, y: 128 },
@@ -120,11 +122,9 @@ const POOLS = [
 ];
 
 const STEAM_VENTS = [
-  { x: 348, y: 188 },
-  { x: 348, y: 268 },
-  { x: 612, y: 268 },
-  { x: 348, y: 348 },
-  { x: 612, y: 348 },
+  { x: 344, y: 268 },
+  { x: 616, y: 400 },
+  { x: 344, y: 400 },
 ];
 
 export const YARD_CLEAR = { x0: 352, y0: 168, x1: 608, y1: 508 };
@@ -183,19 +183,60 @@ function doorPool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
 }
 
 function bluePool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  const g = ctx.createRadialGradient(x, y - 12, 2, x, y, 84);
-  g.addColorStop(0, "rgba(90,245,255,0.96)");
-  g.addColorStop(0.4, "rgba(40,200,255,0.55)");
+  const g = ctx.createRadialGradient(x, y - 6, 2, x, y, 28);
+  g.addColorStop(0, "rgba(90,245,255,0.7)");
+  g.addColorStop(0.5, "rgba(40,200,255,0.28)");
   g.addColorStop(1, "rgba(10,10,14,0)");
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.ellipse(x, y, 68, 50, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y, 22, 16, 0, 0, Math.PI * 2);
   ctx.fill();
-  blitSheet(ctx, "blue_puddle", x, y + 10);
-  blitSheet(ctx, "blue_glow", x, y - 8);
+  blitSheet(ctx, "blue_glow", x, y - 6);
   ctx.restore();
+}
+
+function paintFloorPipe(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  len: number,
+  vert: number,
+  tick: number,
+): void {
+  const x1 = vert ? x : x + len;
+  const y1 = vert ? y + len : y;
+  ctx.save();
+  ctx.lineCap = "round";
+  ctx.strokeStyle = "#1a120c";
+  ctx.lineWidth = 12;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x1, y1);
+  ctx.stroke();
+  ctx.strokeStyle = BRASS_LO;
+  ctx.lineWidth = 8;
+  ctx.stroke();
+  ctx.strokeStyle = BRASS;
+  ctx.lineWidth = 2.4;
+  ctx.beginPath();
+  ctx.moveTo(vert ? x - 2.2 : x, vert ? y : y - 2.2);
+  ctx.lineTo(vert ? x1 - 2.2 : x1, vert ? y1 : y1 - 2.2);
+  ctx.stroke();
+  ctx.globalCompositeOperation = "lighter";
+  const step = 26;
+  const off = (tick * 0.7) % step;
+  for (let s = off; s < len; s += step) {
+    const px = vert ? x : x + s;
+    const py = vert ? y + s : y;
+    ctx.fillStyle = "rgba(70,230,255,0.88)";
+    ctx.beginPath();
+    ctx.ellipse(px, py, vert ? 3 : 6.5, vert ? 6.5 : 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+  blitSheet(ctx, "valve_steam", x, y + (vert ? 120 : 0));
 }
 
 function steamPuff(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number): void {
@@ -243,6 +284,9 @@ export function yardPropHits(x0: number, y0: number, x1: number, y1: number): nu
   for (const p of PROPS) {
     if (p.x >= x0 && p.x <= x1 && p.y >= y0 && p.y <= y1) n++;
   }
+  for (const pipe of PIPE_RUNS) {
+    if (pipe.x >= x0 && pipe.x <= x1 && pipe.y >= y0 && pipe.y <= y1) n++;
+  }
   return n;
 }
 
@@ -258,6 +302,10 @@ export function paintYardLive(
     if (!visible(pool.x, pool.y, camX, camY, vw, vh, 60)) continue;
     lampPool(ctx, pool.x, pool.y);
     lampRay(ctx, pool.x, pool.y);
+  }
+  for (const run of PIPE_RUNS) {
+    if (!visible(run.x, run.y, camX, camY, vw, vh, run.len + 20)) continue;
+    paintFloorPipe(ctx, run.x, run.y, run.len, run.vert, tick);
   }
   for (const tank of TANKS) {
     if (!visible(tank.x, tank.y, camX, camY, vw, vh, 50)) continue;
@@ -287,11 +335,16 @@ export function paintYardLive(
     if (!visible(belt.x, belt.y, camX, camY, vw, vh, 220)) continue;
     const midX = belt.vert ? belt.x : belt.x + belt.w * 0.5;
     const midY = belt.vert ? belt.y + belt.w * 0.5 : belt.y;
-    ctx.save();
-    ctx.translate(midX, midY);
-    if (belt.vert) ctx.rotate(Math.PI / 2);
-    blitSheet(ctx, "conveyor", 0, 0);
-    ctx.restore();
+    const tile = 56;
+    for (let s = 0; s < belt.w; s += tile) {
+      const tx = belt.vert ? belt.x : belt.x + s;
+      const ty = belt.vert ? belt.y + s : belt.y;
+      ctx.save();
+      ctx.translate(tx, ty);
+      if (belt.vert) ctx.rotate(Math.PI / 2);
+      blitSheet(ctx, "conveyor", 0, 0);
+      ctx.restore();
+    }
     const ang = belt.vert ? Math.PI / 2 : 0;
     const span = belt.w;
     const off = (tick * 2.2 + i * 16) % 22;
@@ -303,19 +356,31 @@ export function paintYardLive(
     const crateT = (tick * 0.9 + i * 40) % span;
     const cx = belt.vert ? belt.x : belt.x + crateT;
     const cy = belt.vert ? belt.y + crateT : belt.y - 8;
-    blitSheet(ctx, i & 1 ? "crate_stack" : "crate", cx, cy);
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    ctx.globalAlpha = 0.62 + ((tick >> 3) & 1) * 0.22;
+    blitSheet(ctx, "blue_glow", cx, cy - 8);
+    ctx.restore();
+    blitSheet(ctx, "crate", cx, cy);
   }
   for (const vent of STEAM_VENTS) {
     if (!visible(vent.x, vent.y, camX, camY, vw, vh, 40)) continue;
+    ctx.save();
+    ctx.globalAlpha = 0.55;
+    blitSheet(ctx, steamFrame(tick), vent.x, vent.y - 10);
+    ctx.restore();
     steamPuff(ctx, vent.x, vent.y, tick);
   }
 }
 
 export function paintDoorSpawn(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number): void {
+  blitSheet(ctx, "building_wall_door", x, y);
+  blitSheet(ctx, "window_lit", x - 26, y - 36);
+  blitSheet(ctx, "lamp", x + 34, y - 18);
   ctx.save();
   ctx.globalAlpha = 0.9;
   blitSheet(ctx, "window_lit", x, y + 4);
   ctx.restore();
   ctx.fillStyle = (tick >> 2 & 1) ? "rgba(232,160,48,0.45)" : "rgba(232,160,48,0.2)";
-  ctx.fillRect(x - 6, y - 12, 12, 16);
+  ctx.fillRect(x - 8, y - 14, 16, 20);
 }
