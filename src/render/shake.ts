@@ -1,47 +1,48 @@
 import { EV_HURT, EV_LEVEL, EV_WAVE } from "../sim/types";
+import { reduceMotionOn } from "./motion";
 
 export const SHAKE_CAP = 2;
 export const SHAKE_AMP = 0.55;
-const LEGACY_HURT = 6;
-const LEGACY_BIG = 4;
-const AMP_KEEP = 0.3;
-const HURT = LEGACY_HURT * AMP_KEEP;
-const BIG = LEGACY_BIG * AMP_KEEP;
-const DECAY = 0.7;
-const STOP = 0.4;
+export const TRAUMA_HURT = 0.7;
+export const TRAUMA_BIG = 0.4;
+export const TRAUMA_DECAY = 3.2;
+export const TRAUMA_STOP = 0.02;
+export const SHAKE_DT = 1 / 60;
 
-let energy = 0;
+let trauma = 0;
+let clock = 0;
 let seenTick = -1;
 const xy: [number, number] = [0, 0];
 
 export function resetShake(): void {
-  energy = 0;
+  trauma = 0;
+  clock = 0;
   seenTick = -1;
   xy[0] = 0;
   xy[1] = 0;
 }
 
 export function shakeEnergy(): number {
-  return energy;
+  return trauma;
 }
 
 export function impulseOf(events: ArrayLike<number>): number {
   let s = 0;
-  if ((events[EV_HURT] ?? 0) > 0) s = HURT;
-  if ((events[EV_WAVE] ?? 0) > 0 || (events[EV_LEVEL] ?? 0) > 0) s = Math.max(s, BIG);
-  return s > SHAKE_CAP ? SHAKE_CAP : s;
+  if ((events[EV_HURT] ?? 0) > 0) s = TRAUMA_HURT;
+  if ((events[EV_WAVE] ?? 0) > 0 || (events[EV_LEVEL] ?? 0) > 0) s = Math.max(s, TRAUMA_BIG);
+  return s > 1 ? 1 : s;
 }
 
 export function absorbShake(tick: number, events: ArrayLike<number>): void {
   if (tick === seenTick) return;
   seenTick = tick;
-  const s = impulseOf(events);
-  if (s > energy) energy = s;
+  punchShake(impulseOf(events));
 }
 
 export function punchShake(amount: number): void {
-  if (amount <= 0) return;
-  if (amount > energy) energy = amount > SHAKE_CAP ? SHAKE_CAP : amount;
+  if (amount <= 0 || reduceMotionOn()) return;
+  const next = trauma + amount;
+  trauma = next > 1 ? 1 : next;
 }
 
 function clampAxis(v: number): number {
@@ -50,28 +51,41 @@ function clampAxis(v: number): number {
   return v;
 }
 
+function axis(seed: number, t: number): number {
+  return 0.6 * Math.sin(t * 11 + seed) + 0.4 * Math.sin(t * 23 + seed * 2);
+}
+
 export function shakeOffset(magnitude: number, tick: number): [number, number] {
-  const jx = ((tick * 17) & 3) - 1;
-  const jy = ((tick * 13) & 3) - 1;
-  xy[0] = clampAxis(jx * magnitude * SHAKE_AMP);
-  xy[1] = clampAxis(jy * magnitude * SHAKE_AMP);
+  const t = tick * 0.033;
+  const shake = magnitude * magnitude;
+  xy[0] = clampAxis(SHAKE_CAP * shake * axis(1, t));
+  xy[1] = clampAxis(SHAKE_CAP * shake * axis(2.1, t));
   return xy;
 }
 
-export function shakePixels(tick: number, enabled: boolean): [number, number] {
-  if (!enabled) {
-    energy = 0;
+export function decayTrauma(dt: number): number {
+  if (trauma <= 0) return 0;
+  const step = dt > 0 ? dt : SHAKE_DT;
+  trauma *= Math.exp(-TRAUMA_DECAY * step);
+  if (trauma < TRAUMA_STOP) trauma = 0;
+  return trauma;
+}
+
+export function shakePixels(tick: number, enabled: boolean, dt = SHAKE_DT): [number, number] {
+  if (!enabled || reduceMotionOn()) {
+    trauma = 0;
+    clock = 0;
     xy[0] = 0;
     xy[1] = 0;
     return xy;
   }
-  const s = energy;
-  energy *= DECAY;
-  if (energy < STOP) energy = 0;
+  const s = trauma;
+  clock += dt > 0 ? dt : SHAKE_DT;
+  decayTrauma(dt);
   if (s <= 0) {
     xy[0] = 0;
     xy[1] = 0;
     return xy;
   }
-  return shakeOffset(s, tick);
+  return shakeOffset(s, clock * 30);
 }

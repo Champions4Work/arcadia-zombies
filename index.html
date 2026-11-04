@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-audio="live">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -56,9 +56,9 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--brass-hi);outli
 #mods button:hover{filter:brightness(1.1)}
 #summary{margin:0;max-height:42vh;overflow:auto;touch-action:pan-y;font:600 14px/1.45 var(--font-body);color:var(--steam);letter-spacing:0;text-align:center;white-space:pre-line}
 #go{font:700 18px/1 var(--font-display);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);background:linear-gradient(var(--brass-hi),var(--brass) 55%,var(--brass-lo));border:3px solid var(--ink);border-radius:14px;padding:12px 36px;cursor:pointer;box-shadow:inset 0 1px 0 #fff6,0 6px 0 var(--bronze)}
-#workshop,#back,#codex,#shake,#numbers,#debug,#run-copy,#endless,#lb-open,#lb-share,#lb-back,#lb-share-top{font:700 13px/1 var(--font-display);letter-spacing:.07em;text-transform:uppercase;color:var(--steam);background:linear-gradient(var(--panel),var(--iron));border:var(--edge);border-radius:12px;padding:10px 14px;cursor:pointer;box-shadow:inset 0 0 0 1px var(--bronze);transition:transform .12s,filter .12s,background .12s}
-#workshop:hover,#back:hover,#codex:hover,#shake:hover,#numbers:hover,#endless:hover,#lb-open:hover,#lb-share:hover,#lb-back:hover,#lb-share-top:hover,#run-copy:hover{filter:brightness(1.12);background:linear-gradient(#2e2014,var(--panel))}
-#workshop:active,#back:active,#codex:active,#shake:active,#numbers:active,#endless:active,#lb-open:active,#lb-share:active,#lb-back:active,#lb-share-top:active,#run-copy:active{transform:scale(.97)}
+#workshop,#back,#codex,#shake,#numbers,#motion,#debug,#run-copy,#endless,#lb-open,#lb-share,#lb-back,#lb-share-top{font:700 13px/1 var(--font-display);letter-spacing:.07em;text-transform:uppercase;color:var(--steam);background:linear-gradient(var(--panel),var(--iron));border:var(--edge);border-radius:12px;padding:10px 14px;cursor:pointer;box-shadow:inset 0 0 0 1px var(--bronze);transition:transform .12s,filter .12s,background .12s}
+#workshop:hover,#back:hover,#codex:hover,#shake:hover,#numbers:hover,#motion:hover,#endless:hover,#lb-open:hover,#lb-share:hover,#lb-back:hover,#lb-share-top:hover,#run-copy:hover{filter:brightness(1.12);background:linear-gradient(#2e2014,var(--panel))}
+#workshop:active,#back:active,#codex:active,#shake:active,#numbers:active,#motion:active,#endless:active,#lb-open:active,#lb-share:active,#lb-back:active,#lb-share-top:active,#run-copy:active{transform:scale(.97)}
 #bench{display:flex;flex-direction:column;gap:8px;width:min(440px,86vw);max-height:42vh;overflow:auto;touch-action:pan-y}
 #bench[hidden]{display:none}
 .fit{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border:var(--edge);border-radius:12px;background:var(--iron);color:var(--steam);font:600 13px/1.4 var(--font-body);box-shadow:inset 0 0 0 1px var(--bronze)}
@@ -147,7 +147,7 @@ html,body{height:100dvh}
 #bench{order:14}
 #book{order:15}
 #lb-line,#lb-actions,#lb-status,#lb-board{order:16}
-#workshop,#back,#codex,#shake,#numbers,#endless,#sfx-mute,#music-mute{font-size:15px;min-height:44px;padding:12px 16px}
+#workshop,#back,#codex,#shake,#numbers,#motion,#endless,#sfx-mute,#music-mute{font-size:15px;min-height:44px;padding:12px 16px}
 button{min-height:44px}
 #mods button,.fit button{font-size:13px;min-height:44px;padding:10px 12px}
 .survivor{font-size:15px;flex-basis:140px;min-height:168px;padding:8px}
@@ -159,6 +159,10 @@ button{min-height:44px}
 #guide-card{width:min(440px,94vw);padding:20px;font-size:16px;line-height:1.45}
 #guide-skip{min-height:44px;padding:12px 18px;font-size:16px}
 }
+#play-focus{position:fixed;inset:0;z-index:5;pointer-events:none}
+#play-focus[hidden]{display:none}
+#play-focus button{position:absolute;pointer-events:auto;margin:0;padding:0;border:2px solid transparent;background:transparent;color:transparent;font-size:0;border-radius:12px}
+#play-focus button:focus-visible{outline:3px solid var(--brass-hi);outline-offset:3px;border-color:var(--brass-hi)}
 </style>
 </head>
 <body>
@@ -180,6 +184,7 @@ button{min-height:44px}
     <div id="book" hidden></div>
     <div id="opts">
       <button id="shake" type="button" aria-label="Screen shake" aria-pressed="true">Screen shake: On</button>
+      <button id="motion" type="button" aria-label="Reduce motion" aria-pressed="false">Reduce motion: Off</button>
       <button id="numbers" type="button" aria-label="Damage numbers" aria-pressed="true">Damage numbers: On</button>
       <button id="debug" type="button" aria-label="Debug run logs" aria-pressed="false">Debug logs: Off</button>
       <button id="endless" type="button" hidden aria-label="Endless mode" aria-pressed="false">Endless: Off</button>

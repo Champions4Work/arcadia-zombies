@@ -1,4 +1,5 @@
 import { H, W } from "../sim/types";
+import { HURT_SOFT, reduceMotionOn } from "./motion";
 
 let fog: HTMLCanvasElement | null = null;
 let hurt: HTMLCanvasElement | null = null;
@@ -50,7 +51,8 @@ export function paintVeil(ctx: CanvasRenderingContext2D, vw = W, vh = H): void {
 export function hurtAlpha(cd: number): number {
   if (cd <= 0) return 0;
   const a = cd / 90;
-  return a > 0.4 ? 0.4 : a;
+  const cap = a > 0.4 ? 0.4 : a;
+  return reduceMotionOn() ? cap * HURT_SOFT : cap;
 }
 
 export function paintHurt(ctx: CanvasRenderingContext2D, cd: number, vw = W, vh = H): void {

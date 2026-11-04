@@ -36,6 +36,7 @@ export function mountResults(panel: HTMLElement): ResultsUi {
   if (roster && roster.parentElement === panel) panel.insertBefore(root, roster);
   else panel.append(root);
   let open = false;
+  let focused = false;
   const parkGo = (): void => {
     if (!go) return;
     const after = root.nextSibling;
@@ -54,9 +55,14 @@ export function mountResults(panel: HTMLElement): ResultsUi {
       fillCards(build, result.cards);
       fillSeals(seals, result.badges);
       if (go) root.insertBefore(go, build);
+      if (!focused && go) {
+        go["focus"]();
+        focused = true;
+      }
     },
     hide() {
       open = false;
+      focused = false;
       parkGo();
       root.hidden = true;
       headline.textContent = "";

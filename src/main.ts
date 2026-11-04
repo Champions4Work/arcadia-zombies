@@ -1,6 +1,7 @@
 import { awardRun, applyWorkshop, emptyWorkshop, loadWorkshop, saveWorkshop, tryBuy } from "./meta/workshop";
 import { fpsReadout, noteFrame, noteSendFails, setDebugHud, toggleFps, toggleFromKey } from "./render/fps";
-import { setNumbersOn, stopRemaining } from "./render/juice";
+import { juiceFrame, ownJuiceClock, setNumbersOn, stopRemaining } from "./render/juice";
+import { prefersReduceMotion, setReduceMotion } from "./render/motion";
 import { resetXpGain, syncXpGain, tickXpGain } from "./render/xp-gain";
 import { bootMusic, mountMusicRow, musicMuted, persistMusic, syncMusic, type MusicSnap } from "./render/music";
 import { chestSkipKey } from "./render/chestFx";
@@ -9,13 +10,14 @@ import { abilityHit, pauseHit } from "./render/hud";
 import { ULT_KEY } from "./sim/ult";
 import { bootSfx, persistSfx, playSfxCue, playUiClick, playWorldSfx, resetSfxPlayback, setSfxVolume, sfxMuted, sfxVolume, toggleSfxMuted } from "./render/sfx";
 import { CUE_BOSS, CUE_CLICK, CUE_LEVEL, CUE_PICK, CUE_SHIELD, sfxMuteLabel, sfxVolumePercent } from "./render/sfx-cues";
-import { setMuted, unlockAudio } from "./render/sound";
+import { audioHeld, holdAudio, setMuted, unlockAudio } from "./render/sound";
 import { renderBench } from "./shell/bench";
 import { codexStamp, emptyCodex, loadCodex, observe, renderBook, saveCodex } from "./shell/codex";
 import { applyCanvas, screenToGame, type Fit } from "./shell/fit";
 import { bindHud, clampStick, currentHud, hudHitAt, layoutHud, offerHit, rerollCss, stickFrame } from "./shell/hud-layout";
 import { playChromeHidden, showMenuChrome } from "./shell/play-chrome";
 import { applyPlayView } from "./shell/play-view";
+import { mountPlayFocus, playKeyPick } from "./shell/play-focus";
 import { mountResults } from "./shell/results-dom";
 import { resultBadges, resultFromWorld } from "./shell/results";
 import {
@@ -64,6 +66,7 @@ import {
   toggleMute,
   toggleNumbers,
   togglePause,
+  toggleReduceMotion,
   toggleShake,
 } from "./shell/session";
 import { resetShake } from "./render/shake";
@@ -92,7 +95,7 @@ import {
   offerCount,
   saveRoster,
 } from "./sim/characters";
-import { dropChest } from "./sim/chest";
+import { chestLanded, dropChest } from "./sim/chest";
 import { armDevJump, isWon, killCount, lichUp, setRunEndless, takeCue } from "./sim/finale";
 import { fillHorde, HORDE_BULLETS, HORDE_ZOMBIES } from "./sim/horde";
 import {
@@ -104,7 +107,7 @@ import {
   scoreLabel,
   toggleMod,
 } from "./sim/modifiers";
-import { cardSlot } from "./sim/progress";
+import { beginLevel, cardSlot } from "./sim/progress";
 import { rerollHit } from "./sim/reroll";
 import { step } from "./sim/step.hot";
 import { EV_CHEST, EV_CHEST_END, EV_KILL, EV_REVIVE, H, W, type Input, type World } from "./sim/types";
@@ -115,9 +118,10 @@ function tryStore(): { getItem(k: string): string | null; setItem(k: string, v: 
 }
 
 const store = tryStore();
-const saved = store ? loadStore(store) : { best: 0, muted: false, shake: true, numbers: true };
+const preferReduce = prefersReduceMotion();
+const saved = store ? loadStore(store, preferReduce) : { best: 0, muted: false, shake: true, numbers: true, reduceMotion: preferReduce };
 const roster = store ? loadRoster(store) : { index: CHAR_TINKER, bestWave: 0 };
-const session = createSession(saved.best, saved.muted, saved.shake, saved.numbers);
+const session = createSession(saved.best, saved.muted, saved.shake, saved.numbers, saved.reduceMotion);
 const loadedShop = store ? loadWorkshop(store) : { shop: emptyWorkshop(), writable: true };
 const shop = loadedShop.shop;
 const shopWritable = loadedShop.writable;
@@ -141,6 +145,7 @@ function today(): string {
 }
 let questState = store ? loadQuests(store, today()) : freshQuests(today());
 setMuted(session.muted);
+ownJuiceClock(true);
 bootSfx(store);
 bootMusic(store);
 let survivor = roster.index;
@@ -162,6 +167,7 @@ const muteBtn = document.getElementById("mute") as HTMLButtonElement;
 const shakeBtn = document.getElementById("shake") as HTMLButtonElement;
 const endlessBtn = document.getElementById("endless") as HTMLButtonElement;
 const numbersBtn = document.getElementById("numbers") as HTMLButtonElement;
+const motionBtn = document.getElementById("motion") as HTMLButtonElement;
 const debugBtn = document.getElementById("debug") as HTMLButtonElement;
 const summary = document.getElementById("summary") as HTMLElement;
 const rosterEl = document.getElementById("roster") as HTMLElement;
@@ -224,6 +230,11 @@ fitPlay();
 bindViewport(() => {
   fitPlay();
 });
+const playFocus = mountPlayFocus(document.body, (slot) => {
+  pendingPick = slot;
+}, () => {
+  pendingSkip = 1;
+});
 const results = mountResults(panel);
 results.onCopy(() => {
   const text = formatRunLog(runLog);
@@ -275,6 +286,23 @@ function musicSnap(): MusicSnap {
     bossPending: world.boss.pending,
     lich: lichUp(world),
   };
+}
+
+function syncPlayFocus(): void {
+  const offers = world.choosing ? offerCount(world) : 0;
+  const focusKind = session.phase === PHASE_OVER && !session.codex
+    ? "over"
+    : session.phase === PHASE_PLAY && world.chestOpen && chestLanded(world)
+      ? "chest"
+      : session.phase === PHASE_PLAY && offers > 0
+        ? "offer"
+        : "none";
+  playFocus.sync({
+    kind: focusKind,
+    offers,
+    fit,
+    go: goBtn,
+  });
 }
 
 function paint(): void {
@@ -375,6 +403,9 @@ function paint(): void {
   numbersBtn.textContent = session.numbers ? "Damage numbers: On" : "Damage numbers: Off";
   numbersBtn.setAttribute("aria-pressed", session.numbers ? "true" : "false");
   setNumbersOn(session.numbers);
+  setReduceMotion(session.reduceMotion);
+  motionBtn.textContent = session.reduceMotion ? "Reduce motion: On" : "Reduce motion: Off";
+  motionBtn.setAttribute("aria-pressed", session.reduceMotion ? "true" : "false");
   sfxMuteBtn.textContent = sfxMuteLabel(sfxMuted());
   sfxMuteBtn.setAttribute("aria-pressed", sfxMuted() ? "true" : "false");
   if (document.activeElement !== sfxVol) sfxVol.value = String(sfxVolumePercent(sfxVolume()));
@@ -387,6 +418,7 @@ function paint(): void {
   const showQuests = session.phase === PHASE_TITLE && !session.codex;
   briefing.setQuests(questBoard(questState), showQuests);
   syncMusic(musicSnap());
+  syncPlayFocus();
 }
 
 function buyFitting(id: number): void {
@@ -481,6 +513,16 @@ function numbers(): void {
   unlockAudio();
   toggleNumbers(session);
   setNumbersOn(session.numbers);
+  playUiClick();
+  persist();
+  paint();
+}
+
+function motion(): void {
+  unlockAudio();
+  toggleReduceMotion(session);
+  setReduceMotion(session.reduceMotion);
+  if (session.reduceMotion) resetShake();
   playUiClick();
   persist();
   paint();
@@ -583,6 +625,7 @@ codexBtn.addEventListener("click", codexToggle);
 muteBtn.addEventListener("click", mute);
 shakeBtn.addEventListener("click", shake);
 numbersBtn.addEventListener("click", numbers);
+motionBtn.addEventListener("click", motion);
 debugBtn.addEventListener("click", () => {
   unlockAudio();
   debugOn = !debugOn;
@@ -597,10 +640,18 @@ sfxVol.addEventListener("input", sfxVolInput);
 endlessBtn.addEventListener("click", endless);
 
 addEventListener("keydown", (e) => {
-  const inSfx = e.target instanceof HTMLElement && !!e.target.closest("#sfx");
-  if (inSfx && e.key !== "Escape") return;
-  const inMods = e.target instanceof HTMLElement && !!e.target.closest("#mods");
-  if (inMods && e.key !== "Escape") return;
+  const target = e.target;
+  const inControl = target instanceof HTMLElement && !!target.closest("button, input, textarea, #sfx, #mods, #play-focus");
+  if (inControl && e.key !== "Escape") {
+    if (session.phase === PHASE_PLAY && world.choosing) {
+      const slot = playKeyPick(e.key, offerCount(world));
+      if (slot > 0) {
+        pendingPick = slot;
+        e.preventDefault();
+      }
+    }
+    return;
+  }
   const k = e.key.toLowerCase();
   if (briefing.guideOpen()) {
     if (k === "escape" || k === " " || k === "enter") {
@@ -664,8 +715,7 @@ addEventListener("keydown", (e) => {
   }
   if (k === " " || k === "enter") {
     if (session.phase !== PHASE_PLAY) {
-      const target = e.target;
-      if (target instanceof HTMLElement && target.closest("#roster")) return;
+      if (target instanceof HTMLElement && target.closest("#roster, button, #results")) return;
       e.preventDefault();
       startRun();
     }
@@ -691,9 +741,12 @@ addEventListener("keydown", (e) => {
     });
     return;
   }
-  if (session.phase === PHASE_PLAY && world.choosing && e.key >= "1" && e.key <= String(offerCount(world))) {
-    pendingPick = e.key.charCodeAt(0) - 48;
-    return;
+  if (session.phase === PHASE_PLAY && world.choosing) {
+    const slot = playKeyPick(e.key, offerCount(world));
+    if (slot > 0) {
+      pendingPick = slot;
+      return;
+    }
   }
   keys.add(k);
   if (k === "arrowup" || k === "arrowdown" || k === "arrowleft" || k === "arrowright") e.preventDefault();
@@ -773,7 +826,14 @@ const hide = (): void => {
   paint();
 };
 addEventListener("blur", hide);
-document.addEventListener("visibilitychange", () => { if (document.hidden) hide(); });
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    hide();
+    holdAudio(true);
+    return;
+  }
+  holdAudio(false);
+});
 
 function frame(now: number): void {
   publish(world);
@@ -787,6 +847,8 @@ function frame(now: number): void {
   acc += Math.min(250, now - last);
   last = now;
   setNumbersOn(session.numbers);
+  setReduceMotion(session.reduceMotion);
+  juiceFrame(Math.min(100, Math.max(0, dt)));
   if (shouldStep(session)) {
     if (!stick.on) {
       input.dx = (keys.has("d") || keys.has("arrowright") ? 1 : 0) - (keys.has("a") || keys.has("arrowleft") ? 1 : 0);
@@ -875,7 +937,8 @@ function frame(now: number): void {
     tickXpGain(16, hud, world.xp);
   }
   const showHud = session.phase === PHASE_PLAY || session.phase === PHASE_PAUSE;
-  draw(ctx, world, { hud: showHud, shake: session.shake });
+  draw(ctx, world, { hud: showHud, shake: session.shake && !session.reduceMotion });
+  syncPlayFocus();
   placeJoy();
   requestAnimationFrame(frame);
 }
@@ -893,3 +956,38 @@ mountPicker(rosterEl, (index) => {
 });
 paint();
 requestAnimationFrame(frame);
+
+if (new URLSearchParams(location.search).has("e2e")) {
+  const api = {
+    "audioHeld": audioHeld,
+    "stageChest": () => {
+      if (session.phase !== PHASE_PLAY) startRun();
+      world.chestOpen = 1;
+      world.chestT = 200;
+      world.chestDur = 90;
+      world.chestCount = 1;
+      world.chestPrize[0] = 0;
+      paint();
+    },
+    "stageOffer": () => {
+      if (session.phase !== PHASE_PLAY) startRun();
+      world.chestOpen = 0;
+      world.chestSeal = 0;
+      world.xp = 99999;
+      beginLevel(world);
+      if (!world.choosing) {
+        world.choosing = 1;
+        world.offers[0] = 3;
+        world.offers[1] = 4;
+      }
+      paint();
+    },
+    "stageOver": () => {
+      if (session.phase !== PHASE_PLAY) startRun();
+      world.over = true;
+      finish(session, 24);
+      paint();
+    },
+  };
+  (globalThis as unknown as { "__arcadiaE2e": typeof api })["__arcadiaE2e"] = api;
+}

@@ -2,6 +2,7 @@ import { ARENA_H } from "../sim/arena";
 import { Z_ELITE, Z_GAS, Z_KIND, Z_KNIGHT, Z_RAT, Z_SPITTER } from "../sim/foes";
 import { fogCover } from "../sim/map-events";
 import { enemyFlash, hitKnockX, hitKnockY } from "./juice";
+import { FLASH_SOFT, reduceMotionOn } from "./motion";
 import {
   EV_SHOT, FX_BOOM, FX_FLASH, FX_PUFF, FX_SPARK, FX_XP, Z_BRUTE, Z_GHOUL, Z_SHAMBLER, type World,
 } from "../sim/types";
@@ -115,7 +116,7 @@ function paintOne(ctx: CanvasRenderingContext2D, w: World, i: number): void {
   if (elite) paintElite(ctx, x, y, glyph.w * 1.28, glyph.h * 1.28, w.tick);
   if (flash) {
     ctx.fillStyle = "#fff8e8";
-    ctx.globalAlpha = 0.72;
+    ctx.globalAlpha = reduceMotionOn() ? FLASH_SOFT : 0.72;
     ctx.fillRect(x - glyph.w * 0.45, y - glyph.h * 0.92, glyph.w * 0.9, glyph.h * 0.7);
     ctx.globalAlpha = 1;
   }

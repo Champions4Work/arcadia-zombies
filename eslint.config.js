@@ -12,7 +12,7 @@ const noHotAlloc = {
   },
 };
 export default tseslint.config(
-  { ignores: ["dist", "node_modules"] },
+  { ignores: ["dist", "node_modules", ".cursor"] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   { plugins: { local: { rules: { "no-comments": noComments, "no-hot-alloc": noHotAlloc } } }, rules: { "local/no-comments": "error" } },
@@ -41,6 +41,17 @@ export default tseslint.config(
       }, {
         selector: "AssignmentExpression[left.property.name='filter']",
         message: "Canvas filters are banned on the live render path.",
+      }],
+    },
+  },
+  {
+    files: ["src/**/*.ts"],
+    rules: {
+      "no-restricted-imports": ["error", {
+        patterns: [{
+          group: [".cursor", ".cursor/**", "**/.cursor/**"],
+          message: "Skills stay in .cursor/skills and are not imported into the bundle.",
+        }],
       }],
     },
   },
