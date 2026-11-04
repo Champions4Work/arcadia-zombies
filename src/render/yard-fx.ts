@@ -17,9 +17,11 @@ const PIPE_RUNS = [
   { x: 296, y: 232, len: 368, vert: 0 },
 ];
 
-const BELT_H = 60;
+const BELT_H = 72;
 const GLASS_AT = [0.22, 0.5, 0.78];
 const VALVE = { x: 424, y: 232 };
+const BUILD_SCALE = 1.28;
+const TANK_SCALE = 1.2;
 
 const PROPS: { id: string; x: number; y: number }[] = [
   { id: "window_lit", x: 348, y: 196 },
@@ -63,7 +65,9 @@ const POOLS = [
 ];
 
 const STEAM_VENTS = [
+  { x: 360, y: 226 },
   { x: 424, y: 232 },
+  { x: 520, y: 226 },
 ];
 
 export const YARD_CLEAR = { x0: 352, y0: 318, x1: 608, y1: 638 };
@@ -107,12 +111,20 @@ function lampRay(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   ctx.restore();
 }
 
+function blitScaled(ctx: CanvasRenderingContext2D, id: string, x: number, y: number, sc: number): void {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(sc, sc);
+  blitSheet(ctx, id, 0, 0);
+  ctx.restore();
+}
+
 function paintBrickWall(ctx: CanvasRenderingContext2D): void {
   ctx.fillStyle = "#2a1812";
-  ctx.fillRect(296, 176, 368, 52);
+  ctx.fillRect(296, 168, 368, 68);
   ctx.fillStyle = "#3a2218";
-  for (let row = 0; row < 4; row++) {
-    const oy = 180 + row * 12;
+  for (let row = 0; row < 5; row++) {
+    const oy = 172 + row * 12;
     const shift = row & 1 ? 10 : 0;
     for (let col = 0; col < 18; col++) {
       ctx.fillRect(300 + col * 20 + shift, oy, 18, 10);
@@ -122,12 +134,13 @@ function paintBrickWall(ctx: CanvasRenderingContext2D): void {
   for (let i = 0; i < panes.length; i++) {
     const px = panes[i] ?? 348;
     ctx.fillStyle = "#6a3a14";
-    ctx.fillRect(px - 12, 186, 24, 28);
+    ctx.fillRect(px - 14, 178, 28, 34);
     ctx.fillStyle = i & 1 ? "#f0b44a" : "#e08a28";
-    ctx.fillRect(px - 9, 190, 8, 10);
-    ctx.fillRect(px + 1, 190, 8, 10);
-    ctx.fillRect(px - 9, 202, 8, 8);
-    ctx.fillRect(px + 1, 202, 8, 8);
+    ctx.fillRect(px - 11, 182, 10, 12);
+    ctx.fillRect(px + 1, 182, 10, 12);
+    ctx.fillRect(px - 11, 196, 10, 10);
+    ctx.fillRect(px + 1, 196, 10, 10);
+    blitSheet(ctx, "window_lit", px, 208);
   }
 }
 
@@ -162,27 +175,27 @@ function bluePool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
 
 function paintRedValve(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   ctx.save();
-  ctx.translate(x, y);
+  ctx.translate(x, y - 6);
   ctx.fillStyle = "#5a1814";
   ctx.beginPath();
-  ctx.arc(0, 0, 13, 0, Math.PI * 2);
+  ctx.arc(0, 0, 18, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = DANGER;
   ctx.beginPath();
-  ctx.arc(0, 0, 11, 0, Math.PI * 2);
+  ctx.arc(0, 0, 15, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = "#7a2018";
-  ctx.lineWidth = 2.4;
+  ctx.lineWidth = 3.2;
   for (let i = 0; i < 6; i++) {
     const a = (i / 6) * Math.PI * 2;
     ctx.beginPath();
-    ctx.moveTo(Math.cos(a) * 3, Math.sin(a) * 3);
-    ctx.lineTo(Math.cos(a) * 10, Math.sin(a) * 10);
+    ctx.moveTo(Math.cos(a) * 4, Math.sin(a) * 4);
+    ctx.lineTo(Math.cos(a) * 14, Math.sin(a) * 14);
     ctx.stroke();
   }
   ctx.fillStyle = BRASS;
   ctx.beginPath();
-  ctx.arc(0, 0, 3.2, 0, Math.PI * 2);
+  ctx.arc(0, 0, 4.2, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
@@ -195,38 +208,44 @@ function paintCrossPipe(
   tick: number,
 ): void {
   ctx.fillStyle = "#1a120c";
-  ctx.fillRect(x, y - 20, len, 40);
-  ctx.fillStyle = BRASS_LO;
-  ctx.fillRect(x, y - 16, len, 32);
-  ctx.fillStyle = BRASS;
-  ctx.fillRect(x, y - 12, len, 24);
-  ctx.fillStyle = BRASS_HI;
-  ctx.fillRect(x, y - 14, len, 6);
+  ctx.fillRect(x, y - 30, len, 60);
+  ctx.fillStyle = "#8a5a20";
+  ctx.fillRect(x, y - 24, len, 48);
+  ctx.fillStyle = "#e0a040";
+  ctx.fillRect(x, y - 18, len, 36);
+  ctx.fillStyle = "#f0c878";
+  ctx.fillRect(x, y - 20, len, 10);
+  ctx.fillStyle = "#0a4a52";
+  ctx.fillRect(x + 4, y - 8, len - 8, 16);
+  ctx.fillStyle = "#7ae0d4";
+  ctx.fillRect(x + 4, y - 5, len - 8, 10);
   for (let i = 0; i < GLASS_AT.length; i++) {
     const t = GLASS_AT[i] ?? 0.5;
     const px = x + len * t;
     const pulse = 0.72 + ((tick + i * 7) & 7) * 0.03;
     ctx.fillStyle = "#0a6a72";
     ctx.beginPath();
-    ctx.ellipse(px, y, 34, 14, 0, 0, Math.PI * 2);
+    ctx.ellipse(px, y, 28, 12, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
     ctx.fillStyle = `rgba(70,230,255,${pulse})`;
     ctx.beginPath();
-    ctx.ellipse(px, y, 30, 12, 0, 0, Math.PI * 2);
+    ctx.ellipse(px, y, 24, 10, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = "rgba(180,255,255,0.95)";
     ctx.beginPath();
-    ctx.ellipse(px, y, 18, 7, 0, 0, Math.PI * 2);
+    ctx.ellipse(px, y, 14, 6, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
-    ctx.strokeStyle = BRASS;
+    ctx.strokeStyle = BRASS_HI;
     ctx.lineWidth = 2.4;
     ctx.beginPath();
-    ctx.ellipse(px, y, 34, 14, 0, 0, Math.PI * 2);
+    ctx.ellipse(px, y, 28, 12, 0, 0, Math.PI * 2);
     ctx.stroke();
   }
+  blitScaled(ctx, "pipes_blue_tank", x + 28, y + 22, TANK_SCALE);
+  blitScaled(ctx, "pipes_blue_tank", x + len - 28, y + 22, TANK_SCALE);
   paintRedValve(ctx, VALVE.x, VALVE.y);
 }
 
@@ -278,11 +297,11 @@ function paintCrossBelt(
   ctx.strokeStyle = BRASS_LO;
   ctx.lineWidth = 3;
   ctx.strokeRect(x + 1.5, y - BELT_H * 0.5 + 1.5, w - 3, BELT_H - 3);
-  const tile = 70;
-  const sc = BELT_H / 58;
+  const tile = 64;
+  const sc = BELT_H / 48;
   for (let s = 0; s < w; s += tile) {
     ctx.save();
-    ctx.translate(x + s + 40, y + 10);
+    ctx.translate(x + s + 40, y + 12);
     ctx.scale(sc, sc);
     blitSheet(ctx, "conveyor", 0, 0);
     ctx.restore();
@@ -291,15 +310,15 @@ function paintCrossBelt(
   for (let s = off; s < w; s += 28) {
     arrow(ctx, x + s, y, 0, tick);
   }
-  const crateT = (tick * 0.9) % w;
+  const crateT = (tick * 0.9 + w * 0.42) % w;
   const cx = x + crateT;
-  const cy = y - 10;
+  const cy = y - 14;
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
-  ctx.globalAlpha = 0.62 + ((tick >> 3) & 1) * 0.22;
+  ctx.globalAlpha = 0.78 + ((tick >> 3) & 1) * 0.2;
   blitSheet(ctx, "blue_glow", cx, cy - 8);
   ctx.restore();
-  blitSheet(ctx, "crate", cx, cy);
+  blitScaled(ctx, "crate", cx, cy, 1.35);
 }
 
 export function yardPropHits(x0: number, y0: number, x1: number, y1: number): number {
@@ -333,11 +352,15 @@ export function paintYardLive(
     lampRay(ctx, pool.x, pool.y);
   }
   paintBrickWall(ctx);
+  for (const run of PIPE_RUNS) {
+    if (!visible(run.x, run.y, camX, camY, vw, vh, run.len + 20)) continue;
+    paintCrossPipe(ctx, run.x, run.y, run.len, tick);
+  }
   for (const b of BUILDINGS) {
     if (!visible(b.x, b.y, camX, camY, vw, vh, 160)) continue;
     doorPool(ctx, b.x, b.y);
-    paintShadow(ctx, b.x, b.y, 44, 9);
-    blitSheet(ctx, "building_wall_door", b.x, b.y);
+    paintShadow(ctx, b.x, b.y, 52, 11);
+    blitScaled(ctx, "building_wall_door", b.x, b.y, BUILD_SCALE);
   }
   for (const tank of TANKS) {
     if (!visible(tank.x, tank.y, camX, camY, vw, vh, 50)) continue;
@@ -360,10 +383,6 @@ export function paintYardLive(
     if (!belt) continue;
     if (!visible(belt.x, belt.y, camX, camY, vw, vh, 220)) continue;
     paintCrossBelt(ctx, belt.x, belt.y, belt.w, tick);
-  }
-  for (const run of PIPE_RUNS) {
-    if (!visible(run.x, run.y, camX, camY, vw, vh, run.len + 20)) continue;
-    paintCrossPipe(ctx, run.x, run.y, run.len, tick);
   }
   for (const vent of STEAM_VENTS) {
     if (!visible(vent.x, vent.y, camX, camY, vw, vh, 40)) continue;
