@@ -143,3 +143,14 @@ Every pull request that changes how the game looks must ship a 390x844 phone scr
 Do not merge a look-changing pull request until Sasta reads the compare shots.
 
 Until the reference frames land on `main`, capture against the same two files on pull request 46.
+
+## r30 perimeter (brass yard)
+
+Perimeter band sits outside `YARD_CLEAR` on the top wall, bottom apron, and side gutters. These `az_art_v2` world sprites are wired on brass in pull request r30:
+
+- Lit spawn facades: `building_wall_door`, `window_lit`, `lamp`
+- Cyan plumbing: `pipes_blue_tank`, `valve_steam`, animated `steam_1` through `steam_4`, `blue_glow`
+- Power belt: tiled `conveyor` on the horizontal belt with a sliding upgrade crate
+- Edge breakables and vents: `breakable_gear_pylon`, `breakable_boiler`, `decal_grate`, `decal_vent`
+
+No `crate`, `barrel`, or `crate_stack` props sit in the vertical fight band on brass. Compare shots live in `docs/reviews/r30-perimeter/`.

@@ -34,28 +34,22 @@ const PROPS: { id: string; x: number; y: number }[] = [
   { id: "lamp", x: 360, y: 208 },
   { id: "lamp", x: 480, y: 204 },
   { id: "lamp", x: 600, y: 208 },
-  { id: "breakable_gear_pylon", x: 332, y: 340 },
-  { id: "crate_stack", x: 340, y: 368 },
-  { id: "barrel", x: 336, y: 386 },
   { id: "decal_grate", x: 368, y: 302 },
   { id: "decal_grate", x: 592, y: 302 },
-  { id: "crate", x: 332, y: 428 },
-  { id: "valve_steam", x: 334, y: 468 },
-  { id: "decal_vent", x: 336, y: 450 },
-  { id: "barrel", x: 332, y: 508 },
-  { id: "crate_stack", x: 336, y: 548 },
-  { id: "pipes_blue_tank", x: 334, y: 596 },
-  { id: "breakable_boiler", x: 332, y: 636 },
-  { id: "breakable_gear_pylon", x: 628, y: 340 },
-  { id: "crate_stack", x: 620, y: 368 },
-  { id: "barrel", x: 632, y: 386 },
-  { id: "crate", x: 628, y: 428 },
-  { id: "valve_steam", x: 630, y: 468 },
-  { id: "decal_vent", x: 632, y: 450 },
-  { id: "barrel", x: 628, y: 508 },
-  { id: "crate_stack", x: 632, y: 548 },
-  { id: "pipes_blue_tank", x: 630, y: 596 },
-  { id: "breakable_boiler", x: 628, y: 636 },
+  { id: "pipes_blue_tank", x: 308, y: 268 },
+  { id: "pipes_blue_tank", x: 652, y: 268 },
+  { id: "lamp", x: 304, y: 652 },
+  { id: "lamp", x: 656, y: 652 },
+  { id: "valve_steam", x: 316, y: 672 },
+  { id: "decal_vent", x: 312, y: 696 },
+  { id: "breakable_gear_pylon", x: 328, y: 720 },
+  { id: "pipes_blue_tank", x: 322, y: 756 },
+  { id: "breakable_boiler", x: 326, y: 788 },
+  { id: "valve_steam", x: 644, y: 672 },
+  { id: "decal_vent", x: 648, y: 696 },
+  { id: "breakable_gear_pylon", x: 632, y: 720 },
+  { id: "pipes_blue_tank", x: 638, y: 756 },
+  { id: "breakable_boiler", x: 634, y: 788 },
 ];
 
 const TANKS = [
@@ -77,11 +71,13 @@ const STEAM_VENTS = [
   { x: 360, y: 226 },
   { x: 424, y: 232 },
   { x: 520, y: 226 },
-  { x: 334, y: 468 },
-  { x: 630, y: 468 },
+  { x: 316, y: 672 },
+  { x: 644, y: 672 },
 ];
 
 export const YARD_CLEAR = { x0: 352, y0: 318, x1: 608, y1: 638 };
+export const PERIMETER_FIGHT_Y0 = YARD_CLEAR.y0;
+export const PERIMETER_FIGHT_Y1 = YARD_CLEAR.y1;
 export const PHONE_CAM = { x0: 300, y0: 0, x1: 660, y1: 780 };
 
 const BOILER_BUILDINGS = [
