@@ -103,7 +103,7 @@ export function xpNeed(level: number): number {
   const n = level < 0 ? 0 : level;
   if (n <= 3) return 8 + n * 6;
   const late = n - 3;
-  return 40 + late * 22 + late * late * 7;
+  return 42 + late * 23 + late * late * 7;
 }
 
 export function fireEvery(w: World): number {

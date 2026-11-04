@@ -216,7 +216,7 @@ export function step(w: World, input: Input): void {
     w.toSpawn = 0;
   } else if (alive === 0 && w.toSpawn === 0 && teleCount(w) === 0) {
     w.wave++;
-    w.toSpawn = hordeBudget(4 + w.wave * 2 + w.rank + directorPack(w), w.mods);
+    w.toSpawn = hordeBudget(4 + w.wave * 2 + (w.rank >> 2) + w.rank + directorPack(w), w.mods);
     w.events[EV_WAVE] = 1;
   }
   if (!holdSpawns(w)) {

@@ -11,6 +11,17 @@ const PACK_CAP = 10;
 const FLOOR_CAP = 20;
 const ELITE_CAP = 90;
 
+export const PHONE_PRESSURE = {
+  teachThreatPct: 100,
+  teachMin: 2,
+  teachHurtMax: 1,
+  midStartMin: 3,
+  midEndMin: 5,
+  midFloorMin: 7,
+  midSpawnEveryMax: 8,
+  midHurtMin: 1,
+} as const;
+
 export function playerPower(w: World): number {
   return w.level
     + (w.upgrades[UPG_DMG] ?? 0)
@@ -36,7 +47,7 @@ export function threatPct(w: World): number {
   const min = w.tick / (HZ * 60);
   const over = playerPower(w) - expectedPower(w.tick);
   const extra = over > 0 ? over * 24 : 0;
-  const time = ((min - 2) * 16) | 0;
+  const time = ((min - 2) * 17) | 0;
   const n = 100 + time + extra;
   return n > PCT_CAP ? PCT_CAP : n;
 }

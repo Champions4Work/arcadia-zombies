@@ -1,4 +1,5 @@
 import { CURVE, hpScale, MIDGAME, spawnEvery, tierAt, tickAtMinute } from "../src/sim/difficulty";
+import { PHONE_PRESSURE } from "../src/sim/director";
 import { stackRank, UPG_RARITY, xpNeed } from "../src/sim/progress";
 import { MAX_ZOMBIES, UPG_HP, UPG_TESLA, UPG_WPN_FLAME, UPG_WPN_RIVET, Z_SHAMBLER } from "../src/sim/types";
 import { createWorld } from "../src/sim/world";
@@ -22,7 +23,7 @@ const MAX_MEDIAN_KILLS = 1800;
 const MID_START_HP = { min: 900, max: 3600 };
 const MID_END_HP = { min: 4000, max: 40000 };
 const LEVEL_AT_4 = { min: 2, max: 14 };
-const HURT_AFTER_2 = 1;
+const HURT_AFTER_2 = PHONE_PRESSURE.midHurtMin;
 const LATE_HURT = 2;
 const KILL_MS = { min: 40, max: 8000 };
 
