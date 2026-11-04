@@ -45,15 +45,11 @@ function stubCtx(texts: string[]): CanvasRenderingContext2D {
   }) as unknown as CanvasRenderingContext2D;
 }
 
-function bindSize(w: number, h: number): void {
-  const vp = readViewport({ innerWidth: w, innerHeight: h, devicePixelRatio: 1 }, ZERO_INSETS);
+function bindPhone(): void {
+  const vp = readViewport({ innerWidth: 390, innerHeight: 844, devicePixelRatio: 3 }, ZERO_INSETS);
   const pv = playView(vp.cssW, vp.cssH);
   const fit = computeFit(vp.cssW, vp.cssH, vp.dpr, pv.viewW, pv.viewH, ZERO_INSETS);
   bindHud(layoutHud(vp, fit));
-}
-
-function bindPhone(): void {
-  bindSize(390, 844);
 }
 
 function railScore(): number {
@@ -123,8 +119,8 @@ describe("wave districts", () => {
     expect(zoneAt(w.wave)).toBe(ZONE_BRASS);
   });
 
-  it("stamps the live district on the wide HUD and the rank on the phone", () => {
-    bindSize(1280, 800);
+  it("stamps the live district on the HUD banner", () => {
+    bindPhone();
     const brass: string[] = [];
     const boiler: string[] = [];
     const tram: string[] = [];
@@ -142,12 +138,6 @@ describe("wave districts", () => {
     c.wave = 7;
     drawHud(stubCtx(tram), c);
     expect(tram).toContain("Tram Depot");
-    bindPhone();
-    const phone: string[] = [];
-    drawHud(stubCtx(phone), a);
-    expect(phone).toContain("CALM");
-    expect(phone).not.toContain("The Brass District");
-    expect(phone).not.toContain("240/240");
   });
 
   it("gives each district a different floor mix", () => {

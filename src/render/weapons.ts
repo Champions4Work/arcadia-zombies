@@ -69,71 +69,6 @@ function paintSlotIcon(c: CanvasRenderingContext2D, i: number, x: number, y: num
   c.restore();
 }
 
-function paintPowerIcon(c: CanvasRenderingContext2D, i: number, x: number, y: number, s: number): void {
-  c.save();
-  c.translate(x, y);
-  c.lineJoin = "round";
-  c.lineCap = "round";
-  if (i === 0) {
-    c.fillStyle = "#f0b44a";
-    c.beginPath();
-    c.arc(0, 0, s * 0.28, 0, Math.PI * 2);
-    c.fill();
-    c.strokeStyle = "#f0b44a";
-    c.lineWidth = Math.max(1.6, s * 0.08);
-    for (let k = 0; k < 8; k++) {
-      const a = (k / 8) * Math.PI * 2;
-      c.beginPath();
-      c.moveTo(Math.cos(a) * s * 0.4, Math.sin(a) * s * 0.4);
-      c.lineTo(Math.cos(a) * s * 0.62, Math.sin(a) * s * 0.62);
-      c.stroke();
-    }
-  } else if (i === 1) {
-    c.strokeStyle = "#d8d2ea";
-    c.lineWidth = Math.max(1.6, s * 0.1);
-    c.beginPath();
-    c.arc(0, 0, s * 0.34, 0.4, Math.PI * 1.7);
-    c.stroke();
-    c.beginPath();
-    c.arc(s * 0.08, s * 0.02, s * 0.16, 2.2, Math.PI * 3.4);
-    c.stroke();
-  } else if (i === 2) {
-    c.fillStyle = "#f08a28";
-    c.beginPath();
-    c.moveTo(0, -s * 0.62);
-    c.quadraticCurveTo(s * 0.46, -s * 0.05, s * 0.22, s * 0.28);
-    c.quadraticCurveTo(0, s * 0.62, -s * 0.22, s * 0.28);
-    c.quadraticCurveTo(-s * 0.46, -s * 0.05, 0, -s * 0.62);
-    c.fill();
-    c.fillStyle = "#ffe08a";
-    c.beginPath();
-    c.moveTo(0, -s * 0.16);
-    c.quadraticCurveTo(s * 0.16, s * 0.08, 0, s * 0.36);
-    c.quadraticCurveTo(-s * 0.16, s * 0.08, 0, -s * 0.16);
-    c.fill();
-  } else if (i === 3) {
-    c.fillStyle = "#7ae0d4";
-    c.beginPath();
-    c.moveTo(-s * 0.42, -s * 0.16);
-    c.lineTo(s * 0.08, -s * 0.16);
-    c.lineTo(s * 0.08, -s * 0.38);
-    c.lineTo(s * 0.48, 0);
-    c.lineTo(s * 0.08, s * 0.38);
-    c.lineTo(s * 0.08, s * 0.16);
-    c.lineTo(-s * 0.42, s * 0.16);
-    c.closePath();
-    c.fill();
-  } else {
-    c.fillStyle = "#5ae8ff";
-    c.beginPath();
-    c.moveTo(0, -s * 0.55);
-    c.bezierCurveTo(s * 0.48, -s * 0.12, s * 0.36, s * 0.28, 0, s * 0.55);
-    c.bezierCurveTo(-s * 0.36, s * 0.28, -s * 0.48, -s * 0.12, 0, -s * 0.55);
-    c.fill();
-  }
-  c.restore();
-}
-
 export function drawWeaponRack(c: CanvasRenderingContext2D, w: World): void {
   if (w.over || w.choosing) return;
   const layout = currentHud();
@@ -169,10 +104,6 @@ export function drawWeaponRack(c: CanvasRenderingContext2D, w: World): void {
     c.strokeStyle = hot ? XP : BRASS;
     c.lineWidth = hot ? 3.4 : 2.8;
     c.stroke();
-    if (layout.phone) {
-      paintPowerIcon(c, i, cx, cy, Math.max(14, sw * 0.46));
-      continue;
-    }
     paintSlotIcon(c, i, cx, cy - 2, Math.max(12, sw * (hot ? 0.48 : 0.4)));
     const label = i === 0 ? "34/210" : i === 1 ? "6/36" : `${Math.max(1, lv)}`;
     c.fillStyle = XP;

@@ -11,20 +11,18 @@ const BUILDINGS = [
 ];
 
 const BELTS = [
-  { x: 336, y: 188, w: 288, vert: 0 },
-  { x: 300, y: 552, w: 360, vert: 0 },
+  { x: 296, y: 420, w: 368, vert: 0 },
 ];
 
 const PIPE_RUNS = [
   { x: 296, y: 232, len: 368, vert: 0 },
 ];
 
-const BELT_H = 36;
+const BELT_H = 72;
 const GLASS_AT = [0.22, 0.5, 0.78];
 const VALVE = { x: 424, y: 232 };
-const VALVE_B = { x: 560, y: 232 };
-const BUILD_SCALE = 1.48;
-const TANK_SCALE = 1.55;
+const BUILD_SCALE = 1.28;
+const TANK_SCALE = 1.2;
 
 const PROPS: { id: string; x: number; y: number }[] = [
   { id: "window_lit", x: 348, y: 196 },
@@ -54,24 +52,6 @@ const PROPS: { id: string; x: number; y: number }[] = [
   { id: "crate_stack", x: 632, y: 548 },
   { id: "pipes_blue_tank", x: 630, y: 596 },
   { id: "crate", x: 628, y: 636 },
-  { id: "crate", x: 344, y: 292 },
-  { id: "crate_stack", x: 338, y: 268 },
-  { id: "barrel", x: 348, y: 250 },
-  { id: "crate", x: 616, y: 292 },
-  { id: "crate_stack", x: 622, y: 268 },
-  { id: "barrel", x: 612, y: 250 },
-];
-
-const FLOOR_DECALS = [
-  { id: "decal_grate", x: 400, y: 300 },
-  { id: "decal_vent", x: 560, y: 306 },
-  { id: "decal_grate", x: 444, y: 372 },
-  { id: "decal_vent", x: 516, y: 364 },
-  { id: "decal_grate", x: 388, y: 348 },
-  { id: "decal_vent", x: 572, y: 344 },
-  { id: "decal_grate", x: 430, y: 508 },
-  { id: "decal_vent", x: 530, y: 536 },
-  { id: "decal_grate", x: 470, y: 604 },
 ];
 
 const TANKS = [
@@ -270,60 +250,15 @@ function visible(x: number, y: number, camX: number, camY: number, vw: number, v
 }
 
 function lampPool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  const g = ctx.createRadialGradient(x, y - 6, 2, x, y + 8, 48);
-  g.addColorStop(0, "rgba(255,214,140,0.78)");
-  g.addColorStop(0.42, "rgba(255,156,54,0.34)");
+  const g = ctx.createRadialGradient(x, y - 10, 2, x, y + 10, 78);
+  g.addColorStop(0, "rgba(255,196,110,0.62)");
+  g.addColorStop(0.4, "rgba(255,150,56,0.28)");
   g.addColorStop(1, "rgba(10,10,14,0)");
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.ellipse(x, y + 8, 46, 22, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-}
-
-function skyShafts(ctx: CanvasRenderingContext2D): void {
-  const rays = [
-    { x: 340, w: 52, lean: 26 },
-    { x: 456, w: 68, lean: 6 },
-    { x: 572, w: 46, lean: -20 },
-  ];
-  ctx.save();
-  ctx.globalCompositeOperation = "lighter";
-  for (const ray of rays) {
-    const g = ctx.createLinearGradient(ray.x, 148, ray.x + ray.lean, 470);
-    g.addColorStop(0, "rgba(255,220,170,0.36)");
-    g.addColorStop(0.45, "rgba(255,176,80,0.1)");
-    g.addColorStop(1, "rgba(255,150,60,0)");
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.moveTo(ray.x, 148);
-    ctx.lineTo(ray.x + ray.w, 148);
-    ctx.lineTo(ray.x + ray.w * 0.22 + ray.lean, 470);
-    ctx.lineTo(ray.x + ray.lean * 0.25, 470);
-    ctx.closePath();
-    ctx.fill();
-  }
-  ctx.restore();
-}
-
-function lampRay(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  ctx.save();
-  ctx.globalCompositeOperation = "lighter";
-  ctx.translate(x, y - 8);
-  ctx.rotate(-0.22);
-  const g = ctx.createLinearGradient(0, 0, 0, -168);
-  g.addColorStop(0, "rgba(255,214,150,0.55)");
-  g.addColorStop(0.45, "rgba(255,176,80,0.22)");
-  g.addColorStop(1, "rgba(255,160,60,0)");
-  ctx.fillStyle = g;
-  ctx.beginPath();
-  ctx.moveTo(-8, 0);
-  ctx.lineTo(10, 0);
-  ctx.lineTo(36, -168);
-  ctx.lineTo(-28, -168);
-  ctx.closePath();
+  ctx.ellipse(x, y + 10, 72, 44, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
@@ -363,39 +298,34 @@ function paintBrickWall(ctx: CanvasRenderingContext2D): void {
     ctx.fillRect(px + 1, 182, 10, 12);
     ctx.fillRect(px - 11, 196, 10, 10);
     ctx.fillRect(px + 1, 196, 10, 10);
-    ctx.save();
-    ctx.globalCompositeOperation = "lighter";
-    ctx.fillStyle = i & 1 ? "rgba(255,200,90,0.55)" : "rgba(255,150,50,0.42)";
-    ctx.fillRect(px - 11, 182, 22, 24);
-    ctx.restore();
     blitSheet(ctx, "window_lit", px, 208);
   }
 }
 
 function doorPool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   const g = ctx.createRadialGradient(x, y + 10, 2, x, y + 20, 48);
-  g.addColorStop(0, "rgba(255,176,80,0.25)");
-  g.addColorStop(0.5, "rgba(255,130,40,0.12)");
+  g.addColorStop(0, "rgba(255,176,80,0.34)");
+  g.addColorStop(0.5, "rgba(255,130,40,0.14)");
   g.addColorStop(1, "rgba(10,10,14,0)");
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.ellipse(x, y + 18, 36, 22, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y + 20, 40, 24, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
 
 function bluePool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  const g = ctx.createRadialGradient(x, y - 6, 2, x, y, 42);
-  g.addColorStop(0, "rgba(90,245,255,0.82)");
-  g.addColorStop(0.45, "rgba(40,200,255,0.36)");
+  const g = ctx.createRadialGradient(x, y - 6, 2, x, y, 28);
+  g.addColorStop(0, "rgba(90,245,255,0.7)");
+  g.addColorStop(0.5, "rgba(40,200,255,0.28)");
   g.addColorStop(1, "rgba(10,10,14,0)");
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.ellipse(x, y, 34, 24, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y, 22, 16, 0, 0, Math.PI * 2);
   ctx.fill();
   blitSheet(ctx, "blue_glow", x, y - 6);
   ctx.restore();
@@ -403,27 +333,27 @@ function bluePool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
 
 function paintRedValve(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   ctx.save();
-  ctx.translate(x, y - 8);
+  ctx.translate(x, y - 6);
   ctx.fillStyle = "#5a1814";
   ctx.beginPath();
-  ctx.arc(0, 0, 24, 0, Math.PI * 2);
+  ctx.arc(0, 0, 18, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = DANGER;
   ctx.beginPath();
-  ctx.arc(0, 0, 20, 0, Math.PI * 2);
+  ctx.arc(0, 0, 15, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = "#7a2018";
-  ctx.lineWidth = 4.2;
-  for (let i = 0; i < 8; i++) {
-    const a = (i / 8) * Math.PI * 2;
+  ctx.lineWidth = 3.2;
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * Math.PI * 2;
     ctx.beginPath();
-    ctx.moveTo(Math.cos(a) * 5, Math.sin(a) * 5);
-    ctx.lineTo(Math.cos(a) * 19, Math.sin(a) * 19);
+    ctx.moveTo(Math.cos(a) * 4, Math.sin(a) * 4);
+    ctx.lineTo(Math.cos(a) * 14, Math.sin(a) * 14);
     ctx.stroke();
   }
   ctx.fillStyle = BRASS;
   ctx.beginPath();
-  ctx.arc(0, 0, 5.4, 0, Math.PI * 2);
+  ctx.arc(0, 0, 4.2, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
@@ -436,64 +366,58 @@ function paintCrossPipe(
   tick: number,
 ): void {
   ctx.fillStyle = "#1a120c";
-  ctx.fillRect(x, y - 40, len, 80);
+  ctx.fillRect(x, y - 30, len, 60);
   ctx.fillStyle = "#8a5a20";
-  ctx.fillRect(x, y - 34, len, 68);
+  ctx.fillRect(x, y - 24, len, 48);
   ctx.fillStyle = "#e0a040";
-  ctx.fillRect(x, y - 26, len, 52);
+  ctx.fillRect(x, y - 18, len, 36);
   ctx.fillStyle = "#f0c878";
-  ctx.fillRect(x, y - 28, len, 14);
+  ctx.fillRect(x, y - 20, len, 10);
   ctx.fillStyle = "#0a4a52";
-  ctx.fillRect(x + 6, y - 12, len - 12, 24);
+  ctx.fillRect(x + 4, y - 8, len - 8, 16);
   ctx.fillStyle = "#7ae0d4";
-  ctx.fillRect(x + 6, y - 8, len - 12, 16);
-  ctx.save();
-  ctx.globalCompositeOperation = "lighter";
-  ctx.fillStyle = "rgba(90,240,255,0.28)";
-  ctx.fillRect(x + 6, y - 6, len - 12, 10);
-  ctx.restore();
+  ctx.fillRect(x + 4, y - 5, len - 8, 10);
   for (let i = 0; i < GLASS_AT.length; i++) {
     const t = GLASS_AT[i] ?? 0.5;
     const px = x + len * t;
-    const pulse = 0.78 + ((tick + i * 7) & 7) * 0.03;
+    const pulse = 0.72 + ((tick + i * 7) & 7) * 0.03;
     ctx.fillStyle = "#0a6a72";
     ctx.beginPath();
-    ctx.ellipse(px, y, 36, 16, 0, 0, Math.PI * 2);
+    ctx.ellipse(px, y, 28, 12, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
     ctx.fillStyle = `rgba(70,230,255,${pulse})`;
     ctx.beginPath();
-    ctx.ellipse(px, y, 30, 13, 0, 0, Math.PI * 2);
+    ctx.ellipse(px, y, 24, 10, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = "rgba(180,255,255,0.95)";
     ctx.beginPath();
-    ctx.ellipse(px, y, 16, 7, 0, 0, Math.PI * 2);
+    ctx.ellipse(px, y, 14, 6, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
     ctx.strokeStyle = BRASS_HI;
-    ctx.lineWidth = 3.2;
+    ctx.lineWidth = 2.4;
     ctx.beginPath();
-    ctx.ellipse(px, y, 36, 16, 0, 0, Math.PI * 2);
+    ctx.ellipse(px, y, 28, 12, 0, 0, Math.PI * 2);
     ctx.stroke();
   }
-  blitScaled(ctx, "pipes_blue_tank", x + 28, y + 28, TANK_SCALE);
-  blitScaled(ctx, "pipes_blue_tank", x + len - 28, y + 28, TANK_SCALE);
+  blitScaled(ctx, "pipes_blue_tank", x + 28, y + 22, TANK_SCALE);
+  blitScaled(ctx, "pipes_blue_tank", x + len - 28, y + 22, TANK_SCALE);
   paintRedValve(ctx, VALVE.x, VALVE.y);
-  paintRedValve(ctx, VALVE_B.x, VALVE_B.y);
 }
 
 function steamPuff(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number): void {
-  const lift = ((tick * 0.28) % 14);
+  const lift = ((tick * 0.35) % 18);
   ctx.save();
-  ctx.globalAlpha = 0.16;
+  ctx.globalAlpha = 0.28;
   ctx.fillStyle = "#8a9098";
   ctx.beginPath();
-  ctx.ellipse(x, y - 4 - lift * 0.16, 7, 10, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y - 6 - lift * 0.2, 10, 14, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.globalAlpha = 0.1;
+  ctx.globalAlpha = 0.2;
   ctx.beginPath();
-  ctx.ellipse(x + 3, y - 12 - lift * 0.2, 5, 8, 0.2, 0, Math.PI * 2);
+  ctx.ellipse(x + 5, y - 16 - lift * 0.25, 8, 11, 0.2, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
@@ -524,9 +448,9 @@ function paintCrossBelt(
   w: number,
   tick: number,
 ): void {
-  ctx.fillStyle = "#12161c";
+  ctx.fillStyle = "#14110e";
   ctx.fillRect(x, y - BELT_H * 0.5, w, BELT_H);
-  ctx.fillStyle = "#1c242c";
+  ctx.fillStyle = "#2a2218";
   ctx.fillRect(x, y - BELT_H * 0.42, w, BELT_H * 0.84);
   ctx.strokeStyle = BRASS_LO;
   ctx.lineWidth = 3;
@@ -653,7 +577,6 @@ export function paintYardLive(
   for (const pool of poolsOf()) {
     if (!visible(pool.x, pool.y, camX, camY, vw, vh, 60)) continue;
     lampPool(ctx, pool.x, pool.y);
-    lampRay(ctx, pool.x, pool.y);
   }
   paintBrickWall(ctx);
   for (const run of pipesOf()) {
@@ -683,13 +606,6 @@ export function paintYardLive(
       furnaceGlow(ctx, glow.x, glow.y);
     }
   }
-  if (yardBound === ZONE_BRASS) {
-    lampPool(ctx, 480, 530);
-    for (const decal of FLOOR_DECALS) {
-      if (!visible(decal.x, decal.y, camX, camY, vw, vh, 40)) continue;
-      blitScaled(ctx, decal.id, decal.x, decal.y, 1.55);
-    }
-  }
   for (const p of propsOf()) {
     if (!visible(p.x, p.y, camX, camY, vw, vh, 90)) continue;
     paintShadow(ctx, p.x, p.y, 12, 4);
@@ -711,24 +627,21 @@ export function paintYardLive(
   for (const vent of ventsOf()) {
     if (!visible(vent.x, vent.y, camX, camY, vw, vh, 40)) continue;
     ctx.save();
-    ctx.globalAlpha = 0.28;
+    ctx.globalAlpha = 0.55;
     blitSheet(ctx, steamFrame(tick), vent.x, vent.y - 10);
     ctx.restore();
     steamPuff(ctx, vent.x, vent.y, tick);
   }
-  if (yardBound === ZONE_BRASS) skyShafts(ctx);
 }
 
 export function paintDoorSpawn(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number): void {
-  doorPool(ctx, x, y);
   blitSheet(ctx, "building_wall_door", x, y);
   blitSheet(ctx, "window_lit", x - 26, y - 36);
-  blitSheet(ctx, "window_lit", x + 22, y - 34);
   blitSheet(ctx, "lamp", x + 34, y - 18);
   ctx.save();
-  ctx.globalAlpha = 0.95;
+  ctx.globalAlpha = 0.9;
   blitSheet(ctx, "window_lit", x, y + 4);
   ctx.restore();
-  ctx.fillStyle = (tick >> 2 & 1) ? "rgba(255,186,72,0.7)" : "rgba(255,160,48,0.4)";
-  ctx.fillRect(x - 10, y - 18, 20, 26);
+  ctx.fillStyle = (tick >> 2 & 1) ? "rgba(232,160,48,0.45)" : "rgba(232,160,48,0.2)";
+  ctx.fillRect(x - 8, y - 14, 16, 20);
 }

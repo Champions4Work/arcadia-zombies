@@ -4,10 +4,10 @@
   "hero_idle": {
    "file": "hero_idle.png",
    "category": "hero",
-   "w": 74,
+   "w": 123,
    "h": 128,
    "anchor": {
-    "x": 37,
+    "x": 52,
     "y": 127
    },
    "anchor_note": "feet/base"
@@ -15,10 +15,10 @@
   "hero_walk_1": {
    "file": "hero_walk_1.png",
    "category": "hero",
-   "w": 79,
+   "w": 119,
    "h": 128,
    "anchor": {
-    "x": 39,
+    "x": 50,
     "y": 127
    },
    "anchor_note": "feet/base"
@@ -26,10 +26,10 @@
   "hero_walk_2": {
    "file": "hero_walk_2.png",
    "category": "hero",
-   "w": 78,
+   "w": 120,
    "h": 128,
    "anchor": {
-    "x": 39,
+    "x": 50,
     "y": 127
    },
    "anchor_note": "feet/base"
@@ -37,10 +37,10 @@
   "hero_walk_3": {
    "file": "hero_walk_3.png",
    "category": "hero",
-   "w": 78,
+   "w": 122,
    "h": 128,
    "anchor": {
-    "x": 39,
+    "x": 51,
     "y": 127
    },
    "anchor_note": "feet/base"
@@ -48,10 +48,10 @@
   "hero_walk_4": {
    "file": "hero_walk_4.png",
    "category": "hero",
-   "w": 76,
+   "w": 123,
    "h": 128,
    "anchor": {
-    "x": 38,
+    "x": 52,
     "y": 127
    },
    "anchor_note": "feet/base"

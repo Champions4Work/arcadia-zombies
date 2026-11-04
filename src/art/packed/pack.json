@@ -4,7 +4,7 @@
   "sheets": {
     "actors": {
       "file": "actors.webp",
-      "w": 441,
+      "w": 553,
       "h": 100
     },
     "world": {
@@ -49,52 +49,52 @@
     },
     "hero_idle": {
       "sheet": "actors",
-      "x": 292,
+      "x": 132,
       "y": 1,
-      "w": 37,
+      "w": 62,
       "h": 64,
-      "ax": 18,
+      "ax": 26,
       "ay": 64
     },
     "hero_walk_4": {
       "sheet": "actors",
-      "x": 253,
+      "x": 195,
       "y": 1,
-      "w": 38,
+      "w": 62,
       "h": 64,
-      "ax": 19,
+      "ax": 26,
       "ay": 64
     },
     "hero_walk_3": {
       "sheet": "actors",
-      "x": 213,
+      "x": 258,
       "y": 1,
-      "w": 39,
+      "w": 61,
       "h": 64,
-      "ax": 20,
+      "ax": 26,
       "ay": 64
     },
     "hero_walk_1": {
       "sheet": "actors",
-      "x": 132,
+      "x": 320,
       "y": 1,
-      "w": 40,
+      "w": 60,
       "h": 64,
-      "ax": 20,
+      "ax": 25,
       "ay": 64
     },
     "hero_walk_2": {
       "sheet": "actors",
-      "x": 173,
+      "x": 381,
       "y": 1,
-      "w": 39,
+      "w": 60,
       "h": 64,
-      "ax": 20,
+      "ax": 25,
       "ay": 64
     },
     "zombie_tubes": {
       "sheet": "actors",
-      "x": 330,
+      "x": 442,
       "y": 1,
       "w": 36,
       "h": 64,
@@ -103,7 +103,7 @@
     },
     "zombie_worker": {
       "sheet": "actors",
-      "x": 367,
+      "x": 479,
       "y": 1,
       "w": 34,
       "h": 62,
@@ -112,7 +112,7 @@
     },
     "zombie_crawler": {
       "sheet": "actors",
-      "x": 402,
+      "x": 514,
       "y": 1,
       "w": 38,
       "h": 52,

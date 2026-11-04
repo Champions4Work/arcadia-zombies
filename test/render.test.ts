@@ -131,9 +131,9 @@ describe("weapon rack", () => {
     drawWeaponRack(stubCtx(texts), createWorld(1));
     expect(texts.some((t) => WPN_TAGS.includes(t))).toBe(false);
     expect(texts.join("")).not.toMatch(/RIVET|SHOT|FLAME|HARP|MORT/);
-    expect(texts).not.toContain("34/210");
-    expect(texts).not.toContain("6/36");
-    expect(texts.filter((t) => /^\d+$/.test(t)).length).toBe(0);
+    expect(texts).toContain("34/210");
+    expect(texts).toContain("6/36");
+    expect(texts.filter((t) => /^\d+$/.test(t)).length).toBe(3);
   });
 
   it("keeps the live HUD free of the old GEARHEART and DIFFICULTY plates", () => {
@@ -147,9 +147,8 @@ describe("weapon rack", () => {
     expect(texts).not.toContain("DIFFICULTY");
     expect(texts).not.toContain("YARD");
     expect(texts).not.toContain("120/120");
-    expect(texts).toContain("CALM");
     expect(texts).toContain("Objectives");
-    expect(texts).not.toContain("Chapter 1");
+    expect(texts).toContain("Chapter 1");
     expect(texts.some((t) => /^Wave \d+\/8$/.test(t))).toBe(true);
     expect(texts).toContain("ACTIVATE STEAM GATE");
     expect(texts).toContain("HOLD THE AREA");

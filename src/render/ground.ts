@@ -130,11 +130,6 @@ function forceVent(c: number, r: number): void {
   cells[r * COLS + c] = KIND_VENT;
 }
 
-function forceGrate(c: number, r: number): void {
-  if (r < FLOOR0 || railH(r) || railV(c)) return;
-  cells[r * COLS + c] = KIND_GRATE;
-}
-
 function build(): void {
   if (ready) return;
   ready = 1;
@@ -252,12 +247,6 @@ function build(): void {
     add(FEAT_GEAR, 480, 360, 12, 6);
     add(FEAT_GEAR, 820, 520, 12, 6);
   } else {
-    forceVent(25, 19);
-    forceVent(35, 21);
-    forceGrate(22, 18);
-    forceGrate(28, 20);
-    forceGrate(33, 23);
-    forceGrate(20, 22);
     add(FEAT_PIPE, 24, 136, 140, 0);
     add(FEAT_PIPE, 164, 136, 90, 1);
     add(FEAT_PIPE, 720, 148, 200, 0);
@@ -286,8 +275,6 @@ function build(): void {
     add(FEAT_GEAR, 790, 340, 13, 6);
     add(FEAT_GEAR, 330, 470, 16, 8);
     add(FEAT_GEAR, 860, 520, 11, 7);
-    add(FEAT_GEAR, 460, 520, 16, 8);
-    add(FEAT_GEAR, 520, 590, 13, 7);
   }
   for (let i = 0; i < 14; i++) {
     const hx = hash(i, 9);
@@ -475,7 +462,11 @@ function fog(ctx: CanvasRenderingContext2D): void {
   ctx.fillRect(0, 100, ARENA_W, 220);
 }
 
-export const HAZARD_MARKS = [] as const;
+export const HAZARD_MARKS = [
+  [8, 10],
+  [22, 14],
+  [36, 12],
+] as const;
 
 const BOILER_MARKS = [
   [8, 10],
@@ -496,7 +487,6 @@ export function paintGround(ctx: CanvasRenderingContext2D): void {
   const wash = bound === ZONE_BOILER ? "#141210" : bound === ZONE_TRAM ? "#1c242c" : "#24303c";
   const tile = bound === ZONE_BOILER ? "tile_metal_seamless" : "tile_stone_seamless";
   const groutInk = bound === ZONE_BOILER ? "rgba(22,20,18,0.72)" : bound === ZONE_TRAM ? "rgba(20,28,36,0.5)" : "rgba(36,48,62,0.55)";
-  const shade = bound === ZONE_BOILER ? "rgba(8,8,10,0.42)" : bound === ZONE_TRAM ? "rgba(10,16,22,0.12)" : "rgba(16,24,36,0.06)";
   const veil = bound === ZONE_BOILER ? 0.55 : bound === ZONE_TRAM ? 0.28 : 0.08;
   const veilInk = bound === ZONE_BRASS ? "#3a2a1c" : wash;
   ctx.fillStyle = wash;
@@ -522,15 +512,6 @@ export function paintGround(ctx: CanvasRenderingContext2D): void {
     ctx.moveTo(0, y + 0.5);
     ctx.lineTo(ARENA_W, y + 0.5);
     ctx.stroke();
-  }
-  ctx.restore();
-  ctx.save();
-  ctx.globalCompositeOperation = "multiply";
-  ctx.fillStyle = shade;
-  ctx.fillRect(0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
-  if (bound === ZONE_BRASS) {
-    ctx.fillStyle = "rgba(92,64,38,0.28)";
-    ctx.fillRect(0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
   }
   ctx.restore();
   for (let r = FLOOR0; r < ROWS; r++) {

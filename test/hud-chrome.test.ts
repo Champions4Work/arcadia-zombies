@@ -46,30 +46,28 @@ function bindPhone(): void {
 }
 
 describe("phone HUD chrome", () => {
-  it("keeps the image-1 phone slots and leaves energy off the phone", () => {
+  it("keeps heart, loadout, wave, and objectives and drops the energy bar", () => {
     const texts: string[] = [];
     bindPhone();
     const hud = layoutHud(
       readViewport({ innerWidth: 390, innerHeight: 844, devicePixelRatio: 3 }, ZERO_INSETS),
       computeFit(390, 844, 3, playView(390, 844).viewW, playView(390, 844).viewH, ZERO_INSETS),
     );
-    expect(hud.phone).toBe(true);
-    expect(hud.face.w).toBe(0);
+    expect(hud.face.w).toBeGreaterThanOrEqual(64);
+    expect(hud.face.h).toBeGreaterThanOrEqual(28);
     expect(hud.hero.w).toBeGreaterThanOrEqual(52);
     expect(hud.weapons.h).toBeGreaterThanOrEqual(40);
-    expect(hud.minimap.w).toBeGreaterThanOrEqual(64);
+    expect(hud.minimap.w).toBeGreaterThanOrEqual(80);
     expect(hud.xp.h).toBeGreaterThanOrEqual(18);
-    expect(hud.ability.w).toBeGreaterThan(hud.hero.w);
     drawHud(stubCtx(texts), createWorld(1));
     expect(texts).toContain("Objectives");
-    expect(texts).toContain("CALM");
-    expect(texts).toContain("00:00");
+    expect(texts).toContain("Chapter 1");
+    expect(texts).toContain("The Brass District");
     expect(texts.some((t) => t.startsWith("Wave "))).toBe(true);
     expect(texts).not.toContain("120/120");
-    expect(texts).not.toContain("Chapter 1");
-    expect(texts).not.toContain("Q");
-    expect(texts).not.toContain("E");
-    expect(texts).not.toContain("R");
+    expect(texts).toContain("Q");
+    expect(texts).toContain("E");
+    expect(texts).toContain("R");
   });
 
   it("does not fill a same-color disc under the heart glyph", () => {
@@ -78,6 +76,6 @@ describe("phone HUD chrome", () => {
     const body = hud.slice(start, hud.indexOf("function drawXp"));
     expect(body.includes("heartIcon")).toBe(true);
     expect(body.includes("ctx.arc(cx, cy, r * 0.58")).toBe(false);
-    expect(body.includes("low ? DANGER : CYAN")).toBe(true);
+    expect(body.includes("low ? DANGER : STEAM")).toBe(true);
   });
 });
