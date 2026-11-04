@@ -126,6 +126,10 @@ A look-changing shot is unfinished if any row is missing.
 9. XP bar full-width at the bottom. Blit `xp_bar_frame`. The LV label sits on the right.
 10. Dense hordes with blood, casings, and muzzle flash. Blit the actor sheet. Keep the hunter readable.
 
+## Bundle budget
+
+The gzip budget in `scripts/size.mjs` is 220 KB. That is the raised cap after the `az_art_v2` webp pack landed. The old 124 KB cap covered code-drawn art. Packed world, HUD, and actor sheets need the extra room. A look PR that adds packed art must raise `scripts/size.mjs` and this paragraph together.
+
 ## Review gate
 
 Every pull request that changes how the game looks must ship a 390x844 phone screenshot beside both reference frames.
