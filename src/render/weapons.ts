@@ -1,6 +1,6 @@
 import { blitSheetFit } from "../art/sheet";
 import { currentHud } from "../shell/hud-layout";
-import { COPPER, SOOT } from "../shell/theme";
+import { BRASS, COPPER, SOOT } from "../shell/theme";
 import { LAYER_HUD, registerFx, registerLayer } from "./plugins";
 import {
   FX_BOOM, UPG_WPN_FLAME, UPG_WPN_HARP, UPG_WPN_MORT, UPG_WPN_RIVET, UPG_WPN_SHOT,
@@ -41,7 +41,12 @@ export function drawWeaponRack(c: CanvasRenderingContext2D, w: World): void {
     const lv = w.upgrades[id] ?? 0;
     const x = x0 + i * (slot + gap);
     const y = box.y + Math.max(0, (box.h - slot) / 2);
-    blitSheetFit(c, "power_slot", x, y, slot, slot);
+    c.fillStyle = SOOT;
+    c.fillRect(x, y, slot, slot);
+    c.strokeStyle = BRASS;
+    c.lineWidth = 1.8;
+    c.strokeRect(x + 0.8, y + 0.8, slot - 1.6, slot - 1.6);
+    blitSheetFit(c, "power_slot", x - 1, y - 1, slot + 2, slot + 2);
     drawIcon(c, id, x + slot / 2, y + slot * 0.42, Math.max(7, slot * 0.36));
     const pipW = Math.max(2.2, (slot - 8) / 5 - 1);
     for (let p = 0; p < 5; p++) {

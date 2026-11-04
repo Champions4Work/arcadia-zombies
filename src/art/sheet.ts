@@ -88,8 +88,7 @@ export function blitSheet(
   const dx = Math.round(x - ax);
   const dy = Math.round(y - ay);
   ctx.save();
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = "high";
+  ctx.imageSmoothingEnabled = false;
   if (flip) {
     ctx.translate(Math.round(x + ax), dy);
     ctx.scale(-1, 1);
@@ -119,8 +118,7 @@ export function blitSheetLean(
   const ax = spr["ax"];
   const ay = spr["ay"];
   ctx.save();
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = "high";
+  ctx.imageSmoothingEnabled = false;
   ctx.translate(Math.round(x), Math.round(y - bob));
   ctx.transform(1, 0, lean, 1, 0, 0);
   if (flip) ctx.scale(-1, 1);

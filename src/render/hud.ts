@@ -18,7 +18,7 @@ import {
   hudType, paintSignatureHero, ringMeter,
 } from "../art/look";
 import { blitSheetFit } from "../art/sheet";
-import { BRASS_HI, COPPER, CYAN, DANGER, HEALTH, INK, IRON, STEAM, STEAM_DIM, XP } from "../shell/theme";
+import { BRASS, BRASS_HI, COPPER, CYAN, DANGER, HEALTH, INK, IRON, STEAM, STEAM_DIM, XP } from "../shell/theme";
 import { drawXpBar } from "./xp-gain";
 
 export { blurbFor } from "./icons";
@@ -80,7 +80,14 @@ function ink(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, 
 }
 
 function plate(ctx: CanvasRenderingContext2D, box: Box, id = "panel_frame_small"): void {
-  blitSheetFit(ctx, id, box.x, box.y, box.w, box.h);
+  ctx.save();
+  ctx.fillStyle = IRON;
+  ctx.fillRect(box.x, box.y, box.w, box.h);
+  ctx.strokeStyle = BRASS;
+  ctx.lineWidth = 2.2;
+  ctx.strokeRect(box.x + 0.8, box.y + 0.8, box.w - 1.6, box.h - 1.6);
+  ctx.restore();
+  blitSheetFit(ctx, id, box.x - 2, box.y - 2, box.w + 4, box.h + 4);
 }
 
 function drawHealth(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
@@ -89,7 +96,12 @@ function drawHealth(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   const cx = box.x + box.w / 2;
   const cy = box.y + box.h / 2;
   const r = Math.min(box.w, box.h) * 0.42;
-  blitSheetFit(ctx, "heart_ring", box.x, box.y, box.w, box.h);
+  blitSheetFit(ctx, "heart_ring", box.x - 3, box.y - 3, box.w + 6, box.h + 6);
+  ctx.beginPath();
+  ctx.arc(cx, cy, r + 3, 0, Math.PI * 2);
+  ctx.strokeStyle = BRASS;
+  ctx.lineWidth = 2.4;
+  ctx.stroke();
   ringMeter(ctx, cx, cy, r, frac, low ? DANGER : HEALTH);
   if (w.meta.revive > 0) ink(ctx, "REV", cx, box.y + 8, 9, COPPER, "center");
 }
@@ -183,7 +195,7 @@ function minimap(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   const r = Math.max(16, Math.min(box.w, box.h) / 2 - 1);
   const cx = box.x + box.w / 2;
   const cy = box.y + box.h / 2;
-  blitSheetFit(ctx, "minimap_frame", box.x - 4, box.y - 4, box.w + 8, box.h + 8);
+  blitSheetFit(ctx, "minimap_frame", box.x - 6, box.y - 6, box.w + 12, box.h + 12);
   ctx.save();
   ctx.beginPath();
   ctx.arc(cx, cy, r - 3, 0, Math.PI * 2);
@@ -232,7 +244,12 @@ function ability(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   const cx = box.x + box.w / 2;
   const cy = box.y + box.h / 2;
   const r = Math.min(box.w, box.h) * 0.42;
-  blitSheetFit(ctx, "ultimate_button", box.x, box.y, box.w, box.h);
+  blitSheetFit(ctx, "ultimate_button", box.x - 3, box.y - 3, box.w + 6, box.h + 6);
+  ctx.beginPath();
+  ctx.arc(cx, cy, r + 3, 0, Math.PI * 2);
+  ctx.strokeStyle = BRASS;
+  ctx.lineWidth = 2.4;
+  ctx.stroke();
   ringMeter(ctx, cx, cy, r, ultFill(w), ultReady(w) || (w.ultBlast ?? 0) > 0 ? XP : CYAN);
   badgeIcon(ctx, weaponBadge(w).kind, cx, cy);
 }

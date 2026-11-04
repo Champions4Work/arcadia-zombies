@@ -94,8 +94,8 @@ export function layoutHud(vp: Viewport, fit: Fit): HudLayout {
   const gap = Math.max(4, 6 * u);
   const xpH = Math.round((portrait ? 16 : 14) * u);
   const xp = { x: inner.x + gap, y: inner.y + inner.h - xpH, w: inner.w - gap * 2, h: xpH };
-  const heroS = Math.round((portrait ? 44 : 40) * u);
-  const abilS = Math.round((portrait ? 56 : 52) * u);
+  const heroS = Math.round((portrait ? 48 : 42) * u);
+  const abilS = Math.round((portrait ? 60 : 54) * u);
   const slot = Math.round((portrait ? 34 : 30) * u);
   const slotGap = Math.max(2, Math.round(3 * u));
   const wpnH = slot;

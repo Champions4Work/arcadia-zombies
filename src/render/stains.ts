@@ -1,0 +1,58 @@
+import { paintBlood, paintCasing } from "../art/look";
+
+export const STAIN_CAP = 96;
+export const STAIN_BLOOD = 1;
+export const STAIN_CASE = 2;
+
+const sx = new Float32Array(STAIN_CAP);
+const sy = new Float32Array(STAIN_CAP);
+const ss = new Float32Array(STAIN_CAP);
+const sk = new Uint8Array(STAIN_CAP);
+let cursor = 0;
+let live = 0;
+
+export function resetStains(): void {
+  cursor = 0;
+  live = 0;
+  sk.fill(0);
+}
+
+export function stainCount(): number {
+  return live;
+}
+
+function put(x: number, y: number, s: number, kind: number): void {
+  const i = cursor;
+  cursor = i + 1 < STAIN_CAP ? i + 1 : 0;
+  if (sk[i] === 0) live++;
+  sx[i] = x;
+  sy[i] = y;
+  ss[i] = s;
+  sk[i] = kind;
+}
+
+export function stampBlood(x: number, y: number, salt: number): void {
+  const n = 1 + (salt & 1);
+  for (let k = 0; k < n; k++) {
+    const ox = ((salt + k * 17) % 11) - 5;
+    const oy = ((salt + k * 9) % 9) - 4;
+    put(x + ox, y + oy, 3 + ((salt + k) & 3), STAIN_BLOOD);
+  }
+}
+
+export function stampCasing(x: number, y: number, salt: number): void {
+  const ox = ((salt * 13) % 15) - 7;
+  const oy = ((salt * 7) % 9) - 2;
+  put(x + ox, y + oy, 1, STAIN_CASE);
+}
+
+export function paintStains(ctx: CanvasRenderingContext2D): void {
+  if (live <= 0) return;
+  ctx.save();
+  for (let i = 0; i < STAIN_CAP; i++) {
+    const kind = sk[i] ?? 0;
+    if (kind === STAIN_BLOOD) paintBlood(ctx, sx[i] ?? 0, sy[i] ?? 0, ss[i] ?? 3);
+    else if (kind === STAIN_CASE) paintCasing(ctx, sx[i] ?? 0, sy[i] ?? 0);
+  }
+  ctx.restore();
+}

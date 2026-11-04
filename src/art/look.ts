@@ -63,12 +63,12 @@ export function ringMeter(
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
   ctx.strokeStyle = IRON;
-  ctx.lineWidth = 4;
+  ctx.lineWidth = 5.4;
   ctx.stroke();
   ctx.beginPath();
   ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.max(0, Math.min(1, t)));
   ctx.strokeStyle = col;
-  ctx.lineWidth = 4;
+  ctx.lineWidth = 5.4;
   ctx.lineCap = "round";
   ctx.stroke();
   ctx.lineCap = "butt";
@@ -121,15 +121,25 @@ export function paintSignatureHero(
   blitSheetLean(ctx, heroSpriteId(moving, tick), x, y, flip, bob, lean);
   if (!shoot) return;
   const dir = flip ? -1 : 1;
+  const mx = x + dir * 22;
+  const my = y - 26 - bob;
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
+  ctx.fillStyle = "rgba(255,186,72,0.55)";
+  ctx.beginPath();
+  ctx.ellipse(mx, my, 18, 10, 0, 0, Math.PI * 2);
+  ctx.fill();
   ctx.fillStyle = PX.F;
   ctx.beginPath();
-  ctx.ellipse(x + dir * 18, y - 20 - bob, 7, 3.2, 0, 0, Math.PI * 2);
+  ctx.ellipse(mx + dir * 4, my, 12, 5.2, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = STEAM;
   ctx.beginPath();
-  ctx.ellipse(x + dir * 22, y - 20 - bob, 4, 1.6, 0, 0, Math.PI * 2);
+  ctx.ellipse(mx + dir * 8, my, 6, 2.4, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = PX.u;
+  ctx.beginPath();
+  ctx.ellipse(mx + dir * 10, my, 2.4, 1.2, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
@@ -205,17 +215,25 @@ export function paintEnergyTank(ctx: CanvasRenderingContext2D, x: number, y: num
 
 export function paintBlood(ctx: CanvasRenderingContext2D, x: number, y: number, s: number): void {
   ctx.fillStyle = PX.r;
-  ctx.globalAlpha = 0.55;
+  ctx.globalAlpha = 0.72;
   ctx.beginPath();
-  ctx.ellipse(x, y, s * 1.4, s * 0.7, 0.4, 0, Math.PI * 2);
+  ctx.ellipse(x, y, s * 1.8, s * 0.9, 0.4, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillRect(x + s, y - 1, 3, 2);
+  ctx.fillRect(x + s, y - 1, 4, 2);
+  ctx.fillRect(x - s * 0.6, y + 1, 3, 2);
   ctx.globalAlpha = 1;
 }
 
 export function paintCasing(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+  ctx.save();
   ctx.fillStyle = BRASS;
-  ctx.fillRect(x, y, 3, 1.4);
+  ctx.fillRect(x, y, 4, 1.8);
+  ctx.fillStyle = BRASS_HI;
+  ctx.fillRect(x + 3, y, 1.4, 1.8);
+  ctx.globalCompositeOperation = "lighter";
+  ctx.fillStyle = PX.F;
+  ctx.fillRect(x + 1, y - 2, 2, 2);
+  ctx.restore();
 }
 
 export function paintGlowGem(ctx: CanvasRenderingContext2D, x: number, y: number, col: string): void {

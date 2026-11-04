@@ -36,7 +36,7 @@ export function fieldPlan(horde: boolean, viewW = W, viewH = H): { yard: boolean
 }
 
 export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boolean; shake?: boolean }): void {
-  c.imageSmoothingEnabled = true;
+  c.imageSmoothingEnabled = false;
   c.lineJoin = "round";
   c.lineCap = "round";
   if (Math.abs(w.px - lastPx) + Math.abs(w.py - lastPy) > 0.2) walk = 8;
@@ -99,14 +99,36 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
     c.fillRect(0, 0, viewW, viewH);
   }
   if (w.hurtCd > 0) paintHurt(c, w.hurtCd, viewW, viewH);
-  const vig = c.createRadialGradient(viewW * 0.5, viewH * 0.45, viewH * 0.2, viewW * 0.5, viewH * 0.5, viewH * 0.72);
+  c.save();
+  c.globalCompositeOperation = "lighter";
+  const dusk = c.createRadialGradient(viewW * 0.78, viewH * 0.06, 6, viewW * 0.58, viewH * 0.22, viewH * 0.62);
+  dusk.addColorStop(0, "rgba(255,186,88,0.42)");
+  dusk.addColorStop(0.4, "rgba(232,120,36,0.16)");
+  dusk.addColorStop(1, "rgba(16,8,4,0)");
+  c.fillStyle = dusk;
+  c.fillRect(0, 0, viewW, viewH);
+  const ray = c.createLinearGradient(viewW * 0.72, 0, viewW * 0.28, viewH * 0.7);
+  ray.addColorStop(0, "rgba(255,176,72,0.18)");
+  ray.addColorStop(0.55, "rgba(210,90,28,0.05)");
+  ray.addColorStop(1, "rgba(16,8,4,0)");
+  c.fillStyle = ray;
+  c.beginPath();
+  c.moveTo(viewW * 0.86, 0);
+  c.lineTo(viewW * 0.98, 0);
+  c.lineTo(viewW * 0.42, viewH);
+  c.lineTo(viewW * 0.12, viewH);
+  c.closePath();
+  c.fill();
+  c.restore();
+  const vig = c.createRadialGradient(viewW * 0.5, viewH * 0.42, viewH * 0.12, viewW * 0.5, viewH * 0.5, viewH * 0.78);
   vig.addColorStop(0, "rgba(0,0,0,0)");
-  vig.addColorStop(1, "rgba(8,6,4,0.62)");
+  vig.addColorStop(0.55, "rgba(8,6,4,0.18)");
+  vig.addColorStop(1, "rgba(8,6,4,0.78)");
   c.fillStyle = vig;
   c.fillRect(0, 0, viewW, viewH);
   c.save();
   c.globalCompositeOperation = "multiply";
-  c.fillStyle = "rgba(210,140,70,0.22)";
+  c.fillStyle = "rgba(220,132,52,0.34)";
   c.fillRect(0, 0, viewW, viewH);
   c.restore();
   paintLayers(c, w, LAYER_FRONT);

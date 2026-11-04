@@ -1,6 +1,6 @@
 import { ARENA_H, ARENA_W } from "../sim/arena";
 
-export const SEE_AXIS = 320;
+export const SEE_AXIS = 288;
 
 export interface PlayView {
   viewW: number;

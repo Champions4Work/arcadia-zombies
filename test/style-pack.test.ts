@@ -10,7 +10,7 @@ describe("az_art_v2 pack", () => {
     expect(names.length).toBe(44);
     for (const name of names) expect(packHas(name)).toBe(true);
     expect(packIds().length).toBe(44);
-    expect(PACK.hero_px).toBe(48);
+    expect(PACK.hero_px).toBe(64);
   });
 
   it("walks the hero and cycles steam without leaving the pack", () => {

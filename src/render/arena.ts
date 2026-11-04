@@ -8,6 +8,7 @@ import { paintBlood, paintEnergyTank, paintShadow } from "../art/look";
 import { blitSheet, steamFrame } from "../art/sheet";
 import { paintHealVial } from "./cast";
 import { BRASS, OUTLINE } from "./paint";
+import { paintStains } from "./stains";
 import { paintDoorSpawn } from "./yard-fx";
 
 const SCR = new Float32Array(4);
@@ -107,6 +108,12 @@ export function paintDecals(ctx: CanvasRenderingContext2D, w: World): void {
     const hy = 140 + ((i * 53) % (ARENA_H - 200));
     paintBlood(ctx, hx, hy, 4 + (i & 3));
   }
+  for (let i = 0; i < 28; i++) {
+    const hx = 340 + ((i * 37) % 260);
+    const hy = 170 + ((i * 29) % 300);
+    paintBlood(ctx, hx, hy, 5 + (i & 4));
+  }
+  paintStains(ctx);
   const a = w.arena;
   const camX = a.camX;
   const camY = a.camY;

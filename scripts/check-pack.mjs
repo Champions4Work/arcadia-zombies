@@ -18,7 +18,7 @@ if (missing.length) {
   console.error(missing.join("\n"));
   process.exit(1);
 }
-if (pack.hero_px !== 48) {
+if (pack.hero_px !== 64) {
   console.error("hero_px");
   process.exit(1);
 }

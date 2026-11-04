@@ -12,10 +12,10 @@ OUT = ROOT / "src" / "art" / "packed"
 MANIFEST = json.loads((SRC / "manifest.json").read_text())
 
 SCALE = {
-    "hero": 0.375,
-    "enemy": 0.375,
-    "prop": 0.4,
-    "breakable": 0.4,
+    "hero": 0.5,
+    "enemy": 0.5,
+    "prop": 0.45,
+    "breakable": 0.45,
     "hud": 0.5,
     "fx": 0.45,
     "floor_decal": 0.4,
@@ -119,7 +119,7 @@ def main() -> None:
 
     pack = {
         "scale_note": MANIFEST["scale_note"],
-        "hero_px": 48,
+        "hero_px": 64,
         "sheets": sheets_out,
         "sprites": sprites_out,
     }

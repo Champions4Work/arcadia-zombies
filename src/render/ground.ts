@@ -150,6 +150,12 @@ function build(): void {
   add(FEAT_LAMP, 868, 228, 68, 0);
   add(FEAT_LAMP, 248, 368, 80, 0);
   add(FEAT_LAMP, 648, 392, 78, 0);
+  add(FEAT_LAMP, 400, 300, 84, 0);
+  add(FEAT_LAMP, 560, 318, 82, 0);
+  add(FEAT_LAMP, 480, 200, 80, 0);
+  add(FEAT_LAMP, 440, 440, 78, 0);
+  add(FEAT_LAMP, 520, 180, 76, 0);
+  add(FEAT_LAMP, 600, 400, 80, 0);
   add(FEAT_GEAR, 120, 210, 14, 8);
   add(FEAT_GEAR, 410, 250, 12, 7);
   add(FEAT_GEAR, 610, 180, 15, 8);
@@ -335,12 +341,12 @@ function rubblePile(ctx: CanvasRenderingContext2D, x: number, y: number, s: numb
 
 function fog(ctx: CanvasRenderingContext2D): void {
   const haze = ctx.createLinearGradient(0, 100, 0, 280);
-  haze.addColorStop(0, "rgba(48,28,52,0.2)");
-  haze.addColorStop(0.4, "rgba(80,40,28,0.06)");
-  haze.addColorStop(1, "rgba(20,12,16,0)");
+  haze.addColorStop(0, "rgba(80,36,18,0.22)");
+  haze.addColorStop(0.4, "rgba(160,72,28,0.08)");
+  haze.addColorStop(1, "rgba(20,10,6,0)");
   ctx.fillStyle = haze;
   ctx.fillRect(0, 100, ARENA_W, 220);
-  ctx.fillStyle = "rgba(40,24,36,0.08)";
+  ctx.fillStyle = "rgba(80,36,16,0.1)";
   ctx.beginPath();
   ctx.ellipse(180, 160, 90, 18, 0, 0, Math.PI * 2);
   ctx.ellipse(620, 200, 110, 20, 0, 0, Math.PI * 2);
@@ -355,7 +361,7 @@ export function paintGround(ctx: CanvasRenderingContext2D): void {
   tileSheet(ctx, "tile_stone_seamless", 0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
   ctx.save();
   ctx.globalCompositeOperation = "multiply";
-  ctx.fillStyle = "rgba(196,120,48,0.28)";
+  ctx.fillStyle = "rgba(196,120,48,0.38)";
   ctx.fillRect(0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
   ctx.restore();
   for (let r = FLOOR0; r < ROWS; r++) {

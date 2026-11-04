@@ -19,6 +19,7 @@ import {
 import { blitAtlas, foeFrameId } from "../art/atlas";
 import { paintCasing, paintSignatureHero, paintZombie } from "../art/look";
 import { paintShadow } from "./sprites";
+import { stampCasing } from "./stains";
 
 export const BIN_LO = -80;
 export const BIN_HI = ARENA_H + 100;
@@ -59,7 +60,11 @@ export function paintPlayer(ctx: CanvasRenderingContext2D, w: World, moving: boo
 function paintHero(ctx: CanvasRenderingContext2D, w: World, moving: boolean): void {
   const shoot = (w.events[EV_SHOT] ?? 0) !== 0;
   paintSignatureHero(ctx, w.px, w.py, w.aimX, w.aimY, moving, shoot, w.tick);
-  if (shoot) paintCasing(ctx, w.px - 10, w.py + 4);
+  if (shoot) {
+    paintCasing(ctx, w.px - 12, w.py + 2);
+    paintCasing(ctx, w.px - 6, w.py + 6);
+    stampCasing(w.px - 10, w.py + 4, w.tick);
+  }
 }
 
 function paintElite(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, tick: number): void {

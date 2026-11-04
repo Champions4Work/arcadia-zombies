@@ -2,6 +2,7 @@ import { Z_ELITE, Z_KIND, Z_KNIGHT } from "../sim/foes";
 import { Z_BRUTE } from "../sim/types";
 import { reduceMotionOn } from "./motion";
 import { punchShake } from "./shake";
+import { resetStains, stampBlood } from "./stains";
 
 export const NUMBER_CAP = 256;
 export const FLASH_CAP = 2048;
@@ -98,6 +99,7 @@ export function resetJuice(): void {
   flash.fill(0);
   knockX.fill(0);
   knockY.fill(0);
+  resetStains();
 }
 
 export function burstCount(slot: number, tick: number): number {
@@ -240,6 +242,7 @@ export function juiceHit(
   const boss = body === Z_BRUTE || body === Z_KNIGHT;
   const crit = killed && (elite || boss);
   if (showNumbers) spawnNumber(x, y - 14, dealt, crit);
+  if (dealt > 0) stampBlood(x, y, slot + tick);
   if (dealt >= 3 && !killed) grant(STOP_CRIT_MS);
   if (crit) punchShake(SHAKE_CRIT);
   else if (dealt > 0) punchShake(SHAKE_HIT);

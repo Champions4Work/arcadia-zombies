@@ -27,11 +27,12 @@ function drawYard(ctx: CanvasRenderingContext2D): void {
   }
   ctx.globalAlpha = 1;
   paintGround(ctx);
-  const sun = ctx.createRadialGradient(400, 36, 8, 340, 90, 220);
-  sun.addColorStop(0, "rgba(255,186,96,0.28)");
-  sun.addColorStop(1, "rgba(255,140,40,0)");
+  const sun = ctx.createRadialGradient(520, 20, 6, 420, 80, 280);
+  sun.addColorStop(0, "rgba(255,200,96,0.55)");
+  sun.addColorStop(0.35, "rgba(255,140,48,0.22)");
+  sun.addColorStop(1, "rgba(255,120,32,0)");
   ctx.fillStyle = sun;
-  ctx.fillRect(0, 0, ARENA_W, 200);
+  ctx.fillRect(0, 0, ARENA_W, 260);
 }
 
 function background(): HTMLCanvasElement {
