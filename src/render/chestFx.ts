@@ -13,7 +13,7 @@ const COPPER = "#b5562f";
 
 export const CONT_W = 168;
 export const CONT_H = 30;
-export const CONT_Y = 278;
+export const CONT_Y = 262;
 
 export function chestSkipKey(key: string, repeat: boolean): boolean {
   if (repeat) return false;

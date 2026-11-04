@@ -104,13 +104,13 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
   }
   if (opts?.hud !== false) drawHud(c, w);
   paintArrows(c, w);
-  drawCards(c, w);
-  drawReroll(c, w);
-  drawChestReveal(c, w);
   if (w.over) {
     c.fillStyle = "rgba(8,4,14,0.5)";
     c.fillRect(0, 0, viewW, viewH);
   }
   paintLayers(c, w, LAYER_HUD);
+  drawCards(c, w);
+  drawReroll(c, w);
+  drawChestReveal(c, w);
   paintFps(c);
 }
