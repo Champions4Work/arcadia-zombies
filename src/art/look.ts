@@ -10,8 +10,8 @@ export const HERO_PACK_H = 64;
 export const HERO_DRAW_SCALE = 1.4;
 export const FOE_TO_HERO = 0.58;
 export const BRUTE_TO_HERO = 1.12;
-export const CASE_W = 4.2;
-export const CASE_H = 1.8;
+export const CASE_W = 4.8;
+export const CASE_H = 2;
 
 export function foeWorldScale(kind: number, sprH: number): number {
   const dest = (kind === 2 ? BRUTE_TO_HERO : FOE_TO_HERO) * HERO_PACK_H;
@@ -175,20 +175,20 @@ export function paintSignatureHero(
   const my = y - 26 * s - bob + ny * 5;
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
-  ctx.fillStyle = "rgba(255,120,18,0.98)";
+  ctx.fillStyle = "rgba(255,120,18,0.92)";
   ctx.beginPath();
-  ctx.ellipse(mx, my, 18, 10, Math.atan2(ny, nx), 0, Math.PI * 2);
+  ctx.ellipse(mx, my, 19, 10, Math.atan2(ny, nx), 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = "rgba(255,240,120,0.98)";
+  ctx.fillStyle = "rgba(255,230,110,0.88)";
   ctx.beginPath();
-  ctx.ellipse(mx, my, 9, 5, Math.atan2(ny, nx), 0, Math.PI * 2);
+  ctx.ellipse(mx, my, 10, 5.5, Math.atan2(ny, nx), 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = "#ffe07a";
-  ctx.lineWidth = 3.6;
+  ctx.lineWidth = 3.8;
   ctx.lineCap = "round";
   ctx.beginPath();
   ctx.moveTo(mx, my);
-  ctx.lineTo(mx + nx * 24, my + ny * 24);
+  ctx.lineTo(mx + nx * 28, my + ny * 28);
   ctx.stroke();
   ctx.restore();
 }
@@ -305,9 +305,9 @@ export function paintEnergyTank(ctx: CanvasRenderingContext2D, x: number, y: num
 
 export function paintBlood(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, age = 1): void {
   const seed = ((x * 13 + y * 7 + s * 17) | 0);
-  const n = 6 + (seed & 3);
+  const n = 7 + (seed & 3);
   const fade = (0.72 + (seed & 3) * 0.06) * Math.max(0.28, Math.min(1, age));
-  const span = 8 + (s & 7);
+  const span = 9 + (s & 7);
   ctx.fillStyle = "#5a1410";
   for (let i = 0; i < n; i++) {
     const ox = ((seed + i * 19) % (span * 2 + 1)) - span;

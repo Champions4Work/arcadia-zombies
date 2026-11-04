@@ -29,8 +29,8 @@ export const CRIT_COLOR = "#ffe14a";
 export const HIT_COLOR = "#fff4c8";
 export const NUMBER_LIFE = 180;
 export const GLYPH_CELL = 2;
-export const BLOOD_DROP_RX = 6.2;
-export const BLOOD_DROP_RY = 4.8;
+export const BLOOD_DROP_RX = 6.6;
+export const BLOOD_DROP_RY = 5.2;
 
 const SOOT = "#120c08";
 const BRASS = "#c8963e";
@@ -435,12 +435,12 @@ export function drawJuice(c: CanvasRenderingContext2D): void {
         c.fillStyle = "rgba(210,36,42,0.88)";
         c.fillRect((x - 2) | 0, (y - 3) | 0, 3, 4);
       } else {
-        c.fillStyle = "rgba(255,150,48,0.55)";
+        c.fillStyle = "rgba(255,158,46,0.62)";
         c.beginPath();
-        c.arc(x, y, 7, 0, Math.PI * 2);
+        c.arc(x, y, 8, 0, Math.PI * 2);
         c.fill();
         c.fillStyle = BRASS;
-        c.fillRect((x - 5) | 0, (y - 3) | 0, 10, 7);
+        c.fillRect((x - 5) | 0, (y - 3) | 0, 11, 7);
         c.fillStyle = COPPER;
         c.fillRect((x - 2) | 0, (y - 1) | 0, 5, 5);
       }
