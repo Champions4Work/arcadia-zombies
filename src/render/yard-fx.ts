@@ -16,8 +16,6 @@ const BELTS = [
 
 const PIPE_RUNS = [
   { x: 296, y: 232, len: 368, vert: 0 },
-  { x: 308, y: 268, len: 372, vert: 1 },
-  { x: 644, y: 268, len: 372, vert: 1 },
 ];
 
 const BELT_H = 72;
@@ -34,28 +32,18 @@ const PROPS: { id: string; x: number; y: number }[] = [
   { id: "lamp", x: 360, y: 208 },
   { id: "lamp", x: 480, y: 204 },
   { id: "lamp", x: 600, y: 208 },
-  { id: "breakable_gear_pylon", x: 332, y: 340 },
-  { id: "crate_stack", x: 340, y: 368 },
-  { id: "barrel", x: 336, y: 386 },
+  { id: "breakable_gear_pylon", x: 308, y: 520 },
   { id: "decal_grate", x: 368, y: 302 },
   { id: "decal_grate", x: 592, y: 302 },
-  { id: "crate", x: 332, y: 428 },
-  { id: "valve_steam", x: 334, y: 468 },
-  { id: "decal_vent", x: 336, y: 450 },
-  { id: "barrel", x: 332, y: 508 },
-  { id: "crate_stack", x: 336, y: 548 },
-  { id: "pipes_blue_tank", x: 334, y: 596 },
-  { id: "breakable_boiler", x: 332, y: 636 },
-  { id: "breakable_gear_pylon", x: 628, y: 340 },
-  { id: "crate_stack", x: 620, y: 368 },
-  { id: "barrel", x: 632, y: 386 },
-  { id: "crate", x: 628, y: 428 },
-  { id: "valve_steam", x: 630, y: 468 },
-  { id: "decal_vent", x: 632, y: 450 },
-  { id: "barrel", x: 628, y: 508 },
-  { id: "crate_stack", x: 632, y: 548 },
-  { id: "pipes_blue_tank", x: 630, y: 596 },
-  { id: "breakable_boiler", x: 628, y: 636 },
+  { id: "valve_steam", x: 308, y: 468 },
+  { id: "decal_vent", x: 310, y: 450 },
+  { id: "pipes_blue_tank", x: 308, y: 596 },
+  { id: "breakable_boiler", x: 306, y: 648 },
+  { id: "breakable_gear_pylon", x: 652, y: 520 },
+  { id: "valve_steam", x: 654, y: 468 },
+  { id: "decal_vent", x: 656, y: 450 },
+  { id: "pipes_blue_tank", x: 654, y: 596 },
+  { id: "breakable_boiler", x: 656, y: 648 },
 ];
 
 const TANKS = [
@@ -511,15 +499,6 @@ function paintCrossBelt(
   for (let s = off; s < w; s += 28) {
     if (yardBound !== ZONE_BRASS) arrow(ctx, x + s, y, 0, tick);
   }
-  const crateT = (tick * 0.9 + w * 0.42) % w;
-  const cx = x + crateT;
-  const cy = y - 14;
-  ctx.save();
-  ctx.globalCompositeOperation = "lighter";
-  ctx.globalAlpha = 0.78 + ((tick >> 3) & 1) * 0.2;
-  blitSheet(ctx, "blue_glow", cx, cy - 8);
-  ctx.restore();
-  blitScaled(ctx, "crate", cx, cy, 1.35);
 }
 
 export const HERO_X = 480;

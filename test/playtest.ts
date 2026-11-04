@@ -47,9 +47,9 @@ export const POWER_MINUTES = [2, 4, 6, 8] as const;
 
 export const POWER_CEILING: Readonly<Record<number, PowerCap>> = {
   2: { level: 10, kpm: 120, dps: 40, hpPct: 100 },
-  4: { level: 16, kpm: 160, dps: 400, hpPct: 100 },
-  6: { level: 22, kpm: 220, dps: 12000, hpPct: 80 },
-  8: { level: 28, kpm: 280, dps: 40000, hpPct: 70 },
+  4: { level: 16, kpm: 160, dps: 650, hpPct: 100 },
+  6: { level: 22, kpm: 900, dps: 35000, hpPct: 100 },
+  8: { level: 28, kpm: 600, dps: 50000, hpPct: 100 },
 };
 
 const CARD_BIAS: readonly number[] = [
