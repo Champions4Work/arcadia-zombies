@@ -174,6 +174,7 @@ let decks: [Deck, Deck] | null = null;
 let musicGain: GainNode | null = null;
 let noise: AudioBuffer | null = null;
 let musicMuteBtn: HTMLButtonElement | null = null;
+let hushed = false;
 
 function clamp01(n: number): number {
   if (n < 0) return 0;
@@ -300,10 +301,27 @@ function paintMute(): void {
   musicMuteBtn.setAttribute("aria-pressed", pref.muted ? "true" : "false");
 }
 
-function zeroNext(): void {
+function dropGain(deck: Deck, ctx: AudioContext): void {
+  const old = deck.gain;
+  old.gain.cancelScheduledValues(0);
+  old.gain.value = 0;
+  old.disconnect();
+  const next = ctx.createGain();
+  next.gain.value = 0;
+  if (musicGain) next.connect(musicGain);
+  deck.gain = next;
+  deck.rampUntil = 0;
+}
+
+function hushDecks(ctx: AudioContext): void {
   if (!decks) return;
+  dropGain(decks[0], ctx);
+  dropGain(decks[1], ctx);
+  decks[0].bed = null;
+  decks[1].bed = null;
   decks[0].nextT = 0;
   decks[1].nextT = 0;
+  hushed = true;
 }
 
 function noiseBuf(ctx: AudioContext): AudioBuffer {
@@ -344,6 +362,8 @@ function assignGain(): void {
 }
 
 function load(deck: Deck, cue: Heard, now: number): void {
+  const bus = getBus();
+  if (bus) dropGain(deck, bus.ctx);
   deck.bed = cue.bed;
   deck.drive = cue.drive;
   deck.step = 0;
@@ -533,7 +553,11 @@ function strike(ctx: AudioContext, deck: Deck, score: Score, t: number): void {
 }
 
 function fill(ctx: AudioContext): void {
-  if (musicSilent() || !decks) return;
+  if (musicSilent() || !decks) {
+    if (musicSilent() && decks && !hushed) hushDecks(ctx);
+    return;
+  }
+  hushed = false;
   const now = ctx.currentTime;
   for (let i = 0; i < 2; i++) {
     const deck = decks[i];
@@ -580,8 +604,15 @@ export function syncMusic(snap: MusicSnap): void {
 }
 
 function applyPref(): void {
-  if (musicSilent()) zeroNext();
   const bus = getBus();
+  if (musicSilent()) {
+    if (bus) {
+      ensure(bus);
+      hushDecks(bus.ctx);
+    }
+    assignGain();
+    return;
+  }
   if (!bus) return;
   assignGain();
   if (lastSnap) syncMusic(lastSnap);
@@ -611,7 +642,8 @@ export function bootMusic(store: Store | null): void {
   pref.muted = next.muted;
   pref.volume = next.volume;
   paintMute();
-  if (musicSilent()) zeroNext();
+  const bus = getBus();
+  if (musicSilent() && bus && decks) hushDecks(bus.ctx);
   assignGain();
 }
 

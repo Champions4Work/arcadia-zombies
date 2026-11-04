@@ -113,6 +113,24 @@ describe("music beds", () => {
     expect(timbresOf(BED_BOSS)).toEqual([TIMBRE_GEAR, TIMBRE_THUMP, TIMBRE_ORGAN, TIMBRE_BRASS, TIMBRE_BELL]);
   });
 
+  it("keeps mute and volume 0 from writing the master mute key", () => {
+    const store = mem();
+    store.setItem(MUTE_KEY, "0");
+    setMusicMuted(true);
+    setMusicVolume(0);
+    persistMusic(store);
+    expect(store.getItem(MUTE_KEY)).toBe("0");
+    bootMusic(store);
+    expect(musicMuted()).toBe(true);
+    expect(musicVolume()).toBe(0);
+    setMusicMuted(false);
+    setMusicVolume(0.4);
+    persistMusic(store);
+    bootMusic(store);
+    expect(musicMuted()).toBe(false);
+    expect(musicVolume()).toBe(0.4);
+  });
+
   it("saves music volume without writing the master mute key", () => {
     const fresh = mem();
     setMusicMuted(false);
