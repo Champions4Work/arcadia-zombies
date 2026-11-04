@@ -86,7 +86,8 @@ describe("viewport chrome", () => {
       expect(boxInside(joy, frame, 1)).toBe(true);
       for (const box of boxes) expect(boxesOverlap(joy, box)).toBe(false);
       expect(hud.hero.h).toBeLessThanOrEqual(56);
-      expect(hud.difficulty.h).toBeLessThanOrEqual(32);
+      expect(hud.difficulty.h).toBeLessThanOrEqual(48);
+      expect(hud.difficulty.h).toBeGreaterThanOrEqual(28);
       expect(hud.weapons.h).toBeLessThanOrEqual(40);
       expect(hud.minimap.h).toBeGreaterThanOrEqual(52);
       expect(hud.minimap.h).toBeLessThanOrEqual(88);

@@ -9,7 +9,7 @@ export const HERO_LOOK_H = 52;
 export const HERO_PACK_H = 64;
 export const HERO_DRAW_SCALE = 1.42;
 export const FOE_TO_HERO = 0.58;
-export const BRUTE_TO_HERO = 0.74;
+export const BRUTE_TO_HERO = 1.12;
 
 export function foeWorldScale(kind: number, sprH: number): number {
   const dest = (kind === 2 ? BRUTE_TO_HERO : FOE_TO_HERO) * HERO_PACK_H;
@@ -217,6 +217,21 @@ export function paintZombie(
   const scale = foeWorldScale(kind, spr?.["h"] ?? 32);
   paintShadow(ctx, x, y, 5 * scale, 2.1 * scale);
   blitSheetLean(ctx, id, x, y, flip < 0, bob, 0, scale);
+  if (kind !== 2) return;
+  const destH = foeWorldH(kind);
+  const cx = x;
+  const cy = y - destH * 0.28 - bob;
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  ctx.fillStyle = "rgba(255,96,16,0.95)";
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, destH * 0.14, destH * 0.16, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(255,220,70,0.95)";
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, destH * 0.06, destH * 0.07, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
 }
 
 export function paintMine(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, spikes: number, elite: boolean): void {
