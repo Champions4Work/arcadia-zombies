@@ -143,12 +143,12 @@ export const paintFlash: FxPaint = (ctx, x, y, age, a) => {
   ctx.rotate(a);
   ctx.globalAlpha = t;
   ctx.globalCompositeOperation = "lighter";
-  bloom(ctx, 4, 0, 28 * t + 10, "#fff8e4", "rgba(255,150,48,0.95)");
+  bloom(ctx, 4, 0, 34 * t + 14, "#fff8e4", "rgba(255,150,48,0.98)");
   ctx.beginPath();
   ctx.moveTo(0, 0);
-  ctx.lineTo(32 * t + 12, -14 * t);
-  ctx.lineTo(22 * t + 8, 0);
-  ctx.lineTo(32 * t + 12, 14 * t);
+  ctx.lineTo(38 * t + 14, -16 * t);
+  ctx.lineTo(26 * t + 10, 0);
+  ctx.lineTo(38 * t + 14, 16 * t);
   ctx.closePath();
   ctx.fillStyle = "#fff6d0";
   ctx.fill();

@@ -53,7 +53,7 @@ function paintCargo(ctx: CanvasRenderingContext2D, w: World, i: number): void {
   const phase = cargoPhase(w, i);
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
-  ctx.globalAlpha = phase === CARGO_LAND ? 0.86 : 0.58 + ((w.tick >> 2) & 1) * 0.22;
+  ctx.globalAlpha = phase === CARGO_LAND ? 0.92 : 0.68 + ((w.tick >> 2) & 1) * 0.26;
   blitSheet(ctx, "blue_glow", x, y - 8);
   ctx.restore();
   paintShadow(ctx, x, y, 10, 4);

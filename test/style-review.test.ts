@@ -46,8 +46,8 @@ describe("visual review gates", () => {
     expect(look.includes("ctx.transform(1, 0, lean")).toBe(false);
     expect(look.includes("rgba(200,208,220")).toBe(false);
     expect(look.includes("lineTo(mx + nx * 62")).toBe(false);
-    expect(look.includes("lineTo(mx + nx * 24")).toBe(true);
-    expect(look.includes("ellipse(mx, my, 18, 10")).toBe(true);
+    expect(look.includes("lineTo(mx + nx * 32")).toBe(true);
+    expect(look.includes("ellipse(mx, my, 22, 12")).toBe(true);
     expect(look.includes("rgba(255,120,18,0.98)")).toBe(true);
     expect(look.includes("export function walkBob")).toBe(true);
     expect(look.includes("export function shambleBob")).toBe(true);

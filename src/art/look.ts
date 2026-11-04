@@ -10,8 +10,8 @@ export const HERO_PACK_H = 64;
 export const HERO_DRAW_SCALE = 1.4;
 export const FOE_TO_HERO = 0.58;
 export const BRUTE_TO_HERO = 1.12;
-export const CASE_W = 4.2;
-export const CASE_H = 1.8;
+export const CASE_W = 5.2;
+export const CASE_H = 2.2;
 
 export function foeWorldScale(kind: number, sprH: number): number {
   const dest = (kind === 2 ? BRUTE_TO_HERO : FOE_TO_HERO) * HERO_PACK_H;
@@ -177,18 +177,18 @@ export function paintSignatureHero(
   ctx.globalCompositeOperation = "lighter";
   ctx.fillStyle = "rgba(255,120,18,0.98)";
   ctx.beginPath();
-  ctx.ellipse(mx, my, 18, 10, Math.atan2(ny, nx), 0, Math.PI * 2);
+  ctx.ellipse(mx, my, 22, 12, Math.atan2(ny, nx), 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = "rgba(255,240,120,0.98)";
   ctx.beginPath();
-  ctx.ellipse(mx, my, 9, 5, Math.atan2(ny, nx), 0, Math.PI * 2);
+  ctx.ellipse(mx, my, 11, 6, Math.atan2(ny, nx), 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = "#ffe07a";
-  ctx.lineWidth = 3.6;
+  ctx.lineWidth = 4.2;
   ctx.lineCap = "round";
   ctx.beginPath();
   ctx.moveTo(mx, my);
-  ctx.lineTo(mx + nx * 24, my + ny * 24);
+  ctx.lineTo(mx + nx * 32, my + ny * 32);
   ctx.stroke();
   ctx.restore();
 }
@@ -297,23 +297,25 @@ export function paintEnergyTank(ctx: CanvasRenderingContext2D, x: number, y: num
   paintShadow(ctx, x, y, r * 0.9, r * 0.32);
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
-  ctx.globalAlpha = 0.55 + ((tick >> 3) & 1) * 0.2;
-  blitSheet(ctx, "blue_glow", x, y - 8);
+  ctx.globalAlpha = 0.62 + ((tick >> 3) & 1) * 0.28;
+  blitSheet(ctx, "blue_glow", x, y - 10);
+  ctx.globalAlpha = 0.48 + ((tick >> 2) & 1) * 0.18;
+  blitSheet(ctx, "blue_puddle", x - 6, y + 6);
   ctx.restore();
   blitSheet(ctx, "pipes_blue_tank", x, y);
 }
 
 export function paintBlood(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, age = 1): void {
   const seed = ((x * 13 + y * 7 + s * 17) | 0);
-  const n = 6 + (seed & 3);
+  const n = 8 + (seed & 3);
   const fade = (0.72 + (seed & 3) * 0.06) * Math.max(0.28, Math.min(1, age));
-  const span = 8 + (s & 7);
+  const span = 10 + (s & 7);
   ctx.fillStyle = "#5a1410";
   for (let i = 0; i < n; i++) {
     const ox = ((seed + i * 19) % (span * 2 + 1)) - span;
     const oy = ((seed + i * 11) % (span + 3)) - (span >> 1);
-    const rw = 4.2 + ((seed + i * 5) % Math.max(3, span >> 1));
-    const rh = 2.6 + ((seed + i * 3) % Math.max(2, span >> 2));
+    const rw = 5.2 + ((seed + i * 5) % Math.max(3, span >> 1));
+    const rh = 3.2 + ((seed + i * 3) % Math.max(2, span >> 2));
     ctx.globalAlpha = fade;
     ctx.beginPath();
     ctx.ellipse(x + ox, y + oy, rw, rh, ((seed + i) % 8) * 0.28, 0, Math.PI * 2);

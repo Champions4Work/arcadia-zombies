@@ -143,6 +143,10 @@ A look-changing shot is unfinished if any row is missing.
 
 The gzip budget in `scripts/size.mjs` is 220 KB. That is the raised cap after the `az_art_v2` webp pack landed. The old 124 KB cap covered code-drawn art. Packed world, HUD, and actor sheets need the extra room. A look PR that adds packed art must raise `scripts/size.mjs` and this paragraph together.
 
+## Effects (phone read)
+
+Steam vents cycle `steam_1` through `steam_4` with a lighter double-blit and a soft gray under-puff so white reads on dusk stone at 390×844. Blue tanks and pipe props stack `blue_glow`, `blue_puddle`, and a wide cyan pool. Shots keep an oversized hero muzzle bloom, `paintFlash` spikes, flying brass particles, floor casings, and denser rust blood on hits and kills.
+
 ## Review gate
 
 Every pull request that changes how the game looks must ship a 390x844 phone screenshot beside both reference frames.

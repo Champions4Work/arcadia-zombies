@@ -178,7 +178,7 @@ function drawGun(ctx: CanvasRenderingContext2D, gun: number, hot: boolean): void
     g.addColorStop(1, "rgba(255,80,10,0)");
     ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.arc(along, 0, 10, 0, Math.PI * 2);
+    ctx.arc(along, 0, 14, 0, Math.PI * 2);
     ctx.fill();
   }
 }

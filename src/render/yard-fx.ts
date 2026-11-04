@@ -326,10 +326,11 @@ function doorPool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   ctx.restore();
 }
 
-function bluePool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  const g = ctx.createRadialGradient(x, y - 6, 2, x, y, 28);
-  g.addColorStop(0, "rgba(90,245,255,0.7)");
-  g.addColorStop(0.5, "rgba(40,200,255,0.28)");
+function bluePool(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number): void {
+  const pulse = 0.78 + ((tick >> 3) & 1) * 0.16;
+  const g = ctx.createRadialGradient(x, y - 6, 2, x, y, 36);
+  g.addColorStop(0, "rgba(120,255,255,0.88)");
+  g.addColorStop(0.45, "rgba(50,220,255,0.42)");
   g.addColorStop(1, "rgba(10,10,14,0)");
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
@@ -337,7 +338,10 @@ function bluePool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   ctx.beginPath();
   ctx.ellipse(x, y, 22, 16, 0, 0, Math.PI * 2);
   ctx.fill();
-  blitSheet(ctx, "blue_glow", x, y - 6);
+  ctx.globalAlpha = pulse;
+  blitScaled(ctx, "blue_glow", x, y - 10, 1.24);
+  ctx.globalAlpha = 0.62 * pulse;
+  blitSheet(ctx, "blue_puddle", x - 8, y + 4);
   ctx.restore();
 }
 
@@ -395,20 +399,20 @@ function paintCrossPipe(
   for (let i = 0; i < GLASS_AT.length; i++) {
     const t = GLASS_AT[i] ?? 0.5;
     const px = x + len * t;
-    const pulse = 0.72 + ((tick + i * 7) & 7) * 0.03;
+    const pulse = 0.82 + ((tick + i * 7) & 7) * 0.04;
     ctx.fillStyle = "#0a6a72";
     ctx.beginPath();
     ctx.ellipse(px, y, 28, 12, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
-    ctx.fillStyle = `rgba(70,230,255,${pulse})`;
+    ctx.fillStyle = `rgba(80,245,255,${pulse})`;
     ctx.beginPath();
-    ctx.ellipse(px, y, 24, 10, 0, 0, Math.PI * 2);
+    ctx.ellipse(px, y, 26, 11, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = "rgba(180,255,255,0.95)";
+    ctx.fillStyle = "rgba(210,255,255,0.98)";
     ctx.beginPath();
-    ctx.ellipse(px, y, 14, 6, 0, 0, Math.PI * 2);
+    ctx.ellipse(px, y, 16, 7, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
     ctx.strokeStyle = BRASS_HI;
@@ -437,12 +441,12 @@ function paintVertPipe(ctx: CanvasRenderingContext2D, x: number, y: number, len:
   for (let i = 0; i < GLASS_AT.length; i++) {
     const t = GLASS_AT[i] ?? 0.5;
     const py = y + len * t;
-    const pulse = 0.72 + ((tick + i * 7) & 7) * 0.03;
+    const pulse = 0.82 + ((tick + i * 7) & 7) * 0.04;
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
-    ctx.fillStyle = `rgba(70,230,255,${pulse})`;
+    ctx.fillStyle = `rgba(80,245,255,${pulse})`;
     ctx.beginPath();
-    ctx.ellipse(x, py, 12, 28, 0, 0, Math.PI * 2);
+    ctx.ellipse(x, py, 14, 30, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
   }
@@ -453,12 +457,18 @@ function paintVertPipe(ctx: CanvasRenderingContext2D, x: number, y: number, len:
 function steamPuff(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number): void {
   const lift = ((tick * 0.35) % 18);
   ctx.save();
-  ctx.globalAlpha = 0.28;
+  ctx.globalCompositeOperation = "lighter";
+  ctx.globalAlpha = 0.94;
+  blitScaled(ctx, steamFrame(tick + 2), x - 10, y - 32 - lift, 1.18);
+  ctx.globalAlpha = 0.72;
+  blitScaled(ctx, steamFrame(tick + 6), x + 8, y - 20 - lift * 0.55, 1.02);
+  ctx.globalCompositeOperation = "source-over";
+  ctx.globalAlpha = 0.42;
   ctx.fillStyle = "#8a9098";
   ctx.beginPath();
   ctx.ellipse(x, y - 6 - lift * 0.2, 10, 14, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.globalAlpha = 0.2;
+  ctx.globalAlpha = 0.32;
   ctx.beginPath();
   ctx.ellipse(x + 5, y - 16 - lift * 0.25, 8, 11, 0.2, 0, Math.PI * 2);
   ctx.fill();
@@ -634,7 +644,7 @@ export function paintYardLive(
   }
   for (const tank of tanksOf()) {
     if (!visible(tank.x, tank.y, camX, camY, vw, vh, 50)) continue;
-    bluePool(ctx, tank.x, tank.y);
+    bluePool(ctx, tank.x, tank.y, tick);
   }
   const n = groundFeatureCount();
   for (let i = 0; i < n; i++) {
@@ -652,7 +662,7 @@ export function paintYardLive(
   for (const p of propsOf()) {
     if (!visible(p.x, p.y, camX, camY, vw, vh, 90)) continue;
     if (p.id === "breakable_gear_pylon" || p.id === "breakable_boiler" || p.id === "pipes_blue_tank") {
-      bluePool(ctx, p.x, p.y + 8);
+      bluePool(ctx, p.x, p.y + 8, tick);
     }
     paintShadow(ctx, p.x, p.y, 12, 4);
     blitSheet(ctx, p.id, p.x, p.y);
@@ -673,8 +683,11 @@ export function paintYardLive(
   for (const vent of ventsOf()) {
     if (!visible(vent.x, vent.y, camX, camY, vw, vh, 40)) continue;
     ctx.save();
-    ctx.globalAlpha = 0.55;
-    blitSheet(ctx, steamFrame(tick), vent.x, vent.y - 10);
+    ctx.globalCompositeOperation = "lighter";
+    ctx.globalAlpha = 0.92;
+    blitScaled(ctx, steamFrame(tick), vent.x, vent.y - 18, 1.24);
+    ctx.globalAlpha = 0.68;
+    blitScaled(ctx, steamFrame(tick + 4), vent.x + 6, vent.y - 8, 1.02);
     ctx.restore();
     steamPuff(ctx, vent.x, vent.y, tick);
   }

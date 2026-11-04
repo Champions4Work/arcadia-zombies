@@ -5,7 +5,7 @@ export const STAIN_LIVE_CAP = 128;
 export const STAIN_FADE_MIN = 0.28;
 export const STAIN_BLOOD = 1;
 export const STAIN_CASE = 2;
-export const BLOOD_STAIN_BASE = 9;
+export const BLOOD_STAIN_BASE = 11;
 
 const sx = new Float32Array(STAIN_CAP);
 const sy = new Float32Array(STAIN_CAP);
