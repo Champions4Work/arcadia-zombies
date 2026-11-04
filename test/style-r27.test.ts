@@ -46,7 +46,7 @@ describe("r27 art-bible pass", () => {
     expect(stage.includes("#1a1030")).toBe(true);
     expect(stage.includes("rgba(255,190,110")).toBe(true);
     const look = readFileSync("src/art/look.ts", "utf8");
-    expect(look.includes("createRadialGradient(x, y - 18 * s")).toBe(true);
+    expect(look.includes("createRadialGradient(x - 10 * s, y - 22 * s")).toBe(true);
     expect(look.includes("rgba(255,210,120,0.72)")).toBe(true);
   });
 });
