@@ -1,3 +1,4 @@
+import { KIND_BRASS, KIND_BRASS_W, KIND_RUBBLE, TILE, groundCols, groundKind, groundRows } from "../src/render/ground";
 import { KIND_N } from "../src/sim/foes";
 import {
   SKY_N,
@@ -9,6 +10,18 @@ import {
   zoneAt,
   zoneRow,
 } from "../src/sim/zones";
+
+function tileCount(zone: number, kind: number): number {
+  const c0 = (zone * YARD_W) / TILE;
+  const c1 = c0 + YARD_W / TILE;
+  let n = 0;
+  const rows = groundRows();
+  const cols = groundCols();
+  for (let r = 0; r < rows; r++) {
+    for (let c = c0; c < c1 && c < cols; c++) if (groundKind(c, r) === kind) n++;
+  }
+  return n;
+}
 
 describe("yard strip", () => {
   it("clamps a point onto the end yards", () => {
@@ -38,5 +51,13 @@ describe("yard strip", () => {
     expect([...zoneRow(ZONE_SCRAP).spawnMul]).toEqual([2, 1, 1, 1, 1, 1, 1]);
     expect([...zoneRow(ZONE_BOILER).spawnMul]).toEqual([1, 1, 2, 1, 1, 1, 1]);
     expect([...zoneRow(ZONE_DOCKS).spawnMul]).toEqual([1, 2, 1, 1, 1, 1, 1]);
+  });
+
+  it("lays brass plates in the boiler works and rubble in the scrap yard", () => {
+    const scrapBrass = tileCount(ZONE_SCRAP, KIND_BRASS) + tileCount(ZONE_SCRAP, KIND_BRASS_W);
+    const boilerBrass = tileCount(ZONE_BOILER, KIND_BRASS) + tileCount(ZONE_BOILER, KIND_BRASS_W);
+    expect(scrapBrass).toBe(0);
+    expect(boilerBrass).toBeGreaterThan(0);
+    expect(tileCount(ZONE_SCRAP, KIND_RUBBLE)).toBeGreaterThan(tileCount(ZONE_DOCKS, KIND_RUBBLE));
   });
 });

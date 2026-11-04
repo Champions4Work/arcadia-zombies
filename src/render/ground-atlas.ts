@@ -1,5 +1,6 @@
 import { ARENA_H, ARENA_W } from "../sim/arena";
 import { H, W } from "../sim/types";
+import { zoneAt, zoneRow } from "../sim/zones";
 import {
   eachVentFx,
   FEAT_GEAR,
@@ -26,12 +27,15 @@ import { pack } from "./horde-sprites";
 
 const EDGE = pack(0x18, 0x12, 0x10);
 const MORTAR = pack(0x2a, 0x22, 0x1c);
-const STONE = [
-  pack(0x6a, 0x58, 0x48), pack(0x5c, 0x4c, 0x3e), pack(0x7a, 0x68, 0x56),
-  pack(0x4e, 0x42, 0x38), pack(0x8a, 0x74, 0x62), pack(0x3e, 0x34, 0x2c),
-];
 const BRASS = pack(0xc4, 0x90, 0x38);
-const BRASS_W = pack(0x8a, 0x70, 0x40);
+
+function packHex(n: number): number {
+  return pack((n >> 16) & 255, (n >> 8) & 255, n & 255);
+}
+
+function packShade(n: number): number {
+  return pack((((n >> 16) & 255) * 2 / 3) | 0, (((n >> 8) & 255) * 2 / 3) | 0, ((n & 255) * 2 / 3) | 0);
+}
 const BRASS_HI = pack(0xff, 0xf1, 0xc2);
 const STEEL = pack(0x8e, 0xa4, 0xb6);
 const STEEL_HI = pack(0xf2, 0xf7, 0xfb);
@@ -77,14 +81,16 @@ function cobbleField(): void {
     for (let x = -8; x < ARENA_W; x += 10) {
       const sx = x + ox;
       const h = hash(sx, y);
-      fill(sx + 1, y + 1, 8 + (h & 1), 5, STONE[h % STONE.length] ?? MORTAR);
+      const stone = zoneRow(zoneAt(sx, y)).stone;
+      fill(sx + 1, y + 1, 8 + (h & 1), 5, packHex(stone[h % stone.length] ?? 0x6a5848));
     }
   }
 }
 
 function plate(x: number, y: number, worn: number): void {
+  const brass = zoneRow(zoneAt(x, y)).brass;
   fill(x, y, TILE, TILE, pack(0x4a, 0x2c, 0x08));
-  fill(x + 1, y + 1, 14, 14, worn ? BRASS_W : BRASS);
+  fill(x + 1, y + 1, 14, 14, worn ? packShade(brass) : packHex(brass));
   fill(x + 2, y + 2, 12, 2, BRASS_HI);
   put(x + 2, y + 2, BRASS_HI);
   put(x + 13, y + 2, BRASS_HI);
@@ -112,7 +118,8 @@ function rail(x: number, y: number, vert: number): void {
 function grate(x: number, y: number, vent: number): void {
   fill(x, y, TILE, TILE, PIT);
   fill(x + 2, y + 2, 12, 12, GRATE);
-  for (let i = 0; i < 4; i++) fill(x + 3, y + 3 + i * 3, 10, 1, BRASS);
+  const brass = packHex(zoneRow(zoneAt(x, y)).brass);
+  for (let i = 0; i < 4; i++) fill(x + 3, y + 3 + i * 3, 10, 1, brass);
   if (vent) fill(x + 5, y + 6, 6, 4, PIT);
 }
 

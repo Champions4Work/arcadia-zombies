@@ -1,5 +1,6 @@
 import { ARENA_H, ARENA_W } from "../sim/arena";
 import { H, W } from "../sim/types";
+import { YARD_W, ZONE_N, zoneAt, zoneRow, type ZoneRow } from "../sim/zones";
 import { BRASS, cog, COPPER, type Metal, OUTLINE, rivet, STEEL } from "./paint";
 
 export const TILE = 16;
@@ -26,11 +27,25 @@ export const VENT_PUFFS = 2;
 const COLS = (ARENA_W / TILE) | 0;
 const ROWS = (ARENA_H / TILE) | 0;
 const FLOOR0 = 7;
-const MAX_FEAT = 80;
-const MAX_VENT = 16;
-const STONE = ["#6a5848", "#5c4c3e", "#7a6856", "#4e4238", "#8a7462", "#3e342c"];
-const STONE_D = ["#3a322c", "#2e2824", "#463830", "#322820"];
-const STONE_W = ["#4a5240", "#3e4838", "#5a6250", "#364034"];
+const YARD_COLS = (YARD_W / TILE) | 0;
+
+function featBudget(): number {
+  let n = 0;
+  for (let z = 0; z < ZONE_N; z++) {
+    const row = zoneRow(z);
+    n += row.pipeN + row.lampN + row.gearN + row.stainN + row.rubbleN;
+  }
+  return n;
+}
+
+function ventBudget(): number {
+  let n = 0;
+  for (let z = 0; z < ZONE_N; z++) n += zoneRow(z).ventN;
+  return n;
+}
+
+const MAX_FEAT = featBudget();
+const MAX_VENT = ventBudget();
 const cells = new Uint8Array(COLS * ROWS);
 const fk = new Uint8Array(MAX_FEAT);
 const fx = new Float32Array(MAX_FEAT);
@@ -49,22 +64,30 @@ function hash(x: number, y: number, s = 0): number {
   return n >>> 0;
 }
 
-function brassPad(c: number, r: number): number {
-  if (r >= 8 && r <= 13 && c >= 9 && c <= 20) return 1;
-  if (r >= 10 && r <= 11 && c >= 3 && c <= 52) return 1;
-  if (r >= 12 && r <= 18 && c >= 48 && c <= 57) return 1;
-  if (r >= 20 && r <= 24 && c >= 28 && c <= 40) return 1;
-  if (r >= 18 && r <= 22 && c >= 2 && c <= 10) return 1;
-  if (r >= 30 && r <= 32 && c >= 16 && c <= 28) return 1;
+function css(n: number): string {
+  return `#${(n & 0xffffff).toString(16).padStart(6, "0")}`;
+}
+
+function shade(n: number): number {
+  const r = (((n >> 16) & 255) * 2 / 3) | 0;
+  const g = (((n >> 8) & 255) * 2 / 3) | 0;
+  const b = ((n & 255) * 2 / 3) | 0;
+  return (r << 16) | (g << 8) | b;
+}
+
+function listed(xs: readonly number[], v: number): number {
+  for (let i = 0; i < xs.length; i++) if (xs[i] === v) return 1;
   return 0;
 }
 
-function railH(r: number): number {
-  return r === 16 || r === 27 ? 1 : 0;
-}
-
-function railV(c: number): number {
-  return c === 13 || c === 47 ? 1 : 0;
+function onPad(row: ZoneRow, col: number, r: number): number {
+  const pads = row.pads;
+  for (let i = 0; i < pads.length; i++) {
+    const p = pads[i];
+    if (!p) continue;
+    if (r >= p.row0 && r <= p.row1 && col >= p.col0 && col <= p.col1) return 1;
+  }
+  return 0;
 }
 
 function add(kind: number, x: number, y: number, a: number, b: number): void {
@@ -84,14 +107,30 @@ function addVent(x: number, y: number): void {
   ventN++;
 }
 
-function forceVent(c: number, r: number): void {
-  if (r < FLOOR0 || railH(r) || railV(c)) return;
-  cells[r * COLS + c] = KIND_VENT;
+function placeFeat(zone: number, kind: number, count: number, size: (h: number) => { a: number; b: number }): void {
+  const x0 = zone * YARD_W + 24;
+  const xSpan = YARD_W - 48;
+  const y0 = 120;
+  const ySpan = ARENA_H - 20 - y0;
+  for (let i = 0; i < count; i++) {
+    const h = hash(i, kind, zone);
+    const spot = size(h);
+    add(kind, x0 + (h % xSpan), y0 + ((h >>> 8) % ySpan), spot.a, spot.b);
+  }
+}
+
+function placeFeatures(zone: number, row: ZoneRow): void {
+  placeFeat(zone, FEAT_PIPE, row.pipeN, (h) => ({ a: 70 + (h % 150), b: h & 1 }));
+  placeFeat(zone, FEAT_LAMP, row.lampN, (h) => ({ a: 64 + (h % 20), b: 0 }));
+  placeFeat(zone, FEAT_GEAR, row.gearN, (h) => ({ a: 11 + (h % 6), b: 6 + (h % 3) }));
+  placeFeat(zone, FEAT_STAIN, row.stainN, (h) => ({ a: 10 + (h % 16), b: 6 + ((h >>> 4) % 10) }));
+  placeFeat(zone, FEAT_RUBBLE, row.rubbleN, (h) => ({ a: 8 + (h % 10), b: 0 }));
 }
 
 function build(): void {
   if (ready) return;
-  ready = 1;
+  featN = 0;
+  ventN = 0;
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
       const i = r * COLS + c;
@@ -99,72 +138,53 @@ function build(): void {
         cells[i] = KIND_SKY;
         continue;
       }
-      if (railH(r)) {
+      const zone = (c * TILE / YARD_W) | 0;
+      const row = zoneRow(zone);
+      const localC = c - zone * YARD_COLS;
+      const h = hash(c, r, zone);
+      if (listed(row.railRows, r)) {
         cells[i] = KIND_RAIL_H;
         continue;
       }
-      if (railV(c)) {
+      if (listed(row.railCols, localC)) {
         cells[i] = KIND_RAIL_V;
         continue;
       }
-      const h = hash(c, r);
-      if (brassPad(c, r)) {
+      if (onPad(row, localC, r)) {
         cells[i] = (h & 3) === 0 ? KIND_BRASS_W : KIND_BRASS;
         continue;
       }
-      if ((c < 3 || c > 56 || r > 36) && h % 4 === 0) {
+      if (row.edgeRubble && (localC < 3 || localC > YARD_COLS - 4 || r > 36) && h % 4 === 0) {
         cells[i] = KIND_RUBBLE;
         continue;
       }
-      if (h % 61 === 0) {
-        cells[i] = KIND_VENT;
-        continue;
-      }
-      if (h % 47 === 0) {
+      if (row.grateMod > 0 && h % row.grateMod === 0) {
         cells[i] = KIND_GRATE;
         continue;
       }
-      const v = h % 17;
+      const v = hash(c, r) % 17;
       cells[i] = v < 2 ? KIND_COBBLE_W : v < 6 ? KIND_COBBLE_D : KIND_COBBLE;
     }
   }
-  forceVent(8, 10);
-  forceVent(22, 14);
-  forceVent(36, 12);
-  forceVent(52, 20);
-  forceVent(18, 28);
-  forceVent(40, 32);
-  add(FEAT_PIPE, 24, 136, 140, 0);
-  add(FEAT_PIPE, 164, 136, 90, 1);
-  add(FEAT_PIPE, 720, 148, 200, 0);
-  add(FEAT_PIPE, 920, 148, 80, 1);
-  add(FEAT_PIPE, 40, 220, 180, 0);
-  add(FEAT_PIPE, 40, 220, 70, 1);
-  add(FEAT_PIPE, 560, 360, 220, 0);
-  add(FEAT_PIPE, 780, 300, 110, 1);
-  add(FEAT_PIPE, 300, 500, 260, 0);
-  add(FEAT_PIPE, 880, 440, 160, 1);
-  add(FEAT_LAMP, 56, 148, 72, 0);
-  add(FEAT_LAMP, 188, 188, 68, 0);
-  add(FEAT_LAMP, 352, 156, 74, 0);
-  add(FEAT_LAMP, 528, 208, 70, 0);
-  add(FEAT_LAMP, 708, 168, 76, 0);
-  add(FEAT_LAMP, 868, 228, 68, 0);
-  add(FEAT_LAMP, 248, 368, 80, 0);
-  add(FEAT_LAMP, 648, 392, 78, 0);
-  add(FEAT_GEAR, 120, 210, 14, 8);
-  add(FEAT_GEAR, 410, 250, 12, 7);
-  add(FEAT_GEAR, 610, 180, 15, 8);
-  add(FEAT_GEAR, 790, 340, 13, 6);
-  add(FEAT_GEAR, 330, 470, 16, 8);
-  add(FEAT_GEAR, 860, 520, 11, 7);
-  for (let i = 0; i < 14; i++) {
-    const hx = hash(i, 9);
-    add(FEAT_STAIN, 40 + (hx % 880), 130 + ((hx >>> 8) % 470), 10 + (hx % 16), 6 + ((hx >>> 4) % 10));
-  }
-  for (let i = 0; i < 12; i++) {
-    const hx = hash(i, 21);
-    add(FEAT_RUBBLE, 20 + (hx % 920), 140 + ((hx >>> 7) % 460), 8 + (hx % 10), 0);
+  const floorN = ROWS - FLOOR0;
+  for (let zone = 0; zone < ZONE_N; zone++) {
+    const row = zoneRow(zone);
+    let placed = 0;
+    let salt = 0;
+    const guard = YARD_COLS * floorN;
+    while (placed < row.ventN && salt < guard) {
+      const h = hash(salt, zone, 9);
+      const localC = h % YARD_COLS;
+      const r = FLOOR0 + ((h >>> 8) % floorN);
+      const c = zone * YARD_COLS + localC;
+      const i = r * COLS + c;
+      const k = cells[i] ?? 0;
+      salt++;
+      if (k !== KIND_COBBLE && k !== KIND_COBBLE_D && k !== KIND_COBBLE_W) continue;
+      cells[i] = KIND_VENT;
+      placed++;
+    }
+    placeFeatures(zone, row);
   }
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
@@ -172,6 +192,7 @@ function build(): void {
       addVent(c * TILE + 8, r * TILE + 8);
     }
   }
+  ready = 1;
 }
 
 export function groundCols(): number {
@@ -249,8 +270,8 @@ function cobbleField(ctx: CanvasRenderingContext2D): void {
     for (let x = -8; x < ARENA_W; x += 10) {
       const sx = x + ox;
       const h = hash(sx, y);
-      const pal = h % 17 < 2 ? STONE_W : h % 17 < 6 ? STONE_D : STONE;
-      ctx.fillStyle = pal[h % pal.length] ?? "#6a5848";
+      const stone = zoneRow(zoneAt(sx, y)).stone;
+      ctx.fillStyle = css(stone[h % stone.length] ?? 0x6a5848);
       ctx.fillRect(sx + 1, y + 1, 8 + (h & 1), 5);
       ctx.fillStyle = "rgba(255,236,210,0.12)";
       ctx.fillRect(sx + 1, y + 1, 8, 1);
@@ -261,9 +282,10 @@ function cobbleField(ctx: CanvasRenderingContext2D): void {
 }
 
 function plate(ctx: CanvasRenderingContext2D, x: number, y: number, worn: number): void {
+  const brass = zoneRow(zoneAt(x, y)).brass;
   ctx.fillStyle = "#4a2c08";
   ctx.fillRect(x, y, TILE, TILE);
-  ctx.fillStyle = worn ? "#8a7040" : "#c49038";
+  ctx.fillStyle = css(worn ? shade(brass) : brass);
   ctx.fillRect(x + 1, y + 1, 14, 14);
   ctx.fillStyle = "rgba(255,241,194,0.38)";
   ctx.fillRect(x + 2, y + 2, 12, 2);
@@ -312,7 +334,7 @@ function grate(ctx: CanvasRenderingContext2D, x: number, y: number, vent: number
   ctx.fillRect(x, y, TILE, TILE);
   ctx.fillStyle = "#3a2a18";
   ctx.fillRect(x + 2, y + 2, 12, 12);
-  ctx.fillStyle = "#c49038";
+  ctx.fillStyle = css(zoneRow(zoneAt(x, y)).brass);
   for (let i = 0; i < 4; i++) ctx.fillRect(x + 3, y + 3 + i * 3, 10, 1.2);
   if (!vent) return;
   ctx.fillStyle = "#0c0806";
@@ -432,14 +454,21 @@ function fog(ctx: CanvasRenderingContext2D): void {
   ctx.fill();
 }
 
+function fillDirt(ctx: CanvasRenderingContext2D, dirt: readonly [number, number, number], x: number, w: number): void {
+  const g = ctx.createLinearGradient(0, 108, 0, ARENA_H);
+  g.addColorStop(0, css(dirt[0]));
+  g.addColorStop(0.45, css(dirt[1]));
+  g.addColorStop(1, css(dirt[2]));
+  ctx.fillStyle = g;
+  ctx.fillRect(x, 108, w, ARENA_H - 108);
+}
+
 export function paintGround(ctx: CanvasRenderingContext2D): void {
   build();
-  const dirt = ctx.createLinearGradient(0, 108, 0, ARENA_H);
-  dirt.addColorStop(0, "#3a2e28");
-  dirt.addColorStop(0.45, "#2e2620");
-  dirt.addColorStop(1, "#241c18");
-  ctx.fillStyle = dirt;
-  ctx.fillRect(0, 108, ARENA_W, ARENA_H - 108);
+  for (let zone = 0; zone < ZONE_N; zone++) {
+    const row = zoneRow(zone);
+    fillDirt(ctx, row.dirt, zone * YARD_W, YARD_W);
+  }
   cobbleField(ctx);
   for (let r = FLOOR0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
