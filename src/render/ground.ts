@@ -232,24 +232,21 @@ export function ventFxCount(camX: number, camY: number): number {
   return n * VENT_PUFFS;
 }
 
-function cobble(ctx: CanvasRenderingContext2D, x: number, y: number, pal: string[]): void {
+function cobbleField(ctx: CanvasRenderingContext2D): void {
   ctx.fillStyle = "#2a221c";
-  ctx.fillRect(x, y, TILE, TILE);
-  for (let cy = 0; cy < 2; cy++) {
-    for (let cx = 0; cx < 2; cx++) {
-      const j = hash(x + cx, y + cy) % pal.length;
-      const sx = x + 1 + cx * 8;
-      const sy = y + 1 + cy * 8;
-      ctx.fillStyle = pal[j] ?? "#6a5848";
-      ctx.fillRect(sx, sy, 7, 7);
-      ctx.fillStyle = "rgba(255,236,210,0.1)";
-      ctx.fillRect(sx, sy, 7, 1);
-      ctx.fillStyle = "rgba(0,0,0,0.2)";
-      ctx.fillRect(sx, sy + 6, 7, 1);
-      if ((hash(x + cx, y + cy, 3) & 7) === 0) {
-        ctx.fillStyle = "rgba(20,12,8,0.35)";
-        ctx.fillRect(sx + 2, sy + 2, 3, 1);
-      }
+  ctx.fillRect(0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
+  for (let row = 0, y = FLOOR0 * TILE; y < ARENA_H; y += 7, row++) {
+    const ox = row & 1 ? 5 : 0;
+    for (let x = -8; x < ARENA_W; x += 10) {
+      const sx = x + ox;
+      const h = hash(sx, y);
+      const pal = h % 17 < 2 ? STONE_W : h % 17 < 6 ? STONE_D : STONE;
+      ctx.fillStyle = pal[h % pal.length] ?? "#6a5848";
+      ctx.fillRect(sx + 1, y + 1, 8 + (h & 1), 5);
+      ctx.fillStyle = "rgba(255,236,210,0.12)";
+      ctx.fillRect(sx + 1, y + 1, 8, 1);
+      ctx.fillStyle = "rgba(0,0,0,0.22)";
+      ctx.fillRect(sx + 1, y + 5, 8, 1);
     }
   }
 }
@@ -279,25 +276,25 @@ function plate(ctx: CanvasRenderingContext2D, x: number, y: number, worn: number
 }
 
 function rail(ctx: CanvasRenderingContext2D, x: number, y: number, vert: number): void {
-  ctx.fillStyle = "#3a3228";
+  ctx.fillStyle = "#1c1610";
   ctx.fillRect(x, y, TILE, TILE);
-  ctx.fillStyle = "#5a3a22";
+  ctx.fillStyle = "#7a4a22";
   if (vert) {
-    ctx.fillRect(x + 2, y + 2, 3, 12);
-    ctx.fillRect(x + 11, y + 2, 3, 12);
-    ctx.fillStyle = STEEL.mid;
+    ctx.fillRect(x + 1, y + 1, 4, 14);
+    ctx.fillRect(x + 11, y + 1, 4, 14);
+    ctx.fillStyle = "#c8d4de";
     ctx.fillRect(x + 5, y, 2, TILE);
     ctx.fillRect(x + 9, y, 2, TILE);
-    ctx.fillStyle = STEEL.hi;
-    ctx.fillRect(x + 5, y, 0.7, TILE);
+    ctx.fillStyle = "#f2f7fb";
+    ctx.fillRect(x + 5, y, 1, TILE);
   } else {
-    ctx.fillRect(x + 2, y + 2, 12, 3);
-    ctx.fillRect(x + 2, y + 11, 12, 3);
-    ctx.fillStyle = STEEL.mid;
+    ctx.fillRect(x + 1, y + 1, 14, 4);
+    ctx.fillRect(x + 1, y + 11, 14, 4);
+    ctx.fillStyle = "#c8d4de";
     ctx.fillRect(x, y + 5, TILE, 2);
     ctx.fillRect(x, y + 9, TILE, 2);
-    ctx.fillStyle = STEEL.hi;
-    ctx.fillRect(x, y + 5, TILE, 0.7);
+    ctx.fillStyle = "#f2f7fb";
+    ctx.fillRect(x, y + 5, TILE, 1);
   }
 }
 
@@ -316,7 +313,8 @@ function grate(ctx: CanvasRenderingContext2D, x: number, y: number, vent: number
 }
 
 function rubbleTile(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  cobble(ctx, x, y, STONE_D);
+  ctx.fillStyle = "#2a221c";
+  ctx.fillRect(x, y, TILE, TILE);
   const h = hash(x, y, 5);
   ctx.fillStyle = "#5a4a3a";
   ctx.fillRect(x + 2 + (h % 6), y + 3 + ((h >>> 3) % 5), 5, 4);
@@ -433,14 +431,13 @@ export function paintGround(ctx: CanvasRenderingContext2D): void {
   dirt.addColorStop(1, "#241c18");
   ctx.fillStyle = dirt;
   ctx.fillRect(0, 108, ARENA_W, ARENA_H - 108);
+  cobbleField(ctx);
   for (let r = FLOOR0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
       const k = cells[r * COLS + c] ?? KIND_COBBLE;
       const x = c * TILE;
       const y = r * TILE;
-      if (k === KIND_COBBLE) cobble(ctx, x, y, STONE);
-      else if (k === KIND_COBBLE_D) cobble(ctx, x, y, STONE_D);
-      else if (k === KIND_COBBLE_W) cobble(ctx, x, y, STONE_W);
+      if (k === KIND_COBBLE || k === KIND_COBBLE_D || k === KIND_COBBLE_W) continue;
       else if (k === KIND_BRASS) plate(ctx, x, y, 0);
       else if (k === KIND_BRASS_W) plate(ctx, x, y, 1);
       else if (k === KIND_RAIL_H) rail(ctx, x, y, 0);

@@ -9,8 +9,6 @@ import {
   KIND_BRASS,
   KIND_BRASS_W,
   KIND_COBBLE,
-  KIND_COBBLE_D,
-  KIND_COBBLE_W,
   KIND_GRATE,
   KIND_RAIL_H,
   KIND_RAIL_V,
@@ -31,15 +29,12 @@ const STONE = [
   pack(0x6a, 0x58, 0x48), pack(0x5c, 0x4c, 0x3e), pack(0x7a, 0x68, 0x56),
   pack(0x4e, 0x42, 0x38), pack(0x8a, 0x74, 0x62), pack(0x3e, 0x34, 0x2c),
 ];
-const STONE_D = [pack(0x3a, 0x32, 0x2c), pack(0x2e, 0x28, 0x24), pack(0x46, 0x38, 0x30), pack(0x32, 0x28, 0x20)];
-const STONE_W = [pack(0x4a, 0x52, 0x40), pack(0x3e, 0x48, 0x38), pack(0x5a, 0x62, 0x50), pack(0x36, 0x40, 0x34)];
 const BRASS = pack(0xc4, 0x90, 0x38);
 const BRASS_W = pack(0x8a, 0x70, 0x40);
 const BRASS_HI = pack(0xff, 0xf1, 0xc2);
 const STEEL = pack(0x8e, 0xa4, 0xb6);
 const STEEL_HI = pack(0xf2, 0xf7, 0xfb);
-const TIE = pack(0x5a, 0x3a, 0x22);
-const BALLAST = pack(0x3a, 0x32, 0x28);
+const TIE = pack(0x7a, 0x4a, 0x22);
 const PIT = pack(0x0c, 0x08, 0x06);
 const GRATE = pack(0x3a, 0x2a, 0x18);
 const COPPER = pack(0xe0, 0x70, 0x40);
@@ -74,12 +69,14 @@ function fill(x: number, y: number, w: number, h: number, color: number): void {
   }
 }
 
-function cobble(x: number, y: number, pal: number[]): void {
-  fill(x, y, TILE, TILE, MORTAR);
-  for (let cy = 0; cy < 2; cy++) {
-    for (let cx = 0; cx < 2; cx++) {
-      const color = pal[hash(x + cx, y + cy) % pal.length] ?? STONE[0];
-      fill(x + 1 + cx * 8, y + 1 + cy * 8, 7, 7, color ?? MORTAR);
+function cobbleField(): void {
+  fill(0, 7 * TILE, ARENA_W, ARENA_H - 7 * TILE, MORTAR);
+  for (let row = 0, y = 7 * TILE; y < ARENA_H; y += 7, row++) {
+    const ox = row & 1 ? 5 : 0;
+    for (let x = -8; x < ARENA_W; x += 10) {
+      const sx = x + ox;
+      const h = hash(sx, y);
+      fill(sx + 1, y + 1, 8 + (h & 1), 5, STONE[h % STONE.length] ?? MORTAR);
     }
   }
 }
@@ -95,16 +92,16 @@ function plate(x: number, y: number, worn: number): void {
 }
 
 function rail(x: number, y: number, vert: number): void {
-  fill(x, y, TILE, TILE, BALLAST);
+  fill(x, y, TILE, TILE, pack(0x1c, 0x16, 0x10));
   if (vert) {
-    fill(x + 2, y + 2, 3, 12, TIE);
-    fill(x + 11, y + 2, 3, 12, TIE);
+    fill(x + 1, y + 1, 4, 14, TIE);
+    fill(x + 11, y + 1, 4, 14, TIE);
     fill(x + 5, y, 2, TILE, STEEL);
     fill(x + 9, y, 2, TILE, STEEL);
     fill(x + 5, y, 1, TILE, STEEL_HI);
   } else {
-    fill(x + 2, y + 2, 12, 3, TIE);
-    fill(x + 2, y + 11, 12, 3, TIE);
+    fill(x + 1, y + 1, 14, 4, TIE);
+    fill(x + 1, y + 11, 14, 4, TIE);
     fill(x, y + 5, TILE, 2, STEEL);
     fill(x, y + 9, TILE, 2, STEEL);
     fill(x, y + 5, TILE, 1, STEEL_HI);
@@ -140,6 +137,7 @@ function stamp(): void {
   if (ready) return;
   ready = 1;
   pix.fill(EDGE);
+  cobbleField();
   const cols = groundCols();
   const rows = groundRows();
   for (let r = 0; r < rows; r++) {
@@ -147,16 +145,14 @@ function stamp(): void {
       const k = groundKind(c, r);
       const x = c * TILE;
       const y = r * TILE;
-      if (k === KIND_COBBLE) cobble(x, y, STONE);
-      else if (k === KIND_COBBLE_D) cobble(x, y, STONE_D);
-      else if (k === KIND_COBBLE_W) cobble(x, y, STONE_W);
+      if (k === KIND_COBBLE) continue;
       else if (k === KIND_BRASS) plate(x, y, 0);
       else if (k === KIND_BRASS_W) plate(x, y, 1);
       else if (k === KIND_RAIL_H) rail(x, y, 0);
       else if (k === KIND_RAIL_V) rail(x, y, 1);
       else if (k === KIND_GRATE) grate(x, y, 0);
       else if (k === KIND_VENT) grate(x, y, 1);
-      else if (k === KIND_RUBBLE) cobble(x, y, STONE_D);
+      else if (k === KIND_RUBBLE) fill(x, y, TILE, TILE, pack(0x3a, 0x32, 0x2c));
     }
   }
   const n = groundFeatureCount();
