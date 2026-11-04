@@ -27,6 +27,10 @@ function countAlive(flag: Uint8Array, n: number): number {
   return k;
 }
 
+export function fieldPlan(horde: boolean): { yard: boolean; sprites: boolean } {
+  return { yard: !horde, sprites: horde };
+}
+
 export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boolean; shake?: boolean }): void {
   c.imageSmoothingEnabled = true;
   c.imageSmoothingQuality = "high";

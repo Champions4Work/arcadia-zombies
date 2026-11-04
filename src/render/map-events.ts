@@ -173,11 +173,16 @@ function fogPlate(): HTMLCanvasElement {
   return c;
 }
 
+export function fogCoverBox(w: World): { x: number; y: number; w: number; h: number } {
+  return { x: w.px - 240, y: w.py - 240, w: 480, h: 480 };
+}
+
 function fog(ctx: CanvasRenderingContext2D, w: World): void {
   const cover = fogCover(w);
   if (cover <= 0) return;
+  const box = fogCoverBox(w);
   ctx.globalAlpha = cover;
-  ctx.drawImage(fogPlate(), w.px - 240, w.py - 240);
+  ctx.drawImage(fogPlate(), box.x, box.y, box.w, box.h);
   ctx.fillStyle = "rgba(232,238,242,0.45)";
   for (let i = 0; i < 4; i++) {
     const x = w.arena.camX + ((i * 90 + w.tick * (0.4 + i * 0.05)) % (W + 80) - 40);
