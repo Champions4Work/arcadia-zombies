@@ -241,6 +241,10 @@ function build(): void {
     add(FEAT_GEAR, 480, 360, 12, 6);
     add(FEAT_GEAR, 820, 520, 12, 6);
   } else {
+    forceVent(19, 28);
+    forceVent(19, 39);
+    forceVent(41, 28);
+    forceVent(41, 39);
     add(FEAT_PIPE, 296, 132, 368, 0);
     add(FEAT_LAMP, 348, 156, 74, 0);
     add(FEAT_LAMP, 480, 156, 74, 0);

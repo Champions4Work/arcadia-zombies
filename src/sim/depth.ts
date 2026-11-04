@@ -73,6 +73,10 @@ const VENTS: readonly [number, number][] = [
   [360, 200],
   [480, 190],
   [600, 200],
+  [310, 458],
+  [656, 458],
+  [310, 636],
+  [656, 636],
 ];
 
 const LANE: readonly [number, number, number, number, number, number, number][] = [

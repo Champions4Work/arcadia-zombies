@@ -39,6 +39,10 @@ FX-only tuning on current main (#90 stone, #92 HUD, #93 perimeter). Do **not** r
 
 Review **`docs/reviews/fx-r32/`** (`phone_390_play.png` 390×844, `?shot=1`) vs **`docs/target_look.jpg`** and **`docs/target_look2.png`**. Coordinator **Read-compare** before merge; **no auto-merge**.
 
+## Props r34 — sparse edge breakables + vent read
+
+Review **`docs/reviews/props-r34/`** against both refs. **`PROPS`** and **`LANE`** add **`crate`**, **`crate_stack`**, **`barrel`**, and existing breakables only on side belts, belt ends, and walls—never inside **`YARD_CLEAR`**. Side-rail **`decal_vent` / `decal_grate` / `decal_hazard`** stacks stay hazard-striped for phone read; sim **`VENTS`** in **`src/sim/depth.ts`** align with those pads so **`ventSlowAt`** still returns **`VENT_SLOW`**. Coordinator **Read-compare** before merge; **no auto-merge**.
+
 ## References (art bible)
 
 Review size is 390×844 CSS pixels. These two files are the art bible. Every visual PR compares against both.

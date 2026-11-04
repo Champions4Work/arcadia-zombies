@@ -22,9 +22,10 @@ function propSprite(kind: number): string {
 
 function paintLaneVent(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number): void {
   ctx.save();
-  ctx.globalAlpha = 0.92;
+  ctx.globalAlpha = 0.9;
+  blitSheet(ctx, "decal_hazard", x - 6, y - 2);
   blitSheet(ctx, "decal_grate", x, y);
-  ctx.globalAlpha = 0.7 + ((tick >> 3) & 1) * 0.18;
+  ctx.globalAlpha = 0.96 + ((tick >> 3) & 1) * 0.04;
   blitSheet(ctx, "decal_vent", x, y);
   ctx.restore();
 }

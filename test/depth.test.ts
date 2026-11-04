@@ -216,7 +216,7 @@ describe("gameplay depth hooks", () => {
     expect(src.includes("breakable_gear_pylon")).toBe(true);
     expect(src.includes("decal_vent")).toBe(true);
     expect(src.includes("decal_grate")).toBe(true);
-    expect(src.includes("decal_hazard")).toBe(false);
+    expect(src.includes("decal_hazard")).toBe(true);
   });
 
   it("parks a glowing crate on the perimeter belt and keeps vent pads on the yard", () => {
