@@ -9,7 +9,7 @@ import { paintBoom, paintWeaponShot } from "./cast-fx";
 const BRASS_HI = "#e8c878";
 const EMBER = "#ff7a2a";
 const SOOT = "#120c08";
-const TAGS = ["RIVET", "SHOT", "FLAME", "HARP", "MORT"];
+export const WPN_TAGS = ["RIVET", "SHOT", "FLAME", "HARP", "MORT"];
 const IDS = [UPG_WPN_RIVET, UPG_WPN_SHOT, UPG_WPN_FLAME, UPG_WPN_HARP, UPG_WPN_MORT];
 
 export function paintWeapon(c: CanvasRenderingContext2D, w: World, j: number): number {
@@ -42,10 +42,22 @@ export function drawWeaponRack(c: CanvasRenderingContext2D, w: World): void {
     c.strokeStyle = lv > 0 ? BRASS_HI : "#5a4630";
     c.lineWidth = 2;
     c.strokeRect(x + 0.5, y + 0.5, bw - 1, box.h - 1);
+    c.save();
+    c.beginPath();
+    c.rect(x + 2, y + 2, bw - 4, box.h - 4);
+    c.clip();
     c.fillStyle = lv > 0 ? "#fff1c2" : "#8a7050";
-    c.font = `800 ${Math.max(8, Math.min(12, box.h * 0.32))}px sans-serif`;
+    const tag = WPN_TAGS[i] ?? "";
+    let size = Math.max(7, Math.min(9, box.h * 0.26));
+    c.font = `800 ${size}px sans-serif`;
+    while (size > 6 && c.measureText(tag).width > bw - 8) {
+      size -= 1;
+      c.font = `800 ${size}px sans-serif`;
+    }
     c.textAlign = "center";
-    c.fillText(TAGS[i] ?? "", x + bw / 2, y + box.h * 0.42);
+    c.textBaseline = "middle";
+    c.fillText(tag, x + bw / 2, y + box.h * 0.38);
+    c.restore();
     const pipW = Math.max(4, (bw - 12) / 5 - 2);
     for (let p = 0; p < 5; p++) {
       c.fillStyle = p < lv ? EMBER : SOOT;

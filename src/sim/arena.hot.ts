@@ -3,6 +3,7 @@ import {
   OB_BARREL, PROP_CELL, PROP_COLS, PROP_REACH, PROP_ROWS, PUFF_BARREL, SPAWN_BOT, SPAWN_INSET, SPAWN_MARGIN, SPAWN_TOP, TELE_LIFE, cameraTarget, edgePoint, hitsProp, spawnHidden,
   type Arena,
 } from "./arena";
+import { scaleSpeed, scaleThreat } from "./director";
 import { finaleBlocksBoss } from "./finale";
 import { foeHp, foePack, foeSpeed, Z_ELITE, Z_GAS, Z_KIND, Z_KNIGHT, Z_RAT, Z_SPITTER } from "./foes";
 import { pacedSpeed } from "./modifiers";
@@ -379,8 +380,8 @@ function armFoe(w: World, i: number, raw: number, x: number, y: number): void {
   z.x[i] = x;
   z.y[i] = y;
   z.kind[i] = raw;
-  z.hp[i] = foeHp(kind, w.rank, elite);
-  z.vx[i] = pacedSpeed(foeSpeed(kind, w.rank, nextFloat(w.rng)), w.mods);
+  z.hp[i] = scaleThreat(foeHp(kind, w.rank, elite), w);
+  z.vx[i] = pacedSpeed(scaleSpeed(foeSpeed(kind, w.rank, nextFloat(w.rng)), w), w.mods);
   z.alive[i] = 1;
   if (kind === Z_SPITTER) z.vy[i] = (nextFloat(w.rng) * 36) | 0;
   else if (kind === Z_KNIGHT) z.vy[i] = Math.atan2(w.py - y, w.px - x);

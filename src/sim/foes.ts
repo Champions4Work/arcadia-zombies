@@ -1,4 +1,5 @@
 import { killXp, mixWeight, scaledHp, scoreMul, speedScale } from "./difficulty";
+import { directorElite } from "./director";
 import { nextFloat } from "./rng";
 import { Z_BRUTE, Z_GHOUL, Z_SHAMBLER, type World } from "./types";
 
@@ -85,7 +86,7 @@ export function rollKind(w: World): number {
     }
   }
   const gate = (nextFloat(w.rng) * 1000) | 0;
-  const elite = gate < eliteChance(rank) ? Z_ELITE : 0;
+  const elite = gate < eliteChance(rank) + directorElite(w) ? Z_ELITE : 0;
   return kind | elite;
 }
 
@@ -103,8 +104,8 @@ export function foeKillXp(raw: number, rank: number): number {
   return xp;
 }
 
-export function foeScore(raw: number, wave: number, rank: number): number {
-  const s = (SCORE_W[raw & Z_KIND] ?? 10) * wave * scoreMul(rank);
+export function foeScore(raw: number, _wave: number, rank: number): number {
+  const s = (SCORE_W[raw & Z_KIND] ?? 10) * scoreMul(rank);
   return (raw & Z_ELITE) !== 0 ? s * 2 : s;
 }
 

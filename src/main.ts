@@ -1,5 +1,5 @@
 import { awardRun, applyWorkshop, emptyWorkshop, loadWorkshop, saveWorkshop, tryBuy } from "./meta/workshop";
-import { noteFrame, toggleFps, toggleFromKey } from "./render/fps";
+import { fpsReadout, noteFrame, toggleFps, toggleFromKey } from "./render/fps";
 import { setNumbersOn, stopRemaining } from "./render/juice";
 import { setMusicOn, setMusicWave } from "./render/music";
 import { chestSkipKey } from "./render/chestFx";
@@ -12,8 +12,20 @@ import { renderBench } from "./shell/bench";
 import { codexStamp, emptyCodex, loadCodex, observe, renderBook, saveCodex } from "./shell/codex";
 import { applyCanvas, screenToGame, type Fit } from "./shell/fit";
 import { bindHud, layoutHud, stickFrame } from "./shell/hud-layout";
+import { showMenuChrome } from "./shell/play-chrome";
 import { mountResults } from "./shell/results-dom";
 import { resultBadges, resultFromWorld } from "./shell/results";
+import {
+  deathCause,
+  emptyLog,
+  formatRunLog,
+  loadDebug,
+  pushSample,
+  RUNS_PATH,
+  sampleRun,
+  saveDebug,
+  shouldSample,
+} from "./shell/run-log";
 import { bindViewport, readInsets, readViewport } from "./shell/viewport";
 import { mountPicker, paintPicker } from "./shell/picker";
 import {
@@ -111,6 +123,10 @@ const records = store ? loadLeaderboard(store) : emptyLeaderboard();
 const tracker = createTracker();
 let runLineText = "";
 let runShare: string | null = null;
+let runLog = emptyLog();
+let logTick = 0;
+const fpsBuf: number[] = [];
+let debugOn = store ? loadDebug(store) : false;
 const codex = store ? loadCodex(store) : emptyCodex();
 let codexDrawn = "";
 function today(): string {
@@ -138,6 +154,7 @@ const muteBtn = document.getElementById("mute") as HTMLButtonElement;
 const shakeBtn = document.getElementById("shake") as HTMLButtonElement;
 const endlessBtn = document.getElementById("endless") as HTMLButtonElement;
 const numbersBtn = document.getElementById("numbers") as HTMLButtonElement;
+const debugBtn = document.getElementById("debug") as HTMLButtonElement;
 const summary = document.getElementById("summary") as HTMLElement;
 const rosterEl = document.getElementById("roster") as HTMLElement;
 const codexBtn = document.getElementById("codex") as HTMLButtonElement;
@@ -184,6 +201,12 @@ bindViewport(() => {
   bindHud(layoutHud(vp, fit));
 });
 const results = mountResults(panel);
+results.onCopy(() => {
+  const text = formatRunLog(runLog);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    void navigator.clipboard.writeText(text).catch(() => undefined);
+  }
+});
 const keys = new Set<string>();
 const input: Input = { dx: 0, dy: 0, pick: 0, reroll: 0, skip: 0 };
 const stick = createStick();
@@ -223,8 +246,10 @@ function paint(): void {
   workshopBtn.hidden = fitting || session.codex || !(session.phase === PHASE_TITLE || session.phase === PHASE_OVER);
   backBtn.hidden = !fitting;
   bench.hidden = !fitting;
-  opts.hidden = fitting;
-  sfxBox.hidden = fitting;
+  opts.hidden = fitting || !showMenuChrome(session.phase);
+  sfxBox.hidden = fitting || !showMenuChrome(session.phase);
+  debugBtn.textContent = debugOn ? "Debug logs: On" : "Debug logs: Off";
+  debugBtn.setAttribute("aria-pressed", debugOn ? "true" : "false");
   if (session.phase === PHASE_TITLE) {
     headline.textContent = "Arcadia: Gears of the Dead";
     sub.textContent = `Best ${session.best} · Scrap ${shop.scrap} · ${scoreLabel(mods)}`;
@@ -372,6 +397,9 @@ function startRun(): void {
     resetTracker(tracker);
     runLineText = "";
     runShare = null;
+    runLog = emptyLog();
+    logTick = 0;
+    fpsBuf.length = 0;
   }
   playUiClick();
   publish(world);
@@ -505,6 +533,13 @@ codexBtn.addEventListener("click", codexToggle);
 muteBtn.addEventListener("click", mute);
 shakeBtn.addEventListener("click", shake);
 numbersBtn.addEventListener("click", numbers);
+debugBtn.addEventListener("click", () => {
+  unlockAudio();
+  debugOn = !debugOn;
+  if (store) saveDebug(store, debugOn);
+  playUiClick();
+  paint();
+});
 sfxMuteBtn.addEventListener("click", sfxMute);
 sfxVol.addEventListener("input", sfxVolInput);
 endlessBtn.addEventListener("click", endless);
@@ -669,6 +704,12 @@ document.addEventListener("visibilitychange", () => { if (document.hidden) hide(
 function frame(now: number): void {
   publish(world);
   noteFrame(now);
+  const dt = now - last;
+  if (dt > 0) {
+    const fps = Math.round(1000 / Math.max(8, dt));
+    fpsBuf.push(fpsReadout() > 0 ? fpsReadout() : fps);
+    if (fpsBuf.length > 8) fpsBuf.shift();
+  }
   acc += Math.min(250, now - last);
   last = now;
   setNumbersOn(session.numbers);
@@ -683,6 +724,11 @@ function frame(now: number): void {
       input.skip = pendingSkip;
       step(world, input);
       noteKills(tracker, world.events[EV_KILL] ?? 0);
+      if (shouldSample(world.tick, logTick)) {
+        logTick = world.tick;
+        const vp = viewNow();
+        pushSample(runLog, sampleRun(world, { w: vp.cssW, h: vp.cssH }, fpsBuf));
+      }
       pendingPick = 0;
       pendingReroll = 0;
       pendingSkip = 0;
@@ -710,11 +756,21 @@ function frame(now: number): void {
           level: world.level,
         }));
         finish(session, world.score);
+        const endView = viewNow();
+        const cause = deathCause(world, isWon(world), false);
+        pushSample(runLog, sampleRun(world, { w: endView.cssW, h: endView.cssH }, fpsBuf, cause));
+        if (debugOn) {
+          void fetch(RUNS_PATH, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(runLog),
+          }).catch(() => undefined);
+        }
         const settled = settleRun(records, captureRun({
           score: world.score,
           time: world.tick,
           tier: world.rank,
-          kills: tracker.kills,
+          kills: world.kills,
           upgrades: world.upgrades,
           character: characterAt(world.charId).id,
           mods: world.mods,

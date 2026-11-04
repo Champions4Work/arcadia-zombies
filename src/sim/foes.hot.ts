@@ -1,4 +1,5 @@
 import { slideUnit } from "./arena.hot";
+import { scaleThreat } from "./director";
 import { scaledDmg } from "./difficulty";
 import {
   ACID_DMG, ACID_HIT_R2, ACID_SPEED, B_ACID, GAS_BLAST_R2,
@@ -90,7 +91,9 @@ export function acidTouch(w: World, x: number, y: number): number {
     w.events[EV_SHIELD] = 1;
     return 1;
   }
-  w.hp -= scaledDmg(ACID_DMG, w.rank);
+  const acid = scaleThreat(scaledDmg(ACID_DMG, w.rank), w);
+  w.hp -= acid;
+  w.hurt += acid;
   w.events[EV_HURT] = 1;
   juicePlayerHurt();
   if (fell(w)) return 2;
@@ -111,7 +114,9 @@ export function detonateGas(w: World, x: number, y: number, elite: number): void
     w.events[EV_SHIELD] = 1;
     return;
   }
-  w.hp -= scaledDmg(GAS_DMG, w.rank);
+  const blast = scaleThreat(scaledDmg(GAS_DMG, w.rank), w);
+  w.hp -= blast;
+  w.hurt += blast;
   w.events[EV_HURT] = 1;
   juicePlayerHurt();
   fell(w);

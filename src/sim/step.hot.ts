@@ -6,6 +6,7 @@ import {
 } from "./arena.hot";
 import { openTouchedChest, stepChest } from "./chest";
 import { emitFx, hurtZombie, killZombie } from "./combat.hot";
+import { directorFloor, directorPack, directorSpawn, scaleThreat } from "./director";
 import { scaledDmg, spawnEvery, tierAt } from "./difficulty";
 import { holdSpawns, lichMinion, stepFinale, watchFinale } from "./finale";
 import {
@@ -206,13 +207,18 @@ export function step(w: World, input: Input): void {
     w.toSpawn = 0;
   } else if (alive === 0 && w.toSpawn === 0 && teleCount(w) === 0) {
     w.wave++;
-    w.toSpawn = hordeBudget(4 + w.wave * 2 + w.rank, w.mods);
+    w.toSpawn = hordeBudget(4 + w.wave * 2 + w.rank + directorPack(w), w.mods);
     w.events[EV_WAVE] = 1;
+  }
+  if (!holdSpawns(w)) {
+    const floor = directorFloor(w);
+    const queued = alive + w.toSpawn;
+    if (floor > 0 && queued < floor) w.toSpawn += floor - queued;
   }
   if (!holdSpawns(w) && w.toSpawn > 0 && --w.spawnCd <= 0) {
     queueSpawn(w, rollKind(w));
     w.toSpawn--;
-    w.spawnCd = hordeGap(spawnEvery(w.rank), w.mods);
+    w.spawnCd = hordeGap(directorSpawn(spawnEvery(w.rank), w), w.mods);
   }
   if (--w.fireCd <= 0) { fireRivet(w); w.fireCd = rivetEvery(w); }
   tickWeapons(w);
@@ -275,7 +281,9 @@ export function step(w: World, input: Input): void {
           if (w.over) return;
         }
       } else {
-        w.hp -= lichMinion(w, i) ? 1 : scaledDmg(foeContact(raw), w.rank);
+        const hit = lichMinion(w, i) ? 1 : scaleThreat(scaledDmg(foeContact(raw), w.rank), w);
+        w.hp -= hit;
+        w.hurt += hit;
         w.events[EV_HURT] = 1;
         juicePlayerHurt();
         const spikes = w.upgrades[UPG_SPIKES] ?? 0;

@@ -264,13 +264,14 @@ describe("run modifier difficulty", () => {
 
   it("opens a level at half the scrap", () => {
     expect(pacedXpNeed(xpNeed(0), 0)).toBe(xpNeed(0));
-    expect(pacedXpNeed(xpNeed(0), MOD_GEAR)).toBe(2);
+    expect(pacedXpNeed(xpNeed(0), MOD_GEAR)).toBe(xpNeed(0) >> 1);
+    const half = pacedXpNeed(xpNeed(0), MOD_GEAR);
     const rush = modWorld(3, MOD_GEAR);
-    takeXp(rush, 2);
+    takeXp(rush, half);
     expect(rush.level).toBe(1);
     expect(rush.choosing).toBe(1);
     const plain = createWorld(3);
-    takeXp(plain, 2);
+    takeXp(plain, half);
     expect(plain.level).toBe(0);
     expect(plain.choosing).toBe(0);
   });

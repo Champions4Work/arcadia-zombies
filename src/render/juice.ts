@@ -13,7 +13,8 @@ export const STOP_WINDOW_MS = 1000;
 export const JUICE_DT = 1000 / 60;
 export const CRIT_COLOR = "#ffe14a";
 export const HIT_COLOR = "#f4efe2";
-export const NUMBER_LIFE = 720;
+export const NUMBER_LIFE = 420;
+export const GLYPH_CELL = 2;
 
 const SOOT = "#120c08";
 const BRASS = "#c8963e";
@@ -111,8 +112,13 @@ export function flashesLive(): number {
   return flashOn;
 }
 
-export function numberScale(i: number): number {
-  return (numCrit[i] ?? 0) === 1 ? 2 : 1;
+export function numberScale(slot: number): number {
+  void slot;
+  return 1;
+}
+
+export function glyphCell(): number {
+  return GLYPH_CELL;
 }
 
 export function numberY(i: number): number {
@@ -184,7 +190,7 @@ export function juiceHit(slot: number, x: number, y: number, dmg: number, kind: 
   const body = kind & Z_KIND;
   const elite = (kind & Z_ELITE) !== 0;
   const boss = body === Z_BRUTE || body === Z_KNIGHT;
-  const crit = dealt >= 3 || (killed && (elite || boss));
+  const crit = killed && (elite || boss);
   if (showNumbers) spawnNumber(x, y - 14, dealt, crit);
   if (slot >= 0 && slot < FLASH_CAP) {
     if ((flash[slot] ?? 0) <= 0) flashOn++;
@@ -329,7 +335,7 @@ export function drawJuice(c: CanvasRenderingContext2D): void {
     if (numOn[i] === 0) continue;
     const life = numLife[i] ?? 0;
     const crit = numCrit[i] ?? 0;
-    const s = (crit === 1 ? 2 : 1) * 3;
+    const s = GLYPH_CELL;
     const val = numDmg[i] ?? 0;
     const x = (numX[i] ?? 0) - digits(val) * 2 * s;
     const y = numY[i] ?? 0;
