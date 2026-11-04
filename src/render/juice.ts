@@ -299,6 +299,10 @@ export function drawJuice(c: CanvasRenderingContext2D): void {
         c.save();
         c.translate(x | 0, y | 0);
         c.rotate(pRot[i] ?? 0);
+        c.fillStyle = "rgba(255,200,80,0.4)";
+        c.beginPath();
+        c.arc(0, 0, 9, 0, Math.PI * 2);
+        c.fill();
         c.fillStyle = BRASS_HI;
         c.fillRect(-2, -8, 4, 16);
         c.fillRect(-8, -2, 16, 4);
@@ -306,6 +310,10 @@ export function drawJuice(c: CanvasRenderingContext2D): void {
         c.fillRect(-4, -4, 8, 8);
         c.restore();
       } else {
+        c.fillStyle = "rgba(255,140,40,0.45)";
+        c.beginPath();
+        c.arc(x, y, 6, 0, Math.PI * 2);
+        c.fill();
         c.fillStyle = BRASS;
         c.fillRect((x - 4) | 0, (y - 3) | 0, 8, 6);
         c.fillStyle = COPPER;

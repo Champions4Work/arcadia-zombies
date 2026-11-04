@@ -4,9 +4,11 @@ import { emitFx, hurtZombie } from "./combat.hot";
 import { fogSight } from "./map-events";
 import { freshShot, lichUp, lichX, lichY } from "./finale";
 import { bounceBonus, pelletBonus, pierceBonus } from "./evolve";
-import { B_ACID, foeHitR2, knightBlocks, Z_KIND, Z_KNIGHT } from "./foes";
+import { B_ACID, knightBlocks, Z_KIND, Z_KNIGHT } from "./foes";
 import { acidTouch } from "./foes.hot";
 import { beginQuery, beginRadiusQuery, nextQuery, rebuildZombieGrid } from "./grid.hot";
+import { bodyReach, FOE_BODY, foeBodyHit } from "./hit";
+import { muzzleX, muzzleY } from "./muzzle";
 import {
   EV_BOOM, EV_SHOT, EVOL_CANNON, FX_BOOM, FX_FLASH, FX_SPARK, MAX_BULLETS, MAX_ZOMBIES, UPG_PIERCE,
   UPG_RICOCHET, UPG_SHOTGUN, UPG_WPN_FLAME, UPG_WPN_HARP, UPG_WPN_MORT, UPG_WPN_RIVET, UPG_WPN_SHOT,
@@ -62,8 +64,10 @@ function spawnShot(w: World, ux: number, uy: number, speed: number, dmg: number,
   const b = w.bullets;
   for (let j = 0; j < MAX_BULLETS; j++) {
     if (b.alive[j]) continue;
-    b.x[j] = w.px;
-    b.y[j] = w.py;
+    const mx = muzzleX(w.px, ux, uy, gun);
+    const my = muzzleY(w.py, ux, uy, gun);
+    b.x[j] = mx;
+    b.y[j] = my;
     b.vx[j] = ux * speed;
     b.vy[j] = uy * speed;
     b.hp[j] = dmg;
@@ -78,7 +82,7 @@ function spawnShot(w: World, ux: number, uy: number, speed: number, dmg: number,
     w.gun = gun;
     freshShot(w, j);
     w.events[EV_SHOT] = 1;
-    emitFx(w, FX_FLASH, w.px + ux * 11, w.py + uy * 7, Math.atan2(uy, ux));
+    emitFx(w, FX_FLASH, mx, my, Math.atan2(uy, ux));
     return j;
   }
   return -1;
@@ -251,14 +255,12 @@ export function tickProjectiles(w: World): number {
     if (gun === WPN_FLAME) {
       if (((w.tick + j) & 3) !== 0) continue;
       const dmg = (b.hp[j] ?? 0) || 1;
-      beginQuery(bx, by);
+      beginQuery(bx, by + (FOE_BODY >> 1));
       for (;;) {
         const i = nextQuery();
         if (i < 0) break;
         if (!z.alive[i]) continue;
-        const dx = (z.x[i] ?? 0) - bx;
-        const dy = (z.y[i] ?? 0) - by;
-        if (dx * dx + dy * dy < FLAME_R2) {
+        if (bodyReach(z.x[i] ?? 0, z.y[i] ?? 0, bx, by, FLAME_R2)) {
           hurtZombie(w, i, dmg);
           if (w.over) return 1;
         }
@@ -266,15 +268,13 @@ export function tickProjectiles(w: World): number {
       continue;
     }
     if (gun === WPN_MORT) {
-      beginQuery(bx, by);
+      beginQuery(bx, by + (FOE_BODY >> 1));
       for (;;) {
         const i = nextQuery();
         if (i < 0) break;
         if (!z.alive[i]) continue;
         const raw = z.kind[i] ?? 0;
-        const dx = (z.x[i] ?? 0) - bx;
-        const dy = (z.y[i] ?? 0) - by;
-        if (dx * dx + dy * dy < foeHitR2(raw)) {
+        if (foeBodyHit(raw, z.x[i] ?? 0, z.y[i] ?? 0, bx, by)) {
           const ended = explode(w, j, bx, by);
           b.alive[j] = 0;
           if (ended) return 1;
@@ -284,7 +284,7 @@ export function tickProjectiles(w: World): number {
       continue;
     }
     const dmg = gun === WPN_RIVET ? rivetHit(w) : ((b.hp[j] ?? 0) || 1);
-    beginQuery(bx, by);
+    beginQuery(bx, by + (FOE_BODY >> 1));
     for (;;) {
       const i = nextQuery();
       if (i < 0) break;
@@ -292,12 +292,10 @@ export function tickProjectiles(w: World): number {
       const raw = z.kind[i] ?? 0;
       const zx = z.x[i] ?? 0;
       const zy = z.y[i] ?? 0;
-      const dx = zx - bx;
-      const dy = zy - by;
-      if (dx * dx + dy * dy < foeHitR2(raw)) {
+      if (foeBodyHit(raw, zx, zy, bx, by)) {
         if ((raw & Z_KIND) === Z_KNIGHT && knightBlocks(z.vy[i] ?? 0, zx, zy, bx, by)) {
           b.alive[j] = 0;
-          emitFx(w, FX_SPARK, bx, by, 0);
+          emitFx(w, FX_SPARK, bx, by, Math.atan2(b.vy[j] ?? 0, b.vx[j] || 1));
           break;
         }
         w.bHit[j] = i;

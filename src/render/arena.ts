@@ -4,7 +4,8 @@ import {
 } from "../sim/arena";
 import { lichUp, lichX, lichY } from "../sim/finale";
 import { H, MAX_ZOMBIES, W, type World } from "../sim/types";
-import { blob, BRASS, cog, COPPER, type Metal, OUTLINE, pill, rivet, roundRect, STEEL } from "./paint";
+import { paintCrate, paintHealVial } from "./cast";
+import { blob, BRASS, cog, COPPER, type Metal, OUTLINE, pill, rivet, STEEL } from "./paint";
 import { puffSprite } from "./sprites";
 
 const WOOD: Metal = { hi: "#f0c48a", mid: "#c48448", lo: "#7a4a22", edge: "#3a2010" };
@@ -40,25 +41,7 @@ function boiler(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, 
 }
 
 function crate(ctx: CanvasRenderingContext2D, x: number, y: number, hw: number, hh: number): void {
-  shadow(ctx, x, y + hh * 0.55, hw * 0.9, hh * 0.28);
-  roundRect(ctx, x - hw, y - hh, hw * 2, hh * 2, 4);
-  ctx.fillStyle = WOOD.mid;
-  ctx.fill();
-  ctx.lineWidth = 2.2;
-  ctx.strokeStyle = OUTLINE;
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(x - hw + 3, y);
-  ctx.lineTo(x + hw - 3, y);
-  ctx.moveTo(x, y - hh + 3);
-  ctx.lineTo(x, y + hh - 3);
-  ctx.strokeStyle = WOOD.lo;
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  rivet(ctx, x - hw + 3, y - hh + 3, 1.5);
-  rivet(ctx, x + hw - 3, y - hh + 3, 1.5);
-  rivet(ctx, x - hw + 3, y + hh - 3, 1.5);
-  rivet(ctx, x + hw - 3, y + hh - 3, 1.5);
+  paintCrate(ctx, x, y, hw, hh);
 }
 
 function pipe(ctx: CanvasRenderingContext2D, x: number, y: number, hw: number, hh: number): void {
@@ -142,18 +125,7 @@ export function paintProps(ctx: CanvasRenderingContext2D, w: World): void {
 }
 
 function heal(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number, i: number): void {
-  const bob = Math.sin(tick * 0.18 + i) * 1.6;
-  const iy = y + bob;
-  shadow(ctx, x, iy + 6, 6, 2);
-  blob(ctx, x, iy, 5, 7, { hi: "#eaffb0", mid: "#8ed43a", lo: "#1d6a34", edge: "#0e2406" }, 1.8);
-  ctx.strokeStyle = BRASS.hi;
-  ctx.lineWidth = 1.6;
-  ctx.beginPath();
-  ctx.moveTo(x - 3, iy);
-  ctx.lineTo(x + 3, iy);
-  ctx.moveTo(x, iy - 3);
-  ctx.lineTo(x, iy + 3);
-  ctx.stroke();
+  paintHealVial(ctx, x, y, tick, i);
 }
 
 function telegraph(ctx: CanvasRenderingContext2D, w: World, i: number): void {

@@ -3,19 +3,21 @@ import { Z_ELITE, Z_GAS, Z_KIND, Z_KNIGHT, Z_RAT, Z_SPITTER } from "../sim/foes"
 import { fogCover } from "../sim/map-events";
 import { enemyFlash } from "./juice";
 import {
-  FX_FLASH, FX_PUFF, FX_SPARK, FX_XP, Z_BRUTE, Z_GHOUL, Z_SHAMBLER, type World,
+  EV_SHOT, FX_BOOM, FX_FLASH, FX_PUFF, FX_SPARK, FX_XP, Z_BRUTE, Z_GHOUL, Z_SHAMBLER, type World,
 } from "../sim/types";
 import { paintProp } from "./arena";
+import { charKitId, paintKnightShield, paintSurvivor, poseOf } from "./cast";
+import { paintBoom, paintFlash, paintLevelBurst, paintPuff, paintRivetBolt, paintSpark, paintXp } from "./cast-fx";
 import { offScreen } from "./cull";
 import { gasGlyph, knightGlyph, projectileFor, ratGearGlyph, spitterGlyph } from "./foes";
-import { blit, BRASS, font, roundRect } from "./paint";
+import { blit, roundRect } from "./paint";
 import { paintWeapon } from "./weapons";
 import {
-  bulletPaint, fxPaint, registerBullet, registerFx, registerZombie, zombieGlyph, type BulletPaint, type FxPaint, type Glyph,
+  bulletPaint, fxPaint, registerBullet, registerFx, registerZombie, zombieGlyph, type BulletPaint, type Glyph,
 } from "./plugins";
 import {
-  BRUTE, creepFrames, fallbackFrames, fallbackSpec, GHOUL, gunSprite, HERO_H, HERO_W, heroFrames,
-  paintShadow, puffSprite, SHAMBLER, starSprite, boltSprite,
+  BRUTE, creepFrames, fallbackFrames, fallbackSpec, GHOUL, HERO_H, HERO_W, heroFrames,
+  paintShadow, SHAMBLER,
 } from "./sprites";
 
 export const BIN_LO = -80;
@@ -63,40 +65,12 @@ export function paintPlayer(ctx: CanvasRenderingContext2D, w: World, moving: boo
 }
 
 function paintHero(ctx: CanvasRenderingContext2D, w: World, moving: boolean): void {
-  paintShadow(ctx, w.px, w.py, 32);
-  const flip = w.aimX < 0 ? -1 : 1;
-  blit(ctx, heroFrames(), HERO_W, HERO_H, moving ? (w.tick >> 3) & 3 : 0, w.px, w.py, flip);
-  ctx.save();
-  ctx.translate(w.px + flip * 10, w.py - 36);
-  ctx.rotate(Math.atan2(w.aimY, w.aimX || 1));
-  ctx.drawImage(gunSprite(), -6, -7, 28, 14);
-  ctx.restore();
-  const t = w.tick % 48;
-  if (t < 34) {
-    ctx.globalAlpha = (1 - t / 34) * 0.5;
-    const s = 8 + t * 0.22;
-    ctx.drawImage(puffSprite(), w.px - s / 2, w.py - 76 - t * 0.4, s, s);
-    ctx.globalAlpha = 1;
-  }
-}
-
-function paintKnightShield(ctx: CanvasRenderingContext2D, x: number, y: number, face: number): void {
-  ctx.save();
-  ctx.translate(x, y - 24);
-  ctx.rotate(face);
-  ctx.translate(14, 0);
-  ctx.beginPath();
-  ctx.ellipse(0, 0, 7, 12, 0, 0, Math.PI * 2);
-  ctx.fillStyle = BRASS.mid;
-  ctx.fill();
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = "#1c120c";
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.ellipse(-1.5, -2, 2.2, 4, -0.4, 0, Math.PI * 2);
-  ctx.fillStyle = BRASS.hi;
-  ctx.fill();
-  ctx.restore();
+  const shoot = (w.events[EV_SHOT] ?? 0) !== 0;
+  const pose = poseOf(moving, shoot);
+  const id = charKitId(w.charId);
+  paintSurvivor(ctx, w, moving, (frame, flip) => {
+    blit(ctx, heroFrames(id, pose), HERO_W, HERO_H, frame, w.px, w.py, flip);
+  });
 }
 
 function paintElite(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, tick: number): void {
@@ -127,7 +101,7 @@ function paintOne(ctx: CanvasRenderingContext2D, w: World, i: number): void {
   }
   paintShadow(ctx, x, y, glyph.w * 0.86);
   glyph.draw(ctx, x, y, w.tick + i * 3, flip, hp);
-  if (kind === Z_KNIGHT) paintKnightShield(ctx, x, y, z.vy[i] ?? 0);
+  if (kind === Z_KNIGHT) paintKnightShield(ctx, x, y, z.vy[i] ?? 0, hp);
   if (elite) ctx.restore();
   if (hp >= 3) {
     const bw = Math.min(24, 4 + Math.min(hp, 10) * 2);
@@ -204,11 +178,7 @@ function binOf(y: number): number {
 }
 
 const defaultBolt: BulletPaint = (ctx, x, y, vx, vy) => {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(Math.atan2(vy, vx || 1));
-  ctx.drawImage(boltSprite(), -14, -8, 28, 16);
-  ctx.restore();
+  paintRivetBolt(ctx, x, y, vx, vy);
 };
 
 registerBullet(0, defaultBolt);
@@ -224,81 +194,23 @@ export function paintBullets(ctx: CanvasRenderingContext2D, w: World): void {
   }
 }
 
-const paintFlash: FxPaint = (ctx, x, y, age) => {
-  if (age < 0 || age >= 7) return;
-  ctx.globalAlpha = 1 - age / 7;
-  const s = 20 - age * 1.4;
-  ctx.drawImage(starSprite(), x - s / 2, y - s / 2, s, s);
-  ctx.globalAlpha = 1;
-};
-
-const paintSpark: FxPaint = (ctx, x, y, age) => {
-  if (age < 0 || age >= 10) return;
-  ctx.globalAlpha = 1 - age / 10;
-  const k = 3 + age * 1.5;
-  ctx.fillStyle = "#ffe08a";
-  ctx.fillRect(x + k, y - k, 3, 3);
-  ctx.fillStyle = "#ff9a30";
-  ctx.fillRect(x - k, y + k * 0.3, 3, 3);
-  ctx.fillStyle = "#fff6d0";
-  ctx.fillRect(x, y - k * 0.2, 2, 2);
-  ctx.globalAlpha = 1;
-};
-
-const PUFF = ["#c6f27a", "#9aefff", "#e4c0ff", "#f0d090"];
-
-const paintPuff: FxPaint = (ctx, x, y, age, a) => {
-  if (age < 0 || age >= 18) return;
-  const gas = a === Z_GAS;
-  const s = (gas ? 16 : 10) + age * (gas ? 1.8 : 1.15);
-  ctx.globalAlpha = Math.max(0, (gas ? 0.85 : 0.7) - age / 26);
-  if (gas) {
-    ctx.fillStyle = "#7fbf32";
-    ctx.beginPath();
-    ctx.ellipse(x, y - age * 0.45, s * 0.55, s * 0.4, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#e7ff9a";
-    ctx.beginPath();
-    ctx.ellipse(x - s * 0.15, y - age * 0.7, s * 0.28, s * 0.2, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalAlpha = 1;
-    return;
-  }
-  ctx.drawImage(puffSprite(), x - s / 2, y - s * 0.55 - age * 0.45, s, s * 0.85);
-  ctx.globalAlpha = Math.max(0, 0.4 - age / 36);
-  ctx.fillStyle = PUFF[a | 0] ?? "#f0d090";
-  ctx.beginPath();
-  ctx.arc(x, y - age * 0.35, 2.5 + age * 0.2, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.globalAlpha = 1;
-};
-
-const paintXp: FxPaint = (ctx, x, y, age, a) => {
-  if (age < 0 || age >= 24) return;
-  const n = Math.max(1, a | 0);
-  const label = `${n} XP`;
-  ctx.globalAlpha = 1 - age / 24;
-  ctx.font = font(9, 800);
-  ctx.textAlign = "left";
-  ctx.textBaseline = "middle";
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = "#1c120c";
-  ctx.strokeText(label, x + 4, y - age);
-  ctx.fillStyle = "#ffe08a";
-  ctx.fillText(label, x + 4, y - age);
-  ctx.globalAlpha = 1;
-};
-
 registerFx(FX_FLASH, paintFlash);
 registerFx(FX_SPARK, paintSpark);
 registerFx(FX_PUFF, paintPuff);
 registerFx(FX_XP, paintXp);
+registerFx(FX_BOOM, paintBoom);
 
 export function paintFx(ctx: CanvasRenderingContext2D, w: World): void {
+  paintLevelBurst(ctx, w);
+  const camX = w.arena.camX;
+  const camY = w.arena.camY;
   for (let i = 0; i < w.fxKind.length; i++) {
     const kind = w.fxKind[i] ?? 0;
     if (!kind) continue;
+    const x = w.fxX[i] ?? 0;
+    const y = w.fxY[i] ?? 0;
+    if (offScreen(x, y, 48, camX, camY)) continue;
     const age = w.tick - (w.fxTick[i] ?? 0);
-    fxPaint(kind, paintSpark)(ctx, w.fxX[i] ?? 0, w.fxY[i] ?? 0, age, w.fxA[i] ?? 0, w.tick);
+    fxPaint(kind, paintSpark)(ctx, x, y, age, w.fxA[i] ?? 0, w.tick);
   }
 }

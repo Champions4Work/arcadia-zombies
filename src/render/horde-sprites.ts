@@ -109,11 +109,14 @@ function gasbag(bob: number): Sprite {
 }
 
 function knight(bob: number): Sprite {
-  return sprite(14, 18, 7, 17, (pix) => {
-    stamp(pix, 14, 1, 15, 12, 2, SOOT);
-    stamp(pix, 14, 2, 7 + bob, 10, 9, KNIGHT);
-    stamp(pix, 14, 3, 2 + bob, 8, 6, BRASS);
-    stamp(pix, 14, 5, 3 + bob, 3, 2, EMBER_HI);
+  return sprite(18, 18, 7, 17, (pix) => {
+    stamp(pix, 18, 1, 15, 12, 2, SOOT);
+    stamp(pix, 18, 2, 7 + bob, 10, 9, KNIGHT);
+    stamp(pix, 18, 3, 2 + bob, 8, 6, BRASS);
+    stamp(pix, 18, 5, 3 + bob, 3, 2, EMBER_HI);
+    stamp(pix, 18, 12, 4 + bob, 5, 11, BRASS);
+    stamp(pix, 18, 13, 5 + bob, 3, 9, BRASS_LO);
+    stamp(pix, 18, 13, 8 + bob, 3, 2, EMBER);
   });
 }
 
@@ -125,12 +128,63 @@ function rat(bob: number): Sprite {
   });
 }
 
-function bullet(dx: number, dy: number): Sprite {
-  return sprite(9, 9, 4, 4, (pix) => {
-    stamp(pix, 9, 4 + dx, 4 + dy, 3, 2, COPPER);
-    stamp(pix, 9, 2, 2, 5, 5, EMBER);
-    stamp(pix, 9, 3, 3, 3, 3, EMBER_HI);
+const GLOW = pack(0xff, 0xf8, 0xe4);
+const STEEL_PX = pack(0xc5, 0xcc, 0xd4);
+const STEEL_HI = pack(0xf2, 0xf7, 0xfb);
+const ACID_PX = pack(0x7a, 0xf6, 0xff);
+const BOMB = pack(0x3a, 0x34, 0x2c);
+const BOMB_HI = pack(0x6a, 0x60, 0x58);
+
+function rivetTracer(dx: number, dy: number): Sprite {
+  return sprite(17, 9, 8, 4, (pix) => {
+    stamp(pix, 17, 1, 3, 12, 3, COPPER);
+    stamp(pix, 17, 3, 2, 11, 5, EMBER);
+    stamp(pix, 17, 6 + dx, 3 + dy, 5, 3, EMBER_HI);
+    stamp(pix, 17, 11, 3, 4, 3, GLOW);
   });
+}
+
+function pelletTracer(dx: number, dy: number): Sprite {
+  return sprite(13, 9, 6, 4, (pix) => {
+    stamp(pix, 13, 2, 3, 8, 3, STEEL_PX);
+    stamp(pix, 13, 4 + dx, 3 + dy, 4, 3, BRASS);
+    stamp(pix, 13, 6, 3, 3, 3, STEEL_HI);
+  });
+}
+
+function flameBlob(dx: number, dy: number): Sprite {
+  return sprite(13, 13, 6, 6, (pix) => {
+    stamp(pix, 13, 2, 3, 9, 7, EMBER);
+    stamp(pix, 13, 3, 2, 7, 9, EMBER);
+    stamp(pix, 13, 4 + dx, 4 + dy, 5, 5, EMBER_HI);
+    stamp(pix, 13, 5, 5, 3, 3, GLOW);
+  });
+}
+
+function harpTracer(dx: number, dy: number): Sprite {
+  return sprite(19, 9, 9, 4, (pix) => {
+    stamp(pix, 19, 1, 3, 15, 3, STEEL_PX);
+    stamp(pix, 19, 2, 2, 14, 5, STEEL_HI);
+    stamp(pix, 19, 12 + dx, 3 + dy, 4, 3, BRASS);
+    stamp(pix, 19, 15, 3, 3, 3, ACID_PX);
+  });
+}
+
+function bombBlob(dx: number, dy: number): Sprite {
+  return sprite(11, 13, 5, 7, (pix) => {
+    stamp(pix, 11, 2, 5, 7, 6, BOMB);
+    stamp(pix, 11, 3, 4, 5, 8, BOMB_HI);
+    stamp(pix, 11, 4, 6, 3, 3, BRASS);
+    stamp(pix, 11, 4 + dx, 1 + dy, 3, 3, (dx + dy) & 1 ? EMBER_HI : EMBER);
+  });
+}
+
+function gunStamp(gun: number, dx: number, dy: number): Sprite {
+  if (gun === 1) return pelletTracer(dx, dy);
+  if (gun === 2) return flameBlob(dx, dy);
+  if (gun === 3) return harpTracer(dx, dy);
+  if (gun === 4) return bombBlob(dx, dy);
+  return rivetTracer(dx, dy);
 }
 
 let built = false;
@@ -141,7 +195,9 @@ export function buildSprites(): void {
     shambler(0), shambler(1), ghoul(0), ghoul(1), brute(0), brute(1),
     spitter(0), spitter(1), gasbag(0), gasbag(1), knight(0), knight(1), rat(0), rat(1),
   );
-  bulletSprites.push(bullet(-2, 0), bullet(2, 0), bullet(0, -2), bullet(0, 2));
+  for (let g = 0; g < 5; g++) {
+    bulletSprites.push(gunStamp(g, -2, 0), gunStamp(g, 2, 0), gunStamp(g, 0, -2), gunStamp(g, 0, 2));
+  }
   built = true;
 }
 
@@ -150,7 +206,8 @@ export function zombieSprite(kind: number, bob: number): Sprite {
   return zombieSprites[k * 2 + (bob & 1)] ?? zombieSprites[0] ?? EMPTY;
 }
 
-export function bulletSprite(vx: number, vy: number): Sprite {
-  const i = Math.abs(vx) >= Math.abs(vy) ? (vx >= 0 ? 1 : 0) : (vy >= 0 ? 3 : 2);
-  return bulletSprites[i] ?? bulletSprites[0] ?? EMPTY;
+export function bulletSprite(vx: number, vy: number, gun = 0): Sprite {
+  const dir = Math.abs(vx) >= Math.abs(vy) ? (vx >= 0 ? 1 : 0) : (vy >= 0 ? 3 : 2);
+  const g = gun < 0 || gun > 4 ? 0 : gun | 0;
+  return bulletSprites[g * 4 + dir] ?? bulletSprites[dir] ?? EMPTY;
 }

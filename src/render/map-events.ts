@@ -3,6 +3,8 @@ import {
   MAP_WARN, mapBanner, mapBannerKind, mapKind, mapLabel, mapLife, mapPhase, mapX, mapY, VENT_LIVE, WARN_TICKS,
 } from "../sim/map-events";
 import { H, W, type World } from "../sim/types";
+import { paintCrate } from "./cast";
+import { paintAura } from "./cast-fx";
 import { BRASS, cog, font, lit, OUTLINE, roundRect } from "./paint";
 import { LAYER_HUD, LAYER_MID, registerLayer } from "./plugins";
 import { puffSprite } from "./sprites";
@@ -104,21 +106,9 @@ function airship(ctx: CanvasRenderingContext2D, x: number, y: number, tick: numb
   ctx.restore();
 }
 
-function crate(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  roundRect(ctx, x - 16, y - 13, 32, 26, 4);
-  ctx.fillStyle = lit(ctx, x - 16, y - 13, 32, 26, BRASS);
-  ctx.fill();
-  ctx.lineWidth = 2.4;
-  ctx.strokeStyle = OUTLINE;
-  ctx.stroke();
-  ctx.strokeStyle = "#6a3010";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(x - 16, y);
-  ctx.lineTo(x + 16, y);
-  ctx.moveTo(x, y - 13);
-  ctx.lineTo(x, y + 13);
-  ctx.stroke();
+function crate(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number): void {
+  paintAura(ctx, x, y, 22, tick, "rgba(255,200,90,0.55)", "rgba(210,70,50,0.18)");
+  paintCrate(ctx, x, y, 16, 13);
   ctx.fillStyle = "#d24a3a";
   ctx.fillRect(x - 3, y - 8, 6, 16);
   ctx.fillRect(x - 8, y - 3, 16, 6);
@@ -150,7 +140,7 @@ function supply(ctx: CanvasRenderingContext2D, w: World): void {
   if (sx < w.arena.camX + W + 70) airship(ctx, sx, w.arena.camY + 36, w.tick);
   const fall = Math.min(1, flown / CRATE_FALL);
   const top = w.arena.camY + 40;
-  crate(ctx, x, top + (y - top) * fall);
+  crate(ctx, x, top + (y - top) * fall, w.tick);
 }
 
 let fogDisk: HTMLCanvasElement | null = null;

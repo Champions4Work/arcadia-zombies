@@ -1,8 +1,8 @@
 import { CHEST_SLOTS, chestGoldAt, MAX_CHESTS } from "../sim/chest";
 import { upgName } from "../sim/progress";
 import { H, UPG_COUNT, W, type World } from "../sim/types";
+import { paintChest } from "./cast";
 const SOOT = "#120c08";
-const BRASS = "#c8963e";
 const BRASS_HI = "#e8c878";
 const BRASS_LO = "#7a5420";
 const COPPER = "#b5562f";
@@ -27,12 +27,7 @@ function settled(t: number, dur: number, slot: number, n: number): boolean {
 }
 
 function groundChest(c: CanvasRenderingContext2D, x: number, y: number, tick: number): void {
-  const ix = x | 0;
-  const iy = (y | 0) - ((tick >> 4 & 1) << 1);
-  rect(c, ix - 16, iy - 12, 32, 26, BRASS_LO);
-  rect(c, ix - 14, iy - 10, 28, 16, BRASS);
-  rect(c, ix - 14, iy - 20, 28, 10, BRASS_HI);
-  rect(c, ix - 4, iy - 5, 8, 6, SOOT);
+  paintChest(c, x, y, tick);
 }
 
 export function drawChestGround(c: CanvasRenderingContext2D, w: World): void {
