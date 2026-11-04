@@ -218,6 +218,25 @@ function portrait(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   barCount(ctx, "120/120", bx + 5, ey + 7);
 }
 
+function skillKeys(ctx: CanvasRenderingContext2D, layout: HudLayout): void {
+  const keys = ["Q", "E", "R"];
+  const r = 11;
+  const cx = layout.ability.x + layout.ability.w * 0.5;
+  const cy = layout.ability.y - r - 5;
+  for (let i = 0; i < 3; i++) {
+    const x = cx + (i - 1) * 22;
+    blitSheetFit(ctx, "ring_frame_b", x - r - 2, cy - r - 2, r * 2 + 4, r * 2 + 4);
+    ctx.beginPath();
+    ctx.arc(x, cy, r * 0.7, 0, Math.PI * 2);
+    ctx.fillStyle = IRON;
+    ctx.fill();
+    ctx.strokeStyle = BRASS;
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
+    ink(ctx, keys[i] ?? "Q", x, cy, 10, STEAM, "center");
+  }
+}
+
 function restStick(ctx: CanvasRenderingContext2D, layout: HudLayout): void {
   const r = 30;
   const x = layout.hero.x + 36;
@@ -384,6 +403,7 @@ export function drawHud(ctx: CanvasRenderingContext2D, w: World): void {
     portrait(ctx, w, layout.face);
     drawWeaponRack(ctx, w);
     restStick(ctx, layout);
+    skillKeys(ctx, layout);
     ability(ctx, w, layout.ability);
     objectives(ctx, w, layout);
     rankCallout(ctx, w, layout);

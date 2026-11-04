@@ -19,7 +19,7 @@ describe("visual review gates", () => {
     expect(sheet.includes('spr["x"]')).toBe(true);
     expect(sheet.includes("imageSmoothingEnabled = false")).toBe(true);
     expect(SEE_AXIS).toBe(360);
-    expect(HERO_DRAW_SCALE).toBe(1.25);
+    expect(HERO_DRAW_SCALE).toBe(1.42);
   });
 
   it("scales normal foes to 0.58 of hero height and brutes to 0.74x", () => {
@@ -31,14 +31,15 @@ describe("visual review gates", () => {
     expect(foeWorldScale(Z_BRUTE, 98)).toBeCloseTo((64 * 0.74) / 98);
     const look = readFileSync("src/art/look.ts", "utf8");
     expect(look.includes("export function paintRifle")).toBe(true);
-    expect(look.includes("ellipse(x, y + 3, 14, 5")).toBe(true);
-    expect(look.includes("rgba(255,200,96,0.85)")).toBe(true);
+    expect(look.includes("ellipse(x, y + 3, 18, 6.5")).toBe(true);
+    expect(look.includes("rgba(90,240,235,0.92)")).toBe(true);
     expect(look.includes("rgba(255,214,130,0.62)")).toBe(true);
     expect(look.includes("brightness(1.65)")).toBe(true);
     expect(look.includes("paintRifle(ctx, x, y, nx, ny, s, bob)")).toBe(true);
     expect(look.includes("rgba(200,208,220")).toBe(false);
     expect(look.includes("ellipse(mx, my, 18, 10")).toBe(false);
-    expect(look.includes("lineTo(mx + nx * 36")).toBe(true);
+    expect(look.includes("lineTo(mx + nx * 40")).toBe(true);
+    expect(look.includes("ellipse(mx, my, 10.5, 6.8")).toBe(true);
     expect(look.includes("rgba(255,96,16,0.95)")).toBe(true);
     expect(look.includes("Math.sin(tick * 0.28)")).toBe(true);
     const actors = readFileSync("src/render/actors.ts", "utf8");
@@ -66,7 +67,9 @@ describe("visual review gates", () => {
     expect(draw.includes("rgba(220,132,52,0.34)")).toBe(false);
     expect(draw.includes("rgba(255,186,88,0.42)")).toBe(false);
     const yard = readFileSync("src/render/yard-fx.ts", "utf8");
-    expect(yard.includes("ellipse(x, y + 6, 88, 50")).toBe(true);
+    expect(yard.includes("ellipse(x, y + 8, 104, 60")).toBe(true);
+    expect(yard.includes("function doorPool")).toBe(true);
+    expect(yard.includes("ellipse(x, y, 68, 50")).toBe(true);
     expect(yard.includes("bluePool")).toBe(true);
     expect(yard.includes("blue_glow")).toBe(true);
     expect(yard.includes("pipes_blue_tank")).toBe(true);
@@ -79,7 +82,8 @@ describe("visual review gates", () => {
     expect(ground.includes("tile_stone_seamless")).toBe(true);
     expect(HAZARD_MARKS.length).toBeLessThanOrEqual(3);
     const rack = readFileSync("src/render/weapons.ts", "utf8");
-    expect(rack.includes("wpnGlyph")).toBe(true);
+    expect(rack.includes("paintSlotIcon")).toBe(true);
+    expect(rack.includes("wpnGlyph")).toBe(false);
     expect(rack.includes("drawIcon")).toBe(false);
     expect(rack.includes("fillText")).toBe(true);
     expect(rack.includes("Math.max(12, lv * 12)")).toBe(true);
@@ -112,6 +116,10 @@ describe("visual review gates", () => {
     expect(hud.includes("layout.face")).toBe(true);
     expect(hud.includes("const local = 170")).toBe(true);
     expect(hud.includes("function restStick")).toBe(true);
+    expect(hud.includes("function skillKeys")).toBe(true);
+    expect(hud.includes('"Q"')).toBe(true);
+    expect(hud.includes('"E"')).toBe(true);
+    expect(hud.includes('"R"')).toBe(true);
     expect(hud.includes("layout.hero.y - 94")).toBe(true);
     expect(hud.includes("const r = 30")).toBe(true);
     expect(hud.includes("fillRect(cx - r * 0.78")).toBe(true);

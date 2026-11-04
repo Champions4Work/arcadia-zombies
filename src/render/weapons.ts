@@ -22,41 +22,50 @@ export function paintWeapon(c: CanvasRenderingContext2D, w: World, j: number): n
 
 registerFx(FX_BOOM, paintBoom);
 
-function wpnGlyph(c: CanvasRenderingContext2D, i: number, x: number, y: number, s: number): void {
+function paintSlotIcon(c: CanvasRenderingContext2D, i: number, x: number, y: number, s: number): void {
   c.save();
   c.translate(x, y);
-  c.fillStyle = XP;
-  c.strokeStyle = XP;
-  c.lineWidth = 2.2;
   if (i === 0) {
-    c.fillRect(-s * 0.85, -s * 0.22, s * 1.35, s * 0.44);
-    c.fillRect(s * 0.28, -s * 0.4, s * 0.7, s * 0.8);
-    c.fillRect(-s * 0.22, s * 0.12, s * 0.28, s * 0.55);
+    c.fillStyle = "#6a4a28";
+    c.fillRect(-s * 0.95, -s * 0.2, s * 0.4, s * 0.4);
+    c.fillRect(-s * 0.38, s * 0.06, s * 0.22, s * 0.42);
+    c.fillStyle = "#c4a060";
+    c.fillRect(-s * 0.62, -s * 0.14, s * 1.45, s * 0.28);
+    c.fillStyle = "#e8c878";
+    c.fillRect(s * 0.55, -s * 0.1, s * 0.32, s * 0.2);
   } else if (i === 1) {
-    c.beginPath();
-    c.moveTo(-s * 0.15, 0);
-    c.lineTo(s * 0.7, -s * 0.55);
-    c.moveTo(-s * 0.15, 0);
-    c.lineTo(s * 0.7, 0);
-    c.moveTo(-s * 0.15, 0);
-    c.lineTo(s * 0.7, s * 0.55);
-    c.stroke();
-    c.fillRect(-s * 0.45, -s * 0.2, s * 0.4, s * 0.4);
+    c.fillStyle = "#6a4a28";
+    c.fillRect(-s * 0.42, -s * 0.16, s * 0.36, s * 0.32);
+    c.fillRect(-s * 0.22, s * 0.1, s * 0.2, s * 0.4);
+    c.fillStyle = "#c4a060";
+    c.fillRect(-s * 0.12, -s * 0.12, s * 0.82, s * 0.24);
+    c.fillStyle = "#e8c878";
+    c.fillRect(s * 0.52, -s * 0.08, s * 0.2, s * 0.16);
   } else if (i === 2) {
+    c.fillStyle = "#6a8a3a";
     c.beginPath();
-    c.moveTo(0, -s * 0.7);
-    c.lineTo(s * 0.42, s * 0.35);
-    c.lineTo(-s * 0.42, s * 0.35);
-    c.closePath();
+    c.ellipse(0, s * 0.08, s * 0.32, s * 0.4, 0, 0, Math.PI * 2);
     c.fill();
+    c.fillStyle = "#c4a060";
+    c.fillRect(-s * 0.08, -s * 0.42, s * 0.16, s * 0.22);
+    c.strokeStyle = "#e8c878";
+    c.lineWidth = 1.4;
+    c.beginPath();
+    c.arc(s * 0.12, -s * 0.36, s * 0.12, -0.4, 2.2);
+    c.stroke();
   } else if (i === 3) {
-    c.fillRect(-s * 0.12, -s * 0.75, s * 0.24, s * 1.35);
-    c.fillRect(-s * 0.32, -s * 0.15, s * 0.64, s * 0.18);
+    c.fillStyle = "#e8e0d0";
+    c.fillRect(-s * 0.38, -s * 0.28, s * 0.76, s * 0.56);
+    c.fillStyle = "#d24a3a";
+    c.fillRect(-s * 0.08, -s * 0.2, s * 0.16, s * 0.4);
+    c.fillRect(-s * 0.22, -s * 0.06, s * 0.44, s * 0.16);
   } else {
+    c.fillStyle = "#8a6a3a";
     c.beginPath();
-    c.arc(0, 0, s * 0.42, 0, Math.PI * 2);
+    c.arc(0, s * 0.06, s * 0.34, 0, Math.PI * 2);
     c.fill();
-    c.fillRect(-s * 0.08, -s * 0.7, s * 0.16, s * 0.32);
+    c.fillStyle = "#c4a060";
+    c.fillRect(-s * 0.1, -s * 0.48, s * 0.2, s * 0.28);
   }
   c.restore();
 }
@@ -84,7 +93,7 @@ export function drawWeaponRack(c: CanvasRenderingContext2D, w: World): void {
     c.lineWidth = 1.8;
     c.strokeRect(x + 0.8, y + 0.8, slot - 1.6, slot - 1.6);
     blitSheetFit(c, "power_slot", x - 1, y - 1, slot + 2, slot + 2);
-    wpnGlyph(c, i, x + slot / 2, y + slot * 0.32, Math.max(10, slot * 0.42));
+    paintSlotIcon(c, i, x + slot / 2, y + slot * 0.38, Math.max(11, slot * 0.46));
     const n = Math.max(12, lv * 12);
     c.fillStyle = "rgba(8,6,4,0.88)";
     c.fillRect(x + 2, y + slot - 15, slot - 4, 13);

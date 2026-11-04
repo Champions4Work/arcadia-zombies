@@ -102,29 +102,43 @@ function visible(x: number, y: number, camX: number, camY: number, vw: number, v
 }
 
 function lampPool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  const g = ctx.createRadialGradient(x, y - 18, 3, x, y + 6, 96);
-  g.addColorStop(0, "rgba(255,220,140,0.88)");
-  g.addColorStop(0.4, "rgba(255,186,80,0.42)");
+  const g = ctx.createRadialGradient(x, y - 18, 2, x, y + 8, 110);
+  g.addColorStop(0, "rgba(255,200,90,0.96)");
+  g.addColorStop(0.32, "rgba(255,140,36,0.58)");
   g.addColorStop(1, "rgba(10,10,14,0)");
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.ellipse(x, y + 6, 88, 50, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y + 8, 104, 60, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function doorPool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+  const g = ctx.createRadialGradient(x, y + 8, 2, x, y + 22, 86);
+  g.addColorStop(0, "rgba(255,186,72,0.9)");
+  g.addColorStop(0.4, "rgba(255,120,28,0.4)");
+  g.addColorStop(1, "rgba(10,10,14,0)");
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.ellipse(x, y + 22, 72, 42, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
 
 function bluePool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  const g = ctx.createRadialGradient(x, y - 12, 2, x, y, 70);
-  g.addColorStop(0, "rgba(120,240,255,0.88)");
-  g.addColorStop(0.45, "rgba(64,190,255,0.42)");
+  const g = ctx.createRadialGradient(x, y - 12, 2, x, y, 84);
+  g.addColorStop(0, "rgba(90,245,255,0.96)");
+  g.addColorStop(0.4, "rgba(40,200,255,0.55)");
   g.addColorStop(1, "rgba(10,10,14,0)");
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.ellipse(x, y, 52, 38, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y, 68, 50, 0, 0, Math.PI * 2);
   ctx.fill();
   blitSheet(ctx, "blue_puddle", x, y + 10);
   blitSheet(ctx, "blue_glow", x, y - 8);
@@ -190,6 +204,7 @@ export function paintYardLive(
   }
   for (const b of BUILDINGS) {
     if (!visible(b.x, b.y, camX, camY, vw, vh, 160)) continue;
+    doorPool(ctx, b.x, b.y);
     paintShadow(ctx, b.x, b.y, 44, 9);
     blitSheet(ctx, "building_wall_door", b.x, b.y);
   }

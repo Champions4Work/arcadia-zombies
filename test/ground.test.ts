@@ -177,7 +177,7 @@ describe("yard floor paint", () => {
     const blob = fills.join(" ");
     expect(blob.includes("#5c6e7e")).toBe(false);
     expect(blob.includes("#7f93a4")).toBe(false);
-    expect(/#6a5e48|rgba\(48,36,24/.test(blob)).toBe(true);
+    expect(/#4f4636|rgba\(24,30,42/.test(blob)).toBe(true);
     expect(/#2a2a30|rgba\(24,24,32/.test(blob)).toBe(false);
     expect(/#c49038|#f0b03a|#fff1c2/.test(blob)).toBe(false);
   });
