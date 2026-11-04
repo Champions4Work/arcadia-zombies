@@ -109,6 +109,7 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
   if (w.hurtCd > 0) paintHurt(c, w.hurtCd, viewW, viewH);
   const vig = c.createRadialGradient(viewW * 0.5, viewH * 0.48, viewH * 0.16, viewW * 0.5, viewH * 0.5, viewH * 0.86);
   vig.addColorStop(0, "rgba(0,0,0,0)");
+  vig.addColorStop(0.28, "rgba(40,18,10,0.05)");
   vig.addColorStop(0.42, "rgba(24,14,8,0.08)");
   vig.addColorStop(0.7, "rgba(8,8,14,0.4)");
   vig.addColorStop(1, "rgba(4,6,12,0.72)");

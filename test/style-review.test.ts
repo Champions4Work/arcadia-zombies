@@ -89,7 +89,7 @@ describe("visual review gates", () => {
     expect(draw.includes("rgba(220,132,52,0.34)")).toBe(false);
     expect(draw.includes("rgba(255,186,88,0.42)")).toBe(false);
     const yard = readFileSync("src/render/yard-fx.ts", "utf8");
-    expect(yard.includes("ellipse(x, y + 10, 72, 44")).toBe(true);
+    expect(yard.includes("ellipse(x, y + 18, 118, 76")).toBe(true);
     expect(yard.includes("function lampRay")).toBe(true);
     expect(yard.includes("decal_vent")).toBe(true);
     expect(yard.includes("valve_steam")).toBe(true);
@@ -111,7 +111,7 @@ describe("visual review gates", () => {
     expect(yard.includes("GLASS_AT")).toBe(true);
     expect(yard.includes("{ x: 424, y: 232 }")).toBe(true);
     expect(yard.includes("function paintBrickWall")).toBe(true);
-    expect(yard.includes("ellipse(x, y, 22, 16")).toBe(true);
+    expect(yard.includes("ellipse(x, y, 34, 24")).toBe(true);
     expect(yard.includes("ellipse(x, y, 68, 50")).toBe(false);
     expect(yard.includes("x: 332, y: 340")).toBe(true);
     expect(yard.includes("x: 628, y: 340")).toBe(true);
@@ -212,7 +212,7 @@ describe("visual review gates", () => {
     expect(hud.includes("#e24a32")).toBe(true);
     expect(hud.includes("#3d8cff")).toBe(false);
     expect(hud.includes("240/240")).toBe(true);
-    expect(hud.includes("120/120")).toBe(false);
+    expect(hud.includes("120/120")).toBe(true);
     expect(hud.includes('blitSheetFit(ctx, "panel_frame_gears"')).toBe(true);
     expect(hud.includes("ctx.lineWidth = 4.6")).toBe(true);
     expect(hud.includes("function barCount")).toBe(true);

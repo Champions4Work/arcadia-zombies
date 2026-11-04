@@ -19,16 +19,17 @@ export function bindStage(id: number): void {
 
 function drawYard(ctx: CanvasRenderingContext2D): void {
   const sky = ctx.createLinearGradient(0, 0, 0, 150);
-  sky.addColorStop(0, "#0a0a10");
-  sky.addColorStop(0.55, "#12121a");
-  sky.addColorStop(1, "#1a1a22");
+  sky.addColorStop(0, "#241028");
+  sky.addColorStop(0.4, "#3a1830");
+  sky.addColorStop(0.72, "#4a2418");
+  sky.addColorStop(1, "#1a1210");
   ctx.fillStyle = sky;
   ctx.fillRect(0, 0, ARENA_W, 160);
-  ctx.fillStyle = "rgba(220,224,232,0.45)";
-  for (let i = 0; i < 36; i++) {
+  ctx.fillStyle = "rgba(255,196,120,0.4)";
+  for (let i = 0; i < 28; i++) {
     const x = (i * 97) % ARENA_W;
     const y = (i * 41) % 70;
-    ctx.globalAlpha = 0.12 + (i % 4) * 0.06;
+    ctx.globalAlpha = 0.1 + (i % 4) * 0.05;
     ctx.fillRect(x, y, i % 5 === 0 ? 2 : 1.2, i % 5 === 0 ? 2 : 1.2);
   }
   ctx.globalAlpha = 1;

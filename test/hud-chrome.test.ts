@@ -46,7 +46,7 @@ function bindPhone(): void {
 }
 
 describe("phone HUD chrome", () => {
-  it("keeps heart, loadout, wave, and objectives and drops the energy bar", () => {
+  it("keeps heart, loadout, wave, objectives, and painted energy chrome", () => {
     const texts: string[] = [];
     bindPhone();
     const hud = layoutHud(
@@ -64,7 +64,7 @@ describe("phone HUD chrome", () => {
     expect(texts).toContain("Chapter 1");
     expect(texts).toContain("The Brass District");
     expect(texts.some((t) => t.startsWith("Wave "))).toBe(true);
-    expect(texts).not.toContain("120/120");
+    expect(texts).toContain("120/120");
     expect(texts).toContain("Q");
     expect(texts).toContain("E");
     expect(texts).toContain("R");

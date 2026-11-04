@@ -130,6 +130,11 @@ function forceVent(c: number, r: number): void {
   cells[r * COLS + c] = KIND_VENT;
 }
 
+function forceGrate(c: number, r: number): void {
+  if (r < FLOOR0 || railH(r) || railV(c)) return;
+  cells[r * COLS + c] = KIND_GRATE;
+}
+
 function build(): void {
   if (ready) return;
   ready = 1;
@@ -247,6 +252,12 @@ function build(): void {
     add(FEAT_GEAR, 480, 360, 12, 6);
     add(FEAT_GEAR, 820, 520, 12, 6);
   } else {
+    forceVent(25, 19);
+    forceVent(35, 21);
+    forceGrate(22, 18);
+    forceGrate(28, 20);
+    forceGrate(33, 23);
+    forceGrate(20, 22);
     add(FEAT_PIPE, 24, 136, 140, 0);
     add(FEAT_PIPE, 164, 136, 90, 1);
     add(FEAT_PIPE, 720, 148, 200, 0);
@@ -462,11 +473,7 @@ function fog(ctx: CanvasRenderingContext2D): void {
   ctx.fillRect(0, 100, ARENA_W, 220);
 }
 
-export const HAZARD_MARKS = [
-  [8, 10],
-  [22, 14],
-  [36, 12],
-] as const;
+export const HAZARD_MARKS = [] as const;
 
 const BOILER_MARKS = [
   [8, 10],

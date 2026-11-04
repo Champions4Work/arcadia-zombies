@@ -167,7 +167,7 @@ function stampInk(
 function banner(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   plate(ctx, box, "panel_frame_pipes");
   ctx.fillStyle = "#8a5a20";
-  ctx.fillRect(box.x + 8, box.y + 18, box.w - 16, 12);
+  ctx.fillRect(box.x + 8, box.y + box.h * 0.42, box.w - 16, 7);
   ctx.fillStyle = "#e0a040";
   ctx.fillRect(box.x + 10, box.y + 20, (box.w - 20) * 0.86, 8);
   stampInk(ctx, zoneChapterAt(w.wave), box.x + box.w / 2, box.y + 12, 12, "#f0d080");
@@ -262,6 +262,15 @@ function portrait(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   ctx.lineWidth = 1.2;
   ctx.strokeRect(bx + 0.5, by + 0.5, bw - 1, 12);
   barCount(ctx, "240/240", bx + 5, by + 7);
+  const ey = by + 16;
+  ctx.fillStyle = IRON;
+  ctx.fillRect(bx, ey, bw, 11);
+  ctx.fillStyle = "#3ec8c0";
+  ctx.fillRect(bx, ey, bw * 0.92, 11);
+  ctx.strokeStyle = BRASS;
+  ctx.lineWidth = 1.2;
+  ctx.strokeRect(bx + 0.5, ey + 0.5, bw - 1, 10);
+  barCount(ctx, "120/120", bx + 5, ey + 6);
 }
 
 function skillIcon(ctx: CanvasRenderingContext2D, i: number, x: number, y: number, s: number): void {
@@ -306,12 +315,12 @@ function skillIcon(ctx: CanvasRenderingContext2D, i: number, x: number, y: numbe
 function skillKeys(ctx: CanvasRenderingContext2D, layout: HudLayout): void {
   const keys = ["Q", "E", "R"];
   const r = 24;
-  const cx = layout.ability.x + layout.ability.w * 0.42;
-  const cy = layout.ability.y - 8;
+  const cx = layout.weapons.x + layout.weapons.w * 0.5;
+  const cy = layout.weapons.y - 28;
   const spots = [
-    { x: cx - 30, y: cy - 10 },
-    { x: cx, y: cy - 26 },
-    { x: cx + 28, y: cy - 10 },
+    { x: cx - 36, y: cy },
+    { x: cx, y: cy },
+    { x: cx + 36, y: cy },
   ];
   for (let i = 0; i < 3; i++) {
     const p = spots[i];

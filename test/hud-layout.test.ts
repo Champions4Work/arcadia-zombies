@@ -93,9 +93,10 @@ describe("viewport chrome", () => {
       expect(hud.minimap.h).toBeLessThanOrEqual(96);
       expect(hud.face.w).toBeGreaterThanOrEqual(64);
       expect(hud.face.h).toBeGreaterThanOrEqual(28);
-      expect(hud.face.x).toBeGreaterThanOrEqual(hud.minimap.x + hud.minimap.w);
-      expect(hud.face.y).toBeGreaterThanOrEqual(hud.minimap.y);
+      expect(hud.face.x).toBeLessThanOrEqual(hud.minimap.x + 1);
+      expect(hud.face.y + hud.face.h).toBeLessThanOrEqual(hud.minimap.y + 0.5);
       expect(hud.face.x + hud.face.w).toBeLessThan(hud.clock.x - 8);
+      expect(hud.difficulty.x).toBeGreaterThanOrEqual(hud.face.x + hud.face.w);
       const phonePortrait = phone.h > phone.w && phone.w <= 480;
       if (phonePortrait) {
         expect(hud.hero.h).toBeGreaterThanOrEqual(52);
