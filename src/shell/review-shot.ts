@@ -51,6 +51,9 @@ export function reviewHorde(w: World, zone = ZONE_BRASS): number {
   w.banner = 0;
   w.fireCd = 0;
   w.kills = 47;
+  w.rank = 0;
+  w.gate = 1;
+  w.holdLeft = 240 * 60;
   w.wave = zone === ZONE_TRAM ? ZONE_WAVE[ZONE_TRAM] : zone === ZONE_BOILER ? ZONE_WAVE[ZONE_BOILER] : 4;
   w.level = 11;
   w.xp = 40;

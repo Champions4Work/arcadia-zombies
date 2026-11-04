@@ -128,8 +128,8 @@ export function layoutHud(vp: Viewport, fit: Fit): HudLayout {
     y: topY + rowH / 2,
     r: pauseR,
   };
-  const clockW = Math.round((phone ? 72 : portrait ? 104 : 108) * u);
-  const clockH = Math.round((phone ? 36 : portrait ? 50 : 44) * u);
+  const clockW = Math.round((phone ? 108 : portrait ? 104 : 108) * u);
+  const clockH = Math.round((phone ? 32 : portrait ? 50 : 44) * u);
   const clock = {
     x: pause.x - pauseR - gap - clockW,
     y: phone ? topY + (rowH - clockH) / 2 : topY,

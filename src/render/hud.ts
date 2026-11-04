@@ -121,18 +121,8 @@ function drawHealth(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   const cy = box.y + box.h / 2;
   const r = Math.min(box.w, box.h) * 0.42;
   const heartCol = low ? DANGER : phone ? CYAN : HEALTH;
-  blitSheetFit(ctx, "heart_ring", box.x - 8, box.y - 8, box.w + 16, box.h + 16);
-  if (phone) {
-    ctx.save();
-    ctx.strokeStyle = phone ? CYAN : BRASS;
-    ctx.globalCompositeOperation = "lighter";
-    ctx.globalAlpha = 0.55;
-    ctx.lineWidth = 5;
-    ctx.beginPath();
-    ctx.arc(cx, cy, r + 7, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.restore();
-  } else {
+  blitSheetFit(ctx, "heart_ring", box.x - (phone ? 12 : 8), box.y - (phone ? 12 : 8), box.w + (phone ? 24 : 16), box.h + (phone ? 24 : 16));
+  if (!phone) {
     ctx.beginPath();
     ctx.arc(cx, cy, r + 4, 0, Math.PI * 2);
     ctx.strokeStyle = BRASS;
@@ -230,6 +220,22 @@ function banner(ctx: CanvasRenderingContext2D, w: World, box: Box, phone: boolea
   stampInk(ctx, difficultyLabel(w.rank), box.x + 38 + (box.w - 46) / 2, cy, 15, "#120c08");
 }
 
+function clockGlyph(ctx: CanvasRenderingContext2D, x: number, y: number, s: number): void {
+  ctx.beginPath();
+  ctx.arc(x, y, s, 0, Math.PI * 2);
+  ctx.strokeStyle = BRASS_HI;
+  ctx.lineWidth = 1.6;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x, y - s * 0.55);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + s * 0.42, y + s * 0.08);
+  ctx.stroke();
+}
+
 function skull(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   ctx.beginPath();
   ctx.arc(x, y - 1, 6.2, 0, Math.PI * 2);
@@ -251,17 +257,27 @@ function skull(ctx: CanvasRenderingContext2D, x: number, y: number): void {
 function clockPanel(ctx: CanvasRenderingContext2D, w: World, box: Box, phone: boolean): void {
   const face = waveFace(w);
   if (phone) {
+    blitSheetFit(ctx, "panel_frame_small", box.x - 10, box.y - 8, box.w + 20, box.h + 16);
     ctx.save();
-    roundRect(ctx, box.x, box.y, box.w, box.h, 10);
-    ctx.fillStyle = "rgba(8,10,14,0.72)";
+    roundRect(ctx, box.x + 3, box.y + 3, box.w - 6, box.h - 6, 8);
+    ctx.fillStyle = "rgba(8,10,14,0.78)";
     ctx.fill();
-    ctx.strokeStyle = "rgba(224,160,64,0.55)";
-    ctx.lineWidth = 1.6;
+    ctx.strokeStyle = "rgba(212,168,72,0.72)";
+    ctx.lineWidth = 1.4;
     ctx.stroke();
     ctx.restore();
-    stampInk(ctx, formatClock(w.tick), box.x + box.w / 2, box.y + 11, 11, "#fff6df", "center");
-    skull(ctx, box.x + box.w * 0.32, box.y + box.h - 10);
-    ink(ctx, `${w.kills | 0}`, box.x + box.w * 0.32 + 10, box.y + box.h - 10, 11, "#f6f1e6");
+    const cy = box.y + box.h / 2;
+    const split = box.x + box.w * 0.52;
+    clockGlyph(ctx, box.x + 14, cy, 5.5);
+    stampInk(ctx, formatClock(w.tick), box.x + 26, cy, 11, "#fff6df", "left");
+    ctx.strokeStyle = "rgba(224,160,64,0.35)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(split, box.y + 5);
+    ctx.lineTo(split, box.y + box.h - 5);
+    ctx.stroke();
+    skull(ctx, split + 14, cy);
+    stampInk(ctx, `${w.kills | 0}`, split + 24, cy, 11, "#fff6df", "left");
     return;
   }
   plate(ctx, box, "panel_frame_small");
@@ -427,16 +443,12 @@ function restStick(ctx: CanvasRenderingContext2D, layout: HudLayout): void {
 function pauseButton(ctx: CanvasRenderingContext2D, pause: Circle): void {
   const layout = currentHud();
   const phone = layout?.phone ?? false;
+  blitSheetFit(ctx, "ring_frame_b", pause.x - pause.r - 2, pause.y - pause.r - 2, pause.r * 2 + 4, pause.r * 2 + 4);
   if (phone) {
     ctx.beginPath();
-    ctx.arc(pause.x, pause.y, pause.r, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(12,10,8,0.72)";
+    ctx.arc(pause.x, pause.y, pause.r * 0.78, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(12,10,8,0.82)";
     ctx.fill();
-    ctx.strokeStyle = "rgba(224,160,64,0.72)";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-  } else {
-    blitSheetFit(ctx, "ring_frame_b", pause.x - pause.r, pause.y - pause.r, pause.r * 2, pause.r * 2);
   }
   ctx.fillStyle = BRASS_HI;
   ctx.fillRect(pause.x - 5, pause.y - 6, 3, 12);
@@ -447,7 +459,7 @@ function minimap(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   const r = Math.max(16, Math.min(box.w, box.h) / 2 - 1);
   const cx = box.x + box.w / 2;
   const cy = box.y + box.h / 2;
-  blitSheetFit(ctx, "minimap_frame", box.x - 10, box.y - 10, box.w + 20, box.h + 20);
+  blitSheetFit(ctx, "minimap_frame", box.x - 14, box.y - 14, box.w + 28, box.h + 28);
   ctx.save();
   ctx.beginPath();
   ctx.arc(cx, cy, r - 3, 0, Math.PI * 2);
@@ -526,12 +538,14 @@ function ability(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   const cx = box.x + box.w / 2;
   const cy = box.y + box.h / 2;
   const r = Math.min(box.w, box.h) * 0.42;
-  blitSheetFit(ctx, "ultimate_button", box.x - 8, box.y - 8, box.w + 16, box.h + 16);
-  ctx.beginPath();
-  ctx.arc(cx, cy, r + 4, 0, Math.PI * 2);
-  ctx.strokeStyle = phone ? XP : BRASS;
-  ctx.lineWidth = phone ? 4.2 : 3.4;
-  ctx.stroke();
+  blitSheetFit(ctx, "ultimate_button", box.x - (phone ? 14 : 8), box.y - (phone ? 14 : 8), box.w + (phone ? 28 : 16), box.h + (phone ? 28 : 16));
+  if (!phone) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r + 4, 0, Math.PI * 2);
+    ctx.strokeStyle = BRASS;
+    ctx.lineWidth = 3.4;
+    ctx.stroke();
+  }
   if (phone && (ultReady(w) || (w.ultBlast ?? 0) > 0)) {
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
@@ -585,8 +599,9 @@ function objectives(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   const layout = currentHud();
   const phone = layout?.phone ?? false;
   const face = waveFace(w);
+  blitSheetFit(ctx, "objectives_panel", box.x - 14, box.y - 14, box.w + 28, box.h + 28);
   blitSheetFit(ctx, "panel_frame_gears", box.x - 10, box.y - 10, box.w + 20, box.h + 20);
-  ctx.fillStyle = phone ? "rgba(8,10,16,0.82)" : "rgba(8,10,16,0.78)";
+  ctx.fillStyle = phone ? "rgba(8,10,16,0.72)" : "rgba(8,10,16,0.78)";
   ctx.fillRect(box.x, box.y, box.w, box.h);
   ctx.fillStyle = "rgba(224,160,64,0.28)";
   ctx.fillRect(box.x + 4, box.y + 4, box.w - 8, phone ? 20 : 24);
