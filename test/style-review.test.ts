@@ -19,7 +19,7 @@ describe("visual review gates", () => {
     expect(sheet.includes('spr["x"]')).toBe(true);
     expect(sheet.includes("imageSmoothingEnabled = false")).toBe(true);
     expect(SEE_AXIS).toBe(360);
-    expect(HERO_DRAW_SCALE).toBe(1.28);
+    expect(HERO_DRAW_SCALE).toBe(1);
   });
 
   it("scales normal foes to 0.58 of hero height and brutes to 1.12x", () => {
@@ -35,9 +35,11 @@ describe("visual review gates", () => {
     expect(look.includes("rgba(90,240,235,0.92)")).toBe(false);
     expect(look.includes("rgba(255,214,130,0.62)")).toBe(false);
     expect(look.includes("brightness(1.85)")).toBe(false);
-    expect(look.includes("heroSpriteId")).toBe(false);
-    expect(look.includes("function paintDiveSuit")).toBe(true);
-    expect(look.includes("rgba(48,255,236,0.96)")).toBe(true);
+    expect(look.includes("heroSpriteId")).toBe(true);
+    expect(look.includes("blitSheetLean(ctx, heroSpriteId")).toBe(true);
+    expect(look.includes("function paintDiveSuit")).toBe(false);
+    expect(look.includes("export function paintHitSpark")).toBe(true);
+    expect(look.includes("rgba(48,255,236,0.96)")).toBe(false);
     expect(look.includes("paintRifle(ctx, x, y, nx, ny, s, bob)")).toBe(true);
     expect(look.includes("ctx.transform(1, 0, lean")).toBe(false);
     expect(look.includes("rgba(200,208,220")).toBe(false);
@@ -61,7 +63,8 @@ describe("visual review gates", () => {
     expect(actors.includes("if (flash && marked)")).toBe(false);
     expect(actors.includes("fillRect(x - 10, y - foeWorldH")).toBe(false);
     expect(actors.includes("brightness(2.6)")).toBe(false);
-    expect(actors.includes('ctx.ellipse(x, y - foeWorldH(kind) * 0.42')).toBe(true);
+    expect(actors.includes('ctx.ellipse(x, y - foeWorldH(kind) * 0.42')).toBe(false);
+    expect(actors.includes("paintHitSpark")).toBe(true);
     expect(actors.includes("for (let i = 1; i <= 5;")).toBe(false);
     const bolt = readFileSync("src/render/cast-fx.ts", "utf8");
     expect(bolt.includes("fillRect(-16, -3.6, 36, 7.2)")).toBe(false);
@@ -231,6 +234,11 @@ describe("visual review gates", () => {
     expect(juice.includes("function spawnBlood")).toBe(true);
     expect(juice.includes("SHAKE_BRUTE")).toBe(true);
     expect(juice.includes("pGear[i] ?? 0) === 2")).toBe(true);
+    expect(juice.includes("NUMBER_LIFE = 180")).toBe(true);
+    expect(juice.includes("GLYPH_CELL = 1")).toBe(true);
+    expect(juice.includes('HIT_COLOR = "#fff4c8"')).toBe(true);
+    expect(juice.includes("life / NUMBER_LIFE")).toBe(true);
+    expect(readFileSync("src/shell/review-shot.ts", "utf8").includes("tickJuice(70)")).toBe(true);
     const arena = readFileSync("src/sim/arena.ts", "utf8");
     expect(arena.includes("CAM_LERP = 0.15")).toBe(true);
     expect(wantsReviewShot("?shot=1", "")).toBe(true);
