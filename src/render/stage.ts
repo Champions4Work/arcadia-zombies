@@ -1,6 +1,6 @@
 import { ARENA_H, ARENA_W } from "../sim/arena";
 import { H, W } from "../sim/types";
-import { paintGround, VENT_FX_CAP, VENT_PUFFS, ventCount, ventX, ventY } from "./ground";
+import { eachVentFx, paintGround } from "./ground";
 import { BRASS, cog, COPPER, lit, OUTLINE, rivet, roundRect, STEEL } from "./paint";
 import { puffSprite } from "./sprites";
 
@@ -407,21 +407,10 @@ function spinGears(ctx: CanvasRenderingContext2D, tick: number): void {
 
 function ventSteam(ctx: CanvasRenderingContext2D, tick: number, camX: number, camY: number): void {
   const puff = puffSprite();
-  const n = ventCount();
-  let drawn = 0;
-  for (let i = 0; i < n; i++) {
-    const x = ventX(i);
-    const y = ventY(i);
-    if (x < camX - 40 || y < camY - 40 || x > camX + W + 40 || y > camY + H + 40) continue;
-    for (let k = 0; k < VENT_PUFFS; k++) {
-      const t = ((tick * 0.45 + i * 11 + k * 17) % 50) / 50;
-      ctx.globalAlpha = (1 - t) * 0.38;
-      const s = 6 + t * 12;
-      ctx.drawImage(puff, x + Math.sin(t * 4 + i) * 3 - s / 2, y - 4 - t * 22, s, s);
-    }
-    drawn++;
-    if (drawn >= VENT_FX_CAP) break;
-  }
+  eachVentFx(camX, camY, tick, (x, y, s, t) => {
+    ctx.globalAlpha = (1 - t) * 0.38;
+    ctx.drawImage(puff, x - s / 2, y - s / 2, s, s);
+  });
   ctx.globalAlpha = 1;
 }
 

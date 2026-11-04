@@ -1,6 +1,7 @@
 import { ARENA_H, ARENA_W } from "../sim/arena";
 import { H, W } from "../sim/types";
 import {
+  eachVentFx,
   FEAT_GEAR,
   FEAT_LAMP,
   FEAT_PIPE,
@@ -198,4 +199,23 @@ export function yardColor(x: number, y: number): number {
   stamp();
   if (x < 0 || y < 0 || x >= ARENA_W || y >= ARENA_H) return EDGE;
   return pix[y * ARENA_W + x] ?? EDGE;
+}
+
+const STEAM = pack(0xff, 0xf8, 0xee);
+
+export function stampVentFx(dest: Uint32Array, camX: number, camY: number, tick: number): number {
+  return eachVentFx(camX, camY, tick, (x, y, s) => {
+    const x0 = (x - camX - s * 0.5) | 0;
+    const y0 = (y - camY - s * 0.5) | 0;
+    const x1 = x0 + (s | 0);
+    const y1 = y0 + (s | 0);
+    for (let yy = y0; yy < y1; yy++) {
+      if (yy < 0 || yy >= H) continue;
+      const row = yy * W;
+      for (let xx = x0; xx < x1; xx++) {
+        if (xx < 0 || xx >= W) continue;
+        dest[row + xx] = STEAM;
+      }
+    }
+  });
 }

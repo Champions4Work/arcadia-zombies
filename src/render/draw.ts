@@ -75,7 +75,7 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
   drawChestGround(c, w);
   c.restore();
   paintVeil(c);
-  if (w.hurtCd > 0) paintHurt(c, Math.min(1, w.hurtCd / 90));
+  if (w.hurtCd > 0) paintHurt(c, w.hurtCd);
   paintLayers(c, w, LAYER_FRONT);
   if (w.choosing) {
     c.fillStyle = "rgba(8,6,16,0.42)";

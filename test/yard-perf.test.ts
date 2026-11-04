@@ -4,9 +4,9 @@ import { step } from "../src/sim/step.hot";
 import { H, W, type Input, type World } from "../src/sim/types";
 import { createWorld } from "../src/sim/world";
 import { composeHorde } from "../src/render/blit.hot";
-import { copyGroundWindow } from "../src/render/ground-atlas";
+import { copyGroundWindow, stampVentFx } from "../src/render/ground-atlas";
 import { bg, buildSprites } from "../src/render/horde-sprites";
-import { VENT_FX_CAP, VENT_PUFFS, ventFxCount } from "../src/render/ground";
+import { VENT_FX_CAP, VENT_PUFFS } from "../src/render/ground";
 
 const walk: Input = { dx: 1, dy: 0.25, pick: 0 };
 const frame = new Uint32Array(W * H);
@@ -32,7 +32,7 @@ function frameCost(w: World): number {
   const camY = Math.round(w.arena.camY);
   copyGroundWindow(bg, camX, camY);
   composeHorde(w, frame);
-  ventFxCount(camX, camY);
+  stampVentFx(frame, camX, camY, w.tick);
   return performance.now() - t0;
 }
 
@@ -58,7 +58,7 @@ describe("yard scroll budget", () => {
       vent.kind = MAP_VENT;
       samples.push(frameCost(w));
       expect(w.over).toBe(false);
-      expect(ventFxCount(Math.round(w.arena.camX), Math.round(w.arena.camY))).toBeLessThanOrEqual(VENT_FX_CAP * VENT_PUFFS);
+      expect(stampVentFx(frame, Math.round(w.arena.camX), Math.round(w.arena.camY), w.tick)).toBeLessThanOrEqual(VENT_FX_CAP * VENT_PUFFS);
     }
     expect(p95(samples)).toBeLessThan(16);
     expect(frame[0] ?? 0).not.toBe(0);

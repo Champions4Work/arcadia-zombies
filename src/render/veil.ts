@@ -35,7 +35,7 @@ function hurtSheet(): HTMLCanvasElement {
   hurt = sheet((ctx) => {
     const g = ctx.createRadialGradient(W / 2, H / 2, 60, W / 2, H / 2, 280);
     g.addColorStop(0, "rgba(160,0,0,0)");
-    g.addColorStop(1, "rgba(120,0,0,0.4)");
+    g.addColorStop(1, "rgba(120,0,0,1)");
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
   });
@@ -46,9 +46,16 @@ export function paintVeil(ctx: CanvasRenderingContext2D): void {
   ctx.drawImage(fogSheet(), 0, 0);
 }
 
-export function paintHurt(ctx: CanvasRenderingContext2D, amt: number): void {
+export function hurtAlpha(cd: number): number {
+  if (cd <= 0) return 0;
+  const a = cd / 90;
+  return a > 0.4 ? 0.4 : a;
+}
+
+export function paintHurt(ctx: CanvasRenderingContext2D, cd: number): void {
+  const amt = hurtAlpha(cd);
   if (amt <= 0) return;
-  ctx.globalAlpha = amt > 1 ? 1 : amt;
+  ctx.globalAlpha = amt;
   ctx.drawImage(hurtSheet(), 0, 0);
   ctx.globalAlpha = 1;
 }

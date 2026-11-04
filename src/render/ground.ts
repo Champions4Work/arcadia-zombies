@@ -39,7 +39,6 @@ const fa = new Float32Array(MAX_FEAT);
 const fb = new Float32Array(MAX_FEAT);
 const vx = new Float32Array(MAX_VENT);
 const vy = new Float32Array(MAX_VENT);
-const scratch = { kind: 0, x: 0, y: 0, a: 0, b: 0 };
 let featN = 0;
 let ventN = 0;
 let ready = 0;
@@ -196,12 +195,7 @@ export function groundFeatureCount(): number {
 
 export function groundFeatureAt(i: number): { kind: number; x: number; y: number; a: number; b: number } {
   build();
-  scratch.kind = fk[i] ?? 0;
-  scratch.x = fx[i] ?? 0;
-  scratch.y = fy[i] ?? 0;
-  scratch.a = fa[i] ?? 0;
-  scratch.b = fb[i] ?? 0;
-  return { kind: scratch.kind, x: scratch.x, y: scratch.y, a: scratch.a, b: scratch.b };
+  return { kind: fk[i] ?? 0, x: fx[i] ?? 0, y: fy[i] ?? 0, a: fa[i] ?? 0, b: fb[i] ?? 0 };
 }
 
 export function ventCount(): number {
@@ -219,17 +213,32 @@ export function ventY(i: number): number {
   return vy[i] ?? 0;
 }
 
-export function ventFxCount(camX: number, camY: number): number {
+export function eachVentFx(
+  camX: number,
+  camY: number,
+  tick: number,
+  draw: (x: number, y: number, s: number, t: number) => void,
+): number {
   build();
   let n = 0;
+  let puffs = 0;
   for (let i = 0; i < ventN; i++) {
     const x = vx[i] ?? 0;
     const y = vy[i] ?? 0;
     if (x < camX - 40 || y < camY - 40 || x > camX + W + 40 || y > camY + H + 40) continue;
+    for (let k = 0; k < VENT_PUFFS; k++) {
+      const t = ((tick * 0.45 + i * 11 + k * 17) % 50) / 50;
+      draw(x + Math.sin(t * 4 + i) * 3, y - 4 - t * 22, 6 + t * 12, t);
+      puffs++;
+    }
     n++;
     if (n >= VENT_FX_CAP) break;
   }
-  return n * VENT_PUFFS;
+  return puffs;
+}
+
+export function ventFxCount(camX: number, camY: number, tick = 0): number {
+  return eachVentFx(camX, camY, tick, () => {});
 }
 
 function cobbleField(ctx: CanvasRenderingContext2D): void {
