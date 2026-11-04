@@ -32,15 +32,32 @@ function paintLaneVent(ctx: CanvasRenderingContext2D, x: number, y: number, tick
 function paintFeeder(ctx: CanvasRenderingContext2D, w: World, camX: number, camY: number, vw: number, vh: number): void {
   const n = beltN(w);
   for (let i = 0; i < n; i++) {
-    const x = beltX(w, i);
-    const y = beltY(w, i) + (beltVert(w, i) ? DROP_ALONG : 0);
-    if (!visible(x, y, camX, camY, vw, vh, 80)) continue;
-    const inward = x < LANE_X ? 1 : -1;
+    const bx = beltX(w, i);
+    const by = beltY(w, i);
+    const vert = beltVert(w, i);
+    const anchorY = by + (vert ? DROP_ALONG : 0);
+    if (!visible(bx, anchorY, camX, camY, vw, vh, 80)) continue;
+    if (vert) {
+      const pulse = 0.92 + ((w.tick >> 1) & 1) * 0.08;
+      for (let s = 0; s < DROP_ALONG; s += 32) {
+        if (!visible(bx, by + s, camX, camY, vw, vh, 48)) continue;
+        ctx.save();
+        ctx.translate(bx, by + s + 16);
+        ctx.rotate(Math.PI * 0.5);
+        ctx.globalAlpha = pulse;
+        ctx.scale(1.08, 1.08);
+        blitSheet(ctx, "conveyor", 0, 0);
+        ctx.restore();
+      }
+      continue;
+    }
+    const inward = bx < LANE_X ? 1 : -1;
     for (let s = 0; s < 3; s++) {
-      const tx = x + inward * (28 + s * 36);
+      const tx = bx + inward * (28 + s * 36);
       ctx.save();
-      ctx.translate(tx, y);
+      ctx.translate(tx, by);
       if (inward < 0) ctx.scale(-1, 1);
+      ctx.globalAlpha = 0.92 + ((w.tick >> 1) & 1) * 0.08;
       blitSheet(ctx, "conveyor", 0, 0);
       ctx.restore();
     }
@@ -53,7 +70,7 @@ function paintCargo(ctx: CanvasRenderingContext2D, w: World, i: number): void {
   const phase = cargoPhase(w, i);
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
-  ctx.globalAlpha = phase === CARGO_LAND ? 0.86 : 0.58 + ((w.tick >> 2) & 1) * 0.22;
+  ctx.globalAlpha = phase === CARGO_LAND ? 0.92 : 0.68 + ((w.tick >> 2) & 1) * 0.24;
   blitSheet(ctx, "blue_glow", x, y - 8);
   ctx.restore();
   paintShadow(ctx, x, y, 10, 4);

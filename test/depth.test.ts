@@ -3,8 +3,8 @@ import { slideUnit } from "../src/sim/arena.hot";
 import { HEAL_HP, OB_BARREL, OB_BOILER, OB_CRATE, OB_GEAR, OB_PIPE, propBreaks } from "../src/sim/arena";
 import {
   BELT_UPG_CAP, CARGO_HEAL, CARGO_LAND, CARGO_PWR, CARGO_RIDE, CARGO_SLIDE, CARGO_UPG, DROP_ALONG, FIRST_CARGO,
-  LANE_X, VENT_SLOW, cargoGranted, cargoKind, cargoOn, cargoPhase, cargoX, cargoY, depthState,
-  reviewDepth, ventCount, ventX, ventY,
+  FIGHT_CLEAR_Y1, cargoOutsideFightClear, cargoGranted, cargoKind, cargoOn, cargoPhase, cargoX, cargoY, depthState,
+  reviewDepth, SIDE_BELT_LEFT_X, SIDE_BELT_RIDE_Y, ventCount, ventX, ventY, VENT_SLOW,
 } from "../src/sim/depth";
 import { stepDepth, ventSlowAt, ventSlowMul, ventSlowZombieAt } from "../src/sim/depth.hot";
 import { step } from "../src/sim/step.hot";
@@ -160,9 +160,9 @@ describe("gameplay depth hooks", () => {
     slot = cargoOn(w, 0) ? 0 : cargoOn(w, 1) ? 1 : slot;
     expect(cargoOn(w, slot)).toBe(1);
     expect(cargoPhase(w, slot)).toBe(CARGO_LAND);
-    expect(Math.abs(cargoX(w, slot) - LANE_X)).toBeLessThan(3);
-    expect(cargoY(w, slot)).toBeGreaterThan(630);
-    expect(cargoY(w, slot)).toBeLessThan(690);
+    expect(cargoOutsideFightClear(cargoX(w, slot), cargoY(w, slot))).toBe(true);
+    expect(cargoY(w, slot)).toBeGreaterThan(FIGHT_CLEAR_Y1);
+    expect(cargoY(w, slot)).toBeLessThan(700);
   });
 
   it("heals from a landed crate and caps silent belt upgrades", () => {
@@ -225,8 +225,9 @@ describe("gameplay depth hooks", () => {
     expect(cargoOn(w, 0)).toBe(1);
     expect(cargoPhase(w, 0)).toBe(CARGO_RIDE);
     expect(cargoKind(w, 0)).toBe(CARGO_UPG);
-    expect(Math.abs(cargoX(w, 0) - 356)).toBeLessThan(0.1);
-    expect(Math.abs(cargoY(w, 0) - 658)).toBeLessThan(0.1);
+    expect(Math.abs(cargoX(w, 0) - SIDE_BELT_LEFT_X)).toBeLessThan(0.1);
+    expect(cargoY(w, 0)).toBeGreaterThan(SIDE_BELT_RIDE_Y);
+    expect(cargoOutsideFightClear(cargoX(w, 0), cargoY(w, 0))).toBe(true);
     expect(ventCount(w)).toBeGreaterThanOrEqual(3);
     expect(ventX(w, 0)).toBeGreaterThan(0);
     expect(ventY(w, 0)).toBeGreaterThan(0);
