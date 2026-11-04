@@ -1,18 +1,15 @@
 import { createRng, nextFloat, type Rng } from "./rng";
 import { Z_ELITE } from "./foes";
 import { H, W } from "./types";
+import {
+  MAX_OBS, OB_BOILER, OB_CRATE, OB_GEAR, OB_PIPE, YARD_W, ZONE_N, zoneRow,
+} from "./zones";
 
-export const ARENA_W = W * 2;
+export const ARENA_W = YARD_W * ZONE_N;
 export const ARENA_H = H * 2;
 export const EDGE_PAD = 10;
-export const MAX_OBS = 32;
 export const MAX_HEAL = 16;
 export const MAX_TELE = 20;
-export const OB_BOILER = 0;
-export const OB_CRATE = 1;
-export const OB_PIPE = 2;
-export const OB_GEAR = 3;
-export const OB_BARREL = 4;
 export const TELE_LIFE = 36;
 export const MIN_SPAWN_R = 100;
 export const MIN_SPAWN_R2 = MIN_SPAWN_R * MIN_SPAWN_R;
@@ -107,14 +104,6 @@ export function indexProps(a: Arena): void {
   }
   a.propOverflow = overflow;
 }
-
-const PLAN: readonly number[] = [
-  OB_BOILER, OB_BOILER, OB_BOILER, OB_BOILER, OB_BOILER,
-  OB_CRATE, OB_CRATE, OB_CRATE, OB_CRATE, OB_CRATE, OB_CRATE, OB_CRATE,
-  OB_PIPE, OB_PIPE, OB_PIPE, OB_PIPE, OB_PIPE, OB_PIPE,
-  OB_GEAR, OB_GEAR, OB_GEAR, OB_GEAR, OB_GEAR,
-  OB_BARREL, OB_BARREL, OB_BARREL, OB_BARREL, OB_BARREL, OB_BARREL,
-];
 
 export function clamp(v: number, lo: number, hi: number): number {
   if (v < lo) return lo;
@@ -224,10 +213,6 @@ function measure(kind: number, rng: Rng): Spec {
   return { hw: 8, hh: 10, r: 9, hp: BARREL_HP };
 }
 
-function extent(spec: Spec): number {
-  return spec.r > 0 ? spec.r : Math.max(spec.hw, spec.hh);
-}
-
 function separated(
   x: number, y: number, hw: number, hh: number, r: number,
   ox: number, oy: number, ohw: number, ohh: number, orad: number, pad: number,
@@ -263,24 +248,82 @@ function fits(
 }
 
 function forceSpot(
-  index: number, spec: Spec, px: number, py: number,
+  index: number, spec: Spec, x0: number, x1: number, px: number, py: number,
   obsX: Float32Array, obsY: Float32Array, obsHW: Float32Array, obsHH: Float32Array, obsR: Float32Array, n: number,
-): { x: number; y: number } {
-  const ex = extent(spec);
-  let x = px + 180;
-  let y = py;
+): { x: number; y: number } | null {
+  const ex = spec.r > 0 ? spec.r : spec.hw;
+  const ey = spec.r > 0 ? spec.r : spec.hh;
+  const xLo = x0 + ex + 22;
+  const xHi = x1 - ex - 22;
+  const yLo = ey + 22;
+  const yHi = ARENA_H - ey - 22;
+  if (xLo >= xHi || yLo >= yHi) return null;
+  const mx = (x0 + x1) / 2;
+  const my = ARENA_H / 2;
   for (let k = 0; k < 10; k++) {
     const ang = index * 2.399963 + k * 0.7;
     const ring = 188 + k * 36;
-    x = clamp(px + Math.cos(ang) * ring, ex + 22, ARENA_W - ex - 22);
-    y = clamp(py + Math.sin(ang) * ring, ex + 22, ARENA_H - ex - 22);
+    const x = clamp(mx + Math.cos(ang) * ring, xLo, xHi);
+    const y = clamp(my + Math.sin(ang) * ring, yLo, yHi);
+    if (x < x0 || x >= x1) continue;
     if (fits(x, y, spec, px, py, obsX, obsY, obsHW, obsHH, obsR, n)) return { x, y };
   }
-  if (!separated(x, y, spec.hw, spec.hh, spec.r, px, py, CLEAR_R, CLEAR_R, 0, 0)) {
-    x = clamp(px + 230, ex + 22, ARENA_W - ex - 22);
-    y = clamp(py - 40, ex + 22, ARENA_H - ex - 22);
+  return null;
+}
+
+function placeProp(
+  rng: Rng,
+  kind: number,
+  x0: number,
+  x1: number,
+  px: number,
+  py: number,
+  n: number,
+  obsX: Float32Array,
+  obsY: Float32Array,
+  obsHW: Float32Array,
+  obsHH: Float32Array,
+  obsR: Float32Array,
+  obsKind: Uint8Array,
+  obsHp: Int16Array,
+  obsAlive: Uint8Array,
+): number {
+  const spec = measure(kind, rng);
+  const ex = spec.r > 0 ? spec.r : spec.hw;
+  const ey = spec.r > 0 ? spec.r : spec.hh;
+  const xLo = x0 + ex + 22;
+  const xHi = x1 - ex - 22;
+  const yLo = ey + 22;
+  const yHi = ARENA_H - ey - 22;
+  let x = (x0 + x1) / 2;
+  let y = ARENA_H / 2;
+  let placed = false;
+  if (xLo < xHi && yLo < yHi) {
+    for (let attempt = 0; attempt < 56; attempt++) {
+      x = xLo + nextFloat(rng) * (xHi - xLo);
+      y = yLo + nextFloat(rng) * (yHi - yLo);
+      if (x < x0 || x >= x1) continue;
+      if (!fits(x, y, spec, px, py, obsX, obsY, obsHW, obsHH, obsR, n)) continue;
+      placed = true;
+      break;
+    }
   }
-  return { x, y };
+  if (!placed) {
+    const spot = forceSpot(n, spec, x0, x1, px, py, obsX, obsY, obsHW, obsHH, obsR, n);
+    if (!spot) return n;
+    x = spot.x;
+    y = spot.y;
+  }
+  if (x < x0 || x >= x1) return n;
+  obsX[n] = x;
+  obsY[n] = y;
+  obsHW[n] = spec.hw;
+  obsHH[n] = spec.hh;
+  obsR[n] = spec.r;
+  obsKind[n] = kind;
+  obsHp[n] = spec.hp;
+  obsAlive[n] = 1;
+  return n + 1;
 }
 
 export function createArena(seed: number, px: number, py: number): Arena {
@@ -299,35 +342,15 @@ export function createArena(seed: number, px: number, py: number): Arena {
   const propNext = new Int16Array(PROP_NODES);
   cameraTarget(px, py, scratch);
   let n = 0;
-  for (let p = 0; p < PLAN.length && n < MAX_OBS; p++) {
-    const kind = PLAN[p] ?? OB_CRATE;
-    const spec = measure(kind, rng);
-    const ex = spec.r > 0 ? spec.r : spec.hw;
-    const ey = spec.r > 0 ? spec.r : spec.hh;
-    let x = px;
-    let y = py;
-    let placed = false;
-    for (let attempt = 0; attempt < 56; attempt++) {
-      x = ex + 22 + nextFloat(rng) * (ARENA_W - (ex + 22) * 2);
-      y = ey + 22 + nextFloat(rng) * (ARENA_H - (ey + 22) * 2);
-      if (!fits(x, y, spec, px, py, obsX, obsY, obsHW, obsHH, obsR, n)) continue;
-      placed = true;
-      break;
+  for (let zone = 0; zone < ZONE_N && n < MAX_OBS; zone++) {
+    const row = zoneRow(zone);
+    const x0 = zone * YARD_W;
+    for (let i = 0; i < row.obs.length && n < MAX_OBS; i++) {
+      n = placeProp(
+        rng, row.obs[i] ?? OB_CRATE, x0, x0 + YARD_W, px, py, n,
+        obsX, obsY, obsHW, obsHH, obsR, obsKind, obsHp, obsAlive,
+      );
     }
-    if (!placed) {
-      const spot = forceSpot(p, spec, px, py, obsX, obsY, obsHW, obsHH, obsR, n);
-      x = spot.x;
-      y = spot.y;
-    }
-    obsX[n] = x;
-    obsY[n] = y;
-    obsHW[n] = spec.hw;
-    obsHH[n] = spec.hh;
-    obsR[n] = spec.r;
-    obsKind[n] = kind;
-    obsHp[n] = spec.hp;
-    obsAlive[n] = 1;
-    n++;
   }
   const arena: Arena = {
     camX: scratch[0] ?? 0,

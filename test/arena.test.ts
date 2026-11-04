@@ -1,9 +1,10 @@
 import {
   ARENA_H, ARENA_W, BARREL_HP, CLEAR_R, EDGE_PAD, HEAL_HP, MINI_H, MINI_W, MINI_X, MINI_Y,
-  MIN_SPAWN_R, OB_BARREL, OB_BOILER, OB_CRATE, OB_GEAR, OB_PIPE, PROP_CELL, PROP_COLS, SPAWN_BOT, SPAWN_INSET, SPAWN_MARGIN,
+  MIN_SPAWN_R, PROP_CELL, PROP_COLS, SPAWN_BOT, SPAWN_INSET, SPAWN_MARGIN,
   SPAWN_TOP,
   TELE_LIFE, arrowTip, edgePoint, hitsProp, miniDot, showsArrow,
 } from "../src/sim/arena";
+import { OB_BARREL, OB_BOILER, OB_CRATE, OB_GEAR, OB_PIPE, YARD_W, ZONE_N } from "../src/sim/zones";
 import { step } from "../src/sim/step.hot";
 import {
   H, MAX_ZOMBIES, W, Z_BRUTE, Z_GHOUL, Z_SHAMBLER, type Input, type World,
@@ -51,8 +52,9 @@ const projectTele = (w: World, buf: Float32Array): number => {
 };
 
 describe("scrolling arena", () => {
-  it("is about four times the screen", () => {
-    expect(ARENA_W * ARENA_H).toBe(W * H * 4);
+  it("covers three yards side by side", () => {
+    expect(ARENA_W).toBe(YARD_W * ZONE_N);
+    expect(ARENA_H).toBe(H * 2);
     expect(ARENA_W).toBeGreaterThan(W);
     expect(ARENA_H).toBeGreaterThan(H);
   });
@@ -139,10 +141,22 @@ describe("scrolling arena", () => {
     const w = createWorld(1);
     freeze(w);
     clearProps(w);
-    for (let t = 0; t < 900; t++) step(w, { dx: 1, dy: 1, pick: 0 });
+    const walk = (dx: number, dy: number): void => {
+      let guard = 0;
+      let px = Number.NaN;
+      let py = Number.NaN;
+      while ((w.px !== px || w.py !== py) && guard < 4000) {
+        px = w.px;
+        py = w.py;
+        step(w, { dx, dy, pick: 0 });
+        guard++;
+      }
+      expect(guard).toBeLessThan(4000);
+    };
+    walk(1, 1);
     expect(w.px).toBe(ARENA_W - EDGE_PAD);
     expect(w.py).toBe(ARENA_H - EDGE_PAD);
-    for (let t = 0; t < 900; t++) step(w, { dx: -1, dy: -1, pick: 0 });
+    walk(-1, -1);
     expect(w.px).toBe(EDGE_PAD);
     expect(w.py).toBe(EDGE_PAD);
   });

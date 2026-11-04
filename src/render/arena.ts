@@ -1,7 +1,8 @@
 import {
-  ARENA_H, ARENA_W, BARREL_HP, MAX_OBS, OB_BOILER, OB_CRATE, OB_GEAR, OB_PIPE, TELE_LIFE,
+  ARENA_H, ARENA_W, BARREL_HP, TELE_LIFE,
   arrowTip, edgePoint, showsArrow,
 } from "../sim/arena";
+import { MAX_OBS, OB_BOILER, OB_CRATE, OB_GEAR, OB_PIPE } from "../sim/zones";
 import { lichUp, lichX, lichY } from "../sim/finale";
 import { H, MAX_ZOMBIES, W, type World } from "../sim/types";
 import { paintCrate, paintHealVial } from "./cast";

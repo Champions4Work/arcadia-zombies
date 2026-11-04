@@ -1,8 +1,9 @@
 import {
   ARENA_H, ARENA_W, CAM_LERP, EDGE_PAD, HEAL_HP, HEAL_R2, MAX_HEAL, MAX_TELE, MIN_SPAWN_R2,
-  OB_BARREL, PROP_CELL, PROP_COLS, PROP_REACH, PROP_ROWS, PUFF_BARREL, SPAWN_BOT, SPAWN_INSET, SPAWN_MARGIN, SPAWN_TOP, TELE_LIFE, cameraTarget, edgePoint, hitsProp, spawnHidden,
+  PROP_CELL, PROP_COLS, PROP_REACH, PROP_ROWS, PUFF_BARREL, SPAWN_BOT, SPAWN_INSET, SPAWN_MARGIN, SPAWN_TOP, TELE_LIFE, cameraTarget, edgePoint, hitsProp, spawnHidden,
   type Arena,
 } from "./arena";
+import { OB_BARREL } from "./zones";
 import { scaleSpeed, scaleThreat } from "./director";
 import { finaleBlocksBoss } from "./finale";
 import { foeHp, foePack, foeSpeed, Z_ELITE, Z_GAS, Z_KIND, Z_KNIGHT, Z_RAT, Z_SPITTER } from "./foes";
