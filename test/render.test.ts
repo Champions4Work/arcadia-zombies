@@ -146,6 +146,9 @@ describe("weapon rack", () => {
     expect(texts).not.toContain("GEARHEART");
     expect(texts).not.toContain("DIFFICULTY");
     expect(texts).not.toContain("YARD");
+    expect(texts).not.toContain("120/120");
+    expect(texts).toContain("Objectives");
+    expect(texts).toContain("Chapter 1");
   });
 });
 

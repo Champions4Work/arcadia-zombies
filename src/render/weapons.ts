@@ -7,7 +7,6 @@ import {
   WPN_COUNT, WPN_RIVET, type World,
 } from "../sim/types";
 import { paintBoom, paintWeaponShot } from "./cast-fx";
-import { OUTLINE } from "./paint";
 
 const EMBER = COPPER;
 export const WPN_TAGS = ["RIVET", "SHOT", "FLAME", "HARP", "MORT"];
@@ -78,7 +77,7 @@ export function drawWeaponRack(c: CanvasRenderingContext2D, w: World): void {
   const dpr = c.canvas.width / Math.max(1, layout.view.w);
   c.setTransform(dpr, 0, 0, dpr, 0, 0);
   const box = layout.weapons;
-  const gap = 3;
+  const gap = 4;
   const slot = Math.min(box.h, (box.w - gap * (WPN_COUNT - 1)) / WPN_COUNT);
   const row = slot * WPN_COUNT + gap * (WPN_COUNT - 1);
   const x0 = box.x + Math.max(0, (box.w - row) / 2);
@@ -88,33 +87,35 @@ export function drawWeaponRack(c: CanvasRenderingContext2D, w: World): void {
     const x = x0 + i * (slot + gap);
     const y = box.y + Math.max(0, (box.h - slot) / 2);
     const hot = i === 0;
-    const sw = hot ? slot + 8 : slot;
-    const sh = hot ? slot + 8 : slot;
-    const sx = hot ? x - 4 : x;
-    const sy = hot ? y - 8 : y;
+    const sw = slot;
+    const sh = slot;
+    const sx = x;
+    const sy = y;
+    const cx = sx + sw / 2;
+    const cy = sy + sh / 2;
+    const rim = hot ? sw * 0.56 : sw * 0.5;
+    blitSheetFit(c, "power_slot", sx - 7, sy - 7, sw + 14, sh + 14);
+    c.beginPath();
+    c.arc(cx, cy, rim * 0.72, 0, Math.PI * 2);
     c.fillStyle = SOOT;
-    c.fillRect(sx, sy, sw, sh);
+    c.fill();
+    c.beginPath();
+    c.arc(cx, cy, rim, 0, Math.PI * 2);
     c.strokeStyle = hot ? XP : BRASS;
-    c.lineWidth = hot ? 3.4 : 2.6;
-    c.strokeRect(sx + 0.8, sy + 0.8, sw - 1.6, sh - 1.6);
-    blitSheetFit(c, "power_slot", sx - 3, sy - 3, sw + 6, sh + 6);
-    paintSlotIcon(c, i, sx + sw / 2, sy + sh * 0.36, Math.max(11, sw * (hot ? 0.62 : 0.46)));
+    c.lineWidth = hot ? 3.4 : 2.8;
+    c.stroke();
+    paintSlotIcon(c, i, cx, cy - 2, Math.max(12, sw * (hot ? 0.48 : 0.4)));
     const label = i === 0 ? "34/210" : i === 1 ? "6/36" : `${Math.max(1, lv)}`;
-    c.fillStyle = "rgba(8,6,4,0.88)";
-    c.fillRect(sx + 2, sy + sh - 15, sw - 4, 13);
     c.fillStyle = XP;
     c.font = hot ? "700 10px sans-serif" : "700 11px sans-serif";
     c.textAlign = "center";
     c.textBaseline = "middle";
-    c.fillText(label, sx + sw / 2, sy + sh - 8);
-    const pipW = Math.max(2.2, (slot - 8) / 5 - 1);
+    c.fillText(label, cx, sy + sh - 5);
+    const pipW = Math.max(2.2, (slot - 10) / 5 - 1);
     for (let p = 0; p < 5; p++) {
       c.fillStyle = p < lv ? EMBER : SOOT;
-      c.fillRect(x + 4 + p * (pipW + 1), y + slot - 5, pipW, 2.4);
+      c.fillRect(x + 5 + p * (pipW + 1), y + slot + 1, pipW, 2.4);
     }
-    c.strokeStyle = OUTLINE;
-    c.lineWidth = 1.2;
-    c.strokeRect(x + 4, y + slot - 5, slot - 8, 2.4);
   }
   c.restore();
 }

@@ -134,6 +134,8 @@ describe("visual review gates", () => {
     expect(rack.includes("fillText")).toBe(true);
     expect(rack.includes("34/210")).toBe(true);
     expect(rack.includes("6/36")).toBe(true);
+    expect(rack.includes('blitSheetFit(c, "power_slot"')).toBe(true);
+    expect(rack.includes("c.arc(cx, cy, rim")).toBe(true);
     expect(rack.includes("Math.max(12, lv * 12)")).toBe(false);
     expect(yard.includes("tick * 2.2")).toBe(true);
     expect(yard.includes("moveTo(14, 0)")).toBe(true);
@@ -145,6 +147,7 @@ describe("visual review gates", () => {
     const obj = hud.slice(start, hud.indexOf("export function drawHud"));
     expect(obj.includes('blitSheetFit(ctx, "objectives_panel"')).toBe(false);
     expect(obj.includes("plate(")).toBe(false);
+    expect(obj.includes('blitSheetFit(ctx, "panel_frame_gears"')).toBe(true);
     expect(obj.includes("rgba(8,10,16,0.78)")).toBe(true);
     expect(obj.includes("Objectives")).toBe(true);
     expect(obj.includes("#3ec86a")).toBe(true);
@@ -161,6 +164,8 @@ describe("visual review gates", () => {
     expect(hud.includes("#1a1612")).toBe(true);
     expect(hud.includes('blitSheetFit(ctx, "heart_ring"')).toBe(true);
     expect(hud.includes("heartIcon")).toBe(true);
+    expect(hud.includes("ctx.arc(cx, cy, r * 0.58")).toBe(false);
+    expect(hud.includes("r * 0.62")).toBe(true);
     expect(hud.includes("function portrait")).toBe(true);
     expect(hud.includes("function paintHeroBust")).toBe(true);
     expect(hud.includes("function lvBadge")).toBe(true);
@@ -176,6 +181,8 @@ describe("visual review gates", () => {
     expect(hud.includes("function restStick")).toBe(true);
     expect(hud.includes("function skillKeys")).toBe(true);
     expect(hud.includes("function skillIcon")).toBe(true);
+    expect(hud.includes("function phoneHud")).toBe(true);
+    expect(hud.includes("if (!phoneHud(layout))")).toBe(true);
     expect(hud.includes("const r = 24")).toBe(true);
     expect(hud.includes('"Q"')).toBe(true);
     expect(hud.includes('"E"')).toBe(true);
@@ -183,11 +190,13 @@ describe("visual review gates", () => {
     expect(hud.includes("layout.hero.y - 94")).toBe(true);
     expect(hud.includes("const r = 30")).toBe(true);
     expect(hud.includes("fillRect(cx - r * 0.78")).toBe(true);
-    expect(hud.includes("bw * 0.72")).toBe(true);
+    expect(hud.includes("bw * 0.72")).toBe(false);
     expect(hud.includes("#e24a32")).toBe(true);
-    expect(hud.includes("#3d8cff")).toBe(true);
+    expect(hud.includes("#3d8cff")).toBe(false);
     expect(hud.includes("240/240")).toBe(true);
-    expect(hud.includes("120/120")).toBe(true);
+    expect(hud.includes("120/120")).toBe(false);
+    expect(hud.includes('blitSheetFit(ctx, "panel_frame_gears"')).toBe(true);
+    expect(hud.includes("ctx.lineWidth = 4.6")).toBe(true);
     expect(hud.includes("function barCount")).toBe(true);
     expect(hud.includes("strokeText")).toBe(true);
     expect(hud.includes("#fff6df")).toBe(true);
