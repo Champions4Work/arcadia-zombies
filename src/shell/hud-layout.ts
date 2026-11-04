@@ -27,6 +27,7 @@ export interface HudLayout {
   face: Box;
   weapons: Box;
   ability: Box;
+  objectives: Box;
 }
 
 let bound: HudLayout | null = null;
@@ -81,6 +82,7 @@ export function hudBoxes(layout: HudLayout): Box[] {
     layout.face,
     layout.weapons,
     layout.ability,
+    layout.objectives,
   ].filter((box) => box.w > 0 && box.h > 0);
 }
 
@@ -150,7 +152,18 @@ export function layoutHud(vp: Viewport, fit: Fit): HudLayout {
     w: Math.max(faceS + 52, Math.min(faceS + 64, objLeft - faceX - 8)),
     h: faceS,
   };
-  return { view, frame: frameBox(fit), hero, xp, difficulty, clock, pause, minimap, face, weapons, ability };
+  const objX = clock.x - (phone ? 16 : 0);
+  const objW = phone
+    ? Math.min(168, inner.x + inner.w - objX - gap)
+    : Math.min(196, inner.x + inner.w - objX - gap);
+  const objH = phone ? 118 : 128;
+  const objectives = {
+    x: objX,
+    y: clock.y + clock.h + 6,
+    w: objW,
+    h: objH,
+  };
+  return { view, frame: frameBox(fit), hero, xp, difficulty, clock, pause, minimap, face, weapons, ability, objectives };
 }
 
 export function pauseHitAt(layout: HudLayout, x: number, y: number): boolean {
@@ -175,6 +188,7 @@ export function stickFrame(layout: HudLayout): Box {
     layout.difficulty.y + layout.difficulty.h,
     layout.clock.y + layout.clock.h,
     layout.pause.y + layout.pause.r,
+    layout.objectives.y + layout.objectives.h,
   ) + 4;
   const bottom = Math.min(layout.hero.y, layout.weapons.y, layout.ability.y, layout.xp.y) - 4;
   return {

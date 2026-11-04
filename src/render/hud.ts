@@ -1,5 +1,6 @@
 import { tierName } from "../sim/difficulty";
 import { lichUp, lichX, lichY } from "../sim/finale";
+import { objectiveRows, waveFace } from "../sim/objectives";
 import { offerCount } from "../sim/characters";
 import { pacedXpNeed } from "../sim/modifiers";
 import { CARD_Y, cardFrame, offerId, xpNeed } from "../sim/progress";
@@ -93,10 +94,6 @@ function barCount(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   ctx.strokeText(text, x, y);
   ctx.fillText(text, x, y);
   ctx.restore();
-}
-
-function phoneHud(layout: HudLayout): boolean {
-  return layout.view.w < 720;
 }
 
 function plate(ctx: CanvasRenderingContext2D, box: Box, id = "panel_frame_small"): void {
@@ -197,8 +194,9 @@ function skull(ctx: CanvasRenderingContext2D, x: number, y: number): void {
 
 function clockPanel(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   plate(ctx, box, "panel_frame_small");
-  const wave = Math.max(1, w.wave);
-  const cap = 8;
+  const face = waveFace(w);
+  const wave = face.n;
+  const cap = face.of;
   stampInk(ctx, `Wave ${wave}/${cap}`, box.x + 8, box.y + 10, 11, "#fff6df", "left");
   const bx = box.x + 8;
   const by = box.y + 20;
@@ -211,7 +209,7 @@ function clockPanel(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   ctx.lineWidth = 1.8;
   ctx.strokeRect(bx + 0.5, by + 0.5, bw - 1, 7);
   skull(ctx, box.x + 14, box.y + box.h - 11);
-  ink(ctx, `${w.kills}`, box.x + 24, box.y + box.h - 11, 12, "#f6f1e6");
+  ink(ctx, `${w.kills | 0}`, box.x + 24, box.y + box.h - 11, 12, "#f6f1e6");
 }
 
 function paintHeroBust(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number): void {
@@ -489,32 +487,28 @@ function checkLine(
   ink(ctx, text, x + 13, y, 10, "#f6f1e6");
 }
 
-function objectives(ctx: CanvasRenderingContext2D, w: World, layout: HudLayout): void {
-  const phone = phoneHud(layout);
-  const x = layout.clock.x - (phone ? 16 : 0);
-  const y = layout.clock.y + layout.clock.h + 6;
-  const bw = phone ? Math.min(168, layout.view.w - x - 8) : Math.min(196, layout.view.w - x - 16);
-  const bh = phone ? 118 : 128;
-  const hold = Math.max(0, 240 - ((w.tick / 60) | 0) % 240);
-  blitSheetFit(ctx, "panel_frame_gears", x - 10, y - 10, bw + 20, bh + 20);
+function objectives(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
+  blitSheetFit(ctx, "panel_frame_gears", box.x - 10, box.y - 10, box.w + 20, box.h + 20);
   ctx.fillStyle = "rgba(8,10,16,0.78)";
-  ctx.fillRect(x, y, bw, bh);
+  ctx.fillRect(box.x, box.y, box.w, box.h);
   ctx.fillStyle = "rgba(224,160,64,0.28)";
-  ctx.fillRect(x + 4, y + 4, bw - 8, 24);
+  ctx.fillRect(box.x + 4, box.y + 4, box.w - 8, 24);
   ctx.strokeStyle = "rgba(212,168,72,0.92)";
   ctx.lineWidth = 4.6;
-  ctx.strokeRect(x + 0.5, y + 0.5, bw - 1, bh - 1);
+  ctx.strokeRect(box.x + 0.5, box.y + 0.5, box.w - 1, box.h - 1);
   ctx.strokeStyle = "rgba(240,200,120,0.7)";
   ctx.lineWidth = 2.2;
-  ctx.strokeRect(x + 4, y + 4, bw - 8, bh - 8);
-  stampInk(ctx, "Objectives", x + bw * 0.5, y + 16, 13, "#f0d080");
+  ctx.strokeRect(box.x + 4, box.y + 4, box.w - 8, box.h - 8);
+  stampInk(ctx, "Objectives", box.x + box.w * 0.5, box.y + 16, 13, "#f0d080");
   ctx.fillStyle = "#e8c46a";
-  ctx.fillRect(x + 10, y + 26, bw - 20, 3);
-  const inkX = x + 10;
-  const gateDone = w.rank > 0 || w.wave >= 4;
-  checkLine(ctx, inkX, y + bh * 0.38, "ACTIVATE STEAM GATE", gateDone);
-  checkLine(ctx, inkX, y + bh * 0.58, `HOLD THE AREA (${hold}s)`, false);
-  checkLine(ctx, inkX, y + bh * 0.78, "SURVIVE ALL WAVES", false);
+  ctx.fillRect(box.x + 10, box.y + 26, box.w - 20, 3);
+  const rows = objectiveRows(w);
+  const inkX = box.x + 10;
+  const hold = rows[1];
+  const holdText = hold?.clock ? `HOLD THE AREA ${hold.clock}` : "HOLD THE AREA";
+  checkLine(ctx, inkX, box.y + box.h * 0.38, "ACTIVATE STEAM GATE", rows[0]?.done === true);
+  checkLine(ctx, inkX, box.y + box.h * 0.58, holdText, hold?.done === true);
+  checkLine(ctx, inkX, box.y + box.h * 0.78, "SURVIVE ALL WAVES", rows[2]?.done === true);
 }
 
 export function drawHud(ctx: CanvasRenderingContext2D, w: World): void {
@@ -535,7 +529,7 @@ export function drawHud(ctx: CanvasRenderingContext2D, w: World): void {
     skillKeys(ctx, layout);
     drawWeaponRack(ctx, w);
     ability(ctx, w, layout.ability);
-    objectives(ctx, w, layout);
+    objectives(ctx, w, layout.objectives);
     rankCallout(ctx, w, layout);
   }
   ctx.restore();
@@ -550,7 +544,11 @@ function rankCallout(ctx: CanvasRenderingContext2D, w: World, layout: HudLayout)
   const bw = Math.min(280, layout.view.w * 0.72);
   const bh = 52;
   const x = (layout.view.w - bw) / 2;
-  const y = layout.difficulty.y + layout.difficulty.h + 10;
+  const card = layout.objectives;
+  let y = layout.difficulty.y + layout.difficulty.h + 10;
+  if (x < card.x + card.w && x + bw > card.x && y < card.y + card.h && y + bh > card.y) {
+    y = card.y + card.h + 8;
+  }
   plate(ctx, { x, y, w: bw, h: bh });
   ink(ctx, "RANK UP", x + bw / 2, y + 6, 12, flash ? COPPER : BRASS_HI, "center");
   fitInk(ctx, name, x + bw / 2, y + 22, 16, bw - 24, flash ? BRASS_HI : STEAM);
