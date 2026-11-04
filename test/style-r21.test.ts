@@ -41,15 +41,21 @@ function stubCtx(texts: string[]): CanvasRenderingContext2D {
 }
 
 describe("r21 phone look", () => {
-  it("paints energy chrome without a live energy pool", () => {
+  it("paints the phone rank bar without a live energy pool", () => {
     const texts: string[] = [];
     const vp = readViewport({ innerWidth: 390, innerHeight: 844, devicePixelRatio: 3 }, ZERO_INSETS);
     const pv = playView(vp.cssW, vp.cssH);
     const fit = computeFit(vp.cssW, vp.cssH, vp.dpr, pv.viewW, pv.viewH, ZERO_INSETS);
     bindHud(layoutHud(vp, fit));
     drawHud(stubCtx(texts), createWorld(1));
-    expect(texts).toContain("120/120");
-    expect(texts).toContain("240/240");
+    expect(texts).toContain("CALM");
+    expect(texts).toContain("00:00");
+    expect(texts).not.toContain("120/120");
+    expect(texts).not.toContain("240/240");
+    expect(texts).not.toContain("Chapter 1");
+    expect(texts).not.toContain("Q");
+    expect(texts).not.toContain("E");
+    expect(texts).not.toContain("R");
     const world = createWorld(1) as unknown as Record<string, unknown>;
     expect("energy" in world).toBe(false);
     expect("stamina" in world).toBe(false);
@@ -57,18 +63,21 @@ describe("r21 phone look", () => {
     expect(types.includes("energy")).toBe(false);
   });
 
-  it("stacks portrait bars beside the chapter and keeps the map under the bust", () => {
+  it("puts the map and rank bar on the top edge and hides the bust", () => {
     const vp = readViewport({ innerWidth: 390, innerHeight: 844, devicePixelRatio: 3 }, ZERO_INSETS);
     const pv = playView(vp.cssW, vp.cssH);
     const fit = computeFit(vp.cssW, vp.cssH, vp.dpr, pv.viewW, pv.viewH, ZERO_INSETS);
     const hud = layoutHud(vp, fit);
-    expect(hud.face.x).toBeLessThan(vp.cssW * 0.12);
-    expect(hud.face.y).toBeLessThan(vp.cssH * 0.08);
-    expect(hud.minimap.y).toBeGreaterThanOrEqual(hud.face.y + hud.face.h);
-    expect(hud.difficulty.x).toBeGreaterThanOrEqual(hud.face.x + hud.face.w);
-    expect(hud.difficulty.x + hud.difficulty.w * 0.5).toBeGreaterThan(vp.cssW * 0.4);
-    expect(hud.difficulty.x + hud.difficulty.w * 0.5).toBeLessThan(vp.cssW * 0.7);
-    expect(hud.clock.x).toBeGreaterThan(vp.cssW * 0.55);
+    expect(hud.phone).toBe(true);
+    expect(hud.face.w).toBe(0);
+    expect(hud.minimap.x).toBeLessThan(vp.cssW * 0.08);
+    expect(hud.minimap.y).toBeLessThan(vp.cssH * 0.04);
+    expect(hud.difficulty.x).toBeGreaterThan(hud.minimap.x + hud.minimap.w - 1);
+    expect(hud.difficulty.w).toBeGreaterThan(vp.cssW * 0.3);
+    expect(hud.clock.x).toBeGreaterThan(hud.difficulty.x + hud.difficulty.w - 1);
+    expect(hud.hero.y).toBeGreaterThan(vp.cssH * 0.7);
+    expect(hud.weapons.x).toBeGreaterThan(hud.hero.x + hud.hero.w);
+    expect(hud.ability.x).toBeGreaterThan(hud.weapons.x);
     const boxes = hudBoxes(hud);
     for (let i = 0; i < boxes.length; i++) {
       for (let j = i + 1; j < boxes.length; j++) {

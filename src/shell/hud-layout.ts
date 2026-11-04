@@ -28,6 +28,7 @@ export interface HudLayout {
   weapons: Box;
   ability: Box;
   objectives: Box;
+  phone: boolean;
 }
 
 let bound: HudLayout | null = null;
@@ -127,7 +128,7 @@ export function layoutHud(vp: Viewport, fit: Fit): HudLayout {
     y: topY + rowH / 2,
     r: pauseR,
   };
-  const clockW = Math.round((phone ? 112 : portrait ? 104 : 108) * u);
+  const clockW = Math.round((phone ? 96 : portrait ? 104 : 108) * u);
   const clockH = Math.round((phone ? 54 : portrait ? 50 : 44) * u);
   const clock = {
     x: pause.x - pauseR - gap - clockW,
@@ -135,7 +136,7 @@ export function layoutHud(vp: Viewport, fit: Fit): HudLayout {
     w: clockW,
     h: clockH,
   };
-  const mapS = Math.round((phone ? 86 : portrait ? 80 : 70) * u);
+  const mapS = Math.round((phone ? 72 : portrait ? 80 : 70) * u);
   const minimap = { x: inner.x + gap, y: topY, w: mapS, h: mapS };
   const difficulty = {
     x: minimap.x + minimap.w + gap,
@@ -143,15 +144,17 @@ export function layoutHud(vp: Viewport, fit: Fit): HudLayout {
     w: Math.max(72, clock.x - gap - (minimap.x + minimap.w + gap)),
     h: rowH,
   };
-  const faceS = Math.round((phone ? 60 : portrait ? 56 : 46) * u);
+  const faceS = Math.round((portrait ? 56 : 46) * u);
   const faceX = minimap.x + minimap.w + gap;
   const objLeft = clock.x - (portrait ? 16 : 0);
-  const face = {
-    x: faceX,
-    y: difficulty.y + difficulty.h + gap,
-    w: Math.max(faceS + 52, Math.min(faceS + 64, objLeft - faceX - 8)),
-    h: faceS,
-  };
+  const face = phone
+    ? { x: 0, y: 0, w: 0, h: 0 }
+    : {
+      x: faceX,
+      y: difficulty.y + difficulty.h + gap,
+      w: Math.max(faceS + 52, Math.min(faceS + 64, objLeft - faceX - 8)),
+      h: faceS,
+    };
   const objX = clock.x - (phone ? 16 : 0);
   const objW = phone
     ? Math.min(168, inner.x + inner.w - objX - gap)
@@ -163,7 +166,7 @@ export function layoutHud(vp: Viewport, fit: Fit): HudLayout {
     w: objW,
     h: objH,
   };
-  return { view, frame: frameBox(fit), hero, xp, difficulty, clock, pause, minimap, face, weapons, ability, objectives };
+  return { view, frame: frameBox(fit), hero, xp, difficulty, clock, pause, minimap, face, weapons, ability, objectives, phone };
 }
 
 export function pauseHitAt(layout: HudLayout, x: number, y: number): boolean {

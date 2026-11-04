@@ -164,14 +164,34 @@ function stampInk(
   ctx.restore();
 }
 
-function banner(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
+function banner(ctx: CanvasRenderingContext2D, w: World, box: Box, phone: boolean): void {
   plate(ctx, box, "panel_frame_pipes");
-  ctx.fillStyle = "#8a5a20";
-  ctx.fillRect(box.x + 8, box.y + box.h * 0.42, box.w - 16, 7);
-  ctx.fillStyle = "#e0a040";
-  ctx.fillRect(box.x + 10, box.y + 20, (box.w - 20) * 0.86, 8);
-  stampInk(ctx, zoneChapterAt(w.wave), box.x + box.w / 2, box.y + 12, 12, "#f0d080");
-  stampInk(ctx, zoneTitleAt(w.wave), box.x + box.w / 2, box.y + box.h - 12, 11, "#fff6df");
+  if (!phone) {
+    ctx.fillStyle = "#8a5a20";
+    ctx.fillRect(box.x + 8, box.y + box.h * 0.42, box.w - 16, 7);
+    ctx.fillStyle = "#e0a040";
+    ctx.fillRect(box.x + 10, box.y + 20, (box.w - 20) * 0.86, 8);
+    stampInk(ctx, zoneChapterAt(w.wave), box.x + box.w / 2, box.y + 12, 12, "#f0d080");
+    stampInk(ctx, zoneTitleAt(w.wave), box.x + box.w / 2, box.y + box.h - 12, 11, "#fff6df");
+    return;
+  }
+  const cy = box.y + box.h / 2;
+  ctx.fillStyle = "#c56a18";
+  ctx.fillRect(box.x + 6, box.y + 6, box.w - 12, box.h - 12);
+  ctx.fillStyle = "#f0a030";
+  ctx.fillRect(box.x + 34, box.y + 8, Math.max(8, box.w - 44), box.h - 16);
+  ctx.fillStyle = "#1a1008";
+  ctx.beginPath();
+  ctx.arc(box.x + 20, cy, 9, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#f6e2a8";
+  ctx.beginPath();
+  ctx.moveTo(box.x + 16, cy - 5);
+  ctx.lineTo(box.x + 16, cy + 5);
+  ctx.lineTo(box.x + 25, cy);
+  ctx.closePath();
+  ctx.fill();
+  stampInk(ctx, difficultyLabel(w.rank), box.x + 34 + Math.max(8, box.w - 44) / 2, cy, 14, "#1a1008");
 }
 
 function skull(ctx: CanvasRenderingContext2D, x: number, y: number): void {
@@ -195,21 +215,10 @@ function skull(ctx: CanvasRenderingContext2D, x: number, y: number): void {
 function clockPanel(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   plate(ctx, box, "panel_frame_small");
   const face = waveFace(w);
-  const wave = face.n;
-  const cap = face.of;
-  stampInk(ctx, `Wave ${wave}/${cap}`, box.x + 8, box.y + 10, 11, "#fff6df", "left");
-  const bx = box.x + 8;
-  const by = box.y + 20;
-  const bw = box.w - 16;
-  ctx.fillStyle = "#2a1214";
-  ctx.fillRect(bx, by, bw, 8);
-  ctx.fillStyle = "#e24a32";
-  ctx.fillRect(bx, by, bw * Math.min(1, wave / cap), 8);
-  ctx.strokeStyle = BRASS;
-  ctx.lineWidth = 1.8;
-  ctx.strokeRect(bx + 0.5, by + 0.5, bw - 1, 7);
-  skull(ctx, box.x + 14, box.y + box.h - 11);
-  ink(ctx, `${w.kills | 0}`, box.x + 24, box.y + box.h - 11, 12, "#f6f1e6");
+  stampInk(ctx, formatClock(w.tick), box.x + 8, box.y + 12, 12, "#fff6df", "left");
+  stampInk(ctx, `Wave ${face.n}/${face.of}`, box.x + box.w - 8, box.y + 12, 10, "#f0d080", "right");
+  skull(ctx, box.x + 14, box.y + box.h - 14);
+  ink(ctx, `${w.kills | 0}`, box.x + 24, box.y + box.h - 14, 12, "#f6f1e6");
 }
 
 function paintHeroBust(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number): void {
@@ -262,15 +271,6 @@ function portrait(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   ctx.lineWidth = 1.2;
   ctx.strokeRect(bx + 0.5, by + 0.5, bw - 1, 12);
   barCount(ctx, "240/240", bx + 5, by + 7);
-  const ey = by + 16;
-  ctx.fillStyle = IRON;
-  ctx.fillRect(bx, ey, bw, 11);
-  ctx.fillStyle = "#3ec8c0";
-  ctx.fillRect(bx, ey, bw * 0.92, 11);
-  ctx.strokeStyle = BRASS;
-  ctx.lineWidth = 1.2;
-  ctx.strokeRect(bx + 0.5, ey + 0.5, bw - 1, 10);
-  barCount(ctx, "120/120", bx + 5, ey + 6);
 }
 
 function skillIcon(ctx: CanvasRenderingContext2D, i: number, x: number, y: number, s: number): void {
@@ -336,31 +336,6 @@ function skillKeys(ctx: CanvasRenderingContext2D, layout: HudLayout): void {
     skillIcon(ctx, i, p.x, p.y - 2, r * 0.7);
     ink(ctx, keys[i] ?? "Q", p.x, p.y + r * 0.52, 9, STEAM, "center");
   }
-}
-
-function restStick(ctx: CanvasRenderingContext2D, layout: HudLayout): void {
-  const r = 30;
-  const x = layout.hero.x + 36;
-  const y = layout.hero.y - 94;
-  ctx.beginPath();
-  ctx.arc(x, y, r, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(12,10,8,0.55)";
-  ctx.fill();
-  ctx.strokeStyle = "rgba(232,196,96,0.88)";
-  ctx.lineWidth = 5;
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(x, y, r * 0.62, 0, Math.PI * 2);
-  ctx.strokeStyle = "rgba(40,32,24,0.7)";
-  ctx.lineWidth = 2.2;
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(x, y, r * 0.28, 0, Math.PI * 2);
-  ctx.fillStyle = BRASS_HI;
-  ctx.fill();
-  ctx.strokeStyle = BRASS;
-  ctx.lineWidth = 1.6;
-  ctx.stroke();
 }
 
 function pauseButton(ctx: CanvasRenderingContext2D, pause: Circle): void {
@@ -528,14 +503,13 @@ export function drawHud(ctx: CanvasRenderingContext2D, w: World): void {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   drawHealth(ctx, w, layout.hero);
   drawXp(ctx, w, layout);
-  if (!w.choosing) banner(ctx, w, layout.difficulty);
+  if (!w.choosing) banner(ctx, w, layout.difficulty, layout.phone);
   clockPanel(ctx, w, layout.clock);
   pauseButton(ctx, layout.pause);
   if (!w.choosing) {
     minimap(ctx, w, layout.minimap);
-    portrait(ctx, w, layout.face);
-    restStick(ctx, layout);
-    skillKeys(ctx, layout);
+    if (!layout.phone && layout.face.w > 0) portrait(ctx, w, layout.face);
+    if (!layout.phone) skillKeys(ctx, layout);
     drawWeaponRack(ctx, w);
     ability(ctx, w, layout.ability);
     objectives(ctx, w, layout.objectives);

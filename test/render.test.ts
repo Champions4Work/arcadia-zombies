@@ -146,9 +146,10 @@ describe("weapon rack", () => {
     expect(texts).not.toContain("GEARHEART");
     expect(texts).not.toContain("DIFFICULTY");
     expect(texts).not.toContain("YARD");
-    expect(texts).toContain("120/120");
+    expect(texts).not.toContain("120/120");
+    expect(texts).toContain("CALM");
     expect(texts).toContain("Objectives");
-    expect(texts).toContain("Chapter 1");
+    expect(texts).not.toContain("Chapter 1");
     expect(texts.some((t) => /^Wave \d+\/8$/.test(t))).toBe(true);
     expect(texts).toContain("ACTIVATE STEAM GATE");
     expect(texts).toContain("HOLD THE AREA");
