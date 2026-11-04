@@ -39,6 +39,23 @@ FX-only tuning on current main (#90 stone, #92 HUD, #93 perimeter). Do **not** r
 
 Review **`docs/reviews/fx-r32/`** (`phone_390_play.png` 390×844, `?shot=1`) vs **`docs/target_look.jpg`** and **`docs/target_look2.png`**. Coordinator **Read-compare** before merge; **no auto-merge**.
 
+## Round 34 — mid-yard signatures (phone 390×844)
+
+Closed **[#94](https://github.com/Champions4Work/arcadia-zombies/pull/94)** and **[#98](https://github.com/Champions4Work/arcadia-zombies/pull/98)** parked **`pipes_blue_tank` / `conveyor` / `valve_steam` on the bottom and side rail edges** only. On the live phone crop those reads as thin cyan/brass lines under the HUD—not REF2’s mid-yard blue liquid columns, chevron belts, and lit door spawns.
+
+**Required fix (r34):** keep **`YARD_CLEAR`** open, but blit **mid-frame** signatures inside **`PHONE_CAM`**:
+
+| Signature | Rule |
+| --- | --- |
+| Chevron belts | Side **`conveyor`** blits plus horizontal belt segments at **`y: 446`**; cargo still rides the vertical side belts from r33. |
+| Blue liquid | Tall **`vert: 1`** pipe runs at **`x: 326` / `x: 638`**, stacked mid-rail stubs, scaled **`pipes_blue_tank`**, **`blue_puddle`**, and **`bluePool(..., wide)`** on rails—not only **`y: 596`** edge stacks. |
+| Lit spawns | **`building_wall_door`** row unchanged; perimeter **`window_lit`** + **`lamp`** stay on the top wall. |
+| Steam | **`valve_steam`** + vent puffs adjacent to mid blue runs. |
+
+**Hard lesson:** edge-only rail tanks **fail** the 390×844 art-bible read; phone review must show belts + blue pipes + lit doors **in the mid band** (`yardMidFrameHits` in tests).
+
+Review **`docs/reviews/r34/`** (`phone_390_play.png` with `?shot=1`, compares, trio). Coordinator **Read-compare** before merge; **no auto-merge**.
+
 ## References (art bible)
 
 Review size is 390×844 CSS pixels. These two files are the art bible. Every visual PR compares against both.

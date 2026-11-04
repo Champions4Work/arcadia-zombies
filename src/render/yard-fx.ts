@@ -10,21 +10,34 @@ const BUILDINGS = [
   { x: 592, y: 214 },
 ];
 
+const MID_RAIL_PIPE_Y = [356, 416, 476, 536];
+const MID_RAIL_PIPE_LEN = 58;
+const MID_RAIL_PIPE_STUBS = MID_RAIL_PIPE_Y.flatMap((y) => [
+  { x: 296, y, len: MID_RAIL_PIPE_LEN, vert: 0 },
+  { x: 610, y, len: MID_RAIL_PIPE_LEN, vert: 0 },
+]);
+
 const BELTS = [
   { x: 304, y: 392, w: 168, vert: 1 },
   { x: 656, y: 392, w: 168, vert: 1 },
+  { x: 300, y: 446, w: 58, vert: 0 },
+  { x: 610, y: 446, w: 52, vert: 0 },
 ];
 
 const PIPE_RUNS = [
   { x: 296, y: 232, len: 368, vert: 0 },
   { x: 296, y: 648, len: 368, vert: 0 },
+  { x: 326, y: 328, len: 268, vert: 1 },
+  { x: 638, y: 328, len: 268, vert: 1 },
+  ...MID_RAIL_PIPE_STUBS,
 ];
 
 const BELT_H = 72;
 const GLASS_AT = [0.22, 0.5, 0.78];
 const VALVE = { x: 424, y: 232 };
-const BUILD_SCALE = 1.28;
-const TANK_SCALE = 1.2;
+const BUILD_SCALE = 1.32;
+const TANK_SCALE = 1.34;
+const MID_TANK_SCALE = 1.42;
 const STEAM_VENT_SCALE = 0.76;
 const STEAM_VENT_ALPHA = 0.24;
 const BLUE_GLOW_ALPHA = 0.3;
@@ -48,6 +61,13 @@ const PROPS: { id: string; x: number; y: number }[] = [
   { id: "valve_steam", x: 308, y: 612 },
   { id: "decal_vent", x: 310, y: 450 },
   { id: "decal_vent", x: 310, y: 628 },
+  { id: "conveyor", x: 314, y: 444 },
+  { id: "pipes_blue_tank", x: 328, y: 416 },
+  { id: "valve_steam", x: 328, y: 388 },
+  { id: "blue_puddle", x: 332, y: 452 },
+  { id: "pipes_blue_tank", x: 328, y: 476 },
+  { id: "valve_steam", x: 328, y: 504 },
+  { id: "blue_puddle", x: 332, y: 512 },
   { id: "conveyor", x: 304, y: 656 },
   { id: "pipes_blue_tank", x: 308, y: 596 },
   { id: "blue_puddle", x: 312, y: 584 },
@@ -57,6 +77,13 @@ const PROPS: { id: string; x: number; y: number }[] = [
   { id: "valve_steam", x: 654, y: 612 },
   { id: "decal_vent", x: 656, y: 450 },
   { id: "decal_vent", x: 656, y: 628 },
+  { id: "conveyor", x: 646, y: 444 },
+  { id: "pipes_blue_tank", x: 632, y: 416 },
+  { id: "valve_steam", x: 632, y: 388 },
+  { id: "blue_puddle", x: 628, y: 452 },
+  { id: "pipes_blue_tank", x: 632, y: 476 },
+  { id: "valve_steam", x: 632, y: 504 },
+  { id: "blue_puddle", x: 628, y: 512 },
   { id: "conveyor", x: 656, y: 656 },
   { id: "pipes_blue_tank", x: 654, y: 596 },
   { id: "blue_puddle", x: 648, y: 584 },
@@ -64,8 +91,10 @@ const PROPS: { id: string; x: number; y: number }[] = [
 ];
 
 const TANKS = [
-  { x: 320, y: 588 },
-  { x: 640, y: 588 },
+  { x: 328, y: 416 },
+  { x: 632, y: 416 },
+  { x: 328, y: 476 },
+  { x: 632, y: 476 },
   { x: 348, y: 208 },
   { x: 612, y: 208 },
 ];
@@ -82,8 +111,14 @@ const STEAM_VENTS = [
   { x: 360, y: 226 },
   { x: 424, y: 232 },
   { x: 520, y: 226 },
+  { x: 328, y: 388 },
+  { x: 328, y: 504 },
+  { x: 632, y: 388 },
+  { x: 632, y: 504 },
   { x: 334, y: 468 },
   { x: 630, y: 468 },
+  { x: 326, y: 420 },
+  { x: 638, y: 420 },
 ];
 
 export const YARD_CLEAR = { x0: 352, y0: 318, x1: 608, y1: 638 };
@@ -343,9 +378,10 @@ function doorPool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   ctx.restore();
 }
 
-function bluePool(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number): void {
+function bluePool(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number, wide = 0): void {
   const pulse = 0.34 + ((tick >> 3) & 3) * 0.05;
-  const g = ctx.createRadialGradient(x, y - 4, 1, x, y, 24);
+  const reach = wide ? 34 : 24;
+  const g = ctx.createRadialGradient(x, y - 4, 1, x, y, reach);
   g.addColorStop(0, "rgba(42,168,188,0.42)");
   g.addColorStop(0.55, "rgba(22,96,112,0.18)");
   g.addColorStop(1, "rgba(10,10,14,0)");
@@ -354,7 +390,7 @@ function bluePool(ctx: CanvasRenderingContext2D, x: number, y: number, tick: num
   ctx.globalAlpha = pulse;
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.ellipse(x, y, 22, 16, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y, wide ? 30 : 22, wide ? 22 : 16, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.globalAlpha = BLUE_GLOW_ALPHA;
   blitSheet(ctx, "blue_glow", x, y - 6);
@@ -605,7 +641,7 @@ function closeToHero(x: number, y: number): boolean {
 export function heroCrowd(): number {
   let n = 0;
   for (const p of propsOf()) {
-    if (p.y <= 220) continue;
+    if (p.y < YARD_CLEAR.y0) continue;
     if (closeToHero(p.x, p.y)) n++;
   }
   for (const belt of beltsOf()) {
@@ -618,13 +654,22 @@ export function heroCrowd(): number {
     }
   }
   for (const pipe of pipesOf()) {
-    if (pipe.y <= 236) continue;
-    const x1 = pipe.x + pipe.len;
-    for (let x = pipe.x; x <= x1; x += 16) if (closeToHero(x, pipe.y)) n++;
+    if (pipe.y <= 236 && !pipe.vert) continue;
+    if (pipe.vert) {
+      const y1 = pipe.y + pipe.len;
+      for (let yy = pipe.y; yy <= y1; yy += 16) if (closeToHero(pipe.x, yy)) n++;
+    } else {
+      if (pipe.y <= 236) continue;
+      const x1 = pipe.x + pipe.len;
+      for (let x = pipe.x; x <= x1; x += 16) if (closeToHero(x, pipe.y)) n++;
+    }
   }
-  for (const vent of ventsOf()) if (closeToHero(vent.x, vent.y)) n++;
+  for (const vent of ventsOf()) {
+    if (vent.y < YARD_CLEAR.y0) continue;
+    if (closeToHero(vent.x, vent.y)) n++;
+  }
   for (const tank of tanksOf()) {
-    if (tank.y <= 220) continue;
+    if (tank.y < YARD_CLEAR.y0) continue;
     if (closeToHero(tank.x, tank.y)) n++;
   }
   if (yardBound === ZONE_TRAM) {
@@ -657,15 +702,20 @@ function paintTramCar(ctx: CanvasRenderingContext2D, x: number, y: number): void
   blitSheet(ctx, "lamp", x + 30, y - 8);
 }
 
+export function yardMidFrameHits(): number {
+  return yardPropHits(PHONE_CAM.x0, 368, PHONE_CAM.x1, 572);
+}
+
 export function yardPropHits(x0: number, y0: number, x1: number, y1: number): number {
   let n = 0;
   for (const b of buildingsOf()) {
     if (b.x >= x0 && b.x <= x1 && b.y >= y0 && b.y <= y1) n++;
   }
   for (const belt of beltsOf()) {
-    const hit =
-      belt.vert
-        ? belt.x >= x0 && belt.x <= x1 && belt.y >= y0 && belt.y + belt.w <= y1
+    const hit = belt.vert
+      ? belt.x >= x0 && belt.x <= x1 && belt.y >= y0 && belt.y + belt.w <= y1
+      : belt.x + belt.w <= x0 || belt.x >= x1 || belt.y < y0 || belt.y > y1
+        ? false
         : belt.x >= x0 && belt.x <= x1 && belt.y >= y0 && belt.y <= y1;
     if (hit) n++;
   }
@@ -673,6 +723,11 @@ export function yardPropHits(x0: number, y0: number, x1: number, y1: number): nu
     if (p.x >= x0 && p.x <= x1 && p.y >= y0 && p.y <= y1) n++;
   }
   for (const pipe of pipesOf()) {
+    if (pipe.vert) {
+      if (pipe.x >= x0 && pipe.x <= x1 && pipe.y <= y1 && pipe.y + pipe.len >= y0) n++;
+      continue;
+    }
+    if (pipe.x + pipe.len <= x0 || pipe.x >= x1 || pipe.y < y0 || pipe.y > y1) continue;
     if (pipe.x >= x0 && pipe.x <= x1 && pipe.y >= y0 && pipe.y <= y1) n++;
   }
   if (yardBound === ZONE_TRAM) {
@@ -703,7 +758,15 @@ export function paintYardLive(
   paintBrickWall(ctx);
   for (const run of pipesOf()) {
     if (!visible(run.x, run.y, camX, camY, vw, vh, run.len + 20)) continue;
+    if (run.vert) {
+      paintVertPipe(ctx, run.x, run.y, run.len, tick);
+      bluePool(ctx, run.x, run.y + run.len * 0.42, tick, 1);
+      continue;
+    }
     paintCrossPipe(ctx, run.x, run.y, run.len, tick, run.vert);
+    if (run.len < 80 && run.y > 340 && run.y < 560) {
+      bluePool(ctx, run.x + run.len * 0.5, run.y, tick, 1);
+    }
   }
   for (const b of buildingsOf()) {
     if (!visible(b.x, b.y, camX, camY, vw, vh, 160)) continue;
@@ -713,7 +776,8 @@ export function paintYardLive(
   }
   for (const tank of tanksOf()) {
     if (!visible(tank.x, tank.y, camX, camY, vw, vh, 50)) continue;
-    bluePool(ctx, tank.x, tank.y, tick);
+    const midRail = tank.y > 360 && tank.y < 540;
+    bluePool(ctx, tank.x, tank.y, tick, midRail ? 1 : 0);
   }
   const n = groundFeatureCount();
   for (let i = 0; i < n; i++) {
@@ -730,7 +794,14 @@ export function paintYardLive(
   }
   for (const p of propsOf()) {
     if (!visible(p.x, p.y, camX, camY, vw, vh, 90)) continue;
-    if (p.id === "pipes_blue_tank") bluePool(ctx, p.x, p.y + 8, tick);
+    if (p.id === "pipes_blue_tank") {
+      const midRail = p.y > 360 && p.y < 540 && (p.x < YARD_CLEAR.x0 || p.x > YARD_CLEAR.x1);
+      bluePool(ctx, p.x, p.y + 8, tick, midRail ? 1 : 0);
+      if (midRail) blitScaled(ctx, "pipes_blue_tank", p.x, p.y, MID_TANK_SCALE);
+      else blitSheet(ctx, p.id, p.x, p.y);
+      paintShadow(ctx, p.x, p.y, 12, 4);
+      continue;
+    }
     if (p.id === "blue_puddle") bluePuddle(ctx, p.x, p.y + 4);
     paintShadow(ctx, p.x, p.y, 12, 4);
     blitSheet(ctx, p.id, p.x, p.y);
