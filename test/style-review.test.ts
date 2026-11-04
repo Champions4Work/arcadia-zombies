@@ -36,10 +36,12 @@ describe("visual review gates", () => {
     expect(look.includes("rgba(90,240,235,0.92)")).toBe(false);
     expect(look.includes("rgba(255,214,130,0.62)")).toBe(false);
     expect(look.includes("brightness(1.85)")).toBe(false);
-    expect(look.includes("heroSpriteId")).toBe(true);
-    expect(look.includes("blitSheetLean(ctx, heroSpriteId")).toBe(true);
-    expect(look.includes("function paintDiveSuit")).toBe(false);
+    expect(look.includes("heroSpriteId")).toBe(false);
+    expect(look.includes("blitSheetLean(ctx, heroSpriteId")).toBe(false);
+    expect(look.includes("function paintDiveSuit")).toBe(true);
     expect(look.includes("export function paintHitSpark")).toBe(true);
+    expect(look.includes("#0ad8d0")).toBe(true);
+    expect(look.includes("ellipse(7.4 * s, -22 * s, 4.4 * s, 7.4 * s")).toBe(true);
     expect(look.includes("rgba(48,255,236,0.96)")).toBe(false);
     expect(look.includes("paintRifle(ctx, x, y, nx, ny, s, bob)")).toBe(true);
     expect(look.includes("ctx.transform(1, 0, lean")).toBe(false);
@@ -189,14 +191,17 @@ describe("visual review gates", () => {
     expect(look.includes("#b41c18")).toBe(false);
     expect(look.includes("#7a1410")).toBe(false);
     const stains = readFileSync("src/render/stains.ts", "utf8");
-    expect(stains.includes("n = 2 + (salt & 3)")).toBe(true);
+    expect(stains.includes("n = 3 + (salt & 3)")).toBe(true);
     expect(stains.includes("export function stainFade")).toBe(true);
-    expect(look.includes("fillRect(0, 0, 3.4, 1.4)")).toBe(true);
+    expect(look.includes("fillRect(0, 0, 2.2, 1)")).toBe(true);
+    expect(look.includes("fillRect(0, 0, 3.4, 1.4)")).toBe(false);
     expect(look.includes("fillRect(-4, -2, 11, 4.2)")).toBe(false);
     const shot = readFileSync("src/shell/review-shot.ts", "utf8");
     expect(shot.includes("Math.cos")).toBe(false);
     expect(shot.includes("REVIEW_RING *")).toBe(false);
     expect(shot.includes("i === 7 || i === 24 ? Z_BRUTE")).toBe(true);
+    expect(shot.includes("c < 12")).toBe(true);
+    expect(shot.includes("c < 24")).toBe(false);
   });
 
   it("keeps spawn telegraphs and kill puffs on pack sprites, and aligns vertical belts", () => {

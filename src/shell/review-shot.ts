@@ -94,8 +94,8 @@ export function reviewHorde(w: World): number {
   juiceHit(3, z.x[3] ?? w.px, z.y[3] ?? w.py, 2, z.kind[3] ?? 0, false, w.tick, w.px, w.py);
   juiceHit(7, z.x[7] ?? w.px, z.y[7] ?? w.py, 4, Z_BRUTE, false, w.tick, w.px, w.py);
   tickJuice(70);
-  for (let c = 0; c < 24; c++) {
-    stampCasing(w.px - 28 + ((c * 17) % 51), w.py + 4 + ((c * 13) % 23), c * 5);
+  for (let c = 0; c < 12; c++) {
+    stampCasing(w.px - 52 + ((c * 37) % 96), w.py + 8 + ((c * 19) % 52), c * 7);
   }
   stampBlood(w.px + 18, w.py + 14, 5);
   stampBlood(w.px - 24, w.py + 22, 9);

@@ -2,7 +2,7 @@ import {
   BRASS, BRASS_HI, BRASS_LO, CYAN, FONT_BODY, GLASS, INK, IRON, PANEL, XP,
 } from "../shell/theme";
 import { PX } from "./palette";
-import { blitSheet, blitSheetLean, foeSpriteId, heroSpriteId, spriteOf } from "./sheet";
+import { blitSheet, blitSheetLean, foeSpriteId, spriteOf } from "./sheet";
 
 export const HERO_LOOK_W = 40;
 export const HERO_LOOK_H = 52;
@@ -178,7 +178,7 @@ export function paintSignatureHero(
   ctx.lineWidth = 2.4 * s;
   ctx.stroke();
   ctx.restore();
-  blitSheetLean(ctx, heroSpriteId(moving, tick), x, y, flip, bob, 0, s);
+  paintDiveSuit(ctx, x, y, s, bob, flip, tick, moving);
   paintRifle(ctx, x, y, nx, ny, s, bob);
   if (!shoot) return;
   const mx = x + nx * 34 * s;
@@ -200,6 +200,106 @@ export function paintSignatureHero(
   ctx.moveTo(mx, my);
   ctx.lineTo(mx + nx * 56, my + ny * 56);
   ctx.stroke();
+  ctx.restore();
+}
+
+function paintDiveSuit(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  s: number,
+  bob: number,
+  flip: boolean,
+  tick: number,
+  moving: boolean,
+): void {
+  const frame = moving ? (tick >> 3) & 3 : 0;
+  const liftL = frame === 1 ? 3.2 : frame === 2 ? 1.2 : 0;
+  const liftR = frame === 3 ? 3.2 : frame === 2 ? 1.2 : 0;
+  ctx.save();
+  ctx.translate(x, y - bob);
+  if (flip) ctx.scale(-1, 1);
+  ctx.fillStyle = "#1a1410";
+  ctx.beginPath();
+  ctx.ellipse(7.4 * s, -22 * s, 4.4 * s, 7.4 * s, 0.12, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = BRASS_LO;
+  ctx.fillRect(4.4 * s, -26.4 * s, 6.4 * s, 1.5 * s);
+  ctx.fillRect(4.4 * s, -20.2 * s, 6.4 * s, 1.5 * s);
+  ctx.fillStyle = "#2a1c12";
+  ctx.fillRect(5.2 * s, -24.6 * s, 4.6 * s, 3.8 * s);
+  ctx.strokeStyle = BRASS_LO;
+  ctx.lineWidth = 1.3 * s;
+  ctx.beginPath();
+  ctx.arc(5.2 * s, -30 * s, 5.2 * s, 0.35, 1.55);
+  ctx.stroke();
+  ctx.fillStyle = "#241610";
+  ctx.fillRect(-4.8 * s, -13 * s + liftL, 4 * s, 13.6 * s - liftL);
+  ctx.fillRect(0.8 * s, -13 * s + liftR, 4 * s, 13.6 * s - liftR);
+  ctx.fillStyle = BRASS_LO;
+  ctx.fillRect(-5.2 * s, -1.7 * s + liftL, 4.8 * s, 3.1 * s);
+  ctx.fillRect(0.4 * s, -1.7 * s + liftR, 4.8 * s, 3.1 * s);
+  ctx.fillStyle = BRASS;
+  ctx.fillRect(-5.2 * s, -1.7 * s + liftL, 4.8 * s, 1.1 * s);
+  ctx.fillRect(0.4 * s, -1.7 * s + liftR, 4.8 * s, 1.1 * s);
+  ctx.fillStyle = "#2a1c12";
+  ctx.beginPath();
+  ctx.ellipse(0, -21 * s, 7.4 * s, 11.6 * s, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#1a1008";
+  ctx.beginPath();
+  ctx.ellipse(-2.4 * s, -21 * s, 4.4 * s, 10 * s, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = BRASS_LO;
+  ctx.beginPath();
+  ctx.ellipse(0.8 * s, -20 * s, 5 * s, 7.2 * s, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = BRASS;
+  ctx.beginPath();
+  ctx.ellipse(1.4 * s, -21.2 * s, 3.2 * s, 4.4 * s, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#3a2418";
+  ctx.beginPath();
+  ctx.ellipse(-7.4 * s, -24 * s, 4.2 * s, 3.4 * s, -0.3, 0, Math.PI * 2);
+  ctx.ellipse(7.4 * s, -24 * s, 4.2 * s, 3.4 * s, 0.3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = BRASS_LO;
+  ctx.beginPath();
+  ctx.ellipse(-7.2 * s, -25 * s, 3.3 * s, 2.3 * s, -0.3, 0, Math.PI * 2);
+  ctx.ellipse(7.2 * s, -25 * s, 3.3 * s, 2.3 * s, 0.3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#d8a050";
+  ctx.fillRect(-4.4 * s, -29.4 * s, 8.8 * s, 2.6 * s);
+  ctx.fillStyle = BRASS_LO;
+  ctx.beginPath();
+  ctx.ellipse(0, -35.2 * s, 8.2 * s, 7.6 * s, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = BRASS;
+  ctx.beginPath();
+  ctx.ellipse(0.6 * s, -36 * s, 6.8 * s, 6.4 * s, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = BRASS_HI;
+  ctx.beginPath();
+  ctx.ellipse(0, -38.6 * s, 4.4 * s, 2.4 * s, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#1a1008";
+  ctx.fillRect(-6.6 * s, -36.2 * s, 13.2 * s, 4.4 * s);
+  for (const side of [-1, 1]) {
+    ctx.beginPath();
+    ctx.ellipse(side * 2.8 * s, -34 * s, 2.2 * s, 1.7 * s, 0, 0, Math.PI * 2);
+    ctx.fillStyle = BRASS;
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(side * 2.8 * s, -34 * s, 1.6 * s, 1.2 * s, 0, 0, Math.PI * 2);
+    ctx.fillStyle = "#0ad8d0";
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(side * 2.8 * s - 0.5 * s, -34.5 * s, 0.55 * s, 0.4 * s, 0, 0, Math.PI * 2);
+    ctx.fillStyle = "#e8ffff";
+    ctx.fill();
+  }
+  ctx.fillStyle = BRASS;
+  ctx.fillRect(-1.1 * s, -34.6 * s, 2.2 * s, 1.4 * s);
   ctx.restore();
 }
 
@@ -313,15 +413,15 @@ export function paintEnergyTank(ctx: CanvasRenderingContext2D, x: number, y: num
 
 export function paintBlood(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, age = 1): void {
   const seed = ((x * 13 + y * 7 + s * 17) | 0);
-  const n = 4 + (seed & 3);
+  const n = 5 + (seed & 3);
   const fade = (0.6 + (seed & 3) * 0.05) * Math.max(0.22, Math.min(1, age));
-  const span = 4 + (s & 7);
+  const span = 5 + (s & 7);
   ctx.fillStyle = "#4a100e";
   for (let i = 0; i < n; i++) {
     const ox = ((seed + i * 19) % (span * 2 + 1)) - span;
     const oy = ((seed + i * 11) % (span + 3)) - (span >> 1);
-    const rw = 2 + ((seed + i * 5) % Math.max(3, span >> 1));
-    const rh = 1 + ((seed + i * 3) % Math.max(2, span >> 2));
+    const rw = 2.4 + ((seed + i * 5) % Math.max(3, span >> 1));
+    const rh = 1.4 + ((seed + i * 3) % Math.max(2, span >> 2));
     ctx.globalAlpha = fade;
     ctx.beginPath();
     ctx.ellipse(x + ox, y + oy, rw, rh, ((seed + i) % 8) * 0.28, 0, Math.PI * 2);
@@ -338,10 +438,10 @@ export function paintCasing(ctx: CanvasRenderingContext2D, x: number, y: number)
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(((x * 13 + y * 7) % 12) * 0.22);
+  ctx.fillStyle = BRASS_LO;
+  ctx.fillRect(0, 0, 2.2, 1);
   ctx.fillStyle = BRASS;
-  ctx.fillRect(0, 0, 3.4, 1.4);
-  ctx.fillStyle = BRASS_HI;
-  ctx.fillRect(2.2, 0, 1.2, 1.4);
+  ctx.fillRect(1.5, 0, 0.7, 1);
   ctx.restore();
 }
 

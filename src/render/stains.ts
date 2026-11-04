@@ -38,17 +38,17 @@ function put(x: number, y: number, s: number, kind: number): void {
 }
 
 export function stampBlood(x: number, y: number, salt: number): void {
-  const n = 2 + (salt & 3);
+  const n = 3 + (salt & 3);
   for (let k = 0; k < n; k++) {
-    const ox = ((salt + k * 17) % 15) - 7;
-    const oy = ((salt + k * 9) % 13) - 6;
-    put(x + ox, y + oy, 4 + ((salt + k) & 5), STAIN_BLOOD);
+    const ox = ((salt + k * 17) % 19) - 9;
+    const oy = ((salt + k * 9) % 17) - 8;
+    put(x + ox, y + oy, 5 + ((salt + k) & 5), STAIN_BLOOD);
   }
 }
 
 export function stampCasing(x: number, y: number, salt: number): void {
-  const ox = ((salt * 13) % 15) - 7;
-  const oy = ((salt * 7) % 9) - 2;
+  const ox = ((salt * 13) % 27) - 13;
+  const oy = ((salt * 7) % 17) - 6;
   put(x + ox, y + oy, 1, STAIN_CASE);
 }
 

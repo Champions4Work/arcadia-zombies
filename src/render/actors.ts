@@ -59,9 +59,9 @@ function paintHero(ctx: CanvasRenderingContext2D, w: World, moving: boolean): vo
     caseTick = w.tick;
     const ox = -w.aimX * 16 - 8;
     const oy = 8 - w.aimY * 4;
-    stampCasing(w.px + ox - 4, w.py + oy + 2, w.tick);
-    stampCasing(w.px + ox - 10, w.py + oy + 7, w.tick + 3);
-    stampCasing(w.px + ox - 16, w.py + oy + 11, w.tick + 6);
+    stampCasing(w.px + ox - 6, w.py + oy + 4, w.tick);
+    stampCasing(w.px + ox - 18, w.py + oy + 11, w.tick + 5);
+    stampCasing(w.px + ox - 28, w.py + oy + 18, w.tick + 11);
   }
 }
 
