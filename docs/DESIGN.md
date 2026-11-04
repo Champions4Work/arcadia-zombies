@@ -1,6 +1,6 @@
 # Design lock
 
-This file is the product lock for look, HUD, polish, and the order of later systems. Palette, sprite sources, and pack rules live in `docs/STYLE.md` once that file is on the branch. If `docs/STYLE.md`, `docs/target_look.jpg`, and `docs/target_look2.png` are missing on `main`, they land with the art pack on [pull request 46](https://github.com/Champions4Work/arcadia-zombies/pull/46). That PR is titled feat(art): blit the az_art_v2 webp pack. Write this file even when those assets are still on the other branch, so the lock is not forgotten. Treat the rules below as true now.
+This file is the product lock for look, HUD, polish, and the order of later systems. Palette, sprite sources, pack blit lists, and the Sasta compare-shot gate live in `docs/STYLE.md`. If `docs/target_look.jpg` and `docs/target_look2.png` are missing on `main`, they land with the art pack on [pull request 46](https://github.com/Champions4Work/arcadia-zombies/pull/46). That PR is titled feat(art): blit the az_art_v2 webp pack. Treat the rules below as true now.
 
 ## Target look
 
