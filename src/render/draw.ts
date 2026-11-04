@@ -46,6 +46,9 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
   const camX = Math.round(w.arena.camX);
   const camY = Math.round(w.arena.camY);
   c.save();
+  c.beginPath();
+  c.rect(0, 0, W, H);
+  c.clip();
   if (sx !== 0 || sy !== 0) c.translate(sx, sy);
   c.translate(-camX, -camY);
   if (horde) {

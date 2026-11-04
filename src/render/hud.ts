@@ -11,7 +11,9 @@ import {
   UNION_CROWN, UNION_HALO, UNION_HEART, UNION_HOWITZER, UPG_DMG, UPG_FIRE, UPG_HP, UPG_MAX, UPG_MORTAR,
   UPG_PIERCE, UPG_SAWS, UPG_SHIELD, UPG_SHOTGUN, UPG_SPEED, UPG_TESLA, UPG_VENT, W, Z_BRUTE, Z_GHOUL, type World,
 } from "../sim/types";
-import { BRASS, cog, flame, font, heart, lit, OUTLINE, roundRect } from "./paint";
+import { currentHud, pauseHitAt } from "../shell/hud-layout";
+import type { Box, Circle, HudLayout } from "../shell/hud-layout";
+import { BRASS, cog, flame, font, heart, lit, OUTLINE, rivet, roundRect } from "./paint";
 
 const BLURB = [
   "Chain a spark through nearby foes.",
@@ -56,6 +58,8 @@ export function formatClock(tick: number): string {
 }
 
 export function pauseHit(x: number, y: number): boolean {
+  const layout = currentHud();
+  if (layout) return pauseHitAt(layout, x, y);
   const dx = x - PAUSE_X;
   const dy = y - PAUSE_Y;
   return dx * dx + dy * dy <= (PAUSE_R + 6) * (PAUSE_R + 6);
@@ -159,82 +163,91 @@ function flameIcon(ctx: CanvasRenderingContext2D, x: number, y: number, s: numbe
   ctx.fill();
 }
 
-function heartGauge(ctx: CanvasRenderingContext2D, w: World): void {
-  const x = 26;
-  const y = 28;
-  const r = 18;
-  brassRing(ctx, x, y, r, "#7a1822");
+function plate(ctx: CanvasRenderingContext2D, box: Box, r: number, inner: string): void {
+  brassPanel(ctx, box.x, box.y, box.w, box.h, r, inner);
+  rivet(ctx, box.x + 8, box.y + 8, 2.1);
+  rivet(ctx, box.x + box.w - 8, box.y + 8, 2.1);
+  rivet(ctx, box.x + 8, box.y + box.h - 8, 2.1);
+  rivet(ctx, box.x + box.w - 8, box.y + box.h - 8, 2.1);
+}
+
+function drawHealth(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   const frac = w.maxHp > 0 ? Math.max(0, Math.min(1, w.hp / w.maxHp)) : 0;
+  const low = frac <= 0.35;
+  const pulse = low ? 0.7 + 0.3 * (0.5 + 0.5 * Math.sin(w.tick * 0.28)) : 1;
+  plate(ctx, box, 14, "#14080c");
+  const cx = box.x + Math.min(36, box.w * 0.34);
+  const cy = box.y + box.h * 0.52;
+  const r = Math.min(28, box.h * 0.38);
+  ctx.save();
+  ctx.globalAlpha = pulse;
+  brassRing(ctx, cx, cy, r, "#7a1822");
   ctx.beginPath();
-  ctx.arc(x, y, r - 3.2, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * frac);
-  ctx.strokeStyle = "#ff5a48";
-  ctx.lineWidth = 3;
+  ctx.arc(cx, cy, r - 4, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * frac);
+  ctx.strokeStyle = low ? "#ff7a3a" : "#ff5a48";
+  ctx.lineWidth = 5;
   ctx.stroke();
+  ctx.restore();
   ctx.save();
   ctx.beginPath();
-  ctx.arc(x, y, r - 6.2, 0, Math.PI * 2);
+  ctx.arc(cx, cy, r - 8, 0, Math.PI * 2);
   ctx.clip();
-  const g = ctx.createRadialGradient(x - 4, y - 5, 2, x, y, r);
-  g.addColorStop(0, "#ff7a6a");
-  g.addColorStop(1, "#9a1a22");
-  ctx.fillStyle = g;
-  ctx.fillRect(x - r, y - r, r * 2, r * 2);
-  heart(ctx, x, y + 1.5, 7);
-  const hg = ctx.createLinearGradient(x, y - 8, x, y + 10);
-  hg.addColorStop(0, "#ffd4cc");
-  hg.addColorStop(0.45, "#ff3b3b");
-  hg.addColorStop(1, "#8c1420");
+  const well = ctx.createRadialGradient(cx - 6, cy - 7, 2, cx, cy, r);
+  well.addColorStop(0, "#ff8a78");
+  well.addColorStop(1, "#6a1018");
+  ctx.fillStyle = well;
+  ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+  heart(ctx, cx, cy + 2, r * 0.42);
+  const hg = ctx.createLinearGradient(cx, cy - r * 0.5, cx, cy + r * 0.55);
+  hg.addColorStop(0, "#fff0e4");
+  hg.addColorStop(0.4, low ? "#ff7040" : "#ff3b3b");
+  hg.addColorStop(1, "#6a1018");
   ctx.fillStyle = hg;
   ctx.fill();
-  ctx.lineWidth = 1.3;
+  ctx.lineWidth = 1.6;
   ctx.strokeStyle = OUTLINE;
   ctx.stroke();
   ctx.restore();
-  ink(ctx, "GEARHEART", 50, 6, 8, "#ffe7ad");
-  ink(ctx, `${Math.max(0, w.hp)}/${w.maxHp}`, 50, 16, 14, "#fff8ee");
-  ink(ctx, `LV. ${w.level}`, 50, 32, 9, "#f0c86a");
-  const need = pacedXpNeed(xpNeed(w.level), w.mods);
-  const t = need <= 0 ? 0 : Math.min(1, w.xp / need);
-  const bx = 62;
-  const by = 45;
-  const bw = 58;
-  roundRect(ctx, bx, by, bw, 8, 4);
-  ctx.fillStyle = lit(ctx, bx, by, bw, 8, BRASS);
-  ctx.fill();
-  ctx.lineWidth = 1.3;
-  ctx.strokeStyle = OUTLINE;
-  ctx.stroke();
-  roundRect(ctx, bx + 2, by + 2, bw - 4, 4, 2);
-  ctx.fillStyle = "#2a1c10";
-  ctx.fill();
-  roundRect(ctx, bx + 2, by + 2, Math.max(4, (bw - 4) * t), 4, 2);
-  const bar = ctx.createLinearGradient(bx, by, bx + bw, by);
-  bar.addColorStop(0, "#fff3b0");
-  bar.addColorStop(1, "#ff9a1e");
-  ctx.fillStyle = bar;
-  ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo(58, 45);
-  ctx.lineTo(50, 49);
-  ctx.lineTo(56, 49);
-  ctx.lineTo(52, 54);
-  ctx.lineTo(64, 46.5);
-  ctx.lineTo(58, 46.5);
-  ctx.closePath();
-  ctx.fillStyle = "#ffe14a";
-  ctx.fill();
-  ctx.lineWidth = 1;
-  ctx.strokeStyle = OUTLINE;
-  ctx.stroke();
+  const tx = cx + r + 8;
+  ink(ctx, "GEARHEART", tx, box.y + 8, 9, "#ffe7ad");
+  ink(ctx, `${Math.max(0, w.hp)}/${w.maxHp}`, tx, box.y + box.h * 0.34, Math.min(22, box.h * 0.3), "#fff8ee");
+  if (w.meta.revive > 0) ink(ctx, "REV", tx, box.y + box.h - 22, 10, "#ffb060");
   if (w.shield > 0) {
     for (let i = 0; i < w.shield; i++) {
       ctx.beginPath();
-      ctx.arc(128 + i * 7, 18, 2.3, 0, Math.PI * 2);
+      ctx.arc(tx + 8 + i * 9, box.y + box.h - 12, 3, 0, Math.PI * 2);
       ctx.fillStyle = "#ffe7ad";
       ctx.fill();
+      ctx.strokeStyle = OUTLINE;
       ctx.stroke();
     }
   }
+}
+
+function drawXp(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
+  const need = pacedXpNeed(xpNeed(w.level), w.mods);
+  const t = need <= 0 ? 0 : Math.min(1, w.xp / need);
+  brassPanel(ctx, box.x, box.y, box.w, box.h, 8, "#120c08");
+  const pad = 5;
+  const badge = Math.min(64, box.w * 0.16);
+  roundRect(ctx, box.x + pad, box.y + pad, box.w - pad * 2 - badge, box.h - pad * 2, 6);
+  ctx.fillStyle = "#1a1008";
+  ctx.fill();
+  const fillW = Math.max(6, (box.w - pad * 2 - badge) * t);
+  roundRect(ctx, box.x + pad, box.y + pad, fillW, box.h - pad * 2, 6);
+  const bar = ctx.createLinearGradient(box.x, box.y, box.x + box.w, box.y);
+  bar.addColorStop(0, "#fff3b0");
+  bar.addColorStop(0.45, "#ffb020");
+  bar.addColorStop(1, "#ff6a10");
+  ctx.fillStyle = bar;
+  ctx.shadowColor = "#ffb020";
+  ctx.shadowBlur = 14;
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.lineWidth = 1.4;
+  ctx.strokeStyle = OUTLINE;
+  ctx.stroke();
+  ink(ctx, `LV ${w.level}`, box.x + box.w - badge / 2, box.y + box.h * 0.22, Math.min(16, box.h * 0.55), "#fff8ee", "center");
 }
 
 function fitInk(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, size: number, max: number, color: string, weight = 800): void {
@@ -247,20 +260,19 @@ function fitInk(ctx: CanvasRenderingContext2D, text: string, x: number, y: numbe
   ink(ctx, text, x, y, s, color, "center", weight);
 }
 
-function banner(ctx: CanvasRenderingContext2D, w: World): void {
-  const x = 148;
-  const y = 4;
-  const bw = 168;
-  const bh = 44;
+function banner(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   const name = difficultyLabel(w.rank);
   const flash = w.rankFlash > 0 && ((w.tick >> 2) & 1) === 0;
-  brassPanel(ctx, x, y, bw, bh, 12, "#1a2744");
-  ink(ctx, "DIFFICULTY", x + bw / 2, y + 5, 8, "#f0c86a", "center");
-  fitInk(ctx, name, x + bw / 2, y + 16, 12, bw - 18, flash ? "#fff3c0" : "#fff8ee");
+  plate(ctx, box, 12, "#10182c");
+  ink(ctx, "DIFFICULTY", box.x + box.w / 2, box.y + 5, 9, "#ffe7ad", "center");
+  fitInk(ctx, name, box.x + box.w / 2, box.y + 16, 14, box.w - 20, flash ? "#fff3c0" : "#fff8ee");
   const litN = Math.max(1, Math.min(6, Math.ceil(tierFrac(w.tick) * 6)));
-  for (let i = 0; i < 6; i++) cog(ctx, x + 34 + i * 18, y + 35, 4, w.tick * 0.015 + i, i < litN ? BRASS : { hi: "#6a5430", mid: "#4a381c", lo: "#2a2014", edge: "#1a120c" }, 6, i < litN);
-  flameIcon(ctx, x - 2, y + 30, 9, w.tick);
-  flameIcon(ctx, x + bw + 2, y + 30, 9, w.tick + 10);
+  const cogY = box.y + box.h - 10;
+  const span = Math.max(12, (box.w - 36) / 6);
+  for (let i = 0; i < 6; i++) {
+    const on = i < litN;
+    cog(ctx, box.x + 18 + i * span, cogY, 5, w.tick * 0.015 + i, on ? BRASS : { hi: "#6a5430", mid: "#4a381c", lo: "#2a2014", edge: "#1a120c" }, 6, on);
+  }
 }
 
 function clockIcon(ctx: CanvasRenderingContext2D, x: number, y: number): void {
@@ -297,38 +309,37 @@ function skull(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   ctx.fillRect(x + 1.2, y + 3, 1.2, 2);
 }
 
-function clockPanel(ctx: CanvasRenderingContext2D, w: World): void {
-  const x = 328;
-  const y = 4;
-  brassPanel(ctx, x, y, 104, 44, 12, "#1a2744");
-  clockIcon(ctx, x + 14, y + 16);
+function clockPanel(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
+  plate(ctx, box, 12, "#10182c");
+  clockIcon(ctx, box.x + 16, box.y + 16);
   const label = runLabel(w.tick);
-  ink(ctx, label, x + 22, y + 9, label.length > 5 ? 8 : 12, "#fff8ee");
-  skull(ctx, x + 14, y + 32);
-  ink(ctx, String(w.score), x + 24, y + 24, 12, "#fff8ee");
+  ink(ctx, label, box.x + 28, box.y + 8, label.length > 5 ? 11 : 15, "#fff8ee");
+  skull(ctx, box.x + 16, box.y + box.h - 14);
+  ink(ctx, String(w.score), box.x + 28, box.y + box.h - 22, 14, "#fff8ee");
 }
 
-function pauseButton(ctx: CanvasRenderingContext2D): void {
-  brassRing(ctx, PAUSE_X, PAUSE_Y, PAUSE_R, "#1a2744");
+function pauseButton(ctx: CanvasRenderingContext2D, pause: Circle): void {
+  brassRing(ctx, pause.x, pause.y, pause.r, "#10182c");
   ctx.fillStyle = "#ffe7ad";
-  ctx.fillRect(PAUSE_X - 4.2, PAUSE_Y - 5, 2.6, 10);
-  ctx.fillRect(PAUSE_X + 1.6, PAUSE_Y - 5, 2.6, 10);
+  ctx.fillRect(pause.x - 4.6, pause.y - 6, 3, 12);
+  ctx.fillRect(pause.x + 1.6, pause.y - 6, 3, 12);
 }
 
-function minimap(ctx: CanvasRenderingContext2D, w: World): void {
-  const cx = 48;
-  const cy = 262;
-  const r = 32;
-  brassRing(ctx, cx, cy, r, "#102033");
+function minimap(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
+  const labelH = 16;
+  const r = Math.max(16, Math.min(box.w, box.h - labelH) / 2);
+  const cx = box.x + box.w / 2;
+  const cy = box.y + r + 2;
+  brassRing(ctx, cx, cy, r, "#0c1828");
   ctx.save();
   ctx.beginPath();
   ctx.arc(cx, cy, r - 6, 0, Math.PI * 2);
   ctx.clip();
   ctx.fillStyle = "#16324a";
   ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
-  ctx.strokeStyle = "rgba(160,210,230,0.2)";
+  ctx.strokeStyle = "rgba(220,240,255,0.28)";
   ctx.lineWidth = 1;
-  ctx.strokeRect(cx - 18, cy - 18, 36, 36);
+  ctx.strokeRect(cx - r * 0.55, cy - r * 0.55, r * 1.1, r * 1.1);
   const z = w.zombies;
   const span = r * 1.45;
   let alive = 0;
@@ -348,44 +359,42 @@ function minimap(ctx: CanvasRenderingContext2D, w: World): void {
       : kind === Z_KNIGHT ? "#e07040"
       : kind === Z_RAT ? "#f0b03a"
       : "#9ae046";
-    ctx.fillRect(mx - 1.3, my - 1.3, 2.6, 2.6);
+    ctx.fillRect(mx - 1.4, my - 1.4, 2.8, 2.8);
   }
   if (lichUp(w)) {
     const lx = cx + (lichX(w) / ARENA_W - 0.5) * span;
     const ly = cy + (lichY(w) / ARENA_H - 0.5) * span;
     ctx.fillStyle = "#e4c0ff";
-    ctx.fillRect(lx - 1.8, ly - 1.8, 3.6, 3.6);
+    ctx.fillRect(lx - 2, ly - 2, 4, 4);
   }
   const vx = cx + (w.arena.camX / ARENA_W - 0.5) * span;
   const vy = cy + (w.arena.camY / ARENA_H - 0.5) * span;
   ctx.strokeStyle = "#ffe7ad";
-  ctx.lineWidth = 1;
+  ctx.lineWidth = 1.4;
   ctx.strokeRect(vx, vy, (W / ARENA_W) * span, (H / ARENA_H) * span);
   ctx.save();
   ctx.translate(cx + (w.px / ARENA_W - 0.5) * span, cy + (w.py / ARENA_H - 0.5) * span);
   ctx.rotate(Math.atan2(w.aimY, w.aimX || 1));
   ctx.beginPath();
-  ctx.moveTo(5, 0);
-  ctx.lineTo(-3.4, 2.6);
-  ctx.lineTo(-3.4, -2.6);
+  ctx.moveTo(6, 0);
+  ctx.lineTo(-3.6, 2.8);
+  ctx.lineTo(-3.6, -2.8);
   ctx.closePath();
   ctx.fillStyle = "#fff8ee";
   ctx.fill();
-  ctx.lineWidth = 1;
+  ctx.lineWidth = 1.2;
   ctx.strokeStyle = OUTLINE;
   ctx.stroke();
   ctx.restore();
   ctx.restore();
-  roundRect(ctx, 8, 290, 86, 16, 6);
-  ctx.fillStyle = lit(ctx, 8, 290, 86, 16, BRASS);
+  const ly = box.y + box.h - 16;
+  roundRect(ctx, box.x, ly, box.w, 16, 6);
+  ctx.fillStyle = lit(ctx, box.x, ly, box.w, 16, BRASS);
   ctx.fill();
   ctx.lineWidth = 1.5;
   ctx.strokeStyle = OUTLINE;
   ctx.stroke();
-  roundRect(ctx, 10, 292, 82, 12, 4);
-  ctx.fillStyle = "#1c120c";
-  ctx.fill();
-  ink(ctx, "CLOCKTOWER YARD", 51, 293, 7, "#ffe7ad", "center");
+  ink(ctx, "YARD", box.x + box.w / 2, ly + 3, 8, "#1c120c", "center");
 }
 
 function badgeIcon(ctx: CanvasRenderingContext2D, kind: number, x: number, y: number, tick: number): void {
@@ -404,56 +413,61 @@ function badgeIcon(ctx: CanvasRenderingContext2D, kind: number, x: number, y: nu
   cog(ctx, x, y, 12, tick * 0.02, BRASS, 8, true);
 }
 
-function ability(ctx: CanvasRenderingContext2D, w: World): void {
-  const cx = 430;
-  const cy = 258;
+function ability(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   const info = weaponBadge(w);
-  brassRing(ctx, cx, cy, 28, "#1a2744");
+  const cx = box.x + box.w / 2;
+  const cy = box.y + box.h * 0.42;
+  const r = Math.min(28, box.w * 0.32);
+  brassRing(ctx, cx, cy, r, "#10182c");
   badgeIcon(ctx, info.kind, cx, cy, w.tick);
-  roundRect(ctx, cx - 40, 290, 80, 16, 6);
-  ctx.fillStyle = lit(ctx, cx - 40, 290, 80, 16, BRASS);
+  const ly = box.y + box.h - 22;
+  roundRect(ctx, box.x, ly, box.w, 16, 6);
+  ctx.fillStyle = lit(ctx, box.x, ly, box.w, 16, BRASS);
   ctx.fill();
   ctx.lineWidth = 1.5;
   ctx.strokeStyle = OUTLINE;
   ctx.stroke();
-  roundRect(ctx, cx - 38, 292, 76, 12, 4);
-  ctx.fillStyle = "#1c120c";
-  ctx.fill();
-  ink(ctx, info.name, cx, 293, 8, "#ffe7ad", "center");
+  ink(ctx, info.name, cx, ly + 3, 8, "#1c120c", "center");
   const n = Math.max(1, Math.min(UPG_MAX, info.pips));
   for (let i = 0; i < UPG_MAX; i++) {
     ctx.beginPath();
-    ctx.arc(cx - 16 + i * 8, 312, 2.4, 0, Math.PI * 2);
+    ctx.arc(cx - 16 + i * 8, box.y + 8, 2.6, 0, Math.PI * 2);
     ctx.fillStyle = i < n ? "#ff9a1e" : "#3a2a18";
     ctx.fill();
   }
 }
 
 export function drawHud(ctx: CanvasRenderingContext2D, w: World): void {
-  heartGauge(ctx, w);
-  if (w.meta.revive > 0) ink(ctx, "REV", 52, 8, 9, "#ffb060");
-  if (!w.choosing) banner(ctx, w);
-  clockPanel(ctx, w);
-  pauseButton(ctx);
+  const layout = currentHud();
+  if (!layout) return;
+  ctx.save();
+  const dpr = ctx.canvas.width / Math.max(1, layout.view.w);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  drawHealth(ctx, w, layout.hero);
+  drawXp(ctx, w, layout.xp);
+  if (!w.choosing) banner(ctx, w, layout.difficulty);
+  clockPanel(ctx, w, layout.clock);
+  pauseButton(ctx, layout.pause);
   if (!w.choosing) {
-    minimap(ctx, w);
-    ability(ctx, w);
-    rankCallout(ctx, w);
+    minimap(ctx, w, layout.minimap);
+    ability(ctx, w, layout.ability);
+    rankCallout(ctx, w, layout);
   }
+  ctx.restore();
   ctx.textAlign = "left";
   ctx.textBaseline = "alphabetic";
 }
 
-function rankCallout(ctx: CanvasRenderingContext2D, w: World): void {
+function rankCallout(ctx: CanvasRenderingContext2D, w: World, layout: HudLayout): void {
   if (w.banner <= 0 || w.over) return;
   const name = difficultyLabel(w.rank);
   const flash = ((w.tick >> 2) & 1) === 0;
-  const bw = 240;
+  const bw = Math.min(280, layout.view.w * 0.72);
   const bh = 52;
-  const x = (W - bw) / 2;
-  const y = 64;
-  brassPanel(ctx, x, y, bw, bh, 14, "#1a2744");
-  ink(ctx, "RANK UP", x + bw / 2, y + 6, 10, flash ? "#ffb060" : "#f0c86a", "center");
+  const x = (layout.view.w - bw) / 2;
+  const y = layout.difficulty.y + layout.difficulty.h + 10;
+  plate(ctx, { x, y, w: bw, h: bh }, 14, "#10182c");
+  ink(ctx, "RANK UP", x + bw / 2, y + 6, 11, flash ? "#ffb060" : "#f0c86a", "center");
   fitInk(ctx, name, x + bw / 2, y + 22, 16, bw - 24, flash ? "#fff3c0" : "#fff8ee");
 }
 
