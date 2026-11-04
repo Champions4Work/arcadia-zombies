@@ -298,7 +298,7 @@ function portrait(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   ctx.stroke();
   const frac = w.maxHp > 0 ? Math.max(0, Math.min(1, w.hp / w.maxHp)) : 0;
   const bx = box.x + faceS + 6;
-  const bw = Math.max(72, box.w - faceS - 10);
+  const bw = Math.max(48, box.w - faceS - 10);
   lvBadge(ctx, bx, box.y + 2);
   const by = box.y + 16;
   ctx.fillStyle = IRON;

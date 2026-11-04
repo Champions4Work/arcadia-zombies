@@ -19,7 +19,7 @@ describe("visual review gates", () => {
     expect(sheet.includes('spr["x"]')).toBe(true);
     expect(sheet.includes("imageSmoothingEnabled = false")).toBe(true);
     expect(SEE_AXIS).toBe(360);
-    expect(HERO_DRAW_SCALE).toBe(1.42);
+    expect(HERO_DRAW_SCALE).toBe(1.28);
   });
 
   it("scales normal foes to 0.58 of hero height and brutes to 1.12x", () => {
@@ -31,13 +31,15 @@ describe("visual review gates", () => {
     expect(foeWorldScale(Z_BRUTE, 98)).toBeCloseTo((64 * 1.12) / 98);
     const look = readFileSync("src/art/look.ts", "utf8");
     expect(look.includes("export function paintRifle")).toBe(true);
-    expect(look.includes("ellipse(x, y + 3, 18, 6.5")).toBe(true);
-    expect(look.includes("rgba(90,240,235,0.92)")).toBe(true);
-    expect(look.includes("rgba(255,214,130,0.62)")).toBe(true);
-    expect(look.includes("brightness(1.85)")).toBe(true);
+    expect(look.includes("ellipse(x, y + 3, 14, 5")).toBe(true);
+    expect(look.includes("rgba(90,240,235,0.92)")).toBe(false);
+    expect(look.includes("rgba(255,214,130,0.62)")).toBe(false);
+    expect(look.includes("brightness(1.85)")).toBe(false);
+    expect(look.includes("heroSpriteId")).toBe(false);
     expect(look.includes("function paintDiveSuit")).toBe(true);
     expect(look.includes("rgba(48,255,236,0.96)")).toBe(true);
     expect(look.includes("paintRifle(ctx, x, y, nx, ny, s, bob)")).toBe(true);
+    expect(look.includes("ctx.transform(1, 0, lean")).toBe(false);
     expect(look.includes("rgba(200,208,220")).toBe(false);
     expect(look.includes("ellipse(mx, my, 18, 10")).toBe(false);
     expect(look.includes("lineTo(mx + nx * 56")).toBe(true);
@@ -57,7 +59,9 @@ describe("visual review gates", () => {
     expect(actors.includes("strokeRect")).toBe(false);
     expect(actors.includes("elite || kind === Z_BRUTE || kind === Z_KNIGHT")).toBe(true);
     expect(actors.includes("if (flash && marked)")).toBe(false);
-    expect(actors.includes("if (flash)")).toBe(true);
+    expect(actors.includes("fillRect(x - 10, y - foeWorldH")).toBe(false);
+    expect(actors.includes("brightness(2.6)")).toBe(false);
+    expect(actors.includes('ctx.ellipse(x, y - foeWorldH(kind) * 0.42')).toBe(true);
     expect(actors.includes("for (let i = 1; i <= 5;")).toBe(false);
     const bolt = readFileSync("src/render/cast-fx.ts", "utf8");
     expect(bolt.includes("fillRect(-16, -3.6, 36, 7.2)")).toBe(false);
@@ -168,12 +172,15 @@ describe("visual review gates", () => {
     expect(hud.includes("function barCount")).toBe(true);
     expect(hud.includes("strokeText")).toBe(true);
     expect(hud.includes("#fff6df")).toBe(true);
+    expect(hud.includes("Math.max(48, box.w - faceS - 10)")).toBe(true);
+    expect(hud.includes("Math.max(72, box.w - faceS - 10)")).toBe(false);
     expect(hud.includes("bx + bw + 4")).toBe(false);
     expect(hud.includes("72/100")).toBe(false);
     expect(hud.includes("${w.hp}/${w.maxHp}")).toBe(false);
     const look = readFileSync("src/art/look.ts", "utf8");
     expect(look.includes("s * 4.2")).toBe(false);
-    expect(look.includes("const fade = 0.6")).toBe(true);
+    expect(look.includes("const fade = 0.82")).toBe(true);
+    expect(look.includes("#b41c18")).toBe(true);
     expect(look.includes("fillRect(0, 0, 3.4, 1.4)")).toBe(true);
     expect(look.includes("fillRect(-4, -2, 11, 4.2)")).toBe(false);
     const shot = readFileSync("src/shell/review-shot.ts", "utf8");
@@ -211,6 +218,11 @@ describe("visual review gates", () => {
     expect(boot.includes("wantsFeelShot")).toBe(true);
     expect(boot.includes("shouldStep(session) && !wantsReviewShot")).toBe(true);
     expect(boot.includes("world.tick++")).toBe(true);
+    const fps = readFileSync("src/render/fps.ts", "utf8");
+    expect(fps.includes("if (!debugHud) return")).toBe(true);
+    const cmp = readFileSync("scripts/compare-shots.mjs", "utf8");
+    expect(cmp.includes("h = max(left.height, right.height)")).toBe(true);
+    expect(cmp.includes("im.resize")).toBe(true);
     expect(boot.includes("snapArenaCamera")).toBe(true);
     const shake = readFileSync("src/render/shake.ts", "utf8");
     expect(shake.includes("EV_BOOM")).toBe(true);

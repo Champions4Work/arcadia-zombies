@@ -2,7 +2,7 @@ import { ARENA_H } from "../sim/arena";
 import { Z_ELITE, Z_GAS, Z_KIND, Z_KNIGHT, Z_RAT, Z_SPITTER } from "../sim/foes";
 import { fogCover } from "../sim/map-events";
 import { enemyFlash, hitKnockX, hitKnockY } from "./juice";
-import { FLASH_SOFT, reduceMotionOn } from "./motion";
+import { reduceMotionOn } from "./motion";
 import {
   EV_SHOT, FX_BOOM, FX_FLASH, FX_PUFF, FX_SPARK, FX_XP, Z_BRUTE, Z_GHOUL, Z_SHAMBLER, type World,
 } from "../sim/types";
@@ -90,10 +90,13 @@ function paintOne(ctx: CanvasRenderingContext2D, w: World, i: number): void {
     ctx.fillRect(x - 9, top + 1, bw, 1.4);
   }
   if (flash) {
-    ctx.fillStyle = "#fff8e8";
-    ctx.globalAlpha = reduceMotionOn() ? FLASH_SOFT : 0.55;
-    ctx.fillRect(x - 10, y - foeWorldH(kind) * 0.9, 20, foeWorldH(kind) * 0.72);
-    ctx.globalAlpha = 1;
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    ctx.fillStyle = reduceMotionOn() ? "rgba(255,244,220,0.35)" : "rgba(255,244,220,0.7)";
+    ctx.beginPath();
+    ctx.ellipse(x, y - foeWorldH(kind) * 0.42, 5.5, foeWorldH(kind) * 0.26, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
   }
 }
 

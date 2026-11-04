@@ -2,12 +2,12 @@ import {
   BRASS, BRASS_HI, BRASS_LO, CYAN, FONT_BODY, GLASS, INK, IRON, PANEL, XP,
 } from "../shell/theme";
 import { PX } from "./palette";
-import { blitSheet, blitSheetLean, foeSpriteId, heroSpriteId, spriteOf } from "./sheet";
+import { blitSheet, blitSheetLean, foeSpriteId, spriteOf } from "./sheet";
 
 export const HERO_LOOK_W = 40;
 export const HERO_LOOK_H = 52;
 export const HERO_PACK_H = 64;
-export const HERO_DRAW_SCALE = 1.42;
+export const HERO_DRAW_SCALE = 1.28;
 export const FOE_TO_HERO = 0.58;
 export const BRUTE_TO_HERO = 1.12;
 
@@ -162,42 +162,23 @@ export function paintSignatureHero(
   tick: number,
 ): void {
   const bob = walkBob(tick, moving);
-  const lean = Math.max(-0.16, Math.min(0.16, aimX * 0.14));
   const flip = aimX < 0;
   const s = HERO_DRAW_SCALE;
   const mag = Math.max(0.2, Math.hypot(aimX, aimY));
   const nx = aimX / mag;
   const ny = aimY / mag;
-  paintShadow(ctx, x, y, 24, 10);
+  paintShadow(ctx, x, y, 16, 6);
   ctx.save();
   ctx.fillStyle = "rgba(62,220,220,0.42)";
   ctx.beginPath();
-  ctx.ellipse(x, y + 3, 18, 6.5, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y + 3, 14, 5, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = CYAN;
   ctx.globalAlpha = 0.96;
-  ctx.lineWidth = 2.6;
+  ctx.lineWidth = 2.2;
   ctx.stroke();
   ctx.restore();
-  ctx.save();
-  ctx.fillStyle = "rgba(255,214,130,0.62)";
-  ctx.beginPath();
-  ctx.ellipse(x, y - 24 * s - bob, 13 * s, 22 * s, lean, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-  ctx.save();
-  ctx.filter = "brightness(1.85) contrast(1.28) saturate(1.45)";
-  blitSheetLean(ctx, heroSpriteId(moving, tick), x, y, flip, bob, lean, s);
-  ctx.restore();
-  paintDiveSuit(ctx, x, y, s, bob, lean, flip);
-  ctx.save();
-  ctx.globalCompositeOperation = "lighter";
-  ctx.strokeStyle = "rgba(90,240,235,0.92)";
-  ctx.lineWidth = 3.4;
-  ctx.beginPath();
-  ctx.ellipse(x, y - 26 * s - bob, 13 * s, 21 * s, lean, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.restore();
+  paintDiveSuit(ctx, x, y, s, bob, flip, tick, moving);
   paintRifle(ctx, x, y, nx, ny, s, bob);
   if (!shoot) return;
   const mx = x + nx * 34 * s;
@@ -228,37 +209,65 @@ function paintDiveSuit(
   y: number,
   s: number,
   bob: number,
-  lean: number,
   flip: boolean,
+  tick: number,
+  moving: boolean,
 ): void {
+  const frame = moving ? (tick >> 3) & 3 : 0;
+  const liftL = frame === 1 ? 3.2 : frame === 2 ? 1.2 : 0;
+  const liftR = frame === 3 ? 3.2 : frame === 2 ? 1.2 : 0;
   ctx.save();
   ctx.translate(x, y - bob);
-  ctx.transform(1, 0, lean, 1, 0, 0);
   if (flip) ctx.scale(-1, 1);
+  ctx.fillStyle = "#241610";
+  ctx.fillRect(-4.6 * s, -12 * s + liftL, 3.8 * s, 13 * s - liftL);
+  ctx.fillRect(0.8 * s, -12 * s + liftR, 3.8 * s, 13 * s - liftR);
+  ctx.fillStyle = BRASS;
+  ctx.fillRect(-5 * s, -1.4 * s + liftL, 4.6 * s, 2.8 * s);
+  ctx.fillRect(0.4 * s, -1.4 * s + liftR, 4.6 * s, 2.8 * s);
+  ctx.fillStyle = "#2a1a12";
+  ctx.beginPath();
+  ctx.ellipse(0, -20 * s, 7.2 * s, 12 * s, 0, 0, Math.PI * 2);
+  ctx.fill();
   ctx.fillStyle = BRASS;
   ctx.beginPath();
-  ctx.ellipse(0, -30 * s, 9 * s, 7 * s, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, -22 * s, 6.4 * s, 8 * s, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = BRASS_HI;
   ctx.beginPath();
-  ctx.ellipse(0, -33 * s, 5 * s, 2.6 * s, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, -23 * s, 3.8 * s, 3 * s, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = BRASS;
   ctx.beginPath();
-  ctx.ellipse(-8 * s, -16 * s, 6.2 * s, 3.4 * s, -0.35, 0, Math.PI * 2);
-  ctx.ellipse(8 * s, -16 * s, 6.2 * s, 3.4 * s, 0.35, 0, Math.PI * 2);
+  ctx.ellipse(-7.2 * s, -21 * s, 4 * s, 3 * s, -0.28, 0, Math.PI * 2);
+  ctx.ellipse(7.2 * s, -21 * s, 4 * s, 3 * s, 0.28, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillRect(-4.5 * s, -20 * s, 9 * s, 8 * s);
+  ctx.fillRect(-3.2 * s, -18 * s, 6.4 * s, 5.4 * s);
+  ctx.strokeStyle = BRASS_HI;
+  ctx.lineWidth = 1.4 * s;
+  ctx.beginPath();
+  ctx.arc(6.4 * s, -26 * s, 4.2 * s, 0.2, 1.4);
+  ctx.stroke();
+  ctx.fillStyle = BRASS;
+  ctx.beginPath();
+  ctx.ellipse(0, -34 * s, 7.8 * s, 7.4 * s, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = BRASS_HI;
+  ctx.beginPath();
+  ctx.ellipse(0, -37 * s, 4.2 * s, 2.2 * s, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#1a1008";
+  ctx.fillRect(-6.6 * s, -35 * s, 13.2 * s, 4.8 * s);
   ctx.globalCompositeOperation = "lighter";
   ctx.fillStyle = "rgba(48,255,236,0.96)";
   ctx.beginPath();
-  ctx.ellipse(-3.4 * s, -29 * s, 3 * s, 2.3 * s, 0, 0, Math.PI * 2);
-  ctx.ellipse(3.4 * s, -29 * s, 3 * s, 2.3 * s, 0, 0, Math.PI * 2);
+  ctx.ellipse(-3 * s, -32.6 * s, 2.6 * s, 2 * s, 0, 0, Math.PI * 2);
+  ctx.ellipse(3 * s, -32.6 * s, 2.6 * s, 2 * s, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = "rgba(210,255,255,0.9)";
   ctx.beginPath();
-  ctx.ellipse(-4 * s, -30 * s, 1.1 * s, 0.7 * s, 0, 0, Math.PI * 2);
-  ctx.ellipse(2.8 * s, -30 * s, 1.1 * s, 0.7 * s, 0, 0, Math.PI * 2);
+  ctx.ellipse(-3.6 * s, -33.4 * s, 0.95 * s, 0.6 * s, 0, 0, Math.PI * 2);
+  ctx.ellipse(2.4 * s, -33.4 * s, 0.95 * s, 0.6 * s, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
@@ -352,24 +361,28 @@ export function paintEnergyTank(ctx: CanvasRenderingContext2D, x: number, y: num
 
 export function paintBlood(ctx: CanvasRenderingContext2D, x: number, y: number, s: number): void {
   const seed = ((x * 13 + y * 7 + s * 17) | 0);
-  const n = 4 + (seed & 3);
-  const fade = 0.6 + (seed & 3) * 0.05;
-  const span = 4 + (s & 7);
-  ctx.fillStyle = "#4a100e";
+  const n = 5 + (seed & 3);
+  const fade = 0.82 + (seed & 3) * 0.04;
+  const span = 6 + (s & 7);
+  ctx.fillStyle = "#7a1410";
+  ctx.globalAlpha = fade;
+  ctx.beginPath();
+  ctx.ellipse(x, y, 4 + (s & 3), 2.6 + (s & 2), 0.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#b41c18";
   for (let i = 0; i < n; i++) {
     const ox = ((seed + i * 19) % (span * 2 + 1)) - span;
     const oy = ((seed + i * 11) % (span + 3)) - (span >> 1);
-    const rw = 2 + ((seed + i * 5) % Math.max(3, span >> 1));
-    const rh = 1 + ((seed + i * 3) % Math.max(2, span >> 2));
-    ctx.globalAlpha = fade;
+    const rw = 3 + ((seed + i * 5) % Math.max(4, span >> 1));
+    const rh = 2 + ((seed + i * 3) % Math.max(3, span >> 2));
     ctx.beginPath();
     ctx.ellipse(x + ox, y + oy, rw, rh, ((seed + i) % 8) * 0.28, 0, Math.PI * 2);
     ctx.fill();
   }
-  ctx.fillStyle = "#2a0808";
-  ctx.fillRect(x + 3 + (seed % 3), y + 1, 2, 1);
-  ctx.fillRect(x - 4, y + 3, 1, 2);
-  ctx.fillRect(x + 1, y - 3, 1, 1);
+  ctx.fillStyle = "#4a0808";
+  ctx.fillRect(x + 4 + (seed % 3), y + 1, 3, 2);
+  ctx.fillRect(x - 6, y + 4, 2, 3);
+  ctx.fillRect(x + 2, y - 4, 2, 2);
   ctx.globalAlpha = 1;
 }
 

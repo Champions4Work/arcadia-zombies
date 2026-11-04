@@ -32,11 +32,11 @@ function put(x: number, y: number, s: number, kind: number): void {
 }
 
 export function stampBlood(x: number, y: number, salt: number): void {
-  const n = 5 + (salt & 3);
+  const n = 3 + (salt & 3);
   for (let k = 0; k < n; k++) {
-    const ox = ((salt + k * 17) % 15) - 7;
-    const oy = ((salt + k * 9) % 13) - 6;
-    put(x + ox, y + oy, 4 + ((salt + k) & 5), STAIN_BLOOD);
+    const ox = ((salt + k * 17) % 17) - 8;
+    const oy = ((salt + k * 9) % 15) - 7;
+    put(x + ox, y + oy, 5 + ((salt + k) & 5), STAIN_BLOOD);
   }
 }
 

@@ -102,6 +102,7 @@ function glyph(c: CanvasRenderingContext2D, x: number, y: number, ch: string, co
 }
 
 export function paintFps(c: CanvasRenderingContext2D): void {
+  if (!debugHud) return;
   const lines = overlayLines(on, shown, sendFails, debugHud);
   if (lines.length === 0) return;
   const x0 = 8;

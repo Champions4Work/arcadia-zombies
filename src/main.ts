@@ -956,9 +956,9 @@ if (location.hash === "#horde") {
   begin(session);
   setRunEndless(world, crown.endless);
 }
-if (wantsReviewShot(location.search, location.hash)) {
-  begin(session);
-  if (wantsFeelShot(location.search, location.hash) && !fpsEnabled()) toggleFps();
+if (wantsReviewShot(location.search, location.hash)) begin(session);
+if (wantsFeelShot(location.search, location.hash) && !fpsEnabled()) {
+  toggleFps();
 }
 (globalThis as unknown as { "__azFps": () => number; "__azAlive": () => number })["__azFps"] = fpsReadout;
 (globalThis as unknown as { "__azFps": () => number; "__azAlive": () => number })["__azAlive"] = () => {
