@@ -1,7 +1,7 @@
 import { EV_BOOM, EV_HURT, EV_LEVEL, EV_WAVE } from "../sim/types";
 import { reduceMotionOn } from "./motion";
 
-export const SHAKE_CAP = 2;
+export const SHAKE_CAP = 8;
 export const SHAKE_AMP = 0.55;
 export const TRAUMA_HURT = 0.7;
 export const TRAUMA_BIG = 0.4;

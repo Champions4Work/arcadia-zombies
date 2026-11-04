@@ -221,7 +221,8 @@ describe("visual review gates", () => {
     const stains = readFileSync("src/render/stains.ts", "utf8");
     expect(stains.includes("n = 3 + (salt & 3)")).toBe(true);
     expect(stains.includes("export function stainFade")).toBe(true);
-    expect(look.includes("fillRect(0, 0, 2.2, 1)")).toBe(true);
+    expect(look.includes("fillRect(0, 0, CASE_W, CASE_H)")).toBe(true);
+    expect(look.includes("fillRect(0, 0, 2.2, 1)")).toBe(false);
     expect(look.includes("fillRect(0, 0, 3.4, 1.4)")).toBe(false);
     expect(look.includes("fillRect(-4, -2, 11, 4.2)")).toBe(false);
     const shot = readFileSync("src/shell/review-shot.ts", "utf8");
@@ -282,10 +283,11 @@ describe("visual review gates", () => {
     expect(shake.includes("TRAUMA_BOOM")).toBe(true);
     const juice = readFileSync("src/render/juice.ts", "utf8");
     expect(juice.includes("function spawnBlood")).toBe(true);
+    expect(juice.includes("export function juiceShot")).toBe(true);
     expect(juice.includes("SHAKE_BRUTE")).toBe(true);
     expect(juice.includes("pGear[i] ?? 0) === 2")).toBe(true);
     expect(juice.includes("NUMBER_LIFE = 180")).toBe(true);
-    expect(juice.includes("GLYPH_CELL = 1")).toBe(true);
+    expect(juice.includes("GLYPH_CELL = 2")).toBe(true);
     expect(juice.includes('HIT_COLOR = "#fff4c8"')).toBe(true);
     expect(juice.includes("life / NUMBER_LIFE")).toBe(true);
     expect(readFileSync("src/shell/review-shot.ts", "utf8").includes("tickJuice(70)")).toBe(true);

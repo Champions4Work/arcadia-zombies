@@ -3,6 +3,7 @@ import { paintBlood, paintCasing } from "../art/look";
 export const STAIN_CAP = 160;
 export const STAIN_BLOOD = 1;
 export const STAIN_CASE = 2;
+export const BLOOD_STAIN_BASE = 8;
 
 const sx = new Float32Array(STAIN_CAP);
 const sy = new Float32Array(STAIN_CAP);
@@ -42,7 +43,7 @@ export function stampBlood(x: number, y: number, salt: number): void {
   for (let k = 0; k < n; k++) {
     const ox = ((salt + k * 17) % 19) - 9;
     const oy = ((salt + k * 9) % 17) - 8;
-    put(x + ox, y + oy, 5 + ((salt + k) & 5), STAIN_BLOOD);
+    put(x + ox, y + oy, BLOOD_STAIN_BASE + ((salt + k) & 7), STAIN_BLOOD);
   }
 }
 

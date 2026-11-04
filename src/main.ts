@@ -1,5 +1,5 @@
 import { awardRun, applyWorkshop, emptyWorkshop, loadWorkshop, saveWorkshop, tryBuy } from "./meta/workshop";
-import { fpsEnabled, fpsReadout, noteFrame, noteSendFails, setDebugHud, toggleFps, toggleFromKey } from "./render/fps";
+import { fpsDump, fpsEnabled, fpsReadout, noteFrame, noteSendFails, setDebugHud, toggleFps, toggleFromKey } from "./render/fps";
 import { juiceFrame, ownJuiceClock, setNumbersOn, stopRemaining } from "./render/juice";
 import { prefersReduceMotion, setReduceMotion } from "./render/motion";
 import { resetXpGain, syncXpGain, tickXpGain } from "./render/xp-gain";
@@ -960,8 +960,8 @@ if (wantsReviewShot(location.search, location.hash)) begin(session);
 if (wantsFeelShot(location.search, location.hash) && !fpsEnabled()) {
   toggleFps();
 }
-(globalThis as unknown as { "__azFps": () => number; "__azAlive": () => number })["__azFps"] = fpsReadout;
-(globalThis as unknown as { "__azFps": () => number; "__azAlive": () => number })["__azAlive"] = () => {
+(globalThis as unknown as { "__azFps": () => { mid: number; avg: number; min: number; max: number }; "__azAlive": () => number })["__azFps"] = fpsDump;
+(globalThis as unknown as { "__azFps": () => { mid: number; avg: number; min: number; max: number }; "__azAlive": () => number })["__azAlive"] = () => {
   let n = 0;
   for (let i = 0; i < world.zombies.alive.length; i++) if (world.zombies.alive[i]) n++;
   return n;

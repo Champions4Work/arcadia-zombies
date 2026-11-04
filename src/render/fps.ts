@@ -20,6 +20,8 @@ const GLYPH: Record<string, number> = {
   " ": 0,
 };
 
+export const FPS_SAMPLE_CAP = 256;
+
 let on = false;
 let last = 0;
 let acc = 0;
@@ -27,6 +29,9 @@ let frames = 0;
 let shown = -1;
 let debugHud = false;
 let sendFails = 0;
+const samples = new Float32Array(FPS_SAMPLE_CAP);
+let sampleN = 0;
+let sampleAt = 0;
 
 export function fpsEnabled(): boolean {
   return on;
@@ -34,6 +39,12 @@ export function fpsEnabled(): boolean {
 
 export function fpsReadout(): number {
   return shown;
+}
+
+function clearSamples(): void {
+  sampleN = 0;
+  sampleAt = 0;
+  samples.fill(0);
 }
 
 export function resetFps(): void {
@@ -44,6 +55,7 @@ export function resetFps(): void {
   shown = -1;
   debugHud = false;
   sendFails = 0;
+  clearSamples();
 }
 
 export function toggleFps(): boolean {
@@ -52,6 +64,7 @@ export function toggleFps(): boolean {
   acc = 0;
   frames = 0;
   shown = -1;
+  clearSamples();
   return on;
 }
 
@@ -86,11 +99,42 @@ export function noteFrame(now: number): void {
   else if (dt > 1000) dt = 1000;
   acc += dt;
   frames += 1;
+  const inst = dt > 0 ? 1000 / dt : 0;
+  samples[sampleAt] = inst;
+  sampleAt = sampleAt + 1 < FPS_SAMPLE_CAP ? sampleAt + 1 : 0;
+  if (sampleN < FPS_SAMPLE_CAP) sampleN++;
   if (acc >= 250 && frames > 0) {
     shown = Math.round((frames * 1000) / acc);
     acc = 0;
     frames = 0;
   }
+}
+
+export function fpsDump(): { mid: number; avg: number; min: number; max: number } {
+  if (sampleN <= 0) {
+    const v = shown < 0 ? 0 : shown;
+    return { "mid": v, "avg": v, "min": v, "max": v };
+  }
+  let min = 1e9;
+  let max = 0;
+  let sum = 0;
+  const copy = new Float32Array(sampleN);
+  const start = (sampleAt - sampleN + FPS_SAMPLE_CAP) % FPS_SAMPLE_CAP;
+  for (let i = 0; i < sampleN; i++) {
+    const v = samples[(start + i) % FPS_SAMPLE_CAP] ?? 0;
+    copy[i] = v;
+    if (v < min) min = v;
+    if (v > max) max = v;
+    sum += v;
+  }
+  copy.sort();
+  const mid = copy[sampleN >> 1] ?? shown;
+  return {
+    "mid": Math.round(mid),
+    "avg": Math.round(sum / sampleN),
+    "min": Math.round(min),
+    "max": Math.round(max),
+  };
 }
 
 function glyph(c: CanvasRenderingContext2D, x: number, y: number, ch: string, col: string): void {
