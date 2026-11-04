@@ -1,16 +1,25 @@
 import { readFileSync } from "node:fs";
+import { slideUnit } from "../src/sim/arena.hot";
 import { HEAL_HP, OB_BARREL, OB_BOILER, OB_CRATE, OB_GEAR, OB_PIPE, propBreaks } from "../src/sim/arena";
 import {
-  BELT_UPG_CAP, CARGO_HEAL, CARGO_LAND, CARGO_RIDE, CARGO_SLIDE, CARGO_UPG, DROP_ALONG, FIRST_CARGO,
+  BELT_UPG_CAP, CARGO_HEAL, CARGO_LAND, CARGO_PWR, CARGO_RIDE, CARGO_SLIDE, CARGO_UPG, DROP_ALONG, FIRST_CARGO,
   LANE_X, VENT_SLOW, cargoGranted, cargoKind, cargoOn, cargoPhase, cargoX, cargoY, depthState,
   reviewDepth, ventCount, ventX, ventY,
 } from "../src/sim/depth";
-import { stepDepth, ventSlowMul } from "../src/sim/depth.hot";
+import { stepDepth, ventSlowAt, ventSlowMul, ventSlowZombieAt } from "../src/sim/depth.hot";
 import { step } from "../src/sim/step.hot";
-import { UPG_DMG, UPG_FIRE, UPG_HP, UPG_SPEED, UPG_VENT, type Input, type World } from "../src/sim/types";
+import { FX_PUFF, UPG_DMG, UPG_FIRE, UPG_HP, UPG_SPEED, UPG_VENT, type Input, type World } from "../src/sim/types";
 import { createWorld } from "../src/sim/world";
 
 const idle = (pick = 0): Input => ({ dx: 0, dy: 0, pick });
+
+const fxPuffs = (w: World): number => {
+  let n = 0;
+  for (let i = 0; i < w.fxKind.length; i++) {
+    if (w.fxKind[i] === FX_PUFF && w.fxTick[i] === w.tick) n++;
+  }
+  return n;
+};
 
 const freeze = (w: World): void => {
   w.toSpawn = 99;
@@ -54,6 +63,9 @@ describe("gameplay depth hooks", () => {
     expect(propBreaks(OB_GEAR)).toBe(true);
     expect(propBreaks(OB_BARREL)).toBe(true);
     expect(propBreaks(OB_PIPE)).toBe(false);
+    const boiler = createWorld(12);
+    smash(boiler, OB_BOILER);
+    expect(fxPuffs(boiler)).toBeGreaterThanOrEqual(2);
     for (const kind of [OB_BOILER, OB_CRATE, OB_GEAR, OB_BARREL]) {
       const w = createWorld(11 + kind);
       smash(w, kind);
@@ -98,6 +110,31 @@ describe("gameplay depth hooks", () => {
     expect(slowed).toBeGreaterThan(0);
     expect(open).toBeGreaterThan(slowed * 1.4);
     expect(slowed / open).toBeCloseTo(VENT_SLOW, 1);
+  });
+
+  it("slows zombies on vent pads with the same floor multiplier", () => {
+    const w = createWorld(31);
+    freeze(w);
+    clearProps(w);
+    const d = depthState(w);
+    d.ventX[0] = 400;
+    d.ventY[0] = 400;
+    expect(ventSlowAt(w, 400, 400)).toBe(VENT_SLOW);
+    expect(ventSlowZombieAt(w, 400, 400)).toBe(VENT_SLOW);
+    w.zombies.alive[0] = 1;
+    w.zombies.x[0] = 400;
+    w.zombies.y[0] = 400;
+    w.zombies.vx[0] = 2;
+    w.zombies.kind[0] = 0;
+    slideUnit(w, 0, 1, 0, 2, 9);
+    const ventMove = (w.zombies.x[0] ?? 0) - 400;
+    w.zombies.x[0] = 400;
+    w.zombies.y[0] = 520;
+    slideUnit(w, 0, 1, 0, 2, 9);
+    const openMove = (w.zombies.x[0] ?? 0) - 400;
+    expect(ventMove).toBeGreaterThan(0);
+    expect(openMove).toBeGreaterThan(ventMove * 1.35);
+    expect(ventMove / openMove).toBeCloseTo(VENT_SLOW, 1);
   });
 
   it("rides a crate down the belt and delivers it into the fight lane", () => {
@@ -158,6 +195,7 @@ describe("gameplay depth hooks", () => {
     expect((w.upgrades[UPG_SPEED] ?? 0) + (w.upgrades[UPG_FIRE] ?? 0) + (w.upgrades[UPG_DMG] ?? 0) + (w.upgrades[UPG_HP] ?? 0)).toBe(1);
     d.granted = BELT_UPG_CAP;
     w.hp = 3;
+    w.ult = 0;
     d.cargoOn[0] = 1;
     d.cargoPhase[0] = CARGO_LAND;
     d.cargoKind[0] = CARGO_UPG;
@@ -165,8 +203,9 @@ describe("gameplay depth hooks", () => {
     d.cargoY[0] = w.py;
     stepDepth(w);
     expect(cargoGranted(w)).toBe(BELT_UPG_CAP);
-    expect(w.hp).toBe(3 + HEAL_HP);
-    expect(BELT_UPG_CAP).toBe(2);
+    expect(w.hp).toBe(3);
+    expect(w.ult).toBe(CARGO_PWR);
+    expect(CARGO_PWR).toBeGreaterThan(0);
   });
 
   it("blits pack sprites for the belt crate, breakables, and vent decals", () => {
@@ -190,5 +229,6 @@ describe("gameplay depth hooks", () => {
     expect(ventCount(w)).toBeGreaterThanOrEqual(3);
     expect(ventX(w, 0)).toBeGreaterThan(0);
     expect(ventY(w, 0)).toBeGreaterThan(0);
+    expect(w.arena.obsAlive.some((on, i) => on && w.arena.obsKind[i] === OB_BOILER)).toBe(true);
   });
 });

@@ -14,6 +14,8 @@ export const CARGO_UPG = 1;
 export const VENT_SLOW = 0.55;
 export const VENT_R = 22;
 export const VENT_R2 = VENT_R * VENT_R;
+export const ZOMBIE_VENT_R = 14;
+export const ZOMBIE_VENT_R2 = ZOMBIE_VENT_R * ZOMBIE_VENT_R;
 export const BELT_SPEED = 0.9;
 export const SLIDE_SPEED = 1.6;
 export const CARGO_GAP = 420;
@@ -24,6 +26,7 @@ export const LANE_X = ARENA_W / 2;
 export const CARGO_R2 = 20 * 20;
 export const BELT_UPG_CAP = 2;
 export const CARGO_SCORE = 12;
+export const CARGO_PWR = 8;
 export const LAND_R2 = 16;
 export const LANE_VENT_N = 3;
 
@@ -281,6 +284,7 @@ export function beltHeal(w: World): number {
 export function reviewDepth(w: World): void {
   attachDepth(w);
   const d = depthState(w);
+  const a = w.arena;
   d.cargoOn[0] = 1;
   d.cargoBelt[0] = 0;
   d.cargoPhase[0] = CARGO_LAND;
@@ -290,4 +294,20 @@ export function reviewDepth(w: World): void {
   d.ventX[0] = w.px - 52;
   d.ventY[0] = w.py + 88;
   d.cargoT[0] = DROP_ALONG;
+  let slot = -1;
+  for (let i = 0; i < MAX_OBS; i++) {
+    if (i >= a.obsN || !a.obsAlive[i]) { slot = i; break; }
+  }
+  if (slot >= 0) {
+    a.obsX[slot] = w.px + 72;
+    a.obsY[slot] = w.py - 36;
+    a.obsKind[slot] = OB_BOILER;
+    a.obsHW[slot] = 14;
+    a.obsHH[slot] = 16;
+    a.obsR[slot] = 16;
+    a.obsHp[slot] = 2;
+    a.obsAlive[slot] = 1;
+    if (slot >= a.obsN) a.obsN = slot + 1;
+    indexProps(a);
+  }
 }
