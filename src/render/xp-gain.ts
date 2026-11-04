@@ -174,13 +174,14 @@ export function xpFillT(need: number): number {
 export function drawXpBar(ctx: CanvasRenderingContext2D, layout: HudLayout, need: number): void {
   const box = layout.xp;
   const t = xpFillT(need);
+  const phone = layout.phone;
   ctx.save();
   blitSheetFit(ctx, "xp_bar_frame", box.x - 18, box.y - 10, box.w + 36, box.h + 20);
-  const pad = 10;
-  const badge = Math.min(58, box.w * 0.15);
+  const pad = phone ? 8 : 10;
+  const badge = Math.min(phone ? 52 : 58, box.w * 0.15);
   const innerW = box.w - pad * 2 - badge;
-  const tubeY = box.y + 6;
-  const tubeH = Math.max(6, box.h - 12);
+  const tubeY = box.y + (phone ? 8 : 6);
+  const tubeH = Math.max(phone ? 4 : 6, box.h - (phone ? 16 : 12));
   pixelWell(ctx, box.x + pad, tubeY, innerW, tubeH);
   ctx.fillStyle = IRON;
   ctx.fillRect(box.x + pad + 2, tubeY + 2, innerW - 4, tubeH - 4);

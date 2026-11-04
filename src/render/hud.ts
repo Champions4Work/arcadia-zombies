@@ -122,11 +122,23 @@ function drawHealth(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   const r = Math.min(box.w, box.h) * 0.42;
   const heartCol = low ? DANGER : phone ? CYAN : HEALTH;
   blitSheetFit(ctx, "heart_ring", box.x - 8, box.y - 8, box.w + 16, box.h + 16);
-  ctx.beginPath();
-  ctx.arc(cx, cy, r + 4, 0, Math.PI * 2);
-  ctx.strokeStyle = phone ? CYAN : BRASS;
-  ctx.lineWidth = phone ? 3 : 3.4;
-  ctx.stroke();
+  if (phone) {
+    ctx.save();
+    ctx.strokeStyle = phone ? CYAN : BRASS;
+    ctx.globalCompositeOperation = "lighter";
+    ctx.globalAlpha = 0.55;
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r + 7, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  } else {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r + 4, 0, Math.PI * 2);
+    ctx.strokeStyle = BRASS;
+    ctx.lineWidth = 3.4;
+    ctx.stroke();
+  }
   ringMeter(ctx, cx, cy, r, frac, heartCol);
   heartIcon(ctx, cx, cy + 1, r * 0.62, heartCol);
   if (w.meta.revive > 0) ink(ctx, "REV", cx, box.y + 8, 9, COPPER, "center");
@@ -167,9 +179,20 @@ function stampInk(
   ctx.restore();
 }
 
+function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number): void {
+  const rr = Math.max(0, Math.min(r, w / 2, h / 2));
+  ctx.beginPath();
+  ctx.moveTo(x + rr, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rr);
+  ctx.arcTo(x + w, y + h, x, y + h, rr);
+  ctx.arcTo(x, y + h, x, y, rr);
+  ctx.arcTo(x, y, x + w, y, rr);
+  ctx.closePath();
+}
+
 function banner(ctx: CanvasRenderingContext2D, w: World, box: Box, phone: boolean): void {
-  plate(ctx, box, "panel_frame_pipes");
   if (!phone) {
+    plate(ctx, box, "panel_frame_pipes");
     ctx.fillStyle = "#8a5a20";
     ctx.fillRect(box.x + 8, box.y + 18, box.w - 16, 12);
     ctx.fillStyle = "#e0a040";
@@ -179,22 +202,32 @@ function banner(ctx: CanvasRenderingContext2D, w: World, box: Box, phone: boolea
     return;
   }
   const cy = box.y + box.h / 2;
-  ctx.fillStyle = "#c56a18";
-  ctx.fillRect(box.x + 6, box.y + 6, box.w - 12, box.h - 12);
-  ctx.fillStyle = "#f0a030";
-  ctx.fillRect(box.x + 34, box.y + 8, Math.max(8, box.w - 44), box.h - 16);
-  ctx.fillStyle = "#1a1008";
+  const pad = 4;
+  const rx = 14;
+  ctx.save();
+  roundRect(ctx, box.x + pad, box.y + pad, box.w - pad * 2, box.h - pad * 2, rx);
+  ctx.fillStyle = "#6a3a10";
+  ctx.fill();
+  roundRect(ctx, box.x + pad + 2, box.y + pad + 2, box.w - pad * 2 - 4, box.h - pad * 2 - 4, rx - 2);
+  const glow = ctx.createLinearGradient(box.x, cy, box.x + box.w, cy);
+  glow.addColorStop(0, "#c87820");
+  glow.addColorStop(0.45, "#f0b040");
+  glow.addColorStop(1, "#e89828");
+  ctx.fillStyle = glow;
+  ctx.fill();
+  ctx.restore();
+  ctx.fillStyle = "#120c08";
   ctx.beginPath();
-  ctx.arc(box.x + 20, cy, 9, 0, Math.PI * 2);
+  ctx.arc(box.x + 22, cy, 10, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = "#f6e2a8";
   ctx.beginPath();
-  ctx.moveTo(box.x + 16, cy - 5);
-  ctx.lineTo(box.x + 16, cy + 5);
-  ctx.lineTo(box.x + 25, cy);
+  ctx.moveTo(box.x + 18, cy - 5);
+  ctx.lineTo(box.x + 18, cy + 5);
+  ctx.lineTo(box.x + 27, cy);
   ctx.closePath();
   ctx.fill();
-  stampInk(ctx, difficultyLabel(w.rank), box.x + 34 + Math.max(8, box.w - 44) / 2, cy, 14, "#1a1008");
+  stampInk(ctx, difficultyLabel(w.rank), box.x + 38 + (box.w - 46) / 2, cy, 15, "#120c08");
 }
 
 function skull(ctx: CanvasRenderingContext2D, x: number, y: number): void {
@@ -216,15 +249,22 @@ function skull(ctx: CanvasRenderingContext2D, x: number, y: number): void {
 }
 
 function clockPanel(ctx: CanvasRenderingContext2D, w: World, box: Box, phone: boolean): void {
-  plate(ctx, box, "panel_frame_small");
   const face = waveFace(w);
   if (phone) {
-    stampInk(ctx, formatClock(w.tick), box.x + 8, box.y + 12, 12, "#fff6df", "left");
-    stampInk(ctx, `Wave ${face.n}/${face.of}`, box.x + box.w - 8, box.y + 12, 10, "#f0d080", "right");
-    skull(ctx, box.x + 14, box.y + box.h - 14);
-    ink(ctx, `${w.kills | 0}`, box.x + 24, box.y + box.h - 14, 12, "#f6f1e6");
+    ctx.save();
+    roundRect(ctx, box.x, box.y, box.w, box.h, 10);
+    ctx.fillStyle = "rgba(8,10,14,0.72)";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(224,160,64,0.55)";
+    ctx.lineWidth = 1.6;
+    ctx.stroke();
+    ctx.restore();
+    stampInk(ctx, formatClock(w.tick), box.x + box.w / 2, box.y + 11, 11, "#fff6df", "center");
+    skull(ctx, box.x + box.w * 0.32, box.y + box.h - 10);
+    ink(ctx, `${w.kills | 0}`, box.x + box.w * 0.32 + 10, box.y + box.h - 10, 11, "#f6f1e6");
     return;
   }
+  plate(ctx, box, "panel_frame_small");
   const wave = face.n;
   const cap = face.of;
   stampInk(ctx, `Wave ${wave}/${cap}`, box.x + 8, box.y + 10, 11, "#fff6df", "left");
@@ -385,7 +425,19 @@ function restStick(ctx: CanvasRenderingContext2D, layout: HudLayout): void {
 }
 
 function pauseButton(ctx: CanvasRenderingContext2D, pause: Circle): void {
-  blitSheetFit(ctx, "ring_frame_b", pause.x - pause.r, pause.y - pause.r, pause.r * 2, pause.r * 2);
+  const layout = currentHud();
+  const phone = layout?.phone ?? false;
+  if (phone) {
+    ctx.beginPath();
+    ctx.arc(pause.x, pause.y, pause.r, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(12,10,8,0.72)";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(224,160,64,0.72)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  } else {
+    blitSheetFit(ctx, "ring_frame_b", pause.x - pause.r, pause.y - pause.r, pause.r * 2, pause.r * 2);
+  }
   ctx.fillStyle = BRASS_HI;
   ctx.fillRect(pause.x - 5, pause.y - 6, 3, 12);
   ctx.fillRect(pause.x + 2, pause.y - 6, 3, 12);
@@ -469,15 +521,27 @@ export function abilityHit(x: number, y: number): boolean {
 }
 
 function ability(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
+  const layout = currentHud();
+  const phone = layout?.phone ?? false;
   const cx = box.x + box.w / 2;
   const cy = box.y + box.h / 2;
   const r = Math.min(box.w, box.h) * 0.42;
   blitSheetFit(ctx, "ultimate_button", box.x - 8, box.y - 8, box.w + 16, box.h + 16);
   ctx.beginPath();
   ctx.arc(cx, cy, r + 4, 0, Math.PI * 2);
-  ctx.strokeStyle = BRASS;
-  ctx.lineWidth = 3.4;
+  ctx.strokeStyle = phone ? XP : BRASS;
+  ctx.lineWidth = phone ? 4.2 : 3.4;
   ctx.stroke();
+  if (phone && (ultReady(w) || (w.ultBlast ?? 0) > 0)) {
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    ctx.strokeStyle = "rgba(240,180,72,0.45)";
+    ctx.lineWidth = 8;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r + 8, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
   ringMeter(ctx, cx, cy, r, ultFill(w), ultReady(w) || (w.ultBlast ?? 0) > 0 ? XP : CYAN);
   badgeIcon(ctx, weaponBadge(w).kind, cx, cy);
 }
@@ -518,20 +582,27 @@ function checkLine(
 }
 
 function objectives(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
+  const layout = currentHud();
+  const phone = layout?.phone ?? false;
+  const face = waveFace(w);
   blitSheetFit(ctx, "panel_frame_gears", box.x - 10, box.y - 10, box.w + 20, box.h + 20);
-  ctx.fillStyle = "rgba(8,10,16,0.78)";
+  ctx.fillStyle = phone ? "rgba(8,10,16,0.82)" : "rgba(8,10,16,0.78)";
   ctx.fillRect(box.x, box.y, box.w, box.h);
   ctx.fillStyle = "rgba(224,160,64,0.28)";
-  ctx.fillRect(box.x + 4, box.y + 4, box.w - 8, 24);
+  ctx.fillRect(box.x + 4, box.y + 4, box.w - 8, phone ? 20 : 24);
   ctx.strokeStyle = "rgba(212,168,72,0.92)";
-  ctx.lineWidth = 4.6;
+  if (phone) ctx.lineWidth = 3.2;
+  else ctx.lineWidth = 4.6;
   ctx.strokeRect(box.x + 0.5, box.y + 0.5, box.w - 1, box.h - 1);
   ctx.strokeStyle = "rgba(240,200,120,0.7)";
   ctx.lineWidth = 2.2;
   ctx.strokeRect(box.x + 4, box.y + 4, box.w - 8, box.h - 8);
-  stampInk(ctx, "Objectives", box.x + box.w * 0.5, box.y + 16, 13, "#f0d080");
+  stampInk(ctx, "Objectives", box.x + box.w * 0.34, box.y + (phone ? 14 : 16), phone ? 11 : 13, "#f0d080");
+  if (phone) {
+    stampInk(ctx, `Wave ${face.n}/${face.of}`, box.x + box.w - 8, box.y + 14, 10, "#fff6df", "right");
+  }
   ctx.fillStyle = "#e8c46a";
-  ctx.fillRect(box.x + 10, box.y + 26, box.w - 20, 3);
+  ctx.fillRect(box.x + 10, box.y + (phone ? 22 : 26), box.w - 20, 3);
   const rows = objectiveRows(w);
   const inkX = box.x + 10;
   const hold = rows[1];

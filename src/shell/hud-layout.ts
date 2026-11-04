@@ -128,22 +128,34 @@ export function layoutHud(vp: Viewport, fit: Fit): HudLayout {
     y: topY + rowH / 2,
     r: pauseR,
   };
-  const clockW = Math.round((phone ? 96 : portrait ? 104 : 108) * u);
-  const clockH = Math.round((phone ? 54 : portrait ? 50 : 44) * u);
+  const clockW = Math.round((phone ? 72 : portrait ? 104 : 108) * u);
+  const clockH = Math.round((phone ? 36 : portrait ? 50 : 44) * u);
   const clock = {
     x: pause.x - pauseR - gap - clockW,
-    y: topY,
+    y: phone ? topY + (rowH - clockH) / 2 : topY,
     w: clockW,
     h: clockH,
   };
-  const mapS = Math.round((phone ? 72 : portrait ? 80 : 70) * u);
+  const mapS = Math.round((phone ? 64 : portrait ? 80 : 70) * u);
   const minimap = { x: inner.x + gap, y: topY, w: mapS, h: mapS };
-  const difficulty = {
-    x: minimap.x + minimap.w + gap,
-    y: topY,
-    w: Math.max(72, clock.x - gap - (minimap.x + minimap.w + gap)),
-    h: rowH,
-  };
+  const rankLeft = minimap.x + minimap.w + gap;
+  const objWPhone = Math.min(168, Math.round(inner.w * 0.44));
+  const objXPhone = inner.x + inner.w - gap - objWPhone;
+  const rankRight = phone ? Math.min(clock.x - gap, objXPhone - gap) : clock.x - gap;
+  const rankSpan = Math.max(0, rankRight - rankLeft);
+  const difficulty = phone
+    ? {
+      x: rankLeft,
+      y: topY,
+      w: Math.max(96, rankSpan),
+      h: rowH,
+    }
+    : {
+      x: minimap.x + minimap.w + gap,
+      y: topY,
+      w: Math.max(72, clock.x - gap - (minimap.x + minimap.w + gap)),
+      h: rowH,
+    };
   const faceS = Math.round((portrait ? 56 : 46) * u);
   const faceX = minimap.x + minimap.w + gap;
   const objLeft = clock.x - (portrait ? 16 : 0);
@@ -155,11 +167,13 @@ export function layoutHud(vp: Viewport, fit: Fit): HudLayout {
       w: Math.max(faceS + 52, Math.min(faceS + 64, objLeft - faceX - 8)),
       h: faceS,
     };
-  const objX = clock.x - (phone ? 16 : 0);
+  const objX = phone
+    ? objXPhone
+    : clock.x - (portrait ? 16 : 0);
   const objW = phone
-    ? Math.min(168, inner.x + inner.w - objX - gap)
+    ? objWPhone
     : Math.min(196, inner.x + inner.w - objX - gap);
-  const objH = phone ? 118 : 128;
+  const objH = phone ? 102 : 128;
   const objectives = {
     x: objX,
     y: clock.y + clock.h + 6,
