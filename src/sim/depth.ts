@@ -1,4 +1,4 @@
-import { ARENA_W, BARREL_HP, CLEAR_R, HEAL_HP, MAX_OBS, OB_BARREL, OB_BOILER, OB_CRATE, OB_GEAR, indexProps } from "./arena";
+import { ARENA_W, CLEAR_R, HEAL_HP, MAX_OBS, OB_BOILER, OB_CRATE, OB_GEAR, indexProps } from "./arena";
 import { applyUpgrade, offerable } from "./progress";
 import { UPG_DMG, UPG_FIRE, UPG_HP, UPG_SPEED, type World } from "./types";
 
@@ -66,12 +66,8 @@ const VENTS: readonly [number, number][] = [
 ];
 
 const LANE: readonly [number, number, number, number, number, number, number][] = [
-  [OB_CRATE, 380, 260, 12, 12, 0, 1],
-  [OB_CRATE, 580, 260, 12, 12, 0, 1],
-  [OB_BOILER, 380, 440, 14, 16, 16, 2],
-  [OB_GEAR, 580, 440, 13, 13, 13, 2],
-  [OB_BARREL, 420, 480, 8, 10, 9, BARREL_HP],
-  [OB_BARREL, 540, 480, 8, 10, 9, BARREL_HP],
+  [OB_BOILER, 308, 520, 14, 16, 16, 2],
+  [OB_GEAR, 652, 520, 13, 13, 13, 2],
 ];
 
 function create(): DepthBag {

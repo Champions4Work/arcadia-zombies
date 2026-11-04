@@ -71,6 +71,7 @@ function hash(x: number, y: number, s = 0): number {
 }
 
 function brassPad(c: number, r: number): number {
+  if (bound === ZONE_BRASS) return 0;
   if (bound === ZONE_BOILER) {
     if (r >= 8 && r <= 20 && c >= 2 && c <= 58) return 1;
     if (r >= 18 && r <= 28 && c >= 38 && c <= 58) return 1;
@@ -86,7 +87,6 @@ function brassPad(c: number, r: number): number {
     if (r >= 33 && r <= 35 && c >= 4 && c <= 56) return 1;
     return 0;
   }
-  if (r >= 26 && r <= 27 && c >= 18 && c <= 42) return 1;
   return 0;
 }
 
@@ -329,33 +329,6 @@ export function ventFxCount(camX: number, camY: number, tick = 0): number {
   return eachVentFx(camX, camY, tick, () => {});
 }
 
-function rail(ctx: CanvasRenderingContext2D, x: number, y: number, vert: number): void {
-  ctx.fillStyle = "#1c1610";
-  ctx.fillRect(x, y, TILE, TILE);
-  ctx.fillStyle = "#7a4a22";
-  if (vert) {
-    ctx.fillRect(x + 1, y + 1, 4, 14);
-    ctx.fillRect(x + 11, y + 1, 4, 14);
-    ctx.fillStyle = "#3a3230";
-    ctx.fillRect(x + 5, y, 2, TILE);
-    ctx.fillRect(x + 9, y, 2, TILE);
-    ctx.fillStyle = "#8a8478";
-    ctx.fillRect(x + 5, y, 1, TILE);
-    ctx.fillStyle = "#8a5a20";
-    ctx.fillRect(x + 6, y + 4, 4, 2);
-  } else {
-    ctx.fillRect(x + 1, y + 1, 14, 4);
-    ctx.fillRect(x + 1, y + 11, 14, 4);
-    ctx.fillStyle = "#2c2620";
-    ctx.fillRect(x, y + 5, TILE, 2);
-    ctx.fillRect(x, y + 9, TILE, 2);
-    ctx.fillStyle = "#8a8478";
-    ctx.fillRect(x, y + 5, TILE, 1);
-    ctx.fillStyle = "#8a5a20";
-    ctx.fillRect(x + 5, y + 6, 4, 2);
-  }
-}
-
 function rubbleTile(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   ctx.fillStyle = "#2a221c";
   ctx.fillRect(x, y, TILE, TILE);
@@ -486,11 +459,9 @@ export function paintGround(ctx: CanvasRenderingContext2D): void {
       const x = c * TILE;
       const y = r * TILE;
       if (k === KIND_COBBLE || k === KIND_COBBLE_D || k === KIND_COBBLE_W) continue;
-      else if (k === KIND_BRASS || k === KIND_BRASS_W) {
+      else if (k === KIND_BRASS || k === KIND_BRASS_W || k === KIND_RAIL_H || k === KIND_RAIL_V) {
         tileSheet(ctx, "tile_metal_seamless", x, y, TILE, TILE);
       }
-      else if (k === KIND_RAIL_H) rail(ctx, x, y, 0);
-      else if (k === KIND_RAIL_V) rail(ctx, x, y, 1);
       else if (k === KIND_GRATE) blitSheet(ctx, "decal_grate", x + 8, y + 14);
       else if (k === KIND_VENT) blitSheet(ctx, "decal_vent", x + 8, y + 14);
       else if (k === KIND_RUBBLE) rubbleTile(ctx, x, y);

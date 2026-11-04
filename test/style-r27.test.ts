@@ -21,24 +21,26 @@ describe("r27 art-bible pass", () => {
     expect(rack.match(/blitSheetFit\(c, "power_slot"/g)?.length).toBe(1);
   });
 
-  it("densifies brass yard with side breakables, vents, and cyan pipe runs", () => {
+  it("declutters brass yard perimeter breakables and drops center cyan pipe runs", () => {
     const yard = readFileSync("src/render/yard-fx.ts", "utf8");
     const brassProps = yard.slice(yard.indexOf("const PROPS:"), yard.indexOf("const TANKS"));
     const brassPipes = yard.slice(yard.indexOf("const PIPE_RUNS = ["), yard.indexOf("const BELT_H"));
     expect(yard.includes("y: 420")).toBe(true);
     expect(yard.includes("paintBrassGrade")).toBe(true);
-    expect(yard.includes("paintVertPipe")).toBe(true);
     expect(brassProps.includes("breakable_gear_pylon")).toBe(true);
     expect(brassProps.includes("breakable_boiler")).toBe(true);
     expect(brassProps.includes("decal_grate")).toBe(true);
-    expect(brassProps.includes("x: 332, y: 340")).toBe(true);
-    expect(brassPipes.includes("vert: 1")).toBe(true);
+    expect(brassProps.includes("crate_stack")).toBe(false);
+    expect(brassProps.includes('"barrel"')).toBe(false);
+    expect(brassProps.includes("x: 308, y: 520")).toBe(true);
+    expect(brassPipes.includes("vert: 1")).toBe(false);
     expect(HAZARD_MARKS.length).toBe(0);
     expect(yardPropHits(YARD_CLEAR.x0, YARD_CLEAR.y0, YARD_CLEAR.x1, YARD_CLEAR.y1)).toBe(0);
-    expect(yardPropHits(PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(32);
+    expect(yardPropHits(PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(20);
     const depth = readFileSync("src/sim/depth.ts", "utf8");
     expect(depth.includes("[296, 420, 368, 0]")).toBe(true);
-    expect(depth.includes("OB_CRATE, 380, 260")).toBe(true);
+    expect(depth.includes("OB_CRATE, 380, 260")).toBe(false);
+    expect(depth.includes("OB_BARREL, 420, 480")).toBe(false);
   });
 
   it("paints dusk sky and hunter rim for phone readability", () => {

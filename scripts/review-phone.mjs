@@ -88,6 +88,19 @@ await writeTrio(
   resolve(root, "docs/target_look2.png"),
   `${dest}/trio_ref1_play_ref2.png`,
 );
+const beforeArg = process.argv[4];
+if (beforeArg) {
+  const beforePath = resolve(root, beforeArg);
+  await writeCompare(
+    browser,
+    beforePath,
+    playPath,
+    `${dest}/before_after_vs_r29.png`,
+    "R29 FAIL",
+    "R30 PLAY",
+  );
+  console.log(`wrote ${dest}/before_after_vs_r29.png`);
+}
 await browser.close();
 console.log(`wrote ${playPath}`);
 console.log(`wrote ${dest}/compare_390_ref1.png`);

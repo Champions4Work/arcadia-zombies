@@ -107,7 +107,7 @@ describe("visual review gates", () => {
     expect(yard.includes("BELT_H = 72")).toBe(true);
     expect(yard.includes("y: 232")).toBe(true);
     expect(yard.includes("y: 420")).toBe(true);
-    expect(yard.includes("vert: 1")).toBe(true);
+    expect(yard.includes("vert: 1")).toBe(false);
     expect(yard.includes("paintVertPipe")).toBe(true);
     expect(yard.includes("paintBrassGrade")).toBe(true);
     expect(yard.includes("GLASS_AT")).toBe(true);
@@ -118,8 +118,8 @@ describe("visual review gates", () => {
     const brassProps = yard.slice(yard.indexOf("const PROPS:"), yard.indexOf("const TANKS"));
     expect(brassProps.includes("breakable_gear_pylon")).toBe(true);
     expect(brassProps.includes("breakable_boiler")).toBe(true);
-    expect(brassProps.includes("x: 332, y: 340")).toBe(true);
-    expect(brassProps.includes("x: 628, y: 340")).toBe(true);
+    expect(brassProps.includes("x: 308, y: 520")).toBe(true);
+    expect(brassProps.includes("x: 652, y: 520")).toBe(true);
     expect(yard.includes("x: 348, y: 196")).toBe(true);
     expect(yard.includes("x: 540, y: 192")).toBe(true);
     expect(yard.includes("x: 336, y: 176")).toBe(false);
@@ -147,7 +147,7 @@ describe("visual review gates", () => {
     expect(rack.includes("layout.phone")).toBe(true);
     expect(rack.includes("Math.max(12, lv * 12)")).toBe(false);
     expect(yard.includes("tick * 2.2")).toBe(true);
-    expect(yard.includes("w * 0.42")).toBe(true);
+    expect(yard.includes("w * 0.42")).toBe(false);
     const vents = yard.slice(yard.indexOf("const STEAM_VENTS"), yard.indexOf("export const YARD_CLEAR"));
     expect((vents.match(/\{ x:/g) || []).length).toBe(5);
     const bible = readFileSync("docs/STYLE.md", "utf8");

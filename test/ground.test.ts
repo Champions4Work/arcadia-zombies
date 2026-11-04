@@ -84,10 +84,10 @@ describe("yard floor map", () => {
     expect(f1).toEqual(f0);
   });
 
-  it("mixes cobble, brass, rails, vents, and rubble", () => {
+  it("mixes stone, rails, vents, and rubble without brass floor pads", () => {
     const n = tally();
     expect((n[KIND_COBBLE] ?? 0) + (n[KIND_COBBLE_D] ?? 0) + (n[KIND_COBBLE_W] ?? 0)).toBeGreaterThan(400);
-    expect((n[KIND_BRASS] ?? 0) + (n[KIND_BRASS_W] ?? 0)).toBeGreaterThan(20);
+    expect((n[KIND_BRASS] ?? 0) + (n[KIND_BRASS_W] ?? 0)).toBe(0);
     expect(n[KIND_RAIL_H] ?? 0).toBeGreaterThan(10);
     expect(n[KIND_RAIL_V] ?? 0).toBe(0);
     expect((n[KIND_VENT] ?? 0) + (n[KIND_GRATE] ?? 0)).toBeGreaterThan(4);

@@ -17,6 +17,12 @@ Adding props does not move the yard toward the refs. Failed attempts proved it:
 
 The correct direction is **darken + declutter** the center yard while keeping a **few readable silhouettes**: belt chevrons, blue tanks and pipe runs, steam valves, lit building windows. Props belong on walls and rails; the hunter’s lane stays open. Horde density comes from **actors and stains**, not from stacking breakables in `YARD_CLEAR`.
 
+## Failed premise: tint and grade without floor art
+
+Closed **[#87](https://github.com/Champions4Work/arcadia-zombies/pull/87)** proved that **`paintBrassGrade`**, multiply veils, and darker `fillRect` washes **do not** turn a bright procedural yard into the painted stone read in image 2. The live 390×844 frame stayed cyan/brass with center clutter.
+
+**Required fix:** blit **`tile_stone_seamless`** (packed from `art/az_art_v2/tile_stone_seamless.png`) across the yard in `paintGround`, and use **`tile_metal_seamless`** only for rail/grate cells—not a horizontal brass pad or code-drawn cobble fill. Brass district disables `brassPad` metal cells; metal tiles stay on tracks. Do not ship fill-only floor plates as the primary yard read.
+
 ## References (art bible)
 
 Review size is 390×844 CSS pixels. These two files are the art bible. Every visual PR compares against both.
