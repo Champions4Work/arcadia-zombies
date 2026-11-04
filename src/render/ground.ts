@@ -255,7 +255,7 @@ function rail(ctx: CanvasRenderingContext2D, x: number, y: number, vert: number)
     ctx.fillRect(x + 9, y, 2, TILE);
     ctx.fillStyle = "#8a8478";
     ctx.fillRect(x + 5, y, 1, TILE);
-    ctx.fillStyle = ((x + y) >> 3) & 1 ? "#f0b44a" : "#8a5a20";
+    ctx.fillStyle = "#8a5a20";
     ctx.fillRect(x + 6, y + 4, 4, 2);
   } else {
     ctx.fillRect(x + 1, y + 1, 14, 4);
@@ -265,7 +265,7 @@ function rail(ctx: CanvasRenderingContext2D, x: number, y: number, vert: number)
     ctx.fillRect(x, y + 9, TILE, 2);
     ctx.fillStyle = "#8a8478";
     ctx.fillRect(x, y + 5, TILE, 1);
-    ctx.fillStyle = ((x + y) >> 3) & 1 ? "#f0b44a" : "#8a5a20";
+    ctx.fillStyle = "#8a5a20";
     ctx.fillRect(x + 5, y + 6, 4, 2);
   }
 }
@@ -346,14 +346,37 @@ function fog(ctx: CanvasRenderingContext2D): void {
   ctx.fillRect(0, 100, ARENA_W, 220);
 }
 
+export const HAZARD_MARKS = [
+  [8, 10],
+  [22, 14],
+  [36, 12],
+] as const;
+
 export function paintGround(ctx: CanvasRenderingContext2D): void {
   build();
-  ctx.fillStyle = "#2a2a30";
+  ctx.fillStyle = "#3a342c";
   ctx.fillRect(0, 108, ARENA_W, ARENA_H - 108);
   tileSheet(ctx, "tile_stone_seamless", 0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
   ctx.save();
+  ctx.strokeStyle = "rgba(62,52,40,0.42)";
+  ctx.lineWidth = 1;
+  const grout = TILE * 2;
+  for (let x = 0; x <= ARENA_W; x += grout) {
+    ctx.beginPath();
+    ctx.moveTo(x + 0.5, FLOOR0 * TILE);
+    ctx.lineTo(x + 0.5, ARENA_H);
+    ctx.stroke();
+  }
+  for (let y = FLOOR0 * TILE; y <= ARENA_H; y += grout) {
+    ctx.beginPath();
+    ctx.moveTo(0, y + 0.5);
+    ctx.lineTo(ARENA_W, y + 0.5);
+    ctx.stroke();
+  }
+  ctx.restore();
+  ctx.save();
   ctx.globalCompositeOperation = "multiply";
-  ctx.fillStyle = "rgba(24,24,32,0.58)";
+  ctx.fillStyle = "rgba(48,36,24,0.18)";
   ctx.fillRect(0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
   ctx.restore();
   for (let r = FLOOR0; r < ROWS; r++) {
@@ -372,11 +395,10 @@ export function paintGround(ctx: CanvasRenderingContext2D): void {
       else if (k === KIND_RUBBLE) rubbleTile(ctx, x, y);
     }
   }
-  for (let r = FLOOR0; r < ROWS; r++) {
-    for (let c = 0; c < COLS; c++) {
-      if ((cells[r * COLS + c] ?? 0) !== KIND_VENT) continue;
-      blitSheet(ctx, "decal_hazard", c * TILE + 8, r * TILE + 14);
-    }
+  for (let i = 0; i < HAZARD_MARKS.length; i++) {
+    const mark = HAZARD_MARKS[i];
+    if (!mark) continue;
+    blitSheet(ctx, "decal_hazard", mark[0] * TILE + 8, mark[1] * TILE + 14);
   }
   for (let i = 0; i < featN; i++) {
     if (fk[i] !== FEAT_STAIN) continue;

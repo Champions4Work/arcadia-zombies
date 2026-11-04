@@ -1,6 +1,6 @@
 import { ARENA_H, ARENA_W } from "../sim/arena";
 import { tierFrac, tierName } from "../sim/difficulty";
-import { lichUp, lichX, lichY, runLabel } from "../sim/finale";
+import { lichUp, lichX, lichY } from "../sim/finale";
 import { offerCount } from "../sim/characters";
 import { pacedXpNeed } from "../sim/modifiers";
 import { CARD_Y, cardFrame, offerId, xpNeed } from "../sim/progress";
@@ -14,9 +14,7 @@ import type { Box, Circle, HudLayout } from "../shell/hud-layout";
 import { drawRewardCard } from "./cards";
 import { drawIcon } from "./icons";
 import { ultFill, ultReady } from "../sim/ult";
-import {
-  hudType, paintSignatureHero, ringMeter,
-} from "../art/look";
+import { heartIcon, hudType, ringMeter } from "../art/look";
 import { blitSheetFit } from "../art/sheet";
 import { BRASS, BRASS_HI, COPPER, CYAN, DANGER, HEALTH, INK, IRON, STEAM, XP } from "../shell/theme";
 import { drawXpBar } from "./xp-gain";
@@ -105,6 +103,11 @@ function drawHealth(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   ctx.lineWidth = 2.4;
   ctx.stroke();
   ringMeter(ctx, cx, cy, r, frac, low ? DANGER : HEALTH);
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 0.58, 0, Math.PI * 2);
+  ctx.fillStyle = low ? DANGER : HEALTH;
+  ctx.fill();
+  heartIcon(ctx, cx, cy + 1, r * 1.05, low ? DANGER : HEALTH);
   if (w.meta.revive > 0) ink(ctx, "REV", cx, box.y + 8, 9, COPPER, "center");
 }
 
@@ -130,22 +133,6 @@ function banner(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   fitInk(ctx, name, box.x + box.w / 2, box.y + box.h * 0.38, 12, box.w - 16, flash ? BRASS_HI : STEAM);
 }
 
-function clockIcon(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  ctx.beginPath();
-  ctx.arc(x, y, 6.2, 0, Math.PI * 2);
-  ctx.fillStyle = IRON;
-  ctx.fill();
-  ctx.lineWidth = 1.5;
-  ctx.strokeStyle = BRASS_HI;
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(x, y);
-  ctx.lineTo(x, y - 3.6);
-  ctx.moveTo(x, y);
-  ctx.lineTo(x + 2.6, y + 1.2);
-  ctx.stroke();
-}
-
 function skull(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   ctx.beginPath();
   ctx.arc(x, y - 1, 5, 0, Math.PI * 2);
@@ -166,11 +153,9 @@ function skull(ctx: CanvasRenderingContext2D, x: number, y: number): void {
 
 function clockPanel(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   plate(ctx, box, "panel_frame_small");
-  clockIcon(ctx, box.x + 12, box.y + box.h * 0.5);
-  ink(ctx, `WAVE ${Math.max(1, w.wave)}`, box.x + 24, box.y + box.h * 0.32, 10, STEAM);
-  skull(ctx, box.x + box.w * 0.55, box.y + box.h * 0.5);
-  ink(ctx, String(w.kills), box.x + box.w * 0.55 + 10, box.y + box.h * 0.5, 12, STEAM);
-  ink(ctx, runLabel(w.tick), box.x + 24, box.y + box.h * 0.72, 9, STEAM);
+  ink(ctx, `WAVE ${Math.max(1, w.wave)}`, box.x + 10, box.y + box.h * 0.32, 11, STEAM);
+  skull(ctx, box.x + 14, box.y + box.h * 0.68);
+  ink(ctx, `${w.kills} KILLS`, box.x + 24, box.y + box.h * 0.68, 12, "#f6f1e6");
 }
 
 function pauseButton(ctx: CanvasRenderingContext2D, pause: Circle): void {
@@ -180,30 +165,16 @@ function pauseButton(ctx: CanvasRenderingContext2D, pause: Circle): void {
   ctx.fillRect(pause.x + 2, pause.y - 6, 3, 12);
 }
 
-function portrait(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
-  const s = Math.min(28, box.h);
-  const x = box.x + box.w + 6;
-  const y = box.y + box.h * 0.5 + s * 0.35;
-  blitSheetFit(ctx, "ring_frame_a", x, box.y, s, s);
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(x + s * 0.5, box.y + s * 0.5, s * 0.36, 0, Math.PI * 2);
-  ctx.clip();
-  paintSignatureHero(ctx, x + s * 0.5, y, 1, 0, false, false, w.tick);
-  ctx.restore();
-}
-
 function minimap(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   const r = Math.max(16, Math.min(box.w, box.h) / 2 - 1);
   const cx = box.x + box.w / 2;
   const cy = box.y + box.h / 2;
-  blitSheetFit(ctx, "minimap_frame", box.x - 6, box.y - 6, box.w + 12, box.h + 12);
   ctx.save();
   ctx.beginPath();
-  ctx.arc(cx, cy, r - 3, 0, Math.PI * 2);
+  ctx.arc(cx, cy, r - 2, 0, Math.PI * 2);
+  ctx.fillStyle = "#100c0a";
+  ctx.fill();
   ctx.clip();
-  ctx.fillStyle = IRON;
-  ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
   const z = w.zombies;
   const span = r * 1.45;
   let alive = 0;
@@ -216,7 +187,7 @@ function minimap(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
     const mx = cx + ((z.x[i] ?? 0) / ARENA_W - 0.5) * span;
     const my = cy + ((z.y[i] ?? 0) / ARENA_H - 0.5) * span;
     ctx.fillStyle = DANGER;
-    ctx.fillRect(mx - 1.2, my - 1.2, 2.4, 2.4);
+    ctx.fillRect(mx - 1.6, my - 1.6, 3.2, 3.2);
   }
   if (lichUp(w)) {
     const lx = cx + (lichX(w) / ARENA_W - 0.5) * span;
@@ -229,6 +200,7 @@ function minimap(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   ctx.arc(cx + (w.px / ARENA_W - 0.5) * span, cy + (w.py / ARENA_H - 0.5) * span, 2.4, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
+  blitSheetFit(ctx, "minimap_frame", box.x - 6, box.y - 6, box.w + 12, box.h + 12);
 }
 
 function badgeIcon(ctx: CanvasRenderingContext2D, kind: number, x: number, y: number): void {
@@ -296,7 +268,6 @@ export function drawHud(ctx: CanvasRenderingContext2D, w: World): void {
   pauseButton(ctx, layout.pause);
   if (!w.choosing) {
     minimap(ctx, w, layout.minimap);
-    portrait(ctx, w, layout.minimap);
     ability(ctx, w, layout.ability);
     objectives(ctx, w, layout);
     rankCallout(ctx, w, layout);

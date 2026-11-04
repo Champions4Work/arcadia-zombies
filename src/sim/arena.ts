@@ -129,6 +129,16 @@ export function cameraTarget(px: number, py: number, out: Float32Array, vw = W, 
   out[1] = clamp(py - viewH * 0.5, 0, ARENA_H - viewH);
 }
 
+export function snapArenaCamera(
+  a: { camX: number; camY: number; viewW: number; viewH: number; scratch: Float32Array },
+  px: number,
+  py: number,
+): void {
+  cameraTarget(px, py, a.scratch, a.viewW, a.viewH);
+  a.camX = a.scratch[0] ?? 0;
+  a.camY = a.scratch[1] ?? 0;
+}
+
 export function hitsProp(
   px: number, py: number, pr: number,
   ox: number, oy: number, hw: number, hh: number, r: number,

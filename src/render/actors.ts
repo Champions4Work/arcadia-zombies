@@ -56,9 +56,11 @@ function paintHero(ctx: CanvasRenderingContext2D, w: World, moving: boolean): vo
   const shoot = (w.events[EV_SHOT] ?? 0) !== 0;
   paintSignatureHero(ctx, w.px, w.py, w.aimX, w.aimY, moving, shoot, w.tick);
   if (shoot) {
-    paintCasing(ctx, w.px - 12, w.py + 2);
-    paintCasing(ctx, w.px - 6, w.py + 6);
-    stampCasing(w.px - 10, w.py + 4, w.tick);
+    const ox = -w.aimX * 16 - 8;
+    const oy = 8 - w.aimY * 4;
+    paintCasing(ctx, w.px + ox, w.py + oy);
+    paintCasing(ctx, w.px + ox - 6, w.py + oy + 4);
+    stampCasing(w.px + ox - 4, w.py + oy + 2, w.tick);
   }
 }
 

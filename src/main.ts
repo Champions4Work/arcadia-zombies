@@ -17,6 +17,7 @@ import { applyCanvas, screenToGame, type Fit } from "./shell/fit";
 import { bindHud, clampStick, currentHud, hudHitAt, layoutHud, offerHit, rerollCss, stickFrame } from "./shell/hud-layout";
 import { playChromeHidden, showMenuChrome } from "./shell/play-chrome";
 import { applyPlayView } from "./shell/play-view";
+import { snapArenaCamera } from "./sim/arena";
 import { mountPlayFocus, playKeyPick } from "./shell/play-focus";
 import { mountResults } from "./shell/results-dom";
 import { resultBadges, resultFromWorld } from "./shell/results";
@@ -223,7 +224,12 @@ bindHud(layoutHud(viewNow(), fit));
 
 function fitPlay(): void {
   const vp = viewNow();
+  const prevW = world.arena.viewW;
+  const prevH = world.arena.viewH;
   const pv = applyPlayView(world.arena, vp.cssW, vp.cssH);
+  if (wantsReviewShot(location.search, location.hash) || pv.viewW !== prevW || pv.viewH !== prevH) {
+    snapArenaCamera(world.arena, world.px, world.py);
+  }
   fit = applyCanvas(canvas, ctx, vp.cssW, vp.cssH, vp.dpr, pv.viewW, pv.viewH, ZERO_INSETS);
   bindHud(layoutHud(vp, fit));
 }
@@ -851,7 +857,7 @@ function frame(now: number): void {
   setNumbersOn(session.numbers);
   setReduceMotion(session.reduceMotion);
   juiceFrame(Math.min(100, Math.max(0, dt)));
-  if (shouldStep(session)) {
+  if (shouldStep(session) && !wantsReviewShot(location.search, location.hash)) {
     if (!stick.on) {
       input.dx = (keys.has("d") || keys.has("arrowright") ? 1 : 0) - (keys.has("a") || keys.has("arrowleft") ? 1 : 0);
       input.dy = (keys.has("s") || keys.has("arrowdown") ? 1 : 0) - (keys.has("w") || keys.has("arrowup") ? 1 : 0);
@@ -949,10 +955,7 @@ if (location.hash === "#horde") {
   begin(session);
   setRunEndless(world, crown.endless);
 }
-if (wantsReviewShot(location.search, location.hash)) {
-  begin(session);
-  if (session.phase === PHASE_PLAY) session.phase = PHASE_PAUSE;
-}
+if (wantsReviewShot(location.search, location.hash)) begin(session);
 mountPicker(rosterEl, (index) => {
   if (session.phase !== PHASE_TITLE && session.phase !== PHASE_OVER) return;
   if (!isUnlocked(index, bestWave)) return;

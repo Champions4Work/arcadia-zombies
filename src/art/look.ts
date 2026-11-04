@@ -1,5 +1,5 @@
 import {
-  BRASS, BRASS_HI, BRASS_LO, CYAN, FONT_BODY, GLASS, INK, IRON, PANEL, STEAM, XP,
+  BRASS, BRASS_HI, BRASS_LO, CYAN, FONT_BODY, GLASS, INK, IRON, PANEL, XP,
 } from "../shell/theme";
 import { PX } from "./palette";
 import { blitSheet, blitSheetLean, foeSpriteId, heroSpriteId, spriteOf } from "./sheet";
@@ -7,6 +7,7 @@ import { blitSheet, blitSheetLean, foeSpriteId, heroSpriteId, spriteOf } from ".
 export const HERO_LOOK_W = 40;
 export const HERO_LOOK_H = 52;
 export const HERO_PACK_H = 64;
+export const HERO_DRAW_SCALE = 1.25;
 export const FOE_TO_HERO = 0.45;
 export const BRUTE_TO_HERO = 1.3;
 
@@ -120,41 +121,49 @@ export function paintSignatureHero(
   const bob = moving ? Math.sin(tick * 0.35) * 1.6 : 0;
   const lean = Math.max(-0.16, Math.min(0.16, aimX * 0.14));
   const flip = aimX < 0;
-  paintShadow(ctx, x, y, 14, 5.6);
+  const s = HERO_DRAW_SCALE;
+  paintShadow(ctx, x, y, 18, 7.2);
   ctx.beginPath();
-  ctx.ellipse(x, y + 2, 16, 6, 0, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(122,224,212,0.28)";
-  ctx.fill();
-  ctx.beginPath();
-  ctx.ellipse(x, y + 2, 15, 5.4, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y + 3, 10, 3.6, 0, 0, Math.PI * 2);
   ctx.strokeStyle = CYAN;
-  ctx.globalAlpha = 0.9;
-  ctx.lineWidth = 2.2;
+  ctx.globalAlpha = 0.72;
+  ctx.lineWidth = 1.6;
   ctx.stroke();
   ctx.globalAlpha = 1;
-  blitSheetLean(ctx, heroSpriteId(moving, tick), x, y, flip, bob, lean);
-  if (!shoot) return;
-  const dir = flip ? -1 : 1;
-  const mx = x + dir * 22;
-  const my = y - 26 - bob;
+  blitSheetLean(ctx, heroSpriteId(moving, tick), x, y, flip, bob, lean, s);
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
-  ctx.fillStyle = "rgba(255,186,72,0.55)";
+  ctx.strokeStyle = "rgba(240,176,88,0.42)";
+  ctx.lineWidth = 1.3;
   ctx.beginPath();
-  ctx.ellipse(mx, my, 18, 10, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = PX.F;
+  ctx.ellipse(x, y - 26 * s - bob, 10 * s, 18 * s, lean, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+  if (!shoot) return;
+  const mag = Math.max(0.2, Math.hypot(aimX, aimY));
+  const nx = aimX / mag;
+  const ny = aimY / mag;
+  const mx = x + nx * 22 * s;
+  const my = y - 24 * s - bob + ny * 10;
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  ctx.fillStyle = "rgba(255,248,220,0.95)";
   ctx.beginPath();
-  ctx.ellipse(mx + dir * 4, my, 12, 5.2, 0, 0, Math.PI * 2);
+  ctx.ellipse(mx, my, 3.4, 2.4, Math.atan2(ny, nx), 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = STEAM;
+  ctx.strokeStyle = "rgba(255,214,120,0.95)";
+  ctx.lineWidth = 2.2;
+  ctx.lineCap = "round";
   ctx.beginPath();
-  ctx.ellipse(mx + dir * 8, my, 6, 2.4, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = PX.u;
+  ctx.moveTo(mx, my);
+  ctx.lineTo(mx + nx * 14, my + ny * 14);
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(255,248,220,0.9)";
+  ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.ellipse(mx + dir * 10, my, 2.4, 1.2, 0, 0, Math.PI * 2);
-  ctx.fill();
+  ctx.moveTo(mx + nx * 2, my + ny * 2);
+  ctx.lineTo(mx + nx * 10, my + ny * 10);
+  ctx.stroke();
   ctx.restore();
 }
 
@@ -230,25 +239,23 @@ export function paintEnergyTank(ctx: CanvasRenderingContext2D, x: number, y: num
 }
 
 export function paintBlood(ctx: CanvasRenderingContext2D, x: number, y: number, s: number): void {
-  ctx.fillStyle = PX.r;
-  ctx.globalAlpha = 0.72;
+  ctx.fillStyle = "#7a2218";
+  ctx.globalAlpha = 0.82;
   ctx.beginPath();
-  ctx.ellipse(x, y, s * 1.8, s * 0.9, 0.4, 0, Math.PI * 2);
+  ctx.ellipse(x, y, s * 2.2, s * 1.1, 0.35, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillRect(x + s, y - 1, 4, 2);
-  ctx.fillRect(x - s * 0.6, y + 1, 3, 2);
+  ctx.fillStyle = "#4a120e";
+  ctx.fillRect(x + s, y - 1, 5, 2);
+  ctx.fillRect(x - s * 0.7, y + 2, 4, 2);
   ctx.globalAlpha = 1;
 }
 
 export function paintCasing(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   ctx.save();
   ctx.fillStyle = BRASS;
-  ctx.fillRect(x, y, 4, 1.8);
+  ctx.fillRect(x, y, 5, 2);
   ctx.fillStyle = BRASS_HI;
-  ctx.fillRect(x + 3, y, 1.4, 1.8);
-  ctx.globalCompositeOperation = "lighter";
-  ctx.fillStyle = PX.F;
-  ctx.fillRect(x + 1, y - 2, 2, 2);
+  ctx.fillRect(x + 4, y, 1.6, 2);
   ctx.restore();
 }
 

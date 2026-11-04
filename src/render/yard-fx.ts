@@ -4,68 +4,113 @@ import { XP } from "../shell/theme";
 import { FEAT_LAMP, groundFeatureAt, groundFeatureCount } from "./ground";
 
 const BUILDINGS = [
-  { x: 292, y: 118 },
-  { x: 668, y: 118 },
-  { x: 268, y: 508 },
-  { x: 692, y: 508 },
+  { x: 380, y: 100 },
+  { x: 500, y: 94 },
+  { x: 620, y: 100 },
+  { x: 350, y: 200 },
+  { x: 610, y: 200 },
+  { x: 355, y: 510 },
+  { x: 605, y: 510 },
 ];
 
 const BELTS = [
-  { x: 260, y: 148, w: 90, vert: 0 },
-  { x: 258, y: 180, w: 140, vert: 1 },
-  { x: 270, y: 580, w: 90, vert: 0 },
-  { x: 700, y: 180, w: 140, vert: 1 },
+  { x: 360, y: 168, w: 90, vert: 0 },
+  { x: 530, y: 168, w: 90, vert: 0 },
+  { x: 348, y: 210, w: 120, vert: 1 },
+  { x: 612, y: 210, w: 120, vert: 1 },
 ];
 
 const PROPS: { id: string; x: number; y: number }[] = [
-  { id: "pipes_blue_tank", x: 292, y: 210 },
-  { id: "pipes_blue_tank", x: 668, y: 214 },
-  { id: "valve_steam", x: 288, y: 280 },
-  { id: "valve_steam", x: 672, y: 286 },
-  { id: "crate_stack", x: 276, y: 548 },
-  { id: "crate", x: 310, y: 132 },
-  { id: "crate_stack", x: 650, y: 132 },
-  { id: "crate", x: 680, y: 540 },
-  { id: "barrel", x: 300, y: 568 },
-  { id: "barrel", x: 660, y: 568 },
-  { id: "breakable_boiler", x: 258, y: 400 },
-  { id: "breakable_gear_pylon", x: 702, y: 400 },
-  { id: "lamp", x: 292, y: 168 },
-  { id: "lamp", x: 668, y: 168 },
-  { id: "lamp", x: 276, y: 560 },
-  { id: "lamp", x: 684, y: 560 },
-  { id: "window_lit", x: 276, y: 86 },
-  { id: "window_lit", x: 652, y: 86 },
-  { id: "window_lit", x: 252, y: 470 },
-  { id: "window_lit", x: 708, y: 470 },
+  { id: "pipes_blue_tank", x: 348, y: 230 },
+  { id: "pipes_blue_tank", x: 348, y: 310 },
+  { id: "pipes_blue_tank", x: 612, y: 230 },
+  { id: "pipes_blue_tank", x: 612, y: 310 },
+  { id: "valve_steam", x: 348, y: 270 },
+  { id: "valve_steam", x: 612, y: 270 },
+  { id: "window_lit", x: 354, y: 58 },
+  { id: "window_lit", x: 474, y: 52 },
+  { id: "window_lit", x: 594, y: 58 },
+  { id: "window_lit", x: 406, y: 62 },
+  { id: "window_lit", x: 526, y: 56 },
+  { id: "window_lit", x: 338, y: 168 },
+  { id: "window_lit", x: 622, y: 168 },
+  { id: "crate", x: 338, y: 128 },
+  { id: "crate_stack", x: 600, y: 128 },
+  { id: "crate_stack", x: 338, y: 480 },
+  { id: "crate", x: 600, y: 480 },
+  { id: "barrel", x: 338, y: 540 },
+  { id: "barrel", x: 622, y: 540 },
+  { id: "breakable_boiler", x: 338, y: 400 },
+  { id: "crate", x: 338, y: 448 },
+  { id: "breakable_gear_pylon", x: 622, y: 400 },
+  { id: "barrel", x: 622, y: 448 },
+  { id: "lamp", x: 380, y: 140 },
+  { id: "lamp", x: 500, y: 132 },
+  { id: "lamp", x: 620, y: 140 },
+  { id: "lamp", x: 338, y: 350 },
+  { id: "lamp", x: 622, y: 350 },
+  { id: "lamp", x: 350, y: 500 },
+  { id: "lamp", x: 610, y: 500 },
+];
+
+const TANKS = [
+  { x: 348, y: 230 },
+  { x: 348, y: 310 },
+  { x: 612, y: 230 },
+  { x: 612, y: 310 },
 ];
 
 const POOLS = [
-  { x: 292, y: 168 },
-  { x: 668, y: 168 },
-  { x: 276, y: 560 },
-  { x: 684, y: 560 },
-  { x: 292, y: 210 },
-  { x: 668, y: 214 },
+  { x: 380, y: 140 },
+  { x: 500, y: 132 },
+  { x: 620, y: 140 },
+  { x: 338, y: 350 },
+  { x: 622, y: 350 },
+  { x: 350, y: 500 },
+  { x: 610, y: 500 },
 ];
 
-export const YARD_CLEAR = { x0: 360, y0: 180, x1: 600, y1: 460 };
+const STEAM_VENTS = [
+  { x: 348, y: 188 },
+  { x: 348, y: 268 },
+  { x: 612, y: 188 },
+  { x: 612, y: 268 },
+];
+
+export const YARD_CLEAR = { x0: 368, y0: 188, x1: 588, y1: 428 };
+export const PHONE_CAM = { x0: 332, y0: 0, x1: 628, y1: 640 };
 
 function visible(x: number, y: number, camX: number, camY: number, vw: number, vh: number, pad: number): boolean {
   return x >= camX - pad && y >= camY - pad && x <= camX + vw + pad && y <= camY + vh + pad;
 }
 
 function lampPool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  const g = ctx.createRadialGradient(x, y - 16, 2, x, y + 4, 38);
-  g.addColorStop(0, "rgba(255,196,80,0.34)");
-  g.addColorStop(0.4, "rgba(232,140,48,0.12)");
+  const g = ctx.createRadialGradient(x, y - 18, 3, x, y + 6, 58);
+  g.addColorStop(0, "rgba(255,200,96,0.5)");
+  g.addColorStop(0.4, "rgba(232,148,56,0.18)");
   g.addColorStop(1, "rgba(10,10,14,0)");
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.ellipse(x, y + 4, 36, 20, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y + 6, 54, 30, 0, 0, Math.PI * 2);
   ctx.fill();
+  ctx.restore();
+}
+
+function bluePool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+  const g = ctx.createRadialGradient(x, y - 12, 2, x, y, 42);
+  g.addColorStop(0, "rgba(80,200,255,0.42)");
+  g.addColorStop(0.45, "rgba(40,120,220,0.16)");
+  g.addColorStop(1, "rgba(10,10,14,0)");
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.ellipse(x, y, 28, 22, 0, 0, Math.PI * 2);
+  ctx.fill();
+  blitSheet(ctx, "blue_puddle", x, y + 10);
+  blitSheet(ctx, "blue_glow", x, y - 8);
   ctx.restore();
 }
 
@@ -111,6 +156,10 @@ export function paintYardLive(
     if (!visible(pool.x, pool.y, camX, camY, vw, vh, 60)) continue;
     lampPool(ctx, pool.x, pool.y);
   }
+  for (const tank of TANKS) {
+    if (!visible(tank.x, tank.y, camX, camY, vw, vh, 50)) continue;
+    bluePool(ctx, tank.x, tank.y);
+  }
   const n = groundFeatureCount();
   for (let i = 0; i < n; i++) {
     const f = groundFeatureAt(i);
@@ -154,8 +203,10 @@ export function paintYardLive(
     blitSheet(ctx, i & 1 ? "crate_stack" : "crate", cx, cy);
   }
   const steam = steamFrame(tick);
-  blitSheet(ctx, steam, 292, 178);
-  blitSheet(ctx, steam, 668, 180);
+  for (const vent of STEAM_VENTS) {
+    if (!visible(vent.x, vent.y, camX, camY, vw, vh, 40)) continue;
+    blitSheet(ctx, steam, vent.x, vent.y);
+  }
 }
 
 export function paintDoorSpawn(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number): void {

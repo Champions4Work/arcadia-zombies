@@ -2,7 +2,7 @@ import { stampBlood, stampCasing } from "../render/stains";
 import { ARENA_H, ARENA_W } from "../sim/arena";
 import { Z_ELITE } from "../sim/foes";
 import { mapState } from "../sim/map-events";
-import { MAX_ZOMBIES, Z_BRUTE, type World } from "../sim/types";
+import { EV_SHOT, MAX_ZOMBIES, Z_BRUTE, type World } from "../sim/types";
 
 export const REVIEW_HORDE = 36;
 export const REVIEW_RING = 108;
@@ -23,6 +23,11 @@ export function reviewHorde(w: World): number {
   w.hurtCd = 0;
   w.banner = 0;
   w.fireCd = 0;
+  w.kills = 47;
+  w.wave = 4;
+  w.level = 11;
+  w.xp = 40;
+  w.events[EV_SHOT] = 1;
   const bag = mapState(w);
   bag.banner = 0;
   bag.bannerKind = 0;
@@ -42,8 +47,8 @@ export function reviewHorde(w: World): number {
     z.hp[i] = kind === Z_BRUTE || (kind & Z_ELITE) !== 0 ? 18 : 1;
     z.vx[i] = 0;
     z.vy[i] = 0;
-    stampBlood(z.x[i] ?? 0, z.y[i] ?? 0, i * 3);
-    if ((i & 1) === 0) stampCasing(w.px + Math.cos(a) * 28, w.py + Math.sin(a) * 22, i);
+    stampBlood(z.x[i] ?? 0, (z.y[i] ?? 0) + 6, i * 3);
+    if ((i & 1) === 0) stampCasing(w.px - 18 - (i % 7) * 4, w.py + 8 + ((i * 3) % 9), i);
     n++;
   }
   stampCasing(w.px - 14, w.py + 8, 9);

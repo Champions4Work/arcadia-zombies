@@ -1,13 +1,12 @@
 import { blitSheetFit } from "../art/sheet";
 import { currentHud } from "../shell/hud-layout";
-import { BRASS, COPPER, SOOT } from "../shell/theme";
+import { BRASS, BRASS_HI, COPPER, SOOT } from "../shell/theme";
 import { LAYER_HUD, registerFx, registerLayer } from "./plugins";
 import {
   FX_BOOM, UPG_WPN_FLAME, UPG_WPN_HARP, UPG_WPN_MORT, UPG_WPN_RIVET, UPG_WPN_SHOT,
   WPN_COUNT, WPN_RIVET, type World,
 } from "../sim/types";
 import { paintBoom, paintWeaponShot } from "./cast-fx";
-import { drawIcon } from "./icons";
 import { OUTLINE } from "./paint";
 
 const EMBER = COPPER;
@@ -23,6 +22,45 @@ export function paintWeapon(c: CanvasRenderingContext2D, w: World, j: number): n
 
 registerFx(FX_BOOM, paintBoom);
 registerLayer(LAYER_HUD, drawWeaponRack);
+
+function wpnGlyph(c: CanvasRenderingContext2D, i: number, x: number, y: number, s: number): void {
+  c.save();
+  c.translate(x, y);
+  c.fillStyle = BRASS_HI;
+  c.strokeStyle = BRASS;
+  c.lineWidth = 1.2;
+  if (i === 0) {
+    c.fillRect(-s * 0.7, -s * 0.18, s * 1.15, s * 0.36);
+    c.fillRect(s * 0.2, -s * 0.32, s * 0.55, s * 0.64);
+    c.fillRect(-s * 0.15, s * 0.1, s * 0.22, s * 0.45);
+  } else if (i === 1) {
+    c.beginPath();
+    c.moveTo(-s * 0.15, 0);
+    c.lineTo(s * 0.7, -s * 0.55);
+    c.moveTo(-s * 0.15, 0);
+    c.lineTo(s * 0.7, 0);
+    c.moveTo(-s * 0.15, 0);
+    c.lineTo(s * 0.7, s * 0.55);
+    c.stroke();
+    c.fillRect(-s * 0.45, -s * 0.2, s * 0.4, s * 0.4);
+  } else if (i === 2) {
+    c.beginPath();
+    c.moveTo(0, -s * 0.7);
+    c.lineTo(s * 0.42, s * 0.35);
+    c.lineTo(-s * 0.42, s * 0.35);
+    c.closePath();
+    c.fill();
+  } else if (i === 3) {
+    c.fillRect(-s * 0.12, -s * 0.75, s * 0.24, s * 1.35);
+    c.fillRect(-s * 0.32, -s * 0.15, s * 0.64, s * 0.18);
+  } else {
+    c.beginPath();
+    c.arc(0, 0, s * 0.42, 0, Math.PI * 2);
+    c.fill();
+    c.fillRect(-s * 0.08, -s * 0.7, s * 0.16, s * 0.32);
+  }
+  c.restore();
+}
 
 export function drawWeaponRack(c: CanvasRenderingContext2D, w: World): void {
   if (w.over || w.choosing) return;
@@ -47,7 +85,7 @@ export function drawWeaponRack(c: CanvasRenderingContext2D, w: World): void {
     c.lineWidth = 1.8;
     c.strokeRect(x + 0.8, y + 0.8, slot - 1.6, slot - 1.6);
     blitSheetFit(c, "power_slot", x - 1, y - 1, slot + 2, slot + 2);
-    drawIcon(c, id, x + slot / 2, y + slot * 0.42, Math.max(7, slot * 0.36));
+    wpnGlyph(c, i, x + slot / 2, y + slot * 0.42, Math.max(8, slot * 0.34));
     const pipW = Math.max(2.2, (slot - 8) / 5 - 1);
     for (let p = 0; p < 5; p++) {
       c.fillStyle = p < lv ? EMBER : SOOT;
