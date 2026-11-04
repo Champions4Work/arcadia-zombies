@@ -47,11 +47,10 @@ describe("style reset gates", () => {
     const bible = readFileSync("docs/STYLE.md", "utf8");
     expect(bible.includes("target_look.jpg")).toBe(true);
     expect(bible.includes("target_look2.png")).toBe(true);
-    expect(bible.includes("STEAM GATE")).toBe(true);
-    expect(bible.includes("HOLD THE AREA")).toBe(true);
-    expect(bible.includes("heart-ring")).toBe(true);
+    expect(bible.includes("heart_ring")).toBe(true);
     expect(bible.includes("muzzle flash")).toBe(true);
     expect(bible.includes("az_art_v2")).toBe(true);
-    expect(bible.includes("220")).toBe(true);
+    expect(bible.includes("power_slot")).toBe(true);
+    expect(bible.includes("minimap_frame")).toBe(true);
   });
 });
