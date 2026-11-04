@@ -2,7 +2,7 @@ import { awardRun, applyWorkshop, emptyWorkshop, loadWorkshop, saveWorkshop, try
 import { fpsReadout, noteFrame, toggleFps, toggleFromKey } from "./render/fps";
 import { setNumbersOn, stopRemaining } from "./render/juice";
 import { resetXpGain, syncXpGain, tickXpGain } from "./render/xp-gain";
-import { setMusicOn, setMusicWave } from "./render/music";
+import { bootMusic, mountMusicRow, musicMuted, persistMusic, syncMusic, type MusicSnap } from "./render/music";
 import { chestSkipKey } from "./render/chestFx";
 import { draw } from "./render/draw";
 import { pauseHit } from "./render/hud";
@@ -91,7 +91,7 @@ import {
   saveRoster,
 } from "./sim/characters";
 import { dropChest } from "./sim/chest";
-import { armDevJump, isWon, killCount, setRunEndless, takeCue } from "./sim/finale";
+import { armDevJump, isWon, killCount, lichUp, setRunEndless, takeCue } from "./sim/finale";
 import { fillHorde, HORDE_BULLETS, HORDE_ZOMBIES } from "./sim/horde";
 import {
   hasMod,
@@ -137,6 +137,7 @@ function today(): string {
 let questState = store ? loadQuests(store, today()) : freshQuests(today());
 setMuted(session.muted);
 bootSfx(store);
+bootMusic(store);
 let survivor = roster.index;
 let bestWave = roster.bestWave;
 
@@ -165,6 +166,15 @@ const modRead = document.getElementById("mod-read") as HTMLElement;
 const modsRoot = document.getElementById("mods") as HTMLElement;
 const sfxMuteBtn = document.getElementById("sfx-mute") as HTMLButtonElement;
 const sfxVol = document.getElementById("sfx-vol") as HTMLInputElement;
+mountMusicRow(sfxBox, {
+  gesture() {
+    unlockAudio();
+  },
+  commit(kind) {
+    if (kind === "mute" && !musicMuted()) playUiClick();
+    if (store) persistMusic(store);
+  },
+});
 const panel = document.getElementById("panel") as HTMLElement;
 const leader = mountLeaderboard(panel, () => presentBoard(records));
 const joy = document.getElementById("joy") as HTMLElement;
@@ -241,6 +251,24 @@ function persist(): void {
 function noteCodex(): void {
   if (!observe(codex, world)) return;
   if (store) saveCodex(store, codex);
+}
+
+function musicSnap(): MusicSnap {
+  let alive = 0;
+  if (session.phase === PHASE_PLAY) {
+    const flags = world.zombies.alive;
+    for (let i = 0; i < flags.length; i++) alive += flags[i] ?? 0;
+  }
+  return {
+    phase: session.phase,
+    wave: world.wave,
+    rank: world.rank,
+    toSpawn: world.toSpawn,
+    alive,
+    bossOn: world.boss.on,
+    bossPending: world.boss.pending,
+    lich: lichUp(world),
+  };
 }
 
 function paint(): void {
@@ -352,8 +380,7 @@ function paint(): void {
   questState = rollDay(questState, today());
   const showQuests = session.phase === PHASE_TITLE && !session.codex;
   briefing.setQuests(questBoard(questState), showQuests);
-  setMusicOn(playing || session.phase === PHASE_TITLE || fitting);
-  setMusicWave(playing ? Math.max(world.wave, world.rank) : 0);
+  syncMusic(musicSnap());
 }
 
 function buyFitting(id: number): void {
@@ -808,10 +835,10 @@ function frame(now: number): void {
         break;
       }
     }
-    setMusicWave(Math.max(world.wave, world.rank));
   } else {
     acc = 0;
   }
+  syncMusic(musicSnap());
   fitPlay();
   const hud = currentHud();
   if (hud) {

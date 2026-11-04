@@ -1,4 +1,3 @@
-import { musicBpm, musicVoices } from "../src/render/music";
 import { computeFit, screenToGame } from "../src/shell/fit";
 import { playView } from "../src/shell/play-view";
 import {
@@ -185,16 +184,5 @@ describe("fullscreen fit", () => {
     const g = screenToGame(phone, 0, phone.oy);
     expect(g.x).toBeCloseTo(0);
     expect(g.y).toBeCloseTo(0);
-  });
-});
-
-describe("music intensity", () => {
-  it("raises tempo and voice count with the wave", () => {
-    expect(musicBpm(0)).toBe(88);
-    expect(musicBpm(4)).toBe(120);
-    expect(musicBpm(99)).toBe(152);
-    expect(musicVoices(0)).toBe(1);
-    expect(musicVoices(3)).toBe(4);
-    expect(musicVoices(8)).toBe(5);
   });
 });
