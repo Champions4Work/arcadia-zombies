@@ -78,6 +78,7 @@ describe("difficulty ranks", () => {
     expect(spawnEvery(30)).toBe(CURVE.spawnMin);
     expect(spawnEvery(4)).toBeLessThan(spawnEvery(0));
     expect(hpScale(4)).toBe(CURVE.hpNum + 4 * CURVE.hpPer + 16 * CURVE.hpQuad);
+    expect(hpScale(16)).toBeGreaterThan(hpScale(4) * 3);
     expect(scaledHp(1, 0)).toBe(1);
     expect(scaledHp(3, 0)).toBe(3);
     expect(scaledHp(1, 4)).toBe(Math.max(1, Math.round(hpScale(4) / 100)));

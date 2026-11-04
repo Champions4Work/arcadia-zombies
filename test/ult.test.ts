@@ -1,5 +1,5 @@
 import { resetJuice } from "../src/render/juice";
-import { chargeUlt, fireUlt, tryUlt, ULT_NEED, ultFill, ultReady } from "../src/sim/ult";
+import { chargeUlt, fireUlt, tryUlt, ULT_CD, ULT_NEED, ultFill, ultNeed, ultReady } from "../src/sim/ult";
 import { killZombie } from "../src/sim/combat.hot";
 import { step } from "../src/sim/step.hot";
 import { Z_SHAMBLER, type Input, type World } from "../src/sim/types";
@@ -75,5 +75,25 @@ describe("ultimate steam blast", () => {
     for (let i = 0; i < 3; i++) if (w.zombies.alive[i]) alive++;
     expect(alive).toBe(0);
     expect(w.ult).toBe(0);
+  });
+
+  it("raises the charge need with time and blocks recharge during cooldown", () => {
+    expect(ULT_NEED).toBeGreaterThan(20);
+    expect(ultNeed(0)).toBe(ULT_NEED);
+    expect(ultNeed(8 * 60 * 60)).toBeGreaterThanOrEqual(ULT_NEED * 3);
+    const w = createWorld(3);
+    freeze(w);
+    w.tick = 0;
+    chargeUlt(w, ULT_NEED);
+    expect(ultReady(w)).toBe(true);
+    expect(fireUlt(w)).toBe(true);
+    expect(w.ultCd).toBe(ULT_CD);
+    w.ultBlast = 0;
+    chargeUlt(w, ULT_NEED);
+    expect(w.ult).toBe(0);
+    expect(ultReady(w)).toBe(false);
+    w.ultCd = 0;
+    chargeUlt(w, ULT_NEED);
+    expect(ultReady(w)).toBe(true);
   });
 });

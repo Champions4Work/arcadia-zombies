@@ -7,6 +7,9 @@ import { modNames } from "../sim/modifiers";
 
 export const RUN_LOG_V = 1;
 export const SAMPLE_TICK = 3600;
+export const SAMPLE_EARLY_TICK = 1200;
+export const SAMPLE_EARLY_UNTIL = 18000;
+export const SAMPLE_MAX = 48;
 export const FPS_CAP = 8;
 export const DEBUG_KEY = "arcadia.debug";
 export const RUNS_PATH = "/api/runs";
@@ -90,7 +93,7 @@ export function sampleRun(
   return {
     t: Math.floor(sec),
     level: w.level,
-    hp: w.hp,
+    hp: Math.max(0, w.hp | 0),
     maxHp: w.maxHp,
     hurt: w.hurt,
     dps,
@@ -108,14 +111,24 @@ export function sampleRun(
   };
 }
 
-export function shouldSample(tick: number, lastTick: number): boolean {
-  if (tick < SAMPLE_TICK) return false;
-  return Math.floor(tick / SAMPLE_TICK) > Math.floor(lastTick / SAMPLE_TICK);
+export function samplePeriod(tick: number): number {
+  return tick <= SAMPLE_EARLY_UNTIL ? SAMPLE_EARLY_TICK : SAMPLE_TICK;
+}
+
+export function shouldSample(tick: number, lastTick: number, count = 0): boolean {
+  if (count >= SAMPLE_MAX) return false;
+  if (tick < SAMPLE_EARLY_TICK) return false;
+  const period = samplePeriod(tick);
+  return Math.floor(tick / period) > Math.floor(lastTick / period);
 }
 
 export function pushSample(log: RunLog, sample: RunSample): void {
   if (!isSample(sample)) return;
   log.v = RUN_LOG_V;
+  if (log.samples.length >= SAMPLE_MAX) {
+    log.samples[SAMPLE_MAX - 1] = sample;
+    return;
+  }
   log.samples.push(sample);
 }
 
@@ -148,7 +161,7 @@ export function isRunLog(v: unknown): v is RunLog {
   if ((v["v"] as number) !== RUN_LOG_V) return false;
   const samples = v["samples"];
   if (!Array.isArray(samples)) return false;
-  if (samples.length > 48) return false;
+  if (samples.length > SAMPLE_MAX) return false;
   for (const row of samples) {
     if (!isSample(row)) return false;
   }

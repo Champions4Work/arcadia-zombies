@@ -93,7 +93,7 @@ export interface World {
   chestX: Float32Array; chestY: Float32Array; chestOn: Uint8Array; chestPrize: Int8Array;
   chestOpen: number; chestCount: number; chestT: number; chestDur: number;
   chestGold: number; chestLinger: number; chestCursor: number; chestSeal: number;
-  ult: number; ultBlast: number;
+  ult: number; ultBlast: number; ultCd: number;
   boss: Boss;
 }
 export const EV_SHOT = 0;

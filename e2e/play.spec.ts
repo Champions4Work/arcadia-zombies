@@ -67,3 +67,77 @@ test("loads the game and plays a few seconds without page errors", async ({ page
   await page.mouse.up();
   expect(faults).toEqual([]);
 });
+
+test("preview run API stores a POST with Airship and Whip samples", async ({ request }) => {
+  const log = {
+    v: 1,
+    samples: [{
+      t: 20,
+      level: 3,
+      hp: 12,
+      maxHp: 14,
+      hurt: 1,
+      dps: 4,
+      kills: 7,
+      alive: 2,
+      elites: 0,
+      weapons: [{ name: "Airship", lv: 1 }],
+      upgrades: [{ name: "Whip", lv: 1 }],
+      character: "tinker",
+      modifier: "none",
+      death: "",
+      viewW: 390,
+      viewH: 844,
+      fps: [60],
+    }],
+  };
+  const post = await request.post("/api/runs", { data: log });
+  expect(post.status()).toBe(201);
+  const listed = await request.get("/api/runs");
+  expect(listed.ok()).toBeTruthy();
+  const body = await listed.json() as { runs: { log: { samples: { weapons: { name: string }[]; upgrades: { name: string }[] }[] } }[] };
+  expect(body.runs[0]?.log.samples.length).toBeGreaterThan(0);
+  expect(body.runs[0]?.log.samples[0]?.weapons[0]?.name).toBe("Airship");
+  expect(body.runs[0]?.log.samples[0]?.upgrades[0]?.name).toBe("Whip");
+});
+
+test("the page fetch path stores Airship and Whip samples", async ({ page }) => {
+  await page.goto("/");
+  const skip = page.locator("#guide-skip");
+  if (await skip.isVisible()) await skip.click();
+  const result = await page.evaluate(async () => {
+    const log = {
+      v: 1,
+      samples: [{
+        t: 20,
+        level: 3,
+        hp: 12,
+        maxHp: 14,
+        hurt: 1,
+        dps: 4,
+        kills: 7,
+        alive: 2,
+        elites: 0,
+        weapons: [{ name: "Airship", lv: 1 }],
+        upgrades: [{ name: "Whip", lv: 1 }],
+        character: "tinker",
+        modifier: "none",
+        death: "overrun:CALM",
+        viewW: 390,
+        viewH: 844,
+        fps: [60],
+      }],
+    };
+    const post = await fetch("/api/runs", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(log),
+    });
+    const listed = await fetch("/api/runs");
+    return { status: post.status, listed: await listed.json() as { runs: { log: { samples: { weapons: { name: string }[]; upgrades: { name: string }[] }[] } }[] } };
+  });
+  expect(result.status).toBe(201);
+  expect(result.listed.runs[0]?.log.samples.length).toBeGreaterThan(0);
+  expect(result.listed.runs[0]?.log.samples[0]?.weapons[0]?.name).toBe("Airship");
+  expect(result.listed.runs[0]?.log.samples[0]?.upgrades[0]?.name).toBe("Whip");
+});
