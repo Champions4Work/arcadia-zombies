@@ -300,6 +300,7 @@ describe("barrels and steering", () => {
     w.arena.obsHW[0] = 12;
     w.arena.obsHH[0] = 12;
     w.arena.obsR[0] = 0;
+    w.arena.obsHp[0] = 3;
     const z = 0;
     w.zombies.alive[z] = 1;
     w.zombies.x[z] = w.px + 80;
@@ -329,6 +330,7 @@ describe("barrels and steering", () => {
     w.arena.obsHW[0] = 9;
     w.arena.obsHH[0] = 9;
     w.arena.obsR[0] = 0;
+    w.arena.obsHp[0] = 3;
     w.bullets.alive[0] = 1;
     w.bullets.x[0] = PROP_CELL;
     w.bullets.y[0] = PROP_CELL * 0.5;
@@ -399,6 +401,31 @@ describe("barrels and steering", () => {
     step(w, idle());
     expect(w.hp).toBe(w.maxHp);
     expect(w.arena.healAlive[slot]).toBe(1);
+  });
+  it("breaks a boiler and a gear pylon without dropping a heal", () => {
+    for (const kind of [OB_BOILER, OB_GEAR, OB_CRATE]) {
+      const w = createWorld(11);
+      freeze(w);
+      clearProps(w);
+      w.arena.obsN = 1;
+      w.arena.obsAlive[0] = 1;
+      w.arena.obsKind[0] = kind;
+      w.arena.obsX[0] = w.px + 24;
+      w.arena.obsY[0] = w.py;
+      w.arena.obsHW[0] = 12;
+      w.arena.obsHH[0] = 12;
+      w.arena.obsR[0] = kind === OB_CRATE ? 0 : 12;
+      w.arena.obsHp[0] = 1;
+      w.bullets.alive[0] = 1;
+      w.bullets.x[0] = w.px + 24;
+      w.bullets.y[0] = w.py;
+      w.bullets.vx[0] = 0;
+      w.bullets.vy[0] = 0;
+      w.bHit[0] = -1;
+      step(w, idle());
+      expect(w.arena.obsAlive[0]).toBe(0);
+      expect(Array.from(w.arena.healAlive).some((v) => v === 1)).toBe(false);
+    }
   });
   it("steers a zombie around a pipe wall and a boiler", () => {
     const wall = createWorld(12);

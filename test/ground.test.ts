@@ -21,6 +21,8 @@ import {
   TILE,
   VENT_FX_CAP,
   VENT_PUFFS,
+  VENT_SLOW,
+  ventSlow,
   groundCols,
   groundFeatureAt,
   groundFeatureCount,
@@ -128,6 +130,13 @@ describe("yard floor map", () => {
     expect(ventFxCount(0, 0)).toBeLessThanOrEqual(VENT_FX_CAP * VENT_PUFFS);
     expect(VENT_PUFFS).toBe(2);
     expect(VENT_FX_CAP).toBe(4);
+  });
+
+  it("slows units that stand on a vent or grate and leaves the kite pocket open", () => {
+    expect(ventSlow(8 * TILE + 8, 10 * TILE + 8)).toBe(VENT_SLOW);
+    expect(ventSlow(22 * TILE + 8, 14 * TILE + 8)).toBe(VENT_SLOW);
+    expect(ventSlow(480, 320)).toBe(1);
+    expect(VENT_SLOW).toBeLessThan(1);
   });
 });
 

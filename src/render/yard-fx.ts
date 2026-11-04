@@ -1,72 +1,93 @@
-import { blitSheet } from "../art/sheet";
+import { blitSheet, steamFrame } from "../art/sheet";
 import { paintShadow } from "../art/look";
 import { INK, XP } from "../shell/theme";
+import { BELTS } from "../sim/belts";
 import { FEAT_LAMP, groundFeatureAt, groundFeatureCount } from "./ground";
 
 const BUILDINGS = [
-  { x: 380, y: 100 },
-  { x: 500, y: 94 },
-  { x: 620, y: 100 },
-  { x: 350, y: 200 },
-  { x: 610, y: 200 },
+  { x: 360, y: 96 },
+  { x: 480, y: 90 },
+  { x: 600, y: 96 },
+  { x: 348, y: 200 },
+  { x: 612, y: 200 },
   { x: 340, y: 300 },
   { x: 620, y: 300 },
-  { x: 355, y: 510 },
-  { x: 605, y: 510 },
-];
-
-const BELTS = [
-  { x: 336, y: 148, w: 90, vert: 0 },
-  { x: 534, y: 148, w: 90, vert: 0 },
-  { x: 338, y: 210, w: 120, vert: 1 },
-  { x: 622, y: 210, w: 120, vert: 1 },
-  { x: 338, y: 448, w: 90, vert: 1 },
-  { x: 622, y: 448, w: 90, vert: 1 },
+  { x: 348, y: 520 },
+  { x: 480, y: 528 },
+  { x: 612, y: 520 },
 ];
 
 const PROPS: { id: string; x: number; y: number }[] = [
   { id: "pipes_blue_tank", x: 348, y: 230 },
   { id: "pipes_blue_tank", x: 348, y: 310 },
+  { id: "pipes_blue_tank", x: 348, y: 470 },
+  { id: "pipes_blue_tank", x: 400, y: 200 },
   { id: "pipes_blue_tank", x: 612, y: 230 },
   { id: "pipes_blue_tank", x: 612, y: 310 },
+  { id: "pipes_blue_tank", x: 612, y: 470 },
+  { id: "pipes_blue_tank", x: 560, y: 200 },
+  { id: "pipes_blue_tank", x: 568, y: 500 },
+  { id: "pipes_blue_tank", x: 430, y: 588 },
   { id: "valve_steam", x: 348, y: 270 },
+  { id: "valve_steam", x: 348, y: 430 },
+  { id: "valve_steam", x: 400, y: 168 },
   { id: "valve_steam", x: 612, y: 270 },
+  { id: "valve_steam", x: 612, y: 430 },
+  { id: "valve_steam", x: 560, y: 168 },
   { id: "window_lit", x: 354, y: 58 },
-  { id: "window_lit", x: 474, y: 52 },
+  { id: "window_lit", x: 420, y: 52 },
+  { id: "window_lit", x: 474, y: 48 },
+  { id: "window_lit", x: 526, y: 52 },
   { id: "window_lit", x: 594, y: 58 },
-  { id: "window_lit", x: 406, y: 62 },
-  { id: "window_lit", x: 526, y: 56 },
   { id: "window_lit", x: 338, y: 168 },
+  { id: "window_lit", x: 338, y: 248 },
   { id: "window_lit", x: 622, y: 168 },
+  { id: "window_lit", x: 622, y: 248 },
+  { id: "window_lit", x: 406, y: 508 },
+  { id: "window_lit", x: 554, y: 508 },
   { id: "crate", x: 338, y: 128 },
+  { id: "crate", x: 400, y: 128 },
+  { id: "crate", x: 560, y: 128 },
+  { id: "crate", x: 400, y: 448 },
+  { id: "crate", x: 560, y: 448 },
+  { id: "crate", x: 348, y: 580 },
+  { id: "crate", x: 612, y: 580 },
+  { id: "crate", x: 400, y: 468 },
+  { id: "crate", x: 470, y: 556 },
   { id: "crate_stack", x: 600, y: 128 },
   { id: "crate_stack", x: 338, y: 480 },
-  { id: "crate", x: 622, y: 480 },
+  { id: "crate_stack", x: 400, y: 520 },
+  { id: "crate_stack", x: 560, y: 520 },
+  { id: "crate_stack", x: 480, y: 168 },
+  { id: "crate_stack", x: 520, y: 476 },
+  { id: "crate_stack", x: 500, y: 600 },
   { id: "barrel", x: 338, y: 540 },
+  { id: "barrel", x: 400, y: 400 },
+  { id: "barrel", x: 560, y: 400 },
   { id: "barrel", x: 622, y: 540 },
+  { id: "barrel", x: 360, y: 448 },
+  { id: "barrel", x: 600, y: 448 },
+  { id: "barrel", x: 448, y: 492 },
+  { id: "barrel", x: 392, y: 540 },
+  { id: "barrel", x: 538, y: 548 },
   { id: "breakable_boiler", x: 338, y: 400 },
-  { id: "crate", x: 338, y: 448 },
+  { id: "breakable_boiler", x: 400, y: 230 },
+  { id: "breakable_boiler", x: 560, y: 470 },
   { id: "breakable_gear_pylon", x: 622, y: 400 },
-  { id: "barrel", x: 622, y: 448 },
-  { id: "lamp", x: 380, y: 140 },
-  { id: "lamp", x: 500, y: 132 },
-  { id: "lamp", x: 620, y: 140 },
+  { id: "breakable_gear_pylon", x: 560, y: 230 },
+  { id: "breakable_gear_pylon", x: 400, y: 470 },
+  { id: "lamp", x: 370, y: 140 },
+  { id: "lamp", x: 480, y: 132 },
+  { id: "lamp", x: 610, y: 140 },
   { id: "lamp", x: 338, y: 350 },
+  { id: "lamp", x: 400, y: 350 },
+  { id: "lamp", x: 560, y: 350 },
   { id: "lamp", x: 622, y: 350 },
-  { id: "lamp", x: 350, y: 500 },
-  { id: "lamp", x: 610, y: 500 },
-  { id: "crate", x: 338, y: 468 },
-  { id: "barrel", x: 338, y: 512 },
-  { id: "crate_stack", x: 622, y: 476 },
-  { id: "pipes_blue_tank", x: 622, y: 520 },
-  { id: "barrel", x: 338, y: 548 },
-  { id: "crate", x: 338, y: 588 },
-  { id: "barrel", x: 622, y: 548 },
-  { id: "pipes_blue_tank", x: 622, y: 588 },
-  { id: "crate_stack", x: 622, y: 620 },
-  { id: "lamp", x: 338, y: 430 },
-  { id: "lamp", x: 338, y: 530 },
-  { id: "lamp", x: 622, y: 530 },
+  { id: "lamp", x: 360, y: 500 },
+  { id: "lamp", x: 600, y: 500 },
+  { id: "lamp", x: 420, y: 460 },
+  { id: "lamp", x: 500, y: 520 },
+  { id: "lamp", x: 560, y: 580 },
   { id: "pipes_blue_tank", x: 340, y: 360 },
   { id: "pipes_blue_tank", x: 340, y: 440 },
   { id: "pipes_blue_tank", x: 620, y: 360 },
@@ -77,12 +98,6 @@ const PROPS: { id: string; x: number; y: number }[] = [
   { id: "window_lit", x: 620, y: 248 },
   { id: "window_lit", x: 340, y: 560 },
   { id: "window_lit", x: 620, y: 560 },
-  { id: "decal_vent", x: 340, y: 250 },
-  { id: "decal_vent", x: 620, y: 250 },
-  { id: "decal_vent", x: 340, y: 470 },
-  { id: "decal_vent", x: 620, y: 470 },
-  { id: "decal_grate", x: 354, y: 600 },
-  { id: "decal_grate", x: 606, y: 600 },
   { id: "crate", x: 360, y: 620 },
   { id: "barrel", x: 400, y: 612 },
   { id: "crate_stack", x: 560, y: 616 },
@@ -91,43 +106,44 @@ const PROPS: { id: string; x: number; y: number }[] = [
   { id: "breakable_gear_pylon", x: 620, y: 580 },
 ];
 
-const TANKS = [
-  { x: 348, y: 230 },
-  { x: 348, y: 310 },
-  { x: 612, y: 230 },
-  { x: 612, y: 310 },
-  { x: 622, y: 520 },
-  { x: 622, y: 588 },
-  { x: 340, y: 360 },
-  { x: 340, y: 440 },
-  { x: 620, y: 360 },
-  { x: 620, y: 440 },
-];
-
-const POOLS = [
-  { x: 380, y: 140 },
-  { x: 500, y: 132 },
-  { x: 620, y: 140 },
-  { x: 338, y: 350 },
-  { x: 622, y: 350 },
-  { x: 350, y: 500 },
-  { x: 610, y: 500 },
-  { x: 338, y: 430 },
-  { x: 338, y: 530 },
-  { x: 622, y: 530 },
-  { x: 340, y: 360 },
-  { x: 620, y: 360 },
+const DECALS: { id: string; x: number; y: number }[] = [
+  { id: "decal_vent", x: 400, y: 256 },
+  { id: "decal_vent", x: 560, y: 256 },
+  { id: "decal_vent", x: 340, y: 250 },
+  { id: "decal_vent", x: 620, y: 250 },
+  { id: "decal_vent", x: 340, y: 470 },
+  { id: "decal_vent", x: 620, y: 470 },
+  { id: "decal_vent", x: 440, y: 432 },
+  { id: "decal_vent", x: 520, y: 432 },
+  { id: "decal_grate", x: 420, y: 300 },
+  { id: "decal_grate", x: 540, y: 300 },
+  { id: "decal_grate", x: 354, y: 600 },
+  { id: "decal_grate", x: 606, y: 600 },
+  { id: "decal_hazard", x: 400, y: 300 },
+  { id: "decal_hazard", x: 560, y: 300 },
+  { id: "decal_hazard", x: 460, y: 248 },
+  { id: "decal_hazard", x: 500, y: 248 },
 ];
 
 const STEAM_VENTS = [
   { x: 348, y: 188 },
   { x: 348, y: 268 },
-  { x: 612, y: 268 },
   { x: 348, y: 348 },
+  { x: 348, y: 428 },
+  { x: 400, y: 160 },
+  { x: 400, y: 256 },
+  { x: 560, y: 160 },
+  { x: 560, y: 256 },
+  { x: 612, y: 188 },
+  { x: 612, y: 268 },
   { x: 612, y: 348 },
+  { x: 612, y: 428 },
 ];
 
-export const YARD_CLEAR = { x0: 352, y0: 168, x1: 608, y1: 508 };
+const TANKS = PROPS.filter((p) => p.id === "pipes_blue_tank");
+const POOLS = PROPS.filter((p) => p.id === "lamp");
+
+export const YARD_CLEAR = { x0: 418, y0: 248, x1: 542, y1: 392 };
 export const PHONE_CAM = { x0: 332, y0: 0, x1: 628, y1: 640 };
 
 function visible(x: number, y: number, camX: number, camY: number, vw: number, vh: number, pad: number): boolean {
@@ -232,16 +248,37 @@ function arrow(ctx: CanvasRenderingContext2D, x: number, y: number, ang: number,
   ctx.restore();
 }
 
-export function yardPropHits(x0: number, y0: number, x1: number, y1: number): number {
+function countIn(
+  items: readonly { x: number; y: number }[],
+  x0: number,
+  y0: number,
+  x1: number,
+  y1: number,
+): number {
   let n = 0;
-  for (const b of BUILDINGS) {
-    if (b.x >= x0 && b.x <= x1 && b.y >= y0 && b.y <= y1) n++;
+  for (const item of items) {
+    if (item.x >= x0 && item.x <= x1 && item.y >= y0 && item.y <= y1) n++;
   }
-  for (const belt of BELTS) {
-    if (belt.x >= x0 && belt.x <= x1 && belt.y >= y0 && belt.y <= y1) n++;
-  }
+  return n;
+}
+
+export function yardPropHits(x0: number, y0: number, x1: number, y1: number): number {
+  return countIn(BUILDINGS, x0, y0, x1, y1) + countIn(BELTS, x0, y0, x1, y1) + countIn(PROPS, x0, y0, x1, y1);
+}
+
+export function yardFillHits(x0: number, y0: number, x1: number, y1: number): number {
+  return yardPropHits(x0, y0, x1, y1) + countIn(DECALS, x0, y0, x1, y1) + countIn(STEAM_VENTS, x0, y0, x1, y1);
+}
+
+export function yardKindHits(id: string, x0: number, y0: number, x1: number, y1: number): number {
+  let n = 0;
+  if (id === "building_wall_door") n += countIn(BUILDINGS, x0, y0, x1, y1);
+  if (id === "conveyor") n += countIn(BELTS, x0, y0, x1, y1);
   for (const p of PROPS) {
-    if (p.x >= x0 && p.x <= x1 && p.y >= y0 && p.y <= y1) n++;
+    if (p.id === id && p.x >= x0 && p.x <= x1 && p.y >= y0 && p.y <= y1) n++;
+  }
+  for (const d of DECALS) {
+    if (d.id === id && d.x >= x0 && d.x <= x1 && d.y >= y0 && d.y <= y1) n++;
   }
   return n;
 }
@@ -254,6 +291,10 @@ export function paintYardLive(
   vw: number,
   vh: number,
 ): void {
+  for (const decal of DECALS) {
+    if (!visible(decal.x, decal.y, camX, camY, vw, vh, 40)) continue;
+    blitSheet(ctx, decal.id, decal.x, decal.y);
+  }
   for (const pool of POOLS) {
     if (!visible(pool.x, pool.y, camX, camY, vw, vh, 60)) continue;
     lampPool(ctx, pool.x, pool.y);
@@ -305,9 +346,11 @@ export function paintYardLive(
     const cy = belt.vert ? belt.y + crateT : belt.y - 8;
     blitSheet(ctx, i & 1 ? "crate_stack" : "crate", cx, cy);
   }
+  const steam = steamFrame(tick);
   for (const vent of STEAM_VENTS) {
     if (!visible(vent.x, vent.y, camX, camY, vw, vh, 40)) continue;
     steamPuff(ctx, vent.x, vent.y, tick);
+    blitSheet(ctx, steam, vent.x, vent.y);
   }
 }
 

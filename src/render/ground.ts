@@ -23,6 +23,7 @@ export const FEAT_STAIN = 3;
 export const FEAT_RUBBLE = 4;
 export const VENT_FX_CAP = 4;
 export const VENT_PUFFS = 2;
+export const VENT_SLOW = 0.55;
 
 const COLS = (ARENA_W / TILE) | 0;
 const ROWS = (ARENA_H / TILE) | 0;
@@ -129,6 +130,10 @@ function build(): void {
   }
   forceVent(8, 10);
   forceVent(8, 14);
+  forceVent(22, 14);
+  forceVent(36, 12);
+  forceVent(22, 30);
+  forceVent(36, 30);
   forceVent(52, 12);
   forceVent(52, 20);
   forceVent(18, 28);
@@ -189,6 +194,12 @@ export function groundKind(c: number, r: number): number {
   build();
   if (c < 0 || r < 0 || c >= COLS || r >= ROWS) return KIND_SKY;
   return cells[r * COLS + c] ?? KIND_SKY;
+}
+
+export function ventSlow(x: number, y: number): number {
+  const k = groundKind((x / TILE) | 0, (y / TILE) | 0);
+  if (k === KIND_VENT || k === KIND_GRATE) return VENT_SLOW;
+  return 1;
 }
 
 export function groundFeatureCount(): number {
@@ -351,6 +362,8 @@ export const HAZARD_MARKS = [
   [8, 10],
   [22, 14],
   [36, 12],
+  [22, 30],
+  [36, 30],
 ] as const;
 
 export function paintGround(ctx: CanvasRenderingContext2D): void {

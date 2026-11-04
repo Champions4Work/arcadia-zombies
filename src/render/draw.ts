@@ -65,12 +65,12 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
   const plan = fieldPlan(horde, viewW, viewH);
   if (plan.yard) drawYardWindow(c, camX, camY, viewW, viewH);
   paintYardLive(c, w.tick, camX, camY, viewW, viewH);
+  paintProps(c, w);
   if (plan.sprites) {
     renderHorde(c, w);
     drawStageFx(c, w.tick, camX, camY);
     paintDecals(c, w);
     drawWarns(c, w);
-    paintProps(c, w);
     paintPlayer(c, w, moving);
     drawSaws(c, w);
     drawShield(c, w);

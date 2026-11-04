@@ -3,9 +3,11 @@ import { chargeUlt, stepUlt, tryUlt } from "./ult";
 import { stepWarn, tickEliteCharge } from "./warn";
 import { bossSpeedMul, hurtBoss, stepBoss } from "./boss.hot";
 import { indexProps } from "./arena";
+import { ventSlow } from "../render/ground";
 import {
   chaseZombie, cutProps, pickupHeals, queueSpawn, slidePlayer, teleCount, tickTelegraphs, updateCamera,
 } from "./arena.hot";
+import { stepBelts } from "./belts";
 import { openTouchedChest, stepChest } from "./chest";
 import { emitFx, hurtZombie, killZombie } from "./combat.hot";
 import { directorFloor, directorPack, directorSpawn, scaleThreat } from "./director";
@@ -203,7 +205,7 @@ export function step(w: World, input: Input): void {
     w.events[EV_RANK] = 1;
   }
   if (w.teslaFlash > 0) w.teslaFlash--;
-  slidePlayer(w, input.dx, input.dy, moveSpeed(w) * bossSpeedMul(w));
+  slidePlayer(w, input.dx, input.dy, moveSpeed(w) * bossSpeedMul(w) * ventSlow(w.px, w.py));
   updateCamera(w);
   const z = w.zombies;
   let alive = 0;
@@ -329,6 +331,7 @@ export function step(w: World, input: Input): void {
   tickTelegraphs(w);
   stepBoss(w);
   if (!hasMod(w.mods, MOD_NOHEAL)) pickupHeals(w);
+  stepBelts(w);
   chargeUlt(w, w.events[EV_KILL] ?? 0);
   stepUlt(w);
   stepWarn(w);
