@@ -1,3 +1,6 @@
+import {
+  applyLedger, chooseLoadout, chooseYard, emptyLedger, grantLedger, loadLedger, saveLedger, type LedgerFacts,
+} from "./meta/ledger";
 import { awardRun, applyWorkshop, emptyWorkshop, loadWorkshop, saveWorkshop, tryBuy } from "./meta/workshop";
 import { fpsDump, fpsEnabled, fpsReadout, noteFrame, noteSendFails, setDebugHud, toggleFps, toggleFromKey } from "./render/fps";
 import { juiceFrame, ownJuiceClock, setNumbersOn, stopRemaining } from "./render/juice";
@@ -11,7 +14,7 @@ import { ULT_KEY } from "./sim/ult";
 import { bootSfx, persistSfx, playSfxCue, playUiClick, playWorldSfx, resetSfxPlayback, setSfxVolume, sfxMuted, sfxVolume, toggleSfxMuted } from "./render/sfx";
 import { CUE_BOSS, CUE_CLICK, CUE_LEVEL, CUE_PICK, CUE_SHIELD, sfxMuteLabel, sfxVolumePercent } from "./render/sfx-cues";
 import { audioHeld, holdAudio, setMuted, unlockAudio } from "./render/sound";
-import { renderBench } from "./shell/bench";
+import { renderBench, renderLedger } from "./shell/bench";
 import { codexStamp, emptyCodex, loadCodex, observe, renderBook, saveCodex } from "./shell/codex";
 import { applyCanvas, screenToGame, type Fit } from "./shell/fit";
 import { bindHud, clampStick, currentHud, hudHitAt, layoutHud, offerHit, rerollCss, stickFrame } from "./shell/hud-layout";
@@ -45,6 +48,7 @@ import {
   resetTracker,
   saveLeaderboard,
   settleRun,
+  toastText,
 } from "./shell/leaderboard";
 import { mountLeaderboard } from "./shell/leaderboard-dom";
 import {
@@ -84,6 +88,7 @@ import {
   rollDay,
   saveQuests,
   snapshotRun,
+  unionForged,
 } from "./shell/quests";
 import { lockPlayGestures, phoneChrome } from "./shell/phone";
 import { createStick, liftStick, moveStick, pressStick, showRestStick } from "./shell/stick";
@@ -127,6 +132,9 @@ const session = createSession(saved.best, saved.muted, saved.shake, saved.number
 const loadedShop = store ? loadWorkshop(store) : { shop: emptyWorkshop(), writable: true };
 const shop = loadedShop.shop;
 const shopWritable = loadedShop.writable;
+const loadedLedger = store ? loadLedger(store) : { ledger: emptyLedger(), writable: true };
+const ledger = loadedLedger.ledger;
+const ledgerWritable = loadedLedger.writable;
 let crown = store ? loadCrown(store) : { won: false, endless: false };
 let mods = store ? loadMods(store) : 0;
 const records = store ? loadLeaderboard(store) : emptyLeaderboard();
@@ -152,6 +160,26 @@ bootSfx(store);
 bootMusic(store);
 let survivor = roster.index;
 let bestWave = roster.bestWave;
+
+function ledgerFacts(score: number, forged: boolean, gate: boolean): LedgerFacts {
+  let best = score > 0 ? score : 0;
+  const board = records.board;
+  for (let i = 0; i < board.length; i++) {
+    const rowScore = board[i]?.score ?? 0;
+    if (rowScore > best) best = rowScore;
+  }
+  return {
+    bestWave,
+    bestTicks: records.life.bestTime,
+    lifeKills: records.life.kills,
+    runs: records.life.runs,
+    score: best,
+    forged,
+    gate,
+  };
+}
+
+if (grantLedger(ledger, ledgerFacts(0, false, false)).length > 0 && store) saveLedger(store, ledger, ledgerWritable);
 
 const canvas = document.getElementById("game") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
@@ -217,8 +245,15 @@ function makeWorld(seed: number) {
   return next;
 }
 
+function armMeta(w: World): void {
+  applyWorkshop(w, shop);
+  if (wantsReviewShot(location.search, location.hash)) return;
+  if (location.hash === "#horde") return;
+  applyLedger(w, ledger);
+}
+
 let world = makeWorld(1);
-applyWorkshop(world, shop);
+armMeta(world);
 let fit: Fit = applyCanvas(canvas, ctx, innerWidth, innerHeight, devicePixelRatio || 1, W, H);
 bindHud(layoutHud(viewNow(), fit));
 
@@ -267,6 +302,7 @@ function persist(): void {
   if (!store) return;
   syncStore(session, store);
   saveWorkshop(store, shop, shopWritable);
+  saveLedger(store, ledger, ledgerWritable);
   saveCrown(store, crown);
   saveRoster(store, survivor, bestWave);
   saveMods(store, mods);
@@ -429,17 +465,34 @@ function paint(): void {
   syncPlayFocus();
 }
 
+function paintBench(): void {
+  renderBench(bench, shop, buyFitting);
+  renderLedger(bench, ledger, pickLoadout, pickYard);
+}
+
 function buyFitting(id: number): void {
   if (!tryBuy(shop, id)) return;
   persist();
-  renderBench(bench, shop, buyFitting);
+  paintBench();
   paint();
+}
+
+function pickLoadout(index: number): void {
+  if (!chooseLoadout(ledger, index)) return;
+  persist();
+  paintBench();
+}
+
+function pickYard(index: number): void {
+  if (!chooseYard(ledger, index)) return;
+  persist();
+  paintBench();
 }
 
 function showWorkshop(): void {
   unlockAudio();
   if (!openWorkshop(session)) return;
-  renderBench(bench, shop, buyFitting);
+  paintBench();
   playUiClick();
   paint();
 }
@@ -462,7 +515,7 @@ function startRun(): void {
     const seedQuery = import.meta.env.DEV ? Number(new URLSearchParams(location.search).get("seed")) : NaN;
     const seed = Number.isFinite(seedQuery) && seedQuery > 0 ? seedQuery >>> 0 : Date.now() >>> 0;
     world = makeWorld(seed);
-    applyWorkshop(world, shop);
+    armMeta(world);
     const jump = devSeconds(location.search, import.meta.env.DEV);
     if (jump > 0) armDevJump(world, jump);
     setRunEndless(world, crown.endless);
@@ -928,8 +981,11 @@ function frame(now: number): void {
         }));
         runLineText = settled.line;
         runShare = settled.share;
+        const fresh = grantLedger(ledger, ledgerFacts(world.score, unionForged(world.upgrades), world.gate === 1));
+        const toasts = settled.toasts.slice();
+        for (let i = 0; i < fresh.length; i++) toasts.push(toastText(fresh[i] ?? ""));
         if (store) saveLeaderboard(store, records);
-        leader.toast(settled.toasts);
+        leader.toast(toasts);
         persist();
         paint();
         acc = 0;
