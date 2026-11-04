@@ -11,6 +11,10 @@ import { setMuted, unlockAudio } from "./render/sound";
 import { renderBench } from "./shell/bench";
 import { codexStamp, emptyCodex, loadCodex, observe, renderBook, saveCodex } from "./shell/codex";
 import { applyCanvas, screenToGame, type Fit } from "./shell/fit";
+import { bindHud, layoutHud, stickFrame } from "./shell/hud-layout";
+import { mountResults } from "./shell/results-dom";
+import { resultBadges, resultFromWorld } from "./shell/results";
+import { bindViewport, readInsets, readViewport } from "./shell/viewport";
 import { mountPicker, paintPicker } from "./shell/picker";
 import {
   captureRun,
@@ -73,8 +77,7 @@ import {
   saveRoster,
 } from "./sim/characters";
 import { dropChest } from "./sim/chest";
-import { clock, tierName } from "./sim/difficulty";
-import { armDevJump, isWon, killCount, setRunEndless, takeCue, victoryText } from "./sim/finale";
+import { armDevJump, isWon, killCount, setRunEndless, takeCue } from "./sim/finale";
 import { fillHorde, HORDE_BULLETS, HORDE_ZOMBIES } from "./sim/horde";
 import {
   hasMod,
@@ -82,12 +85,10 @@ import {
   MOD_LIST,
   modNames,
   saveMods,
-  scoreBanner,
   scoreLabel,
   toggleMod,
 } from "./sim/modifiers";
-import { scrapEarned } from "./meta/scrap";
-import { cardSlot, summaryText } from "./sim/progress";
+import { cardSlot } from "./sim/progress";
 import { rerollHit } from "./sim/reroll";
 import { step } from "./sim/step.hot";
 import { EV_CHEST, EV_CHEST_END, EV_KILL, EV_REVIVE, H, W, type Input, type World } from "./sim/types";
@@ -150,9 +151,8 @@ const leader = mountLeaderboard(panel, () => presentBoard(records));
 const joy = document.getElementById("joy") as HTMLElement;
 const knob = document.getElementById("knob") as HTMLElement;
 lockPlayGestures(window);
-function envSafe(side: "l" | "b"): number {
-  const n = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue(`--safe-${side}`));
-  return Number.isFinite(n) ? n : 0;
+function viewNow() {
+  return readViewport(window, readInsets(getComputedStyle(document.documentElement)));
 }
 function dismissGuide(): boolean {
   if (!briefing.guideOpen()) return false;
@@ -177,6 +177,13 @@ function makeWorld(seed: number) {
 let world = makeWorld(1);
 applyWorkshop(world, shop);
 let fit: Fit = applyCanvas(canvas, ctx, innerWidth, innerHeight, devicePixelRatio || 1, W, H);
+bindHud(layoutHud(viewNow(), fit));
+bindViewport(() => {
+  const vp = viewNow();
+  fit = applyCanvas(canvas, ctx, vp.cssW, vp.cssH, vp.dpr, W, H, vp.safe);
+  bindHud(layoutHud(vp, fit));
+});
+const results = mountResults(panel);
 const keys = new Set<string>();
 const input: Input = { dx: 0, dy: 0, pick: 0, reroll: 0, skip: 0 };
 const stick = createStick();
@@ -185,7 +192,6 @@ let pendingPick = 0;
 let pendingReroll = 0;
 let pendingSkip = 0;
 let lastScrap = 0;
-let lastBase = 0;
 const STEP_MS = 1000 / 60;
 let acc = 0;
 let last = performance.now();
@@ -209,6 +215,7 @@ function paint(): void {
   const playing = session.phase === PHASE_PLAY;
   const fitting = session.phase === PHASE_WORKSHOP;
   veil.classList.toggle("on", !playing);
+  panel.classList.toggle("over", session.phase === PHASE_OVER && !session.codex && !fitting);
   const picking = (session.phase === PHASE_TITLE || session.phase === PHASE_OVER) && !session.codex && !fitting;
   modsRoot.hidden = !picking;
   modRead.hidden = !picking;
@@ -227,15 +234,9 @@ function paint(): void {
     sub.textContent = "Esc or tap Resume";
     goBtn.textContent = "Resume";
   } else if (session.phase === PHASE_OVER) {
-    const runMul = scoreLabel(world.mods);
-    if (isWon(world)) {
-      headline.textContent = "The Lich Falls";
-      sub.textContent = `${clock(world.tick)} · ${killCount(world)} KILLS · ${runMul}`;
-    } else {
-      headline.textContent = "The Gears Stop";
-      sub.textContent = `Best ${session.best} · ${tierName(world.rank)} · ${clock(world.tick)} · ${runMul} · +${lastScrap} scrap`;
-    }
-    goBtn.textContent = "Play";
+    headline.textContent = "";
+    sub.textContent = "";
+    goBtn.textContent = "Play Again";
   } else if (fitting) {
     headline.textContent = "Workshop";
     sub.textContent = `Brass Scrap ${shop.scrap}`;
@@ -258,12 +259,26 @@ function paint(): void {
       btn.setAttribute("aria-pressed", on ? "true" : "false");
     }
   }
-  const overBody = session.phase === PHASE_OVER && !session.codex
-    ? (isWon(world) ? victoryText(world, lastBase) : summaryText(world))
-    : "";
-  const over = overBody.length > 0 ? `${scoreBanner(world.mods)}\n${overBody}` : "";
-  summary.hidden = over.length === 0;
-  summary.textContent = over;
+  summary.hidden = true;
+  summary.textContent = "";
+  if (session.phase === PHASE_OVER && !session.codex && !fitting) {
+    results.show(resultFromWorld(world, lastScrap, resultBadges(
+      {
+        score: world.score,
+        time: world.tick,
+        tier: world.rank,
+        kills: killCount(world),
+        build: "",
+        character: characterAt(world.charId).id,
+        mods: world.mods,
+        workshop: "",
+      },
+      records.life,
+      records.unlocked,
+    )));
+  } else {
+    results.hide();
+  }
   const showRoster = menu && !session.codex;
   rosterEl.hidden = !showRoster;
   if (showRoster) paintPicker(rosterEl, survivor, bestWave);
@@ -298,7 +313,7 @@ function paint(): void {
     share: session.phase === PHASE_OVER ? runShare : null,
   });
   questState = rollDay(questState, today());
-  const showQuests = (session.phase === PHASE_TITLE || session.phase === PHASE_OVER) && !session.codex;
+  const showQuests = session.phase === PHASE_TITLE && !session.codex;
   briefing.setQuests(questBoard(questState), showQuests);
   setMusicOn(playing || session.phase === PHASE_TITLE || fitting);
   setMusicWave(playing ? Math.max(world.wave, world.rank) : 0);
@@ -429,15 +444,17 @@ function endless(): void {
 }
 function placeJoy(): void {
   const playing = session.phase === PHASE_PLAY && !world.choosing && !world.chestOpen;
+  const vp = viewNow();
   const rest = showRestStick(
-    innerWidth,
+    vp.cssW,
     matchMedia("(pointer: coarse)").matches,
     matchMedia("(hover: none)").matches,
   );
   const show = playing && (stick.on || rest);
   joy.hidden = !show;
   if (!show) return;
-  const chrome = phoneChrome(innerWidth, innerHeight, envSafe("l"), envSafe("b"));
+  const hud = layoutHud(vp, fit);
+  const chrome = phoneChrome(vp.cssW, vp.cssH, 0, 0, stickFrame(hud));
   const size = chrome.joyR * 2;
   joy.style.width = `${size}px`;
   joy.style.height = `${size}px`;
@@ -598,7 +615,7 @@ addEventListener("pointerdown", (e) => {
   if (session.phase === PHASE_PLAY && e.cancelable) e.preventDefault();
   if (session.phase !== PHASE_PLAY) return;
   const p = screenToGame(fit, e.clientX, e.clientY);
-  if (pauseHit(p.x, p.y)) {
+  if (pauseHit(e.clientX, e.clientY)) {
     togglePause(session);
     playUiClick();
     persist();
@@ -622,7 +639,7 @@ addEventListener("pointerdown", (e) => {
 addEventListener("pointermove", (e) => {
   if (session.phase === PHASE_PLAY && e.cancelable && !fromHud(e.target)) e.preventDefault();
   if (!stick.on || e.pointerId !== stickId) return;
-  moveStick(stick, e.clientX, e.clientY, phoneChrome(innerWidth, innerHeight, envSafe("l"), envSafe("b")).joyR);
+  moveStick(stick, e.clientX, e.clientY, phoneChrome(viewNow().cssW, viewNow().cssH).joyR);
   input.dx = stick.dx;
   input.dy = stick.dy;
 });
@@ -684,7 +701,6 @@ function frame(now: number): void {
       }
       noteCodex();
       if (world.over) {
-        lastBase = scrapEarned(world.tick, world.rank, world.kills);
         lastScrap = awardRun(shop, world);
         questState = applyRun(rollDay(questState, today()), snapshotRun({
           kills: killCount(world),
@@ -723,7 +739,9 @@ function frame(now: number): void {
   } else {
     acc = 0;
   }
-  fit = applyCanvas(canvas, ctx, innerWidth, innerHeight, devicePixelRatio || 1, W, H);
+  const vp = viewNow();
+  fit = applyCanvas(canvas, ctx, vp.cssW, vp.cssH, vp.dpr, W, H, vp.safe);
+  bindHud(layoutHud(vp, fit));
   const showHud = session.phase === PHASE_PLAY || session.phase === PHASE_PAUSE;
   draw(ctx, world, { hud: showHud, shake: session.shake });
   placeJoy();

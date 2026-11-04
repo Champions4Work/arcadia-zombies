@@ -1,3 +1,4 @@
+import { currentHud } from "../shell/hud-layout";
 import { LAYER_HUD, registerFx, registerLayer, type FxPaint } from "./plugins";
 import {
   FX_BOOM, UPG_WPN_FLAME, UPG_WPN_HARP, UPG_WPN_MORT, UPG_WPN_RIVET, UPG_WPN_SHOT,
@@ -83,24 +84,34 @@ registerLayer(LAYER_HUD, drawWeaponRack);
 
 export function drawWeaponRack(c: CanvasRenderingContext2D, w: World): void {
   if (w.over || w.choosing) return;
+  const layout = currentHud();
+  if (!layout) return;
+  c.save();
+  const dpr = c.canvas.width / Math.max(1, layout.view.w);
+  c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const box = layout.weapons;
+  const slotW = box.w / WPN_COUNT;
   for (let i = 0; i < WPN_COUNT; i++) {
     const id = IDS[i] ?? 0;
     const lv = w.upgrades[id] ?? 0;
-    const x = 100 + i * 56;
-    const y = 286;
-    c.fillStyle = lv > 0 ? "#4a3214" : "#1a120b";
-    c.fillRect(x, y, 52, 26);
-    c.strokeStyle = lv > 0 ? BRASS : "#3a2a1a";
-    c.lineWidth = 1;
-    c.strokeRect(x + 0.5, y + 0.5, 51, 25);
-    c.fillStyle = lv > 0 ? BRASS_HI : "#5a4630";
-    c.font = "10px monospace";
+    const x = box.x + i * slotW + 2;
+    const y = box.y;
+    const bw = slotW - 4;
+    c.fillStyle = lv > 0 ? "#5a3a16" : "#1a120b";
+    c.fillRect(x, y, bw, box.h);
+    c.strokeStyle = lv > 0 ? BRASS_HI : "#5a4630";
+    c.lineWidth = 2;
+    c.strokeRect(x + 0.5, y + 0.5, bw - 1, box.h - 1);
+    c.fillStyle = lv > 0 ? "#fff1c2" : "#8a7050";
+    c.font = `800 ${Math.max(8, Math.min(12, box.h * 0.32))}px sans-serif`;
     c.textAlign = "center";
-    c.fillText(TAGS[i] ?? "", x + 26, y + 11);
+    c.fillText(TAGS[i] ?? "", x + bw / 2, y + box.h * 0.42);
+    const pipW = Math.max(4, (bw - 12) / 5 - 2);
     for (let p = 0; p < 5; p++) {
       c.fillStyle = p < lv ? EMBER : SOOT;
-      c.fillRect(x + 8 + p * 8, y + 16, 6, 4);
+      c.fillRect(x + 6 + p * (pipW + 2), y + box.h - 10, pipW, 5);
     }
   }
   c.textAlign = "left";
+  c.restore();
 }
