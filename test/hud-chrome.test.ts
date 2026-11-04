@@ -70,7 +70,7 @@ describe("phone HUD chrome", () => {
   });
 
   it("does not fill a same-color disc under the heart glyph", () => {
-    const hud = readFileSync(new URL("../src/render/hud.ts", import.meta.url), "utf8");
+    const hud = readFileSync("src/render/hud.ts", "utf8");
     const start = hud.indexOf("function drawHealth");
     const body = hud.slice(start, hud.indexOf("function drawXp"));
     expect(body.includes("heartIcon")).toBe(true);
