@@ -2,6 +2,7 @@ import { killXp, mixWeight, scaledHp, scoreMul, speedScale } from "./difficulty"
 import { directorElite } from "./director";
 import { nextFloat } from "./rng";
 import { Z_BRUTE, Z_GHOUL, Z_SHAMBLER, type World } from "./types";
+import { zoneAt, zoneRow } from "./zones";
 
 export const KIND_N = 7;
 export const Z_SPITTER = 3;
@@ -73,13 +74,14 @@ function rowWeight(rank: number, kind: number): number {
 }
 
 export function rollKind(w: World): number {
+  const row = zoneRow(zoneAt(w.px, w.py));
   const rank = w.rank;
   let sum = 0;
-  for (let i = 0; i < KIND_N; i++) sum += rowWeight(rank, i);
+  for (let i = 0; i < KIND_N; i++) sum += rowWeight(rank, i) * (row.spawnMul[i] ?? 1);
   let r = nextFloat(w.rng) * (sum || 1);
   let kind = 0;
   for (let i = 0; i < KIND_N; i++) {
-    r -= rowWeight(rank, i);
+    r -= rowWeight(rank, i) * (row.spawnMul[i] ?? 1);
     if (r < 0) {
       kind = i;
       break;
