@@ -759,13 +759,11 @@ function frame(now: number): void {
         const endView = viewNow();
         const cause = deathCause(world, isWon(world), false);
         pushSample(runLog, sampleRun(world, { w: endView.cssW, h: endView.cssH }, fpsBuf, cause));
-        if (debugOn) {
-          void fetch(RUNS_PATH, {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify(runLog),
-          }).catch(() => undefined);
-        }
+        void fetch(RUNS_PATH, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(runLog),
+        }).catch(() => undefined);
         const settled = settleRun(records, captureRun({
           score: world.score,
           time: world.tick,

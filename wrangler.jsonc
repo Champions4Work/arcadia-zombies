@@ -8,7 +8,7 @@
     "not_found_handling": "single-page-application"
   },
   "kv_namespaces": [
-    { "binding": "RUNS" }
+    { "binding": "RUNS", "id": "39291a371e084954a068431ab1b5ad71" }
   ],
   "routes": [
     { "pattern": "arcadiaworlds.com", "custom_domain": true },
