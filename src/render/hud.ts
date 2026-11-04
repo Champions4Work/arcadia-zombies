@@ -18,7 +18,7 @@ import {
   hudType, paintSignatureHero, ringMeter,
 } from "../art/look";
 import { blitSheetFit } from "../art/sheet";
-import { BRASS, BRASS_HI, COPPER, CYAN, DANGER, HEALTH, INK, IRON, STEAM, STEAM_DIM, XP } from "../shell/theme";
+import { BRASS, BRASS_HI, COPPER, CYAN, DANGER, HEALTH, INK, IRON, STEAM, XP } from "../shell/theme";
 import { drawXpBar } from "./xp-gain";
 
 export { blurbFor } from "./icons";
@@ -83,11 +83,13 @@ function plate(ctx: CanvasRenderingContext2D, box: Box, id = "panel_frame_small"
   ctx.save();
   ctx.fillStyle = IRON;
   ctx.fillRect(box.x, box.y, box.w, box.h);
+  blitSheetFit(ctx, id, box.x - 2, box.y - 2, box.w + 4, box.h + 4);
+  ctx.fillStyle = "rgba(12,12,16,0.62)";
+  ctx.fillRect(box.x + 1, box.y + 1, box.w - 2, box.h - 2);
   ctx.strokeStyle = BRASS;
-  ctx.lineWidth = 2.2;
+  ctx.lineWidth = 2;
   ctx.strokeRect(box.x + 0.8, box.y + 0.8, box.w - 1.6, box.h - 1.6);
   ctx.restore();
-  blitSheetFit(ctx, id, box.x - 2, box.y - 2, box.w + 4, box.h + 4);
 }
 
 function drawHealth(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
@@ -121,11 +123,11 @@ function banner(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   const flash = w.rankFlash > 0 && ((w.tick >> 2) & 1) === 0;
   plate(ctx, box, "panel_frame_pipes");
   const fill = Math.max(0.12, Math.min(1, tierFrac(w.tick)));
-  ctx.fillStyle = XP;
-  ctx.globalAlpha = 0.85;
-  ctx.fillRect(box.x + 30, box.y + box.h * 0.35, (box.w - 40) * fill, box.h * 0.38);
+  ctx.fillStyle = BRASS;
+  ctx.globalAlpha = 0.55;
+  ctx.fillRect(box.x + 8, box.y + box.h * 0.62, (box.w - 16) * fill, 3);
   ctx.globalAlpha = 1;
-  fitInk(ctx, name, box.x + box.w / 2 + 8, box.y + box.h / 2, 12, box.w - 48, flash ? BRASS_HI : STEAM);
+  fitInk(ctx, name, box.x + box.w / 2, box.y + box.h * 0.38, 12, box.w - 16, flash ? BRASS_HI : STEAM);
 }
 
 function clockIcon(ctx: CanvasRenderingContext2D, x: number, y: number): void {
@@ -168,7 +170,7 @@ function clockPanel(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   ink(ctx, `WAVE ${Math.max(1, w.wave)}`, box.x + 24, box.y + box.h * 0.32, 10, STEAM);
   skull(ctx, box.x + box.w * 0.55, box.y + box.h * 0.5);
   ink(ctx, String(w.kills), box.x + box.w * 0.55 + 10, box.y + box.h * 0.5, 12, STEAM);
-  ink(ctx, runLabel(w.tick), box.x + 24, box.y + box.h * 0.72, 9, STEAM_DIM);
+  ink(ctx, runLabel(w.tick), box.x + 24, box.y + box.h * 0.72, 9, STEAM);
 }
 
 function pauseButton(ctx: CanvasRenderingContext2D, pause: Circle): void {
@@ -256,16 +258,21 @@ function ability(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
 
 function objectives(ctx: CanvasRenderingContext2D, w: World, layout: HudLayout): void {
   const phone = layout.view.w < 720;
-  const x = layout.clock.x;
+  const x = layout.clock.x - (phone ? 24 : 0);
   const y = layout.clock.y + layout.clock.h + 6;
-  const bw = phone ? layout.clock.w : Math.min(200, layout.view.w - x - 16);
-  const bh = phone ? 52 : 86;
+  const bw = phone ? Math.min(168, layout.view.w - x - 10) : Math.min(200, layout.view.w - x - 16);
+  const bh = phone ? 78 : 96;
   const hold = Math.max(0, 240 - ((w.tick / 60) | 0) % 240);
-  blitSheetFit(ctx, phone ? "panel_frame_small" : "objectives_panel", x, y, bw, bh);
-  ink(ctx, "OBJECTIVES", x + 10, y + 10, 9, BRASS_HI);
-  ink(ctx, "ACTIVATE THE STEAM GATE", x + 10, y + 24, 8, w.rank > 0 ? HEALTH : STEAM);
-  ink(ctx, `HOLD THE AREA (${hold}s)`, x + 10, y + 36, 8, STEAM);
-  ink(ctx, "SURVIVE ALL WAVES", x + 10, y + 48, 8, STEAM_DIM);
+  plate(ctx, { x, y, w: bw, h: bh }, "objectives_panel");
+  ctx.fillStyle = IRON;
+  ctx.fillRect(x + 4, y + 4, bw - 8, bh - 8);
+  ctx.strokeStyle = BRASS;
+  ctx.lineWidth = 1.6;
+  ctx.strokeRect(x + 4, y + 4, bw - 8, bh - 8);
+  ink(ctx, "OBJECTIVES", x + 12, y + 14, 10, BRASS_HI);
+  ink(ctx, "ACTIVATE THE STEAM GATE", x + 12, y + 30, 9, w.rank > 0 ? HEALTH : STEAM);
+  ink(ctx, `HOLD THE AREA (${hold}s)`, x + 12, y + 46, 9, STEAM);
+  ink(ctx, "SURVIVE ALL WAVES", x + 12, y + 62, 9, STEAM);
 }
 
 export function drawHud(ctx: CanvasRenderingContext2D, w: World): void {

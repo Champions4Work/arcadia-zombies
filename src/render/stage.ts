@@ -12,27 +12,20 @@ let yardPacked = 0;
 
 function drawYard(ctx: CanvasRenderingContext2D): void {
   const sky = ctx.createLinearGradient(0, 0, 0, 150);
-  sky.addColorStop(0, "#140c18");
-  sky.addColorStop(0.45, "#3a1c28");
-  sky.addColorStop(0.78, "#8a4030");
-  sky.addColorStop(1, "#c86a38");
+  sky.addColorStop(0, "#0a0a10");
+  sky.addColorStop(0.55, "#12121a");
+  sky.addColorStop(1, "#1a1a22");
   ctx.fillStyle = sky;
   ctx.fillRect(0, 0, ARENA_W, 160);
-  ctx.fillStyle = "rgba(255,220,180,0.55)";
+  ctx.fillStyle = "rgba(220,224,232,0.45)";
   for (let i = 0; i < 36; i++) {
     const x = (i * 97) % ARENA_W;
     const y = (i * 41) % 70;
-    ctx.globalAlpha = 0.2 + (i % 4) * 0.08;
+    ctx.globalAlpha = 0.12 + (i % 4) * 0.06;
     ctx.fillRect(x, y, i % 5 === 0 ? 2 : 1.2, i % 5 === 0 ? 2 : 1.2);
   }
   ctx.globalAlpha = 1;
   paintGround(ctx);
-  const sun = ctx.createRadialGradient(520, 20, 6, 420, 80, 280);
-  sun.addColorStop(0, "rgba(255,200,96,0.55)");
-  sun.addColorStop(0.35, "rgba(255,140,48,0.22)");
-  sun.addColorStop(1, "rgba(255,120,32,0)");
-  ctx.fillStyle = sun;
-  ctx.fillRect(0, 0, ARENA_W, 260);
 }
 
 function background(): HTMLCanvasElement {

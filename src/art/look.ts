@@ -108,17 +108,23 @@ export function paintSignatureHero(
   const bob = moving ? Math.sin(tick * 0.35) * 1.6 : 0;
   const lean = Math.max(-0.16, Math.min(0.16, aimX * 0.14));
   const flip = aimX < 0;
-  paintShadow(ctx, x, y, 11, 4.5);
-  if (moving) {
-    ctx.beginPath();
-    ctx.arc(x, y, 12, 0, Math.PI * 2);
-    ctx.strokeStyle = CYAN;
-    ctx.globalAlpha = 0.32;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-  }
+  paintShadow(ctx, x, y, 14, 5.6);
+  ctx.beginPath();
+  ctx.arc(x, y, 13, 0, Math.PI * 2);
+  ctx.strokeStyle = CYAN;
+  ctx.globalAlpha = moving ? 0.42 : 0.22;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.globalAlpha = 1;
   blitSheetLean(ctx, heroSpriteId(moving, tick), x, y, flip, bob, lean);
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  ctx.strokeStyle = "rgba(244,234,216,0.55)";
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.ellipse(x, y - 24 - bob, 12, 22, lean, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
   if (!shoot) return;
   const dir = flip ? -1 : 1;
   const mx = x + dir * 22;
@@ -155,8 +161,16 @@ export function paintZombie(
 ): void {
   const bob = ((tick >> 3) & 1) * 1.2;
   const id = foeSpriteId(kind, elite);
-  paintShadow(ctx, x, y, 9, 3.4);
+  paintShadow(ctx, x, y, 11, 4.2);
   blitSheetLean(ctx, id, x, y, flip < 0, bob, 0);
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  ctx.strokeStyle = "rgba(200,208,220,0.28)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.ellipse(x, y - 18 - bob, 9, 16, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
 }
 
 export function paintMine(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, spikes: number, elite: boolean): void {

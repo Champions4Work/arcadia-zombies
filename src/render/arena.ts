@@ -103,15 +103,11 @@ export function paintDecals(ctx: CanvasRenderingContext2D, w: World): void {
   ctx.strokeStyle = BRASS.mid;
   ctx.lineWidth = 3;
   ctx.strokeRect(8, 8, ARENA_W - 16, ARENA_H - 16);
-  for (let i = 0; i < 18; i++) {
+  for (let i = 0; i < 12; i++) {
     const hx = 80 + ((i * 97) % (ARENA_W - 160));
     const hy = 140 + ((i * 53) % (ARENA_H - 200));
+    if (hx > 420 && hx < 540 && hy > 240 && hy < 400) continue;
     paintBlood(ctx, hx, hy, 4 + (i & 3));
-  }
-  for (let i = 0; i < 28; i++) {
-    const hx = 340 + ((i * 37) % 260);
-    const hy = 170 + ((i * 29) % 300);
-    paintBlood(ctx, hx, hy, 5 + (i & 4));
   }
   paintStains(ctx);
   const a = w.arena;

@@ -98,6 +98,7 @@ import {
 import { chestLanded, dropChest } from "./sim/chest";
 import { armDevJump, isWon, killCount, lichUp, setRunEndless, takeCue } from "./sim/finale";
 import { fillHorde, HORDE_BULLETS, HORDE_ZOMBIES } from "./sim/horde";
+import { reviewHorde, wantsReviewShot } from "./shell/review-shot";
 import {
   hasMod,
   loadMods,
@@ -206,11 +207,12 @@ const briefing = mountBriefing(() => {
   playUiClick();
   paint();
 });
-if ((!store || !loadGuideSeen(store)) && location.hash !== "#horde") briefing.showGuide();
+if ((!store || !loadGuideSeen(store)) && location.hash !== "#horde" && !wantsReviewShot(location.search, location.hash)) briefing.showGuide();
 
 function makeWorld(seed: number) {
   const next = createWorld(seed, survivor, mods);
   if (location.hash === "#horde") fillHorde(next, HORDE_ZOMBIES, HORDE_BULLETS);
+  if (wantsReviewShot(location.search, location.hash)) reviewHorde(next);
   return next;
 }
 

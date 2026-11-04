@@ -5,7 +5,7 @@ import {
 import { H, W, type World } from "../sim/types";
 import { paintCrate } from "./cast";
 import { paintAura } from "./cast-fx";
-import { BRASS, cog, font, lit, OUTLINE, roundRect } from "./paint";
+import { BRASS, cog, font, OUTLINE, roundRect } from "./paint";
 import { LAYER_HUD, LAYER_MID, registerLayer } from "./plugins";
 import { puffSprite } from "./sprites";
 
@@ -205,21 +205,18 @@ function banner(ctx: CanvasRenderingContext2D, w: World): void {
   if (left <= 0 || kind <= 0 || w.over || w.choosing) return;
   const live = mapPhase(w) === MAP_WARN ? 0 : 1;
   const text = mapLabel(kind, live);
-  const bw = 196;
-  const bh = 26;
-  const x = (W - bw) / 2;
-  const y = 124;
+  const bw = 108;
+  const bh = 14;
+  const x = 8;
+  const y = 8;
   const flash = live === 0 && ((w.tick >> 2) & 1) === 0;
-  roundRect(ctx, x, y, bw, bh, 8);
-  ctx.fillStyle = OUTLINE;
+  roundRect(ctx, x, y, bw, bh, 4);
+  ctx.fillStyle = "#121216";
   ctx.fill();
-  roundRect(ctx, x + 2, y + 2, bw - 4, bh - 4, 6);
-  ctx.fillStyle = lit(ctx, x, y, bw, bh, BRASS);
-  ctx.fill();
-  roundRect(ctx, x + 5, y + 5, bw - 10, bh - 10, 4);
-  ctx.fillStyle = flash ? "#4a2410" : "#1a2744";
-  ctx.fill();
-  ink(ctx, text, W / 2, y + bh / 2 + 1, 12, flash ? "#ffb060" : "#fff6df");
+  ctx.strokeStyle = BRASS.mid;
+  ctx.lineWidth = 1.2;
+  ctx.stroke();
+  ink(ctx, text, x + bw / 2, y + bh / 2 + 1, 9, flash ? "#ffb060" : "#fff6df");
   ctx.textAlign = "left";
   ctx.textBaseline = "alphabetic";
 }
