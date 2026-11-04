@@ -270,7 +270,7 @@ function cobbleField(ctx: CanvasRenderingContext2D): void {
     for (let x = -8; x < ARENA_W; x += 10) {
       const sx = x + ox;
       const h = hash(sx, y);
-      const stone = zoneRow(zoneAt(sx, y)).stone;
+      const stone = zoneRow(zoneAt(sx)).stone;
       ctx.fillStyle = css(stone[h % stone.length] ?? 0x6a5848);
       ctx.fillRect(sx + 1, y + 1, 8 + (h & 1), 5);
       ctx.fillStyle = "rgba(255,236,210,0.12)";
@@ -282,7 +282,7 @@ function cobbleField(ctx: CanvasRenderingContext2D): void {
 }
 
 function plate(ctx: CanvasRenderingContext2D, x: number, y: number, worn: number): void {
-  const brass = zoneRow(zoneAt(x, y)).brass;
+  const brass = zoneRow(zoneAt(x)).brass;
   ctx.fillStyle = "#4a2c08";
   ctx.fillRect(x, y, TILE, TILE);
   ctx.fillStyle = css(worn ? shade(brass) : brass);
@@ -334,7 +334,7 @@ function grate(ctx: CanvasRenderingContext2D, x: number, y: number, vent: number
   ctx.fillRect(x, y, TILE, TILE);
   ctx.fillStyle = "#3a2a18";
   ctx.fillRect(x + 2, y + 2, 12, 12);
-  ctx.fillStyle = css(zoneRow(zoneAt(x, y)).brass);
+  ctx.fillStyle = css(zoneRow(zoneAt(x)).brass);
   for (let i = 0; i < 4; i++) ctx.fillRect(x + 3, y + 3 + i * 3, 10, 1.2);
   if (!vent) return;
   ctx.fillStyle = "#0c0806";

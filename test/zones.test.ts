@@ -35,18 +35,18 @@ function tileCount(zone: number, kind: number): number {
 
 describe("yard strip", () => {
   it("clamps a point onto the end yards", () => {
-    expect(zoneAt(-40, 0)).toBe(ZONE_SCRAP);
-    expect(zoneAt(0, -10)).toBe(ZONE_SCRAP);
-    expect(zoneAt(Number.NaN, 12)).toBe(ZONE_SCRAP);
-    expect(zoneAt(YARD_W - 0.01, 640)).toBe(ZONE_SCRAP);
-    expect(zoneAt(YARD_W, 0)).toBe(ZONE_BOILER);
-    expect(zoneAt(YARD_W * 1.5, 999)).toBe(ZONE_BOILER);
-    expect(zoneAt(YARD_W * 2 - 1, 0)).toBe(ZONE_BOILER);
-    expect(zoneAt(YARD_W * 2, -4)).toBe(ZONE_DOCKS);
-    expect(zoneAt(YARD_W * ZONE_N - 0.01, 1)).toBe(ZONE_DOCKS);
-    expect(zoneAt(YARD_W * ZONE_N, 0)).toBe(ZONE_DOCKS);
-    expect(zoneAt(YARD_W * ZONE_N + 80, 20)).toBe(ZONE_DOCKS);
-    expect(zoneAt(YARD_W + 4, 0)).toBe(zoneAt(YARD_W + 4, 400));
+    expect(zoneAt(-40)).toBe(ZONE_SCRAP);
+    expect(zoneAt(0)).toBe(ZONE_SCRAP);
+    expect(zoneAt(Number.NaN)).toBe(ZONE_SCRAP);
+    expect(zoneAt(YARD_W - 0.01)).toBe(ZONE_SCRAP);
+    expect(zoneAt(YARD_W)).toBe(ZONE_BOILER);
+    expect(zoneAt(YARD_W * 1.5)).toBe(ZONE_BOILER);
+    expect(zoneAt(YARD_W * 2 - 1)).toBe(ZONE_BOILER);
+    expect(zoneAt(YARD_W * 2)).toBe(ZONE_DOCKS);
+    expect(zoneAt(YARD_W * ZONE_N - 0.01)).toBe(ZONE_DOCKS);
+    expect(zoneAt(YARD_W * ZONE_N)).toBe(ZONE_DOCKS);
+    expect(zoneAt(YARD_W * ZONE_N + 80)).toBe(ZONE_DOCKS);
+    expect(zoneAt(YARD_W + 4)).toBe(ZONE_BOILER);
   });
 
   it("keeps the strip width at YARD_W times ZONE_N", () => {
@@ -73,7 +73,7 @@ describe("yard strip", () => {
 
   it("walks from the boiler works into the scrap yard and the brass docks", () => {
     const w = createWorld(1);
-    expect(zoneAt(w.px, w.py)).toBe(ZONE_BOILER);
+    expect(zoneAt(w.px)).toBe(ZONE_BOILER);
     expect(w.px).toBe(ARENA_W / 2);
     expect(w.py).toBe(ARENA_H / 2);
     expect(SKYLINE_N).toBe(SKY_N);
@@ -82,12 +82,12 @@ describe("yard strip", () => {
     w.spawnCd = 99999;
     w.fireCd = 99999;
     const left = { dx: -1, dy: 0, pick: 0 };
-    for (let t = 0; t < 400 && zoneAt(w.px, w.py) === ZONE_BOILER; t++) step(w, left);
-    expect(zoneAt(w.px, w.py)).toBe(ZONE_SCRAP);
+    for (let t = 0; t < 400 && zoneAt(w.px) === ZONE_BOILER; t++) step(w, left);
+    expect(zoneAt(w.px)).toBe(ZONE_SCRAP);
     w.px = ARENA_W / 2;
     const right = { dx: 1, dy: 0, pick: 0 };
-    for (let t = 0; t < 400 && zoneAt(w.px, w.py) === ZONE_BOILER; t++) step(w, right);
-    expect(zoneAt(w.px, w.py)).toBe(ZONE_DOCKS);
+    for (let t = 0; t < 400 && zoneAt(w.px) === ZONE_BOILER; t++) step(w, right);
+    expect(zoneAt(w.px)).toBe(ZONE_DOCKS);
     expect(zoneRow(ZONE_SCRAP).stone[0]).not.toBe(zoneRow(ZONE_BOILER).stone[0]);
     expect(zoneRow(ZONE_DOCKS).stone[0]).not.toBe(zoneRow(ZONE_BOILER).stone[0]);
   });
@@ -152,9 +152,9 @@ describe("yard strip", () => {
   it("reads a zone and leaves the world stream", () => {
     const w = createWorld(3);
     const state = w.rng.state;
-    zoneAt(w.px, w.py);
-    zoneAt(0, 0);
-    zoneAt(ARENA_W, ARENA_H);
+    zoneAt(w.px);
+    zoneAt(0);
+    zoneAt(ARENA_W);
     expect(w.rng.state).toBe(state);
   });
 });

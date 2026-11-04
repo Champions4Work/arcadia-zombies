@@ -81,14 +81,14 @@ function cobbleField(): void {
     for (let x = -8; x < ARENA_W; x += 10) {
       const sx = x + ox;
       const h = hash(sx, y);
-      const stone = zoneRow(zoneAt(sx, y)).stone;
+      const stone = zoneRow(zoneAt(sx)).stone;
       fill(sx + 1, y + 1, 8 + (h & 1), 5, packHex(stone[h % stone.length] ?? 0x6a5848));
     }
   }
 }
 
 function plate(x: number, y: number, worn: number): void {
-  const brass = zoneRow(zoneAt(x, y)).brass;
+  const brass = zoneRow(zoneAt(x)).brass;
   fill(x, y, TILE, TILE, pack(0x4a, 0x2c, 0x08));
   fill(x + 1, y + 1, 14, 14, worn ? packShade(brass) : packHex(brass));
   fill(x + 2, y + 2, 12, 2, BRASS_HI);
@@ -118,7 +118,7 @@ function rail(x: number, y: number, vert: number): void {
 function grate(x: number, y: number, vent: number): void {
   fill(x, y, TILE, TILE, PIT);
   fill(x + 2, y + 2, 12, 12, GRATE);
-  const brass = packHex(zoneRow(zoneAt(x, y)).brass);
+  const brass = packHex(zoneRow(zoneAt(x)).brass);
   for (let i = 0; i < 4; i++) fill(x + 3, y + 3 + i * 3, 10, 1, brass);
   if (vent) fill(x + 5, y + 6, 6, 4, PIT);
 }

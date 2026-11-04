@@ -74,7 +74,7 @@ function rowWeight(rank: number, kind: number): number {
 }
 
 export function rollKind(w: World): number {
-  const row = zoneRow(zoneAt(w.px, w.py));
+  const row = zoneRow(zoneAt(w.px));
   const rank = w.rank;
   let sum = 0;
   for (let i = 0; i < KIND_N; i++) sum += rowWeight(rank, i) * (row.spawnMul[i] ?? 1);
