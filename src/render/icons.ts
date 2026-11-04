@@ -1,3 +1,4 @@
+import { BRASS_HI, COPPER as TONE_COPPER, STEAM_DIM, XP } from "../shell/theme";
 import { isUnion, unionHint, unionSpec } from "../sim/evolve";
 import { UPG_RARITY } from "../sim/progress";
 import { UPG_COUNT } from "../sim/types";
@@ -69,11 +70,11 @@ export function blurbFor(id: number): string {
 }
 
 export function rarityTint(id: number): string {
-  if (isUnion(id)) return "#ffe14a";
+  if (isUnion(id)) return XP;
   const rarity = UPG_RARITY[id] ?? 0;
-  if (rarity >= 2) return "#ff9a1e";
-  if (rarity === 1) return "#7ad0ff";
-  return "#f0c86a";
+  if (rarity >= 2) return TONE_COPPER;
+  if (rarity === 1) return BRASS_HI;
+  return STEAM_DIM;
 }
 
 function bolt(ctx: CanvasRenderingContext2D, x: number, y: number, s: number): void {
@@ -213,7 +214,7 @@ function note(ctx: CanvasRenderingContext2D, x: number, y: number, s: number): v
 }
 
 function bounce(ctx: CanvasRenderingContext2D, x: number, y: number, s: number): void {
-  ctx.strokeStyle = "#7ad0ff";
+  ctx.strokeStyle = BRASS_HI;
   ctx.lineWidth = 2.2;
   ctx.beginPath();
   ctx.moveTo(x - s, y + s * 0.2);

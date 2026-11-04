@@ -3,6 +3,7 @@ import { xpNeed } from "../sim/progress";
 import { EV_LEVEL, FX_XP, MAX_FX, type World } from "../sim/types";
 import { type Fit, worldToCss } from "../shell/fit";
 import { type HudLayout } from "../shell/hud-layout";
+import { BRASS_HI, COPPER, IRON, SOOT, STEAM, XP } from "../shell/theme";
 import { BRASS, font, OUTLINE, roundRect } from "./paint";
 
 function caption(
@@ -177,7 +178,7 @@ export function drawXpBar(ctx: CanvasRenderingContext2D, layout: HudLayout, need
   const glow = glowMs / 280;
   ctx.save();
   roundRect(ctx, box.x, box.y, box.w, box.h, 8);
-  ctx.fillStyle = "#120c08";
+  ctx.fillStyle = SOOT;
   ctx.fill();
   ctx.strokeStyle = OUTLINE;
   ctx.lineWidth = 2;
@@ -186,15 +187,15 @@ export function drawXpBar(ctx: CanvasRenderingContext2D, layout: HudLayout, need
   const badge = Math.min(58, box.w * 0.15);
   const innerW = box.w - pad * 2 - badge;
   roundRect(ctx, box.x + pad, box.y + pad, innerW, box.h - pad * 2, 5);
-  ctx.fillStyle = "#1a1008";
+  ctx.fillStyle = IRON;
   ctx.fill();
   const fillW = Math.max(t > 0 ? 6 : 0, innerW * t);
   if (fillW > 0) {
     roundRect(ctx, box.x + pad, box.y + pad, fillW, box.h - pad * 2, 5);
     const bar = ctx.createLinearGradient(box.x, box.y, box.x + box.w, box.y);
-    bar.addColorStop(0, "#fff3b0");
-    bar.addColorStop(0.45, "#ffb020");
-    bar.addColorStop(1, "#ff6a10");
+    bar.addColorStop(0, BRASS_HI);
+    bar.addColorStop(0.45, XP);
+    bar.addColorStop(1, COPPER);
     ctx.fillStyle = bar;
     ctx.globalAlpha = 0.88 + Math.min(0.12, glow * 0.12);
     ctx.fill();
@@ -209,7 +210,7 @@ export function drawXpBar(ctx: CanvasRenderingContext2D, layout: HudLayout, need
     const s = sparkMs / 220;
     caption(ctx, "+XP", box.x + pad + fillW + 8, box.y + box.h * 0.18, Math.min(12, box.h * 0.5), `rgba(255,243,176,${s})`);
   }
-  caption(ctx, `LV ${shownLevel}`, box.x + box.w - badge / 2, box.y + box.h * 0.2, Math.min(15, box.h * 0.52), "#fff8ee", "center");
+  caption(ctx, `LV ${shownLevel}`, box.x + box.w - badge / 2, box.y + box.h * 0.2, Math.min(15, box.h * 0.52), STEAM, "center");
   if (popMs > 0) {
     const p = popMs / 640;
     const scale = 1 + (1 - p) * 0.35;

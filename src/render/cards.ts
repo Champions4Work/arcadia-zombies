@@ -2,7 +2,8 @@ import { isUnion } from "../sim/evolve";
 import { rarityName, UPG_RARITY, upgName } from "../sim/progress";
 import { UPG_MAX, type World } from "../sim/types";
 import { blurbFor, drawIcon, rarityTint } from "./icons";
-import { BRASS, font, lit, OUTLINE, roundRect } from "./paint";
+import { BRASS_HI, INK, IRON, SOOT, STEAM, STEAM_DIM, XP } from "../shell/theme";
+import { BRASS, copyFont, font, lit, OUTLINE, roundRect } from "./paint";
 
 function ink(
   ctx: CanvasRenderingContext2D,
@@ -59,8 +60,8 @@ export function drawRewardCard(
   ctx.fill();
   roundRect(ctx, x + 6, y + 6, w - 12, h - 12, 8);
   const bg = ctx.createLinearGradient(x, y, x, y + h);
-  bg.addColorStop(0, "#2c5284");
-  bg.addColorStop(1, "#14243c");
+  bg.addColorStop(0, IRON);
+  bg.addColorStop(1, SOOT);
   ctx.fillStyle = bg;
   ctx.fill();
   if (index >= 0) {
@@ -71,10 +72,10 @@ export function drawRewardCard(
     ctx.lineWidth = 1.4;
     ctx.strokeStyle = OUTLINE;
     ctx.stroke();
-    ink(ctx, String(index + 1), x + 16, y + 10, 11, "#1c120c", "center");
+    ink(ctx, String(index + 1), x + 16, y + 10, 11, INK, "center");
   }
   if (id < 0) {
-    ink(ctx, "—", x + w / 2, y + h / 2, 16, "#f0c86a", "center");
+    ink(ctx, "—", x + w / 2, y + h / 2, 16, STEAM_DIM, "center");
     return;
   }
   const union = isUnion(id);
@@ -83,29 +84,29 @@ export function drawRewardCard(
   const tagColor = rarityTint(id);
   if (union) {
     ctx.lineWidth = 3;
-    ctx.strokeStyle = "#ffe14a";
+    ctx.strokeStyle = XP;
     roundRect(ctx, x + 6, y + 6, w - 12, h - 12, 8);
     ctx.stroke();
   }
-  ink(ctx, tag, x + w / 2, y + 22, 8, tagColor, "center");
+  ink(ctx, tag, x + w / 2, y + 22, 11, tagColor, "center");
   drawIcon(ctx, id, x + w / 2, y + 50, Math.min(14, w * 0.12));
   const name = upgName(id) || "GEAR";
-  ctx.font = font(12, 800);
-  let size = w < 110 ? 9 : 12;
-  while (size > 7 && ctx.measureText(name).width > w - 18) {
+  ctx.font = font(13, 800);
+  let size = w < 110 ? 12 : 13;
+  while (size > 11 && ctx.measureText(name).width > w - 18) {
     size -= 1;
     ctx.font = font(size, 800);
   }
-  ink(ctx, name, x + w / 2, y + 68, size, "#ffe7ad", "center", 800);
-  ctx.font = font(9, 600);
+  ink(ctx, name, x + w / 2, y + 68, size, BRASS_HI, "center", 800);
+  ctx.font = copyFont(12, 600);
   const blurb = blurbFor(id);
   const lines = wrap(ctx, blurb, w - 22);
   const maxLines = h < 150 ? 2 : 3;
   for (let i = 0; i < lines.length && i < maxLines; i++) {
-    ink(ctx, lines[i] ?? "", x + w / 2, y + 88 + i * 12, w < 110 ? 8 : 9, "#f4f8fc", "center", 600);
+    ink(ctx, lines[i] ?? "", x + w / 2, y + 88 + i * 13, 12, STEAM, "center", 600);
   }
   if (union) {
-    ink(ctx, "ONE UNION", x + w / 2, y + h - 22, 8, "#ffe14a", "center");
+    ink(ctx, "ONE UNION", x + w / 2, y + h - 22, 11, XP, "center");
     return;
   }
   const lv = world.upgrades[id] ?? 0;
@@ -114,7 +115,7 @@ export function drawRewardCard(
   for (let p = 0; p < UPG_MAX; p++) {
     ctx.beginPath();
     ctx.arc(x + w / 2 - (UPG_MAX - 1) * (pipGap / 2) + p * pipGap, y + h - 16, pipR, 0, Math.PI * 2);
-    ctx.fillStyle = p < lv ? "#ff9a1e" : p === lv ? "#fff1c2" : "#0e1828";
+    ctx.fillStyle = p < lv ? XP : p === lv ? STEAM : SOOT;
     ctx.fill();
     ctx.lineWidth = 1;
     ctx.strokeStyle = OUTLINE;

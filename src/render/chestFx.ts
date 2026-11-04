@@ -4,12 +4,8 @@ import { H, UPG_COUNT, W, type World } from "../sim/types";
 import { drawRewardCard } from "./cards";
 import { paintChest } from "./cast";
 import { drawIcon, rarityTint } from "./icons";
+import { BRASS_HI, BRASS_LO, COPPER, INK, PANEL, SOOT } from "../shell/theme";
 import { BRASS, font, lit, OUTLINE, roundRect } from "./paint";
-
-const SOOT = "#120c08";
-const BRASS_HI = "#e8c878";
-const BRASS_LO = "#7a5420";
-const COPPER = "#b5562f";
 
 export const CONT_W = 168;
 export const CONT_H = 30;
@@ -95,7 +91,7 @@ function drawSlot(
   rect(c, x + 3, y + 3, sw - 6, sh - 6, done ? BRASS_LO : SOOT);
   drawIcon(c, shown, x + sw / 2, y + sh / 2 - 10, done ? 14 : 11);
   c.fillStyle = done ? BRASS_HI : COPPER;
-  c.font = `bold ${n >= 5 ? 8 : 11}px monospace`;
+  c.font = font(n >= 5 ? 12 : 13, 800);
   c.textAlign = "center";
   c.textBaseline = "middle";
   c.fillText(upgName(shown), x + sw / 2, y + sh / 2 + 18);
@@ -117,7 +113,7 @@ function drawContinue(c: CanvasRenderingContext2D, tick: number): void {
   c.lineWidth = 3;
   c.strokeStyle = OUTLINE;
   c.strokeText("CONTINUE", r.x + r.w / 2, r.y + r.h / 2 + 1);
-  c.fillStyle = "#1c120c";
+  c.fillStyle = INK;
   c.fillText("CONTINUE", r.x + r.w / 2, r.y + r.h / 2 + 1);
   c.globalAlpha = 1;
 }
@@ -128,7 +124,7 @@ export function drawChestReveal(c: CanvasRenderingContext2D, w: World): void {
   c.fillRect(0, 0, W, H);
   const n = w.chestCount;
   rect(c, 18, 22, W - 36, 286, BRASS_LO);
-  rect(c, 24, 28, W - 48, 274, "#2a1c10");
+  rect(c, 24, 28, W - 48, 274, PANEL);
   const age = burstAge(w);
   if (age >= 0) {
     for (let i = 0; i < 8; i++) {
@@ -136,11 +132,11 @@ export function drawChestReveal(c: CanvasRenderingContext2D, w: World): void {
     }
   }
   c.fillStyle = BRASS_HI;
-  c.font = "bold 20px monospace";
+  c.font = font(20, 800);
   c.textAlign = "center";
   c.textBaseline = "middle";
   c.fillText("BRASS CHEST", W / 2, 50);
-  c.font = "bold 12px monospace";
+  c.font = font(13, 700);
   c.fillText(n === 1 ? "1 GEAR" : `${n} GEARS`, W / 2, 70);
   if (chestLanded(w)) {
     for (let i = 0; i < n && i < CHEST_SLOTS; i++) {

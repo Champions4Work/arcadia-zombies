@@ -670,12 +670,14 @@ addEventListener("keydown", (e) => {
     pendingReroll = 1;
     return;
   }
-  if (import.meta.env.DEV && session.phase === PHASE_PLAY && !e.repeat && (k === "b" || k === "n" || k === "e" || k === "v")) {
+  if (import.meta.env.DEV && session.phase === PHASE_PLAY && !e.repeat && (k === "b" || k === "n" || k === "e" || k === "v" || k === "h" || k === "k")) {
     const key = k;
     void import("./dev/lineup").then((m) => {
       if (key === "b") m.lineup(world);
       else if (key === "n") m.rush(world);
       else if (key === "e") m.stageOffer(world);
+      else if (key === "h") m.stageChest(world);
+      else if (key === "k") m.stageFall(world);
       else m.stageArmed(world);
     });
     return;

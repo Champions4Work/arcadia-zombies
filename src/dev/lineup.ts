@@ -5,7 +5,8 @@ import {
 } from "../sim/foes";
 import { beginLevel, xpNeed } from "../sim/progress";
 import {
-  MAX_BULLETS, MAX_ZOMBIES, UNION_BRIAR, UPG_DYNAMO, UPG_MAX, UPG_TESLA, Z_BRUTE, Z_GHOUL, Z_SHAMBLER, type World,
+  MAX_BULLETS, MAX_ZOMBIES, UNION_BRIAR, UPG_DYNAMO, UPG_FIRE, UPG_HP, UPG_MAX, UPG_TESLA,
+  Z_BRUTE, Z_GHOUL, Z_SHAMBLER, type World,
 } from "../sim/types";
 
 const ROW = [Z_SHAMBLER, Z_GHOUL, Z_BRUTE, Z_SPITTER, Z_GAS, Z_KNIGHT, Z_RAT];
@@ -134,4 +135,27 @@ export function rush(w: World): void {
   w.hp = w.maxHp;
   w.over = false;
   w.choosing = 0;
+}
+
+export function stageChest(w: World): void {
+  w.over = false;
+  w.choosing = 0;
+  w.hurtCd = 0;
+  w.chestOpen = 1;
+  w.chestCount = 3;
+  w.chestDur = 90;
+  w.chestT = 90;
+  w.chestGold = 1;
+  w.chestLinger = 0;
+  w.chestSeal = 0;
+  w.chestPrize[0] = UPG_TESLA;
+  w.chestPrize[1] = UPG_FIRE;
+  w.chestPrize[2] = UPG_HP;
+}
+
+export function stageFall(w: World): void {
+  w.hp = 0;
+  w.over = true;
+  w.choosing = 0;
+  w.chestOpen = 0;
 }
