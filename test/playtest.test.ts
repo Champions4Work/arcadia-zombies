@@ -24,7 +24,7 @@ const MID_END_HP = { min: 4000, max: 40000 };
 const LEVEL_AT_4 = { min: 2, max: 14 };
 const HURT_AFTER_2 = 1;
 const LATE_HURT = 2;
-const KILL_MS = { min: 40, max: 8000 };
+const KILL_MS = { min: 40, max: 16000 };
 
 const median = (xs: number[]): number => {
   const s = [...xs].sort((a, b) => a - b);

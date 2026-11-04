@@ -50,7 +50,7 @@ describe("yard strip", () => {
   });
 
   it("keeps the strip width at YARD_W times ZONE_N", () => {
-    expect(YARD_W * ZONE_N).toBe(2016);
+    expect(YARD_W * ZONE_N).toBe(1440);
     expect(ZONE_N).toBe(ZONE_DOCKS + 1);
     expect(SKY_N).toBe(ZONE_N);
   });

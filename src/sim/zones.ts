@@ -13,7 +13,7 @@ export const ZONE_SCRAP = 0;
 export const ZONE_BOILER = 1;
 export const ZONE_DOCKS = 2;
 export const ZONE_N = 3;
-export const YARD_W = 672;
+export const YARD_W = 480;
 
 export interface YardPad {
   row0: number;

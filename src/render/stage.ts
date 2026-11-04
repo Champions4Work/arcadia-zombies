@@ -306,16 +306,16 @@ function paintHeap(ctx: CanvasRenderingContext2D, origin: number): void {
   chimney(ctx, 78, 70, 16, 36, 1);
   chimney(ctx, 110, 64, 18, 42, 1);
   factory(ctx, 160, 102, 86, 30);
-  factory(ctx, 390, 108, 64, 24);
+  factory(ctx, 300, 108, 64, 24);
   pipe(ctx, 28, 146, 170, 156, 6);
   pipe(ctx, 210, 150, 210, 188, 6);
-  pipe(ctx, 430, 142, 560, 154, 5);
+  pipe(ctx, 300, 142, 420, 154, 5);
   joint(ctx, 210, 150, 5);
-  cog(ctx, 280, 168, 18, 0.6, COPPER, 6, false);
-  cog(ctx, 500, 176, 12, -0.4, BRASS, 7, false);
+  cog(ctx, 240, 168, 18, 0.6, COPPER, 6, false);
+  cog(ctx, 400, 176, 12, -0.4, BRASS, 7, false);
   ctx.fillStyle = "#2a2018";
   ctx.fillRect(16, 112, 130, 8);
-  ctx.fillRect(340, 116, 90, 6);
+  ctx.fillRect(300, 116, 90, 6);
   ctx.restore();
 }
 
@@ -360,11 +360,11 @@ function paintDock(ctx: CanvasRenderingContext2D, origin: number): void {
   ctx.save();
   yardLocal(ctx, origin);
   factory(ctx, 20, 104, 100, 28);
-  crane(ctx, 180);
-  crane(ctx, 420);
-  mast(ctx, 560);
+  crane(ctx, 150);
+  crane(ctx, 300);
+  mast(ctx, 410);
   pipe(ctx, 36, 136, 160, 136, 6);
-  pipe(ctx, 300, 132, 460, 140, 5);
+  pipe(ctx, 220, 132, 340, 140, 5);
   joint(ctx, 160, 136, 5);
   belt(ctx, 48, 170, 130, 16);
   ctx.restore();
@@ -522,7 +522,7 @@ function fxHeap(ctx: CanvasRenderingContext2D, tick: number, origin: number): vo
   ctx.save();
   yardLocal(ctx, origin);
   smokeFrom(ctx, tick, HEAP_STACKS);
-  cog(ctx, 280, 168, 18, tick * 0.004, COPPER, 6, false);
+  cog(ctx, 240, 168, 18, tick * 0.004, COPPER, 6, false);
   ctx.restore();
 }
 
@@ -533,13 +533,13 @@ function fxDock(ctx: CanvasRenderingContext2D, tick: number, origin: number): vo
   ctx.strokeStyle = BRASS.mid;
   ctx.lineWidth = 1.4;
   ctx.beginPath();
-  ctx.moveTo(244, 46);
-  ctx.lineTo(244 + sway, 96);
-  ctx.moveTo(484, 46);
-  ctx.lineTo(484 + sway * 0.7, 100);
+  ctx.moveTo(214, 46);
+  ctx.lineTo(214 + sway, 96);
+  ctx.moveTo(364, 46);
+  ctx.lineTo(364 + sway * 0.7, 100);
   ctx.stroke();
   ctx.save();
-  ctx.translate(565, 60);
+  ctx.translate(415, 60);
   ctx.rotate(Math.sin(tick * 0.05) * 0.2);
   ctx.fillStyle = "#8a3030";
   ctx.beginPath();
