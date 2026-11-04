@@ -1,5 +1,6 @@
 import { Z_ELITE, Z_KIND, Z_KNIGHT } from "../sim/foes";
 import { Z_BRUTE } from "../sim/types";
+import { punchShake } from "./shake";
 
 export const NUMBER_CAP = 256;
 export const FLASH_CAP = 2048;
@@ -8,6 +9,11 @@ export const PART_CAP = 128;
 export const STOP_ELITE_MS = 40;
 export const STOP_BOSS_MS = 60;
 export const STOP_HURT_MS = 50;
+export const STOP_CRIT_MS = 24;
+export const SHAKE_CRIT = 1.1;
+export const SHAKE_HIT = 0.55;
+export const KNOCK_HIT = 3.4;
+export const KNOCK_CRIT = 6.5;
 export const STOP_BUDGET_MS = 100;
 export const STOP_WINDOW_MS = 1000;
 export const JUICE_DT = 1000 / 60;
@@ -34,6 +40,8 @@ const numDmg = new Int16Array(NUMBER_CAP);
 const numCrit = new Uint8Array(NUMBER_CAP);
 const numOn = new Uint8Array(NUMBER_CAP);
 const flash = new Float32Array(FLASH_CAP);
+const knockX = new Float32Array(FLASH_CAP);
+const knockY = new Float32Array(FLASH_CAP);
 const pX = new Float32Array(PART_CAP);
 const pY = new Float32Array(PART_CAP);
 const pVx = new Float32Array(PART_CAP);
@@ -76,6 +84,8 @@ export function resetJuice(): void {
   numOn.fill(0);
   pOn.fill(0);
   flash.fill(0);
+  knockX.fill(0);
+  knockY.fill(0);
 }
 
 export function burstCount(slot: number, tick: number): number {
@@ -110,6 +120,20 @@ export function enemyFlash(slot: number): number {
 
 export function flashesLive(): number {
   return flashOn;
+}
+
+export function hitKnockX(slot: number): number {
+  if (slot < 0 || slot >= FLASH_CAP) return 0;
+  const t = flash[slot] ?? 0;
+  if (t <= 0) return 0;
+  return (knockX[slot] ?? 0) * (t / FLASH_MS);
+}
+
+export function hitKnockY(slot: number): number {
+  if (slot < 0 || slot >= FLASH_CAP) return 0;
+  const t = flash[slot] ?? 0;
+  if (t <= 0) return 0;
+  return (knockY[slot] ?? 0) * (t / FLASH_MS);
 }
 
 export function numberScale(slot: number): number {
@@ -185,17 +209,36 @@ function killStop(raw: number, killed: boolean): number {
   return 0;
 }
 
-export function juiceHit(slot: number, x: number, y: number, dmg: number, kind: number, killed: boolean, tick: number): void {
+export function juiceHit(
+  slot: number,
+  x: number,
+  y: number,
+  dmg: number,
+  kind: number,
+  killed: boolean,
+  tick: number,
+  ox = x,
+  oy = y,
+): void {
   const dealt = dmg > 0 ? dmg | 0 : 0;
   const body = kind & Z_KIND;
   const elite = (kind & Z_ELITE) !== 0;
   const boss = body === Z_BRUTE || body === Z_KNIGHT;
   const crit = killed && (elite || boss);
   if (showNumbers) spawnNumber(x, y - 14, dealt, crit);
+  if (dealt >= 3 && !killed) grant(STOP_CRIT_MS);
+  if (crit) punchShake(SHAKE_CRIT);
+  else if (dealt > 0) punchShake(SHAKE_HIT);
   if (slot >= 0 && slot < FLASH_CAP) {
     if ((flash[slot] ?? 0) <= 0) flashOn++;
     flash[slot] = FLASH_MS;
     if (slot + 1 > flashScan) flashScan = slot + 1;
+    const dx = x - ox;
+    const dy = y - oy;
+    const d = Math.sqrt(dx * dx + dy * dy) || 1;
+    const force = crit ? KNOCK_CRIT : KNOCK_HIT;
+    knockX[slot] = (dx / d) * force;
+    knockY[slot] = (dy / d) * force;
   }
   if (!killed) return;
   const n = burstCount(slot, tick);
@@ -227,7 +270,11 @@ export function tickJuice(dt: number): void {
       if (t <= 0) continue;
       const next = t > dt ? t - dt : 0;
       flash[i] = next;
-      if (next === 0) flashOn--;
+      if (next === 0) {
+        flashOn--;
+        knockX[i] = 0;
+        knockY[i] = 0;
+      }
     }
   }
   if (numCount > 0) {

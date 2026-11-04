@@ -1,5 +1,6 @@
 import { resetJuice } from "../render/juice";
 import { createBoss } from "./boss";
+import { attachWarn } from "./warn";
 import { ARENA_H, ARENA_W, createArena } from "./arena";
 import { CHEST_SLOTS, MAX_CHESTS } from "./chest";
 import { CHAR_TINKER, CHARACTERS, characterAt } from "./characters";
@@ -62,10 +63,12 @@ export const createWorld = (seed: number, charId = CHAR_TINKER, mods = 0): World
     chestOn: new Uint8Array(MAX_CHESTS), chestPrize,
     chestOpen: 0, chestCount: 0, chestT: 0, chestDur: 0, chestGold: 0, chestLinger: 0, chestCursor: 0,
     chestSeal: 0,
+    ult: 0, ultBlast: 0,
     boss: createBoss(),
   };
   attachFinale(world);
   attachMapEvents(world);
+  attachWarn(world);
   applyCharacter(world, charId);
   if (hasMod(bits, MOD_GLASS)) {
     world.maxHp = 1;

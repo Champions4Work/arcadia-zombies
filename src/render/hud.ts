@@ -1,47 +1,24 @@
 import { ARENA_H, ARENA_W } from "../sim/arena";
 import { tierFrac, tierName } from "../sim/difficulty";
-import { isUnion, unionHint, unionSpec } from "../sim/evolve";
 import { lichUp, lichX, lichY, runLabel } from "../sim/finale";
 import { Z_GAS, Z_KIND, Z_KNIGHT, Z_RAT, Z_SPITTER } from "../sim/foes";
 import { offerCount } from "../sim/characters";
 import { pacedXpNeed } from "../sim/modifiers";
-import { CARD_Y, cardFrame, offerId, rarityName, UPG_RARITY, upgName, xpNeed } from "../sim/progress";
+import { CARD_Y, cardFrame, offerId, xpNeed } from "../sim/progress";
 import {
   EVOL_AEGIS, EVOL_CANNON, EVOL_STORM, H, UNION_BELLOWS, UNION_BRIAR, UNION_CALLIOPE,
-  UNION_CROWN, UNION_HALO, UNION_HEART, UNION_HOWITZER, UPG_DMG, UPG_FIRE, UPG_HP, UPG_MAX, UPG_MORTAR,
-  UPG_PIERCE, UPG_SAWS, UPG_SHIELD, UPG_SHOTGUN, UPG_SPEED, UPG_TESLA, UPG_VENT, W, Z_BRUTE, Z_GHOUL, type World,
+  UNION_CROWN, UNION_HALO, UNION_HEART, UNION_HOWITZER, UPG_DMG, UPG_FIRE, UPG_MAX, UPG_MORTAR,
+  UPG_SAWS, UPG_SHOTGUN, UPG_TESLA, UPG_VENT, W, Z_BRUTE, Z_GHOUL, type World,
 } from "../sim/types";
 import { currentHud, offerCards, pauseHitAt } from "../shell/hud-layout";
 import type { Box, Circle, HudLayout } from "../shell/hud-layout";
-import { BRASS, cog, flame, font, heart, lit, OUTLINE, rivet, roundRect } from "./paint";
+import { drawRewardCard } from "./cards";
+import { drawIcon } from "./icons";
+import { ultFill, ultReady } from "../sim/ult";
+import { BRASS, cog, font, heart, lit, OUTLINE, rivet, roundRect } from "./paint";
 import { drawXpBar } from "./xp-gain";
 
-const BLURB = [
-  "Chain a spark through nearby foes.",
-  "Extra pellets in a wide fan.",
-  "Orbiting saws chew the horde.",
-  "Increase fire rate and burn nearby foes.",
-  "Heavier rivets hit harder.",
-  "A bigger boiler heart.",
-  "Quicker strides across the yard.",
-  "A steam burst shoves the nearest foes.",
-  "Shots punch through the line.",
-  "A brass shell soaks a hit.",
-  "Thorns bite anything that touches the suit.",
-  "The boiler heart mends between the heat.",
-  "A lobbed shell bursts on the farthest foe.",
-  "A shriek that slows the closest dead.",
-  "Bolts bounce off the yard walls.",
-  "Kills wind the boiler for the next shot.",
-  "Tesla and saws fuse into a storm.",
-  "Shotgun and pierce become a cannon.",
-  "Shield and vent lock into an aegis.",
-  "Brass bolts from the rivet gun.",
-  "A close cone of steam pellets.",
-  "A boiler jet of flame.",
-  "A harpoon that pierces the line.",
-  "A lobbed bomb with an area blast.",
-];
+export { blurbFor } from "./icons";
 
 export const PAUSE_X = 456;
 export const PAUSE_Y = 24;
@@ -64,10 +41,6 @@ export function pauseHit(x: number, y: number): boolean {
   const dx = x - PAUSE_X;
   const dy = y - PAUSE_Y;
   return dx * dx + dy * dy <= (PAUSE_R + 6) * (PAUSE_R + 6);
-}
-
-export function blurbFor(id: number): string {
-  return BLURB[id] ?? "A new gear for the boiler heart.";
 }
 
 export function weaponBadge(w: World): { name: string; pips: number; kind: number } {
@@ -145,23 +118,6 @@ function brassRing(ctx: CanvasRenderingContext2D, x: number, y: number, r: numbe
   ctx.strokeStyle = "rgba(255,255,255,0.65)";
   ctx.lineWidth = 1.5;
   ctx.stroke();
-}
-
-function flameIcon(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, tick: number): void {
-  const k = 0.88 + Math.sin(tick * 0.18) * 0.1;
-  flame(ctx, x, y, s * k);
-  const g = ctx.createLinearGradient(x, y - s, x, y + s);
-  g.addColorStop(0, "#fff4c0");
-  g.addColorStop(0.45, "#ff9a22");
-  g.addColorStop(1, "#e04010");
-  ctx.fillStyle = g;
-  ctx.fill();
-  ctx.lineWidth = 1.5;
-  ctx.strokeStyle = OUTLINE;
-  ctx.stroke();
-  flame(ctx, x, y + s * 0.15, s * k * 0.45);
-  ctx.fillStyle = "#fff1a8";
-  ctx.fill();
 }
 
 function plate(ctx: CanvasRenderingContext2D, box: Box, r: number, inner: string): void {
@@ -377,20 +333,15 @@ function minimap(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   ink(ctx, "YARD", box.x + box.w / 2, ly + 3, 8, "#1c120c", "center");
 }
 
-function badgeIcon(ctx: CanvasRenderingContext2D, kind: number, x: number, y: number, tick: number): void {
-  if (kind === UPG_FIRE) {
-    flameIcon(ctx, x, y + 6, 10, tick);
-    return;
-  }
-  if (kind === UPG_TESLA) {
-    bolt(ctx, x, y, 12);
-    return;
-  }
-  if (kind === UPG_SHOTGUN) {
-    pellets(ctx, x, y, 8);
-    return;
-  }
-  cog(ctx, x, y, 12, tick * 0.02, BRASS, 8, true);
+function badgeIcon(ctx: CanvasRenderingContext2D, kind: number, x: number, y: number): void {
+  drawIcon(ctx, kind, x, y, 12);
+}
+
+export function abilityHit(x: number, y: number): boolean {
+  const layout = currentHud();
+  if (!layout) return false;
+  const b = layout.ability;
+  return x >= b.x && x < b.x + b.w && y >= b.y && y < b.y + b.h;
 }
 
 function ability(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
@@ -399,7 +350,22 @@ function ability(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   const cy = box.y + box.h * 0.42;
   const r = Math.min(28, box.w * 0.32);
   brassRing(ctx, cx, cy, r, "#10182c");
-  badgeIcon(ctx, info.kind, cx, cy, w.tick);
+  badgeIcon(ctx, info.kind, cx, cy);
+  const fill = ultFill(w);
+  ctx.beginPath();
+  ctx.arc(cx, cy, r - 1.5, -Math.PI / 2, -Math.PI / 2 + fill * Math.PI * 2);
+  ctx.strokeStyle = ultReady(w) || (w.ultBlast ?? 0) > 0 ? "#ffe14a" : "#7ad0ff";
+  ctx.lineWidth = 3.4;
+  ctx.stroke();
+  if (ultReady(w) || (w.ultBlast ?? 0) > 0) {
+    ctx.globalAlpha = 0.4 + 0.25 * Math.sin(w.tick * 0.28);
+    ctx.beginPath();
+    ctx.arc(cx, cy, r + 4, 0, Math.PI * 2);
+    ctx.strokeStyle = "#ffe14a";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
   const ly = box.y + box.h - 22;
   roundRect(ctx, box.x, ly, box.w, 16, 6);
   ctx.fillStyle = lit(ctx, box.x, ly, box.w, 16, BRASS);
@@ -451,184 +417,8 @@ function rankCallout(ctx: CanvasRenderingContext2D, w: World, layout: HudLayout)
   fitInk(ctx, name, x + bw / 2, y + 22, 16, bw - 24, flash ? "#fff3c0" : "#fff8ee");
 }
 
-function wrap(ctx: CanvasRenderingContext2D, text: string, max: number): string[] {
-  const words = text.split(" ");
-  const lines: string[] = [];
-  let cur = "";
-  for (let i = 0; i < words.length; i++) {
-    const word = words[i] ?? "";
-    const next = cur ? `${cur} ${word}` : word;
-    if (ctx.measureText(next).width > max && cur) {
-      lines.push(cur);
-      cur = word;
-    } else cur = next;
-  }
-  if (cur) lines.push(cur);
-  return lines;
-}
-
-function bolt(ctx: CanvasRenderingContext2D, x: number, y: number, s: number): void {
-  ctx.beginPath();
-  ctx.moveTo(x + s * 0.15, y - s);
-  ctx.lineTo(x - s * 0.45, y + s * 0.05);
-  ctx.lineTo(x - s * 0.05, y + s * 0.05);
-  ctx.lineTo(x - s * 0.2, y + s);
-  ctx.lineTo(x + s * 0.55, y - s * 0.12);
-  ctx.lineTo(x + s * 0.05, y - s * 0.12);
-  ctx.closePath();
-  const g = ctx.createLinearGradient(x, y - s, x, y + s);
-  g.addColorStop(0, "#fff6c8");
-  g.addColorStop(1, "#ffb020");
-  ctx.fillStyle = g;
-  ctx.fill();
-  ctx.lineWidth = 1.4;
-  ctx.strokeStyle = OUTLINE;
-  ctx.stroke();
-}
-
-function pellets(ctx: CanvasRenderingContext2D, x: number, y: number, s: number): void {
-  for (let i = -1; i <= 1; i++) {
-    ctx.beginPath();
-    ctx.arc(x + i * s * 0.7, y + Math.abs(i) * 2, s * 0.38, 0, Math.PI * 2);
-    ctx.fillStyle = i === 0 ? "#fff1c2" : BRASS.mid;
-    ctx.fill();
-    ctx.lineWidth = 1.3;
-    ctx.strokeStyle = OUTLINE;
-    ctx.stroke();
-  }
-}
-
-function shieldIcon(ctx: CanvasRenderingContext2D, x: number, y: number, s: number): void {
-  ctx.beginPath();
-  ctx.moveTo(x, y - s);
-  ctx.lineTo(x + s * 0.85, y - s * 0.55);
-  ctx.lineTo(x + s * 0.7, y + s * 0.35);
-  ctx.quadraticCurveTo(x, y + s * 1.05, x - s * 0.7, y + s * 0.35);
-  ctx.lineTo(x - s * 0.85, y - s * 0.55);
-  ctx.closePath();
-  ctx.fillStyle = lit(ctx, x - s, y - s, s * 2, s * 2, BRASS);
-  ctx.fill();
-  ctx.lineWidth = 1.5;
-  ctx.strokeStyle = OUTLINE;
-  ctx.stroke();
-}
-
-function arrow(ctx: CanvasRenderingContext2D, x: number, y: number, s: number): void {
-  ctx.beginPath();
-  ctx.moveTo(x - s, y);
-  ctx.lineTo(x + s * 0.15, y);
-  ctx.moveTo(x, y - s * 0.5);
-  ctx.lineTo(x + s, y);
-  ctx.lineTo(x, y + s * 0.5);
-  ctx.lineJoin = "round";
-  ctx.lineCap = "round";
-  ctx.lineWidth = 4.4;
-  ctx.strokeStyle = OUTLINE;
-  ctx.stroke();
-  ctx.lineWidth = 2.2;
-  ctx.strokeStyle = "#ffe7ad";
-  ctx.stroke();
-}
-
-function chevrons(ctx: CanvasRenderingContext2D, x: number, y: number, s: number): void {
-  ctx.lineWidth = 2.2;
-  ctx.strokeStyle = "#ffe7ad";
-  ctx.lineJoin = "round";
-  for (let i = -1; i <= 1; i++) {
-    ctx.beginPath();
-    ctx.moveTo(x - s * 0.45, y - s * 0.4 + i * s * 0.35);
-    ctx.lineTo(x + s * 0.15, y + i * s * 0.35);
-    ctx.lineTo(x - s * 0.45, y + s * 0.4 + i * s * 0.35);
-    ctx.stroke();
-  }
-}
-
-function iconFor(ctx: CanvasRenderingContext2D, id: number, x: number, y: number): void {
-  ctx.save();
-  ctx.translate(x, y);
-  if (id === UPG_TESLA) bolt(ctx, 0, 0, 12);
-  else if (id === UPG_SHOTGUN) pellets(ctx, 0, 0, 8);
-  else if (id === UPG_SAWS) cog(ctx, 0, 0, 12, 0.2, BRASS, 8, true);
-  else if (id === UPG_FIRE) flameIcon(ctx, 0, 4, 12, 0);
-  else if (id === UPG_HP) {
-    heart(ctx, 0, 2, 10);
-    ctx.fillStyle = "#ff4450";
-    ctx.fill();
-    ctx.lineWidth = 1.5;
-    ctx.strokeStyle = OUTLINE;
-    ctx.stroke();
-  }   else if (id === UPG_SPEED) chevrons(ctx, 0, 0, 12);
-  else if (id === UPG_VENT) flameIcon(ctx, 0, 4, 12, 1);
-  else if (id === UPG_PIERCE) arrow(ctx, 0, 0, 12);
-  else if (id === UPG_SHIELD) shieldIcon(ctx, 0, 0, 12);
-  else cog(ctx, 0, 0, 12, 0.1, BRASS, 8, true);
-  ctx.restore();
-}
-
 function drawCard(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, id: number, index: number, world: World): void {
-  roundRect(ctx, x, y, w, h, 12);
-  ctx.fillStyle = OUTLINE;
-  ctx.fill();
-  roundRect(ctx, x + 3, y + 3, w - 6, h - 6, 10);
-  ctx.fillStyle = lit(ctx, x, y, w, h, BRASS);
-  ctx.fill();
-  roundRect(ctx, x + 6, y + 6, w - 12, h - 12, 8);
-  const bg = ctx.createLinearGradient(x, y, x, y + h);
-  bg.addColorStop(0, "#2c5284");
-  bg.addColorStop(1, "#14243c");
-  ctx.fillStyle = bg;
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(x + 16, y + 16, 9, 0, Math.PI * 2);
-  ctx.fillStyle = BRASS.mid;
-  ctx.fill();
-  ctx.lineWidth = 1.4;
-  ctx.strokeStyle = OUTLINE;
-  ctx.stroke();
-  ink(ctx, String(index + 1), x + 16, y + 10, 11, "#1c120c", "center");
-  if (id < 0) {
-    ink(ctx, "—", x + w / 2, y + h / 2, 16, "#f0c86a", "center");
-    return;
-  }
-  const union = isUnion(id);
-  const rarity = UPG_RARITY[id] ?? 0;
-  const tag = union ? "EVOLVE" : rarityName(rarity);
-  const tagColor = union ? "#ffe14a" : rarity >= 2 ? "#ff9a1e" : rarity === 1 ? "#7ad0ff" : "#f0c86a";
-  if (union) {
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = "#ffe14a";
-    roundRect(ctx, x + 6, y + 6, w - 12, h - 12, 8);
-    ctx.stroke();
-  }
-  ink(ctx, tag, x + w / 2, y + 26, 8, tagColor, "center");
-  iconFor(ctx, id, x + w / 2, y + 52);
-  const name = upgName(id) || "GEAR";
-  ctx.font = font(12, 800);
-  let size = 12;
-  while (size > 8 && ctx.measureText(name).width > w - 18) {
-    size -= 1;
-    ctx.font = font(size, 800);
-  }
-  ink(ctx, name, x + w / 2, y + 74, size, "#ffe7ad", "center", 800);
-  ctx.font = font(9, 600);
-  const spec = union ? unionSpec(id) : null;
-  const blurb = spec ? `${unionHint(id)}. ${spec.effect}` : blurbFor(id);
-  const lines = wrap(ctx, blurb, w - 22);
-  for (let i = 0; i < lines.length && i < 3; i++) ink(ctx, lines[i] ?? "", x + w / 2, y + 94 + i * 12, 9, "#f4f8fc", "center", 600);
-  if (union) {
-    ink(ctx, "ONE UNION", x + w / 2, y + h - 28, 9, "#ffe14a", "center");
-    return;
-  }
-  const lv = world.upgrades[id] ?? 0;
-  for (let p = 0; p < UPG_MAX; p++) {
-    ctx.beginPath();
-    ctx.arc(x + w / 2 - (UPG_MAX - 1) * 6 + p * 12, y + h - 18, 3.3, 0, Math.PI * 2);
-    ctx.fillStyle = p < lv ? "#ff9a1e" : p === lv ? "#fff1c2" : "#0e1828";
-    ctx.fill();
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = OUTLINE;
-    ctx.stroke();
-  }
+  drawRewardCard(ctx, x, y, w, h, id, world, index);
 }
 
 export function drawCards(ctx: CanvasRenderingContext2D, w: World): void {

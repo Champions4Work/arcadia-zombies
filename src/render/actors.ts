@@ -1,7 +1,7 @@
 import { ARENA_H } from "../sim/arena";
 import { Z_ELITE, Z_GAS, Z_KIND, Z_KNIGHT, Z_RAT, Z_SPITTER } from "../sim/foes";
 import { fogCover } from "../sim/map-events";
-import { enemyFlash } from "./juice";
+import { enemyFlash, hitKnockX, hitKnockY } from "./juice";
 import {
   EV_SHOT, FX_BOOM, FX_FLASH, FX_PUFF, FX_SPARK, FX_XP, Z_BRUTE, Z_GHOUL, Z_SHAMBLER, type World,
 } from "../sim/types";
@@ -84,8 +84,8 @@ function paintElite(ctx: CanvasRenderingContext2D, x: number, y: number, w: numb
 
 function paintOne(ctx: CanvasRenderingContext2D, w: World, i: number): void {
   const z = w.zombies;
-  const x = z.x[i] ?? 0;
-  const y = z.y[i] ?? 0;
+  const x = (z.x[i] ?? 0) + hitKnockX(i);
+  const y = (z.y[i] ?? 0) + hitKnockY(i);
   const raw = z.kind[i] ?? 0;
   const kind = raw & Z_KIND;
   const elite = (raw & Z_ELITE) !== 0;

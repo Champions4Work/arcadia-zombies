@@ -39,6 +39,11 @@ export function absorbShake(tick: number, events: ArrayLike<number>): void {
   if (s > energy) energy = s;
 }
 
+export function punchShake(amount: number): void {
+  if (amount <= 0) return;
+  if (amount > energy) energy = amount > SHAKE_CAP ? SHAKE_CAP : amount;
+}
+
 function clampAxis(v: number): number {
   if (v > SHAKE_CAP) return SHAKE_CAP;
   if (v < -SHAKE_CAP) return -SHAKE_CAP;

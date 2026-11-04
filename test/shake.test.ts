@@ -1,15 +1,18 @@
 import { EV_HURT, EV_KILL, EV_LEVEL, EV_N, EV_SHOT, EV_WAVE, FX_FLASH, FX_PUFF } from "../src/sim/types";
 import { createWorld } from "../src/sim/world";
+import { juiceHit, resetJuice } from "../src/render/juice";
 import {
   SHAKE_AMP,
   SHAKE_CAP,
   absorbShake,
   impulseOf,
+  punchShake,
   resetShake,
   shakeEnergy,
   shakeOffset,
   shakePixels,
 } from "../src/render/shake";
+import { Z_SHAMBLER } from "../src/sim/types";
 import {
   createSession,
   loadStore,
@@ -90,6 +93,18 @@ describe("screen shake", () => {
     expect(shakeEnergy()).toBeGreaterThan(0);
     for (let i = 0; i < 10; i++) shakePixels(i + 1, true);
     expect(shakeEnergy()).toBe(0);
+  });
+
+  it("a crit hit punches shake and the setting still zeroes it", () => {
+    resetShake();
+    resetJuice();
+    juiceHit(0, 10, 10, 3, Z_SHAMBLER, false, 0);
+    expect(shakeEnergy()).toBeGreaterThan(0);
+    expect(shakePixels(1, false)).toEqual([0, 0]);
+    resetShake();
+    punchShake(1.1);
+    expect(shakeEnergy()).toBeGreaterThan(0);
+    expect(shakePixels(2, true)[0]).not.toBe(0);
   });
 
   it("defaults to reduced shake and the toggle persists", () => {

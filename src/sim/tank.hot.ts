@@ -6,6 +6,7 @@ import {
   ramSpeed, scarAnchorX, scarAnchorY, scarRadius, shellSpeed, shellsFor,
 } from "./tank";
 import { type Boss, type World } from "./types";
+import { plantBossWarn } from "./warn";
 
 export function stepTank(w: World): void {
   const b = w.boss;
@@ -85,6 +86,7 @@ function advance(w: World, wind: number): void {
   b.mode = 1;
   b.timer = wind;
   crawl(w, 0);
+  plantBossWarn(w, wind);
 }
 function pin(b: Boss): void {
   if (b.x < 36) b.x = 36;

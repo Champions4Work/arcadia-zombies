@@ -7,6 +7,8 @@ import {
   enemyFlash,
   FLASH_MS,
   HIT_COLOR,
+  hitKnockX,
+  hitKnockY,
   juiceFrame,
   juiceHit,
   juicePlayerHurt,
@@ -24,6 +26,7 @@ import {
   setNumbersOn,
   STOP_BOSS_MS,
   STOP_BUDGET_MS,
+  STOP_CRIT_MS,
   STOP_ELITE_MS,
   STOP_HURT_MS,
   stopRemaining,
@@ -148,6 +151,30 @@ describe("death burst", () => {
     for (let i = 0; i < 80; i++) juiceHit(i, 0, 0, 1, Z_SHAMBLER, true, i);
     expect(particleCount()).toBe(PART_CAP);
     expect(particleCount()).toBeLessThanOrEqual(PART_CAP);
+  });
+});
+
+describe("crit stop and knockback", () => {
+  it("freezes briefly on a big live hit and shoves the drawn foe away", () => {
+    resetJuice();
+    juiceHit(0, 40, 0, 3, Z_SHAMBLER, false, 0, 0, 0);
+    expect(stopRemaining()).toBe(STOP_CRIT_MS);
+    expect(STOP_CRIT_MS).toBeGreaterThan(0);
+    expect(STOP_CRIT_MS).toBeLessThan(STOP_ELITE_MS);
+    expect(hitKnockX(0)).toBeGreaterThan(0);
+    expect(hitKnockY(0)).toBe(0);
+    const w = arm(Z_SHAMBLER, 8, false);
+    const x0 = w.zombies.x[0] ?? 0;
+    w.bullets.alive[0] = 1;
+    w.bullets.x[0] = x0;
+    w.bullets.y[0] = w.zombies.y[0] ?? 0;
+    w.bullets.vx[0] = 0;
+    w.bullets.vy[0] = 0;
+    w.bHit[0] = -1;
+    w.bPierce[0] = 0;
+    step(w, idle);
+    expect(w.zombies.x[0] ?? 0).toBe(x0);
+    expect(hitKnockX(0)).toBeGreaterThan(0);
   });
 });
 
