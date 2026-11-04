@@ -72,8 +72,7 @@ function hash(x: number, y: number, s = 0): number {
 
 function brassPad(c: number, r: number): number {
   if (bound === ZONE_BOILER) {
-    if (r >= 8 && r <= 16 && c >= 6 && c <= 26) return 1;
-    if (r >= 10 && r <= 14 && c >= 2 && c <= 56) return 1;
+    if (r >= 8 && r <= 20 && c >= 2 && c <= 58) return 1;
     if (r >= 18 && r <= 28 && c >= 38 && c <= 58) return 1;
     if (r >= 20 && r <= 32 && c >= 2 && c <= 18) return 1;
     if (r >= 26 && r <= 34 && c >= 16 && c <= 42) return 1;
@@ -81,7 +80,8 @@ function brassPad(c: number, r: number): number {
   }
   if (bound === ZONE_TRAM) {
     if (r >= 8 && r <= 10 && c >= 4 && c <= 56) return 1;
-    if (r >= 17 && r <= 19 && c >= 4 && c <= 56) return 1;
+    if (r >= 15 && r <= 17 && c >= 4 && c <= 56) return 1;
+    if (r >= 21 && r <= 23 && c >= 4 && c <= 56) return 1;
     if (r >= 27 && r <= 29 && c >= 4 && c <= 56) return 1;
     if (r >= 33 && r <= 35 && c >= 4 && c <= 56) return 1;
     return 0;
@@ -97,7 +97,7 @@ function brassPad(c: number, r: number): number {
 }
 
 function railH(r: number): number {
-  if (bound === ZONE_TRAM) return r === 9 || r === 18 || r === 28 || r === 34 ? 1 : 0;
+  if (bound === ZONE_TRAM) return r === 9 || r === 16 || r === 22 || r === 28 || r === 34 ? 1 : 0;
   if (bound === ZONE_BOILER) return r === 22 ? 1 : 0;
   return r === 9 || r === 34 ? 1 : 0;
 }
@@ -484,10 +484,10 @@ const TRAM_MARKS = [
 
 export function paintGround(ctx: CanvasRenderingContext2D): void {
   build();
-  const wash = bound === ZONE_BOILER ? "#2a1814" : bound === ZONE_TRAM ? "#1c2430" : "#24303c";
+  const wash = bound === ZONE_BOILER ? "#3a1810" : bound === ZONE_TRAM ? "#152028" : "#24303c";
   const tile = bound === ZONE_BOILER ? "tile_metal_seamless" : "tile_stone_seamless";
-  const groutInk = bound === ZONE_BOILER ? "rgba(42,20,14,0.55)" : bound === ZONE_TRAM ? "rgba(28,40,52,0.55)" : "rgba(36,48,62,0.55)";
-  const shade = bound === ZONE_BOILER ? "rgba(24,10,6,0.28)" : bound === ZONE_TRAM ? "rgba(12,20,32,0.24)" : "rgba(16,24,36,0.22)";
+  const groutInk = bound === ZONE_BOILER ? "rgba(72,28,14,0.62)" : bound === ZONE_TRAM ? "rgba(24,40,56,0.6)" : "rgba(36,48,62,0.55)";
+  const shade = bound === ZONE_BOILER ? "rgba(56,18,8,0.36)" : bound === ZONE_TRAM ? "rgba(8,18,32,0.32)" : "rgba(16,24,36,0.22)";
   ctx.fillStyle = wash;
   ctx.fillRect(0, 108, ARENA_W, ARENA_H - 108);
   tileSheet(ctx, tile, 0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);

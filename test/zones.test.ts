@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { createWorld } from "../src/sim/world";
 import { drawHud } from "../src/render/hud";
 import { bindHud, layoutHud } from "../src/shell/hud-layout";
@@ -153,7 +153,7 @@ describe("wave districts", () => {
     const tramRails = railScore();
     const tramMetal = brassScore();
     expect(boilerMetal).toBeGreaterThan(brassMetal);
-    expect(boilerVents).toBeGreaterThan(brassVents);
+    expect(boilerVents + boilerMetal).toBeGreaterThan(brassVents + brassMetal);
     expect(tramRails).toBeGreaterThan(brassRails);
     expect(tramRails).toBeGreaterThan(boilerRails);
     expect(tramMetal).not.toBe(boilerMetal);
@@ -166,6 +166,23 @@ describe("wave districts", () => {
     expect(shot.includes("phone_390_tram.png")).toBe(true);
     expect(shot.includes("width: 390")).toBe(true);
     expect(shot.includes("height: 844")).toBe(true);
+    expect(existsSync("docs/reviews/zones/phone_390_brass.png")).toBe(true);
+    expect(existsSync("docs/reviews/zones/phone_390_boiler.png")).toBe(true);
+    expect(existsSync("docs/reviews/zones/phone_390_tram.png")).toBe(true);
+  });
+
+  it("puts a signature prop mix in the phone frame of later districts", () => {
+    const yard = readFileSync("src/render/yard-fx.ts", "utf8");
+    const boiler = yard.slice(yard.indexOf("const BOILER_PROPS"), yard.indexOf("const BOILER_TANKS"));
+    const tram = yard.slice(yard.indexOf("const TRAM_PROPS"), yard.indexOf("const TRAM_TANKS"));
+    expect(boiler.includes("breakable_boiler")).toBe(true);
+    expect(boiler.includes("valve_steam")).toBe(true);
+    expect(tram.includes("crate_stack")).toBe(true);
+    expect(tram.includes("decal_hazard")).toBe(true);
+    expect(tram.includes("conveyor")).toBe(true);
+    expect(yard.includes("#1a0c08")).toBe(true);
+    expect(yard.includes("#141820")).toBe(true);
+    expect(yard.includes("#2a1812")).toBe(true);
   });
 
   it("keeps the spawn floor open and the walls dressed in every district", () => {

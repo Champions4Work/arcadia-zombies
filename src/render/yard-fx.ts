@@ -96,6 +96,11 @@ const BOILER_PROPS: { id: string; x: number; y: number }[] = [
   { id: "lamp", x: 352, y: 208 },
   { id: "lamp", x: 480, y: 206 },
   { id: "lamp", x: 608, y: 208 },
+  { id: "breakable_boiler", x: 400, y: 248 },
+  { id: "pipes_blue_tank", x: 480, y: 246 },
+  { id: "breakable_boiler", x: 560, y: 248 },
+  { id: "valve_steam", x: 440, y: 278 },
+  { id: "valve_steam", x: 520, y: 278 },
   { id: "breakable_boiler", x: 332, y: 340 },
   { id: "valve_steam", x: 336, y: 386 },
   { id: "pipes_blue_tank", x: 334, y: 430 },
@@ -141,8 +146,8 @@ const TRAM_BUILDINGS = [
 ];
 
 const TRAM_BELTS = [
+  { x: 296, y: 250, w: 368, vert: 0 },
   { x: 296, y: 300, w: 368, vert: 0 },
-  { x: 296, y: 660, w: 368, vert: 0 },
 ];
 
 const TRAM_PIPES = [
@@ -158,6 +163,11 @@ const TRAM_PROPS: { id: string; x: number; y: number }[] = [
   { id: "lamp", x: 348, y: 204 },
   { id: "lamp", x: 480, y: 202 },
   { id: "lamp", x: 612, y: 204 },
+  { id: "crate_stack", x: 400, y: 248 },
+  { id: "crate_stack", x: 480, y: 246 },
+  { id: "crate_stack", x: 560, y: 248 },
+  { id: "decal_hazard", x: 440, y: 278 },
+  { id: "decal_hazard", x: 520, y: 278 },
   { id: "crate_stack", x: 332, y: 340 },
   { id: "crate", x: 336, y: 368 },
   { id: "crate_stack", x: 332, y: 396 },
@@ -288,9 +298,11 @@ function blitScaled(ctx: CanvasRenderingContext2D, id: string, x: number, y: num
 }
 
 function paintBrickWall(ctx: CanvasRenderingContext2D): void {
-  ctx.fillStyle = "#2a1812";
+  const soot = yardBound === ZONE_BOILER;
+  const steel = yardBound === ZONE_TRAM;
+  ctx.fillStyle = soot ? "#1a0c08" : steel ? "#141820" : "#2a1812";
   ctx.fillRect(296, 168, 368, 68);
-  ctx.fillStyle = "#3a2218";
+  ctx.fillStyle = soot ? "#4a2414" : steel ? "#2a3844" : "#3a2218";
   for (let row = 0; row < 5; row++) {
     const oy = 172 + row * 12;
     const shift = row & 1 ? 10 : 0;
@@ -298,12 +310,16 @@ function paintBrickWall(ctx: CanvasRenderingContext2D): void {
       ctx.fillRect(300 + col * 20 + shift, oy, 18, 10);
     }
   }
-  const panes = [348, 412, 476, 540];
+  const panes = soot ? [340, 404, 468, 532, 596] : steel ? [328, 400, 480, 560, 632] : [348, 412, 476, 540];
   for (let i = 0; i < panes.length; i++) {
     const px = panes[i] ?? 348;
-    ctx.fillStyle = "#6a3a14";
+    ctx.fillStyle = soot ? "#7a2a10" : steel ? "#3a4858" : "#6a3a14";
     ctx.fillRect(px - 14, 178, 28, 34);
-    ctx.fillStyle = i & 1 ? "#f0b44a" : "#e08a28";
+    ctx.fillStyle = soot
+      ? (i & 1 ? "#f8a030" : "#e06018")
+      : steel
+        ? (i & 1 ? "#c8e8ff" : "#f0c060")
+        : (i & 1 ? "#f0b44a" : "#e08a28");
     ctx.fillRect(px - 11, 182, 10, 12);
     ctx.fillRect(px + 1, 182, 10, 12);
     ctx.fillRect(px - 11, 196, 10, 10);
@@ -521,11 +537,15 @@ export function paintYardLive(
   }
   paintBrickWall(ctx);
   if (yardBound === ZONE_BOILER) {
-    ctx.fillStyle = "rgba(40,12,8,0.22)";
+    ctx.fillStyle = "rgba(40,12,8,0.28)";
     ctx.fillRect(296, 176, 368, 52);
+    ctx.fillStyle = "rgba(110,36,12,0.26)";
+    ctx.fillRect(0, 112, 960, 528);
   } else if (yardBound === ZONE_TRAM) {
-    ctx.fillStyle = "rgba(16,24,36,0.2)";
+    ctx.fillStyle = "rgba(16,24,36,0.26)";
     ctx.fillRect(296, 176, 368, 52);
+    ctx.fillStyle = "rgba(12,40,64,0.26)";
+    ctx.fillRect(0, 112, 960, 528);
   }
   for (const run of pipesOf()) {
     if (!visible(run.x, run.y, camX, camY, vw, vh, run.len + 20)) continue;
