@@ -27,17 +27,21 @@ Closed **[#87](https://github.com/Champions4Work/arcadia-zombies/pull/87)** prov
 
 Review **`docs/reviews/r31/`** against r30. The brass yard keeps **`tile_stone_seamless`** (#90) but moves the **power-up belt to `y: 658`** (bottom edge) so **`CARGO_*` crates ride and land outside `YARD_CLEAR`**, not through the hunter lane. **`reviewDepth`** parks a glowing **`crate_stack` on that perimeter belt**, not on blue pads in the center. Perimeter **`PROPS`** densify with **`window_lit`**, side **`conveyor`**, **`blue_puddle`**, duplicate **`pipes_blue_tank` / `valve_steam` / `decal_grate` / `decal_vent`** runs on both rails—no **`crate` / `barrel` / `crate_stack`** inside the vertical fight band. Coordinator **Read** must compare r31 play vs r30 before merge.
 
-## Effects (phone read, r32)
+## Effects (phone read, r34)
 
-FX-only tuning on current main (#90 stone, #92 HUD, #93 perimeter). Do **not** repeat closed #91: no double **`lighter`** steam blits at high alpha, no fight-floor cyan pads, no yard prop moves.
+FX-only tuning on current main. Do **not** repeat closed steam passes: no **`lighter`** double steam at high alpha, no fight-floor cyan pads, no yard prop moves.
 
 | Effect | Rule |
 | --- | --- |
-| Steam valves | **`paintVentSteam`**: scaled **`steam_1`–`steam_4`** at **`STEAM_VENT_SCALE`**, warm gray under-puffs, **`soft-light`** compositing, alpha ≤ **`STEAM_VENT_ALPHA`**. |
+| Steam valves | **`valveSteamSites`** + **`paintVentSteam`**: scaled **`steam_1`–`steam_4`**, dark warm under-puffs, **`multiply`** compositing, alpha ≤ **`STEAM_VENT_ALPHA`**, scale **`STEAM_VENT_SCALE`**. |
 | Blue liquid | Subtle **`bluePool`** on **`TANKS`** and **`pipes_blue_tank`** only; **`blue_puddle`** blit on puddle props. No glow on breakables. |
 | Combat | Amber muzzle/tracer, flying brass particles, floor casings, horde blood denser than calm main but **outside `HERO_R`**. |
 
-Review **`docs/reviews/fx-r32/`** (`phone_390_play.png` 390×844, `?shot=1`) vs **`docs/target_look.jpg`** and **`docs/target_look2.png`**. Coordinator **Read-compare** before merge; **no auto-merge**.
+Review **`docs/reviews/fx-r34/`** (`phone_390_play.png` 390×844, `?shot=1`) vs **`docs/target_look.jpg`** and **`docs/target_look2.png`**. Coordinator **Read-compare required** before merge; **no auto-merge**.
+
+## Effects (phone read, r32)
+
+Archived baseline in **`docs/reviews/fx-r32/`**. Superseded by r34 steam anchoring and tuning above.
 
 ## References (art bible)
 

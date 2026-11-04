@@ -29,8 +29,8 @@ export const CRIT_COLOR = "#ffe14a";
 export const HIT_COLOR = "#fff4c8";
 export const NUMBER_LIFE = 180;
 export const GLYPH_CELL = 2;
-export const BLOOD_DROP_RX = 6.6;
-export const BLOOD_DROP_RY = 5.2;
+export const BLOOD_DROP_RX = 7;
+export const BLOOD_DROP_RY = 5.4;
 
 const SOOT = "#120c08";
 const BRASS = "#c8963e";

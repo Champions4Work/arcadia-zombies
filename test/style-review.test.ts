@@ -96,7 +96,8 @@ describe("visual review gates", () => {
     expect(yard.includes("valve_steam")).toBe(true);
     expect(yard.includes("function doorPool")).toBe(true);
     expect(yard.includes("function steamPuff")).toBe(true);
-    expect(yard.includes("#8a9098")).toBe(true);
+    expect(yard.includes("#8a9098")).toBe(false);
+    expect(yard.includes("#5a5248")).toBe(true);
     expect(yard.includes("function paintCrossPipe")).toBe(true);
     expect(yard.includes("#e0a040")).toBe(true);
     expect(yard.includes("#7ae0d4")).toBe(true);
@@ -150,8 +151,8 @@ describe("visual review gates", () => {
     expect(rack.includes("Math.max(12, lv * 12)")).toBe(false);
     expect(yard.includes("tick * 2.2")).toBe(true);
     expect(yard.includes("w * 0.42")).toBe(false);
-    const vents = yard.slice(yard.indexOf("const STEAM_VENTS"), yard.indexOf("export const YARD_CLEAR"));
-    expect((vents.match(/\{ x:/g) || []).length).toBe(5);
+    const vents = yard.slice(yard.indexOf("function valveSteamSites"), yard.indexOf("function visible"));
+    expect(vents.includes('p.id === "valve_steam"')).toBe(true);
     const bible = readFileSync("docs/STYLE.md", "utf8");
     expect(bible.includes("220 KB")).toBe(true);
     expect(bible.includes("124 KB")).toBe(true);

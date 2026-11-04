@@ -25,8 +25,8 @@ const GLASS_AT = [0.22, 0.5, 0.78];
 const VALVE = { x: 424, y: 232 };
 const BUILD_SCALE = 1.28;
 const TANK_SCALE = 1.2;
-const STEAM_VENT_SCALE = 0.76;
-const STEAM_VENT_ALPHA = 0.24;
+const STEAM_VENT_SCALE = 0.62;
+const STEAM_VENT_ALPHA = 0.36;
 const BLUE_GLOW_ALPHA = 0.3;
 
 const PROPS: { id: string; x: number; y: number }[] = [
@@ -76,14 +76,6 @@ const POOLS = [
   { x: 600, y: 208 },
   { x: 312, y: 584 },
   { x: 648, y: 584 },
-];
-
-const STEAM_VENTS = [
-  { x: 360, y: 226 },
-  { x: 424, y: 232 },
-  { x: 520, y: 226 },
-  { x: 334, y: 468 },
-  { x: 630, y: 468 },
 ];
 
 export const YARD_CLEAR = { x0: 352, y0: 318, x1: 608, y1: 638 };
@@ -156,12 +148,6 @@ const BOILER_POOLS = [
   { x: 352, y: 208 },
   { x: 480, y: 206 },
   { x: 608, y: 208 },
-];
-
-const BOILER_STEAM = [
-  { x: 332, y: 328 },
-  { x: 628, y: 328 },
-  { x: 336, y: 584 },
 ];
 
 const TRAM_BUILDINGS = [
@@ -266,10 +252,18 @@ function poolsOf() {
   return POOLS;
 }
 
+export function valveSteamSites(): { x: number; y: number }[] {
+  const sites: { x: number; y: number }[] = [];
+  for (const p of propsOf()) {
+    if (p.id === "valve_steam") sites.push({ x: p.x, y: p.y - 12 });
+  }
+  if (yardBound === ZONE_BRASS) sites.push({ x: VALVE.x, y: VALVE.y - 8 });
+  return sites;
+}
+
 function ventsOf() {
-  if (yardBound === ZONE_BOILER) return BOILER_STEAM;
   if (yardBound === ZONE_TRAM) return TRAM_STEAM;
-  return STEAM_VENTS;
+  return valveSteamSites();
 }
 
 function visible(x: number, y: number, camX: number, camY: number, vw: number, vh: number, pad: number): boolean {
@@ -482,15 +476,15 @@ function paintVertPipe(ctx: CanvasRenderingContext2D, x: number, y: number, len:
 function steamPuff(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number): void {
   const lift = ((tick * 0.35) % 14);
   ctx.save();
-  ctx.globalAlpha = 0.16;
-  ctx.fillStyle = "#7a7060";
+  ctx.globalAlpha = 0.22;
+  ctx.fillStyle = "#5a5248";
   ctx.beginPath();
-  ctx.ellipse(x, y - 4 - lift * 0.15, 6, 9, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y - 4 - lift * 0.15, 5, 7, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.globalAlpha = 0.12;
-  ctx.fillStyle = "#8a9098";
+  ctx.globalAlpha = 0.14;
+  ctx.fillStyle = "#484038";
   ctx.beginPath();
-  ctx.ellipse(x + 4, y - 12 - lift * 0.2, 5, 7, 0.15, 0, Math.PI * 2);
+  ctx.ellipse(x + 3, y - 11 - lift * 0.2, 4, 6, 0.12, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
@@ -499,12 +493,12 @@ function paintVentSteam(ctx: CanvasRenderingContext2D, x: number, y: number, tic
   const lift = ((tick * 0.35) % 14);
   steamPuff(ctx, x, y, tick);
   ctx.save();
-  ctx.globalCompositeOperation = "soft-light";
+  ctx.globalCompositeOperation = "multiply";
   ctx.globalAlpha = STEAM_VENT_ALPHA;
-  blitScaled(ctx, steamFrame(tick), x - 6, y - 20 - lift, STEAM_VENT_SCALE);
+  blitScaled(ctx, steamFrame(tick), x - 5, y - 17 - lift, STEAM_VENT_SCALE);
   ctx.globalCompositeOperation = "source-over";
-  ctx.globalAlpha = STEAM_VENT_ALPHA * 0.72;
-  blitScaled(ctx, steamFrame(tick + 4), x + 4, y - 12 - lift * 0.45, STEAM_VENT_SCALE * 0.88);
+  ctx.globalAlpha = STEAM_VENT_ALPHA * 0.42;
+  blitScaled(ctx, steamFrame(tick + 2), x - 3, y - 14 - lift * 0.55, STEAM_VENT_SCALE * 0.82);
   ctx.restore();
 }
 
