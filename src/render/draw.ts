@@ -20,7 +20,7 @@ import "./depth";
 import { absorbShake, shakePixels } from "./shake";
 import { drawStageFx, drawYardWindow } from "./stage";
 import { paintHurt, paintVeil } from "./veil";
-import { bindYard, paintYardLive } from "./yard-fx";
+import { bindYard, paintYardGlow, paintYardLive } from "./yard-fx";
 import { reviewWalkOn } from "../shell/review-shot";
 import { zoneAt } from "../sim/zones";
 import { bindGround } from "./ground";
@@ -115,6 +115,11 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
   vig.addColorStop(1, "rgba(4,6,12,0.72)");
   c.fillStyle = vig;
   c.fillRect(0, 0, viewW, viewH);
+  c.save();
+  if (sx !== 0 || sy !== 0) c.translate(sx, sy);
+  c.translate(-camX, -camY);
+  paintYardGlow(c, camX, camY, viewW, viewH);
+  c.restore();
   paintLayers(c, w, LAYER_FRONT);
   if (w.choosing) {
     c.fillStyle = "rgba(8,6,4,0.42)";

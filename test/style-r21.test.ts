@@ -83,7 +83,8 @@ describe("r21 phone look", () => {
     expect(yard.includes("fillRect(x + 6, y - 12, len - 12, 24)")).toBe(true);
     expect(yard.includes("#7ae0d4")).toBe(true);
     expect(yard.includes("VALVE_B")).toBe(true);
-    expect(yard.includes("ellipse(x, y + 18, 118, 76")).toBe(true);
+    expect(yard.includes("ellipse(x, y + 18, 132, 88")).toBe(true);
+    expect(yard.includes("export function paintYardGlow")).toBe(true);
     expect(yard.includes("function lampRay")).toBe(true);
     expect(yard.includes("FLOOR_DECALS")).toBe(true);
     expect(yard.includes("decal_grate")).toBe(true);

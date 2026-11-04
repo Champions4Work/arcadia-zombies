@@ -229,7 +229,7 @@ function portrait(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   const faceS = box.h;
   const cx = box.x + faceS / 2;
   const cy = box.y + box.h / 2;
-  const r = faceS * 0.42;
+  const r = faceS * 0.46;
   blitSheetFit(ctx, "ring_frame_a", box.x - 2, box.y - 2, faceS + 4, faceS + 4);
   ctx.save();
   ctx.beginPath();

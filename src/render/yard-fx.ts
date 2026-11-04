@@ -79,11 +79,12 @@ const POOLS = [
   { x: 360, y: 208 },
   { x: 480, y: 204 },
   { x: 600, y: 208 },
-  { x: 420, y: 300 },
-  { x: 540, y: 308 },
-  { x: 480, y: 356 },
+  { x: 400, y: 278 },
+  { x: 560, y: 278 },
   { x: 368, y: 250 },
   { x: 592, y: 250 },
+  { x: 404, y: 400 },
+  { x: 556, y: 400 },
 ];
 
 const STEAM_VENTS = [
@@ -271,16 +272,30 @@ function visible(x: number, y: number, camX: number, camY: number, vw: number, v
 }
 
 function lampPool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  const g = ctx.createRadialGradient(x, y - 8, 4, x, y + 22, 128);
-  g.addColorStop(0, "rgba(255,210,120,0.78)");
-  g.addColorStop(0.22, "rgba(255,168,72,0.48)");
-  g.addColorStop(0.55, "rgba(210,110,36,0.2)");
+  const g = ctx.createRadialGradient(x, y - 8, 4, x, y + 22, 148);
+  g.addColorStop(0, "rgba(255,210,120,0.7)");
+  g.addColorStop(0.22, "rgba(255,168,72,0.4)");
+  g.addColorStop(0.55, "rgba(210,110,36,0.16)");
   g.addColorStop(1, "rgba(10,10,14,0)");
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.ellipse(x, y + 18, 118, 76, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y + 18, 132, 88, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function lampWash(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+  const g = ctx.createRadialGradient(x, y + 8, 8, x, y + 20, 110);
+  g.addColorStop(0, "rgba(255,196,110,0.22)");
+  g.addColorStop(0.45, "rgba(255,150,60,0.1)");
+  g.addColorStop(1, "rgba(10,10,14,0)");
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.ellipse(x, y + 16, 96, 62, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
@@ -663,7 +678,7 @@ export function paintYardLive(
   if (yardBound === ZONE_BRASS) {
     for (const decal of FLOOR_DECALS) {
       if (!visible(decal.x, decal.y, camX, camY, vw, vh, 40)) continue;
-      blitSheet(ctx, decal.id, decal.x, decal.y);
+      blitScaled(ctx, decal.id, decal.x, decal.y, 1.55);
     }
   }
   for (const p of propsOf()) {
@@ -691,6 +706,19 @@ export function paintYardLive(
     blitSheet(ctx, steamFrame(tick), vent.x, vent.y - 10);
     ctx.restore();
     steamPuff(ctx, vent.x, vent.y, tick);
+  }
+}
+
+export function paintYardGlow(
+  ctx: CanvasRenderingContext2D,
+  camX: number,
+  camY: number,
+  vw: number,
+  vh: number,
+): void {
+  for (const pool of poolsOf()) {
+    if (!visible(pool.x, pool.y, camX, camY, vw, vh, 80)) continue;
+    lampWash(ctx, pool.x, pool.y);
   }
 }
 

@@ -17,9 +17,9 @@ function fogSheet(): HTMLCanvasElement {
   if (fog) return fog;
   fog = sheet((ctx) => {
     const wash = ctx.createLinearGradient(0, 0, 0, H);
-    wash.addColorStop(0, "rgba(40,16,28,0.22)");
-    wash.addColorStop(0.45, "rgba(28,14,12,0.08)");
-    wash.addColorStop(1, "rgba(8,8,14,0.26)");
+    wash.addColorStop(0, "rgba(40,16,28,0.14)");
+    wash.addColorStop(0.45, "rgba(28,14,12,0.04)");
+    wash.addColorStop(1, "rgba(8,8,14,0.16)");
     ctx.fillStyle = wash;
     ctx.fillRect(0, 0, W, H);
     const vig = ctx.createRadialGradient(W / 2, H * 0.5, 70, W / 2, H * 0.5, 280);

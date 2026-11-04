@@ -85,11 +85,12 @@ describe("visual review gates", () => {
     const draw = readFileSync("src/render/draw.ts", "utf8");
     expect(draw.includes("rgba(4,6,12,0.72)")).toBe(true);
     expect(draw.includes("rgba(24,14,8,0.08)")).toBe(true);
+    expect(draw.includes("paintYardGlow")).toBe(true);
     expect(draw.includes("rgba(6,6,10,0.16)")).toBe(false);
     expect(draw.includes("rgba(220,132,52,0.34)")).toBe(false);
     expect(draw.includes("rgba(255,186,88,0.42)")).toBe(false);
     const yard = readFileSync("src/render/yard-fx.ts", "utf8");
-    expect(yard.includes("ellipse(x, y + 18, 118, 76")).toBe(true);
+    expect(yard.includes("ellipse(x, y + 18, 132, 88")).toBe(true);
     expect(yard.includes("function lampRay")).toBe(true);
     expect(yard.includes("decal_vent")).toBe(true);
     expect(yard.includes("valve_steam")).toBe(true);
