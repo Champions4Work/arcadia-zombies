@@ -147,10 +147,17 @@ export function paintSignatureHero(
   const ny = aimY / mag;
   paintShadow(ctx, x, y, 14 * s, 5 * s);
   ctx.save();
-  ctx.fillStyle = "rgba(62,220,220,0.32)";
+  ctx.fillStyle = moving ? "rgba(62,220,220,0.42)" : "rgba(62,220,220,0.32)";
   ctx.beginPath();
-  ctx.ellipse(x, y + 3, 11 * s, 4 * s, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y + 3, (moving ? 12 : 11) * s, (moving ? 4.6 : 4) * s, 0, 0, Math.PI * 2);
   ctx.fill();
+  if (moving) {
+    ctx.strokeStyle = "rgba(120,245,245,0.72)";
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.ellipse(x, y + 3, 13 * s, 5 * s, 0, 0, Math.PI * 2);
+    ctx.stroke();
+  }
   ctx.restore();
   blitSheetLean(ctx, heroSpriteId(moving, tick), x, y, flip, bob, 0, s);
   if (!shoot) return;
@@ -159,20 +166,20 @@ export function paintSignatureHero(
   const my = y - 26 * s - bob + ny * 5;
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
-  ctx.fillStyle = "rgba(255,110,24,0.98)";
+  ctx.fillStyle = "rgba(255,120,18,0.98)";
   ctx.beginPath();
-  ctx.ellipse(mx, my, 14, 8, Math.atan2(ny, nx), 0, Math.PI * 2);
+  ctx.ellipse(mx, my, 18, 10, Math.atan2(ny, nx), 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = "rgba(255,230,110,0.98)";
+  ctx.fillStyle = "rgba(255,240,120,0.98)";
   ctx.beginPath();
-  ctx.ellipse(mx, my, 7, 4, Math.atan2(ny, nx), 0, Math.PI * 2);
+  ctx.ellipse(mx, my, 9, 5, Math.atan2(ny, nx), 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = "#ffe07a";
-  ctx.lineWidth = 3.2;
+  ctx.lineWidth = 3.6;
   ctx.lineCap = "round";
   ctx.beginPath();
   ctx.moveTo(mx, my);
-  ctx.lineTo(mx + nx * 18, my + ny * 18);
+  ctx.lineTo(mx + nx * 24, my + ny * 24);
   ctx.stroke();
   ctx.restore();
 }
@@ -180,20 +187,22 @@ export function paintSignatureHero(
 export function paintHitSpark(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
-  ctx.strokeStyle = "rgba(255,140,32,0.95)";
-  ctx.lineWidth = 2.2;
+  ctx.strokeStyle = "rgba(255,160,48,0.98)";
+  ctx.lineWidth = 2.8;
   ctx.lineCap = "round";
   ctx.beginPath();
-  ctx.moveTo(x - 7, y);
-  ctx.lineTo(x + 7, y);
-  ctx.moveTo(x - 3, y - 5);
-  ctx.lineTo(x + 3, y + 4);
-  ctx.moveTo(x + 3, y - 5);
-  ctx.lineTo(x - 3, y + 4);
+  ctx.moveTo(x - 10, y);
+  ctx.lineTo(x + 10, y);
+  ctx.moveTo(x, y - 10);
+  ctx.lineTo(x, y + 10);
+  ctx.moveTo(x - 6, y - 6);
+  ctx.lineTo(x + 6, y + 6);
+  ctx.moveTo(x + 6, y - 6);
+  ctx.lineTo(x - 6, y + 6);
   ctx.stroke();
-  ctx.fillStyle = "rgba(255,200,70,0.92)";
+  ctx.fillStyle = "rgba(255,220,90,0.96)";
   ctx.beginPath();
-  ctx.ellipse(x, y, 3.4, 2.4, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y, 4.6, 3.4, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
@@ -287,21 +296,21 @@ export function paintEnergyTank(ctx: CanvasRenderingContext2D, x: number, y: num
 
 export function paintBlood(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, age = 1): void {
   const seed = ((x * 13 + y * 7 + s * 17) | 0);
-  const n = 5 + (seed & 3);
-  const fade = (0.6 + (seed & 3) * 0.05) * Math.max(0.22, Math.min(1, age));
-  const span = 7 + (s & 7);
-  ctx.fillStyle = "#4a100e";
+  const n = 6 + (seed & 3);
+  const fade = (0.72 + (seed & 3) * 0.06) * Math.max(0.28, Math.min(1, age));
+  const span = 8 + (s & 7);
+  ctx.fillStyle = "#5a1410";
   for (let i = 0; i < n; i++) {
     const ox = ((seed + i * 19) % (span * 2 + 1)) - span;
     const oy = ((seed + i * 11) % (span + 3)) - (span >> 1);
-    const rw = 3.6 + ((seed + i * 5) % Math.max(3, span >> 1));
-    const rh = 2.2 + ((seed + i * 3) % Math.max(2, span >> 2));
+    const rw = 4.2 + ((seed + i * 5) % Math.max(3, span >> 1));
+    const rh = 2.6 + ((seed + i * 3) % Math.max(2, span >> 2));
     ctx.globalAlpha = fade;
     ctx.beginPath();
     ctx.ellipse(x + ox, y + oy, rw, rh, ((seed + i) % 8) * 0.28, 0, Math.PI * 2);
     ctx.fill();
   }
-  ctx.fillStyle = "#2a0808";
+  ctx.fillStyle = "#320808";
   ctx.fillRect(x + 3 + (seed % 3), y + 1, 2, 1);
   ctx.fillRect(x - 4, y + 3, 1, 2);
   ctx.fillRect(x + 1, y - 3, 1, 1);

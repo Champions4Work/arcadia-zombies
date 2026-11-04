@@ -2,7 +2,7 @@ import { Z_ELITE, Z_KIND, Z_KNIGHT } from "../sim/foes";
 import { Z_BRUTE } from "../sim/types";
 import { reduceMotionOn } from "./motion";
 import { punchShake } from "./shake";
-import { resetStains, stampBlood, stainCount, STAIN_LIVE_CAP } from "./stains";
+import { resetStains, stampBlood, stampCasing, stainCount, STAIN_LIVE_CAP } from "./stains";
 
 export const NUMBER_CAP = 256;
 export const FLASH_CAP = 2048;
@@ -16,9 +16,9 @@ export const STOP_BOSS_MS = 60;
 export const STOP_HURT_MS = 50;
 export const STOP_CRIT_MS = 24;
 export const SHAKE_CRIT = 1.1;
-export const SHAKE_HIT = 0.55;
+export const SHAKE_HIT = 0.62;
 export const SHAKE_BRUTE = 0.75;
-export const BLOOD_SPURT = 3;
+export const BLOOD_SPURT = 4;
 export const KNOCK_HIT = 4.2;
 export const KNOCK_CRIT = 8;
 export const STOP_BUDGET_MS = 100;
@@ -28,8 +28,8 @@ export const CRIT_COLOR = "#ffe14a";
 export const HIT_COLOR = "#fff4c8";
 export const NUMBER_LIFE = 180;
 export const GLYPH_CELL = 2;
-export const BLOOD_DROP_RX = 5.5;
-export const BLOOD_DROP_RY = 4.2;
+export const BLOOD_DROP_RX = 6.2;
+export const BLOOD_DROP_RY = 4.8;
 
 const SOOT = "#120c08";
 const BRASS = "#c8963e";
@@ -231,8 +231,13 @@ function spawnBlood(x: number, y: number, slot: number, tick: number): void {
 
 export function juiceShot(x: number, y: number, ux: number, uy: number, tick: number): void {
   const side = ((tick | 0) & 1) === 0 ? 1 : -1;
-  spawnPart(x, y, -uy * 36 * side + ux * 6, ux * 36 * side - 18, 0);
-  spawnPart(x, y, -uy * 22 * side - ux * 4, ux * 22 * side - 10, 0);
+  spawnPart(x, y, -uy * 42 * side + ux * 8, ux * 42 * side - 22, 0);
+  spawnPart(x, y, -uy * 26 * side - ux * 6, ux * 26 * side - 14, 0);
+  if (stainCount() < STAIN_LIVE_CAP) {
+    const bx = x - uy * 11 * side + ux * 5;
+    const by = y + ux * 11 * side + uy * 4 + 6;
+    stampCasing(bx, by, tick);
+  }
 }
 
 export function juicePlayerHurt(): void {
@@ -412,14 +417,14 @@ export function drawJuice(c: CanvasRenderingContext2D): void {
         c.fillStyle = "rgba(210,36,42,0.88)";
         c.fillRect((x - 2) | 0, (y - 3) | 0, 3, 4);
       } else {
-        c.fillStyle = "rgba(255,140,40,0.45)";
+        c.fillStyle = "rgba(255,150,48,0.55)";
         c.beginPath();
-        c.arc(x, y, 6, 0, Math.PI * 2);
+        c.arc(x, y, 7, 0, Math.PI * 2);
         c.fill();
         c.fillStyle = BRASS;
-        c.fillRect((x - 4) | 0, (y - 3) | 0, 8, 6);
+        c.fillRect((x - 5) | 0, (y - 3) | 0, 10, 7);
         c.fillStyle = COPPER;
-        c.fillRect((x - 1) | 0, (y - 1) | 0, 4, 4);
+        c.fillRect((x - 2) | 0, (y - 1) | 0, 5, 5);
       }
     }
   }

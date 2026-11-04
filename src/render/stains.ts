@@ -2,9 +2,10 @@ import { paintBlood, paintCasing } from "../art/look";
 
 export const STAIN_CAP = 160;
 export const STAIN_LIVE_CAP = 128;
+export const STAIN_FADE_MIN = 0.28;
 export const STAIN_BLOOD = 1;
 export const STAIN_CASE = 2;
-export const BLOOD_STAIN_BASE = 8;
+export const BLOOD_STAIN_BASE = 9;
 
 const sx = new Float32Array(STAIN_CAP);
 const sy = new Float32Array(STAIN_CAP);
@@ -26,7 +27,7 @@ export function stainCount(): number {
 export function stainFade(i: number): number {
   if (i < 0 || i >= STAIN_CAP || (sk[i] ?? 0) === 0) return 0;
   const behind = (cursor - 1 - i + STAIN_CAP) % STAIN_CAP;
-  return Math.max(0.22, 1 - behind / STAIN_CAP);
+  return Math.max(STAIN_FADE_MIN, 1 - behind / STAIN_CAP);
 }
 
 function put(x: number, y: number, s: number, kind: number): void {
@@ -41,7 +42,7 @@ function put(x: number, y: number, s: number, kind: number): void {
 }
 
 export function stampBlood(x: number, y: number, salt: number): void {
-  const n = 3 + (salt & 3);
+  const n = 4 + (salt & 3);
   for (let k = 0; k < n; k++) {
     const ox = ((salt + k * 17) % 19) - 9;
     const oy = ((salt + k * 9) % 17) - 8;

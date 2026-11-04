@@ -136,32 +136,32 @@ export function paintWeaponShot(
 }
 
 export const paintFlash: FxPaint = (ctx, x, y, age, a) => {
-  if (age < 0 || age >= 10) return;
-  const t = 1 - age / 10;
+  if (age < 0 || age >= 12) return;
+  const t = 1 - age / 12;
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(a);
   ctx.globalAlpha = t;
   ctx.globalCompositeOperation = "lighter";
-  bloom(ctx, 4, 0, 22 * t + 8, "#fff8e4", "rgba(255,140,40,0.9)");
+  bloom(ctx, 4, 0, 28 * t + 10, "#fff8e4", "rgba(255,150,48,0.95)");
   ctx.beginPath();
   ctx.moveTo(0, 0);
-  ctx.lineTo(26 * t + 10, -11 * t);
-  ctx.lineTo(18 * t + 6, 0);
-  ctx.lineTo(26 * t + 10, 11 * t);
+  ctx.lineTo(32 * t + 12, -14 * t);
+  ctx.lineTo(22 * t + 8, 0);
+  ctx.lineTo(32 * t + 12, 14 * t);
   ctx.closePath();
   ctx.fillStyle = "#fff6d0";
   ctx.fill();
   ctx.beginPath();
-  ctx.moveTo(2, -6 * t);
-  ctx.lineTo(14 * t + 5, -16 * t);
-  ctx.lineTo(11 * t, -2);
+  ctx.moveTo(2, -8 * t);
+  ctx.lineTo(18 * t + 6, -20 * t);
+  ctx.lineTo(14 * t, -2);
   ctx.closePath();
   ctx.fill();
   ctx.beginPath();
-  ctx.moveTo(2, 6 * t);
-  ctx.lineTo(14 * t + 5, 16 * t);
-  ctx.lineTo(11 * t, 2);
+  ctx.moveTo(2, 8 * t);
+  ctx.lineTo(18 * t + 6, 20 * t);
+  ctx.lineTo(14 * t, 2);
   ctx.closePath();
   ctx.fill();
   ctx.restore();
