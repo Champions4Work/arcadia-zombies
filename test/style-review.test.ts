@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { createWorld } from "../src/sim/world";
 import { BRUTE_TO_HERO, FOE_TO_HERO, HERO_DRAW_SCALE, HERO_PACK_H, foeWorldH, foeWorldScale, shambleBob, walkBob } from "../src/art/look";
 import { HAZARD_MARKS } from "../src/render/ground";
-import { stampBlood, stampCasing, stainCount, resetStains, STAIN_CAP } from "../src/render/stains";
+import { stampBlood, stampCasing, stainCount, stainFade, resetStains, STAIN_CAP } from "../src/render/stains";
 import { reviewHorde, reviewWalkOn, REVIEW_HORDE, REVIEW_RING, wantsFeelShot, wantsReviewShot } from "../src/shell/review-shot";
 import { yardPropHits, YARD_CLEAR, PHONE_CAM } from "../src/render/yard-fx";
 import { playView, SEE_AXIS } from "../src/shell/play-view";
@@ -19,7 +19,8 @@ describe("visual review gates", () => {
     expect(sheet.includes('spr["x"]')).toBe(true);
     expect(sheet.includes("imageSmoothingEnabled = false")).toBe(true);
     expect(SEE_AXIS).toBe(360);
-    expect(HERO_DRAW_SCALE).toBe(1);
+    expect(HERO_DRAW_SCALE).toBe(1.25);
+    expect(HERO_DRAW_SCALE * HERO_PACK_H).toBeGreaterThanOrEqual(foeWorldH(0) * 1.25);
   });
 
   it("scales normal foes to 0.58 of hero height and brutes to 1.12x", () => {
@@ -31,7 +32,7 @@ describe("visual review gates", () => {
     expect(foeWorldScale(Z_BRUTE, 98)).toBeCloseTo((64 * 1.12) / 98);
     const look = readFileSync("src/art/look.ts", "utf8");
     expect(look.includes("export function paintRifle")).toBe(true);
-    expect(look.includes("ellipse(x, y + 3, 14, 5")).toBe(true);
+    expect(look.includes("ellipse(x, y + 3, 14 * s, 5 * s")).toBe(true);
     expect(look.includes("rgba(90,240,235,0.92)")).toBe(false);
     expect(look.includes("rgba(255,214,130,0.62)")).toBe(false);
     expect(look.includes("brightness(1.85)")).toBe(false);
@@ -182,8 +183,14 @@ describe("visual review gates", () => {
     expect(hud.includes("${w.hp}/${w.maxHp}")).toBe(false);
     const look = readFileSync("src/art/look.ts", "utf8");
     expect(look.includes("s * 4.2")).toBe(false);
-    expect(look.includes("const fade = 0.82")).toBe(true);
-    expect(look.includes("#b41c18")).toBe(true);
+    expect(look.includes("const fade = 0.6")).toBe(false);
+    expect(look.includes("0.6 + (seed & 3) * 0.05")).toBe(true);
+    expect(look.includes("#4a100e")).toBe(true);
+    expect(look.includes("#b41c18")).toBe(false);
+    expect(look.includes("#7a1410")).toBe(false);
+    const stains = readFileSync("src/render/stains.ts", "utf8");
+    expect(stains.includes("n = 2 + (salt & 3)")).toBe(true);
+    expect(stains.includes("export function stainFade")).toBe(true);
     expect(look.includes("fillRect(0, 0, 3.4, 1.4)")).toBe(true);
     expect(look.includes("fillRect(-4, -2, 11, 4.2)")).toBe(false);
     const shot = readFileSync("src/shell/review-shot.ts", "utf8");
@@ -211,6 +218,16 @@ describe("visual review gates", () => {
     expect(stainCount()).toBeGreaterThanOrEqual(2);
     for (let i = 0; i < 200; i++) stampBlood(i, i, i);
     expect(stainCount()).toBeLessThanOrEqual(STAIN_CAP);
+    expect(stainCount()).toBe(STAIN_CAP);
+    let newest = 0;
+    let oldest = 1;
+    for (let i = 0; i < STAIN_CAP; i++) {
+      const f = stainFade(i);
+      if (f > newest) newest = f;
+      if (f > 0 && f < oldest) oldest = f;
+    }
+    expect(newest).toBeGreaterThan(oldest);
+    expect(oldest).toBeGreaterThanOrEqual(0.22);
     resetStains();
     expect(stainCount()).toBe(0);
   });

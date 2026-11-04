@@ -21,6 +21,12 @@ export function stainCount(): number {
   return live;
 }
 
+export function stainFade(i: number): number {
+  if (i < 0 || i >= STAIN_CAP || (sk[i] ?? 0) === 0) return 0;
+  const behind = (cursor - 1 - i + STAIN_CAP) % STAIN_CAP;
+  return Math.max(0.22, 1 - behind / STAIN_CAP);
+}
+
 function put(x: number, y: number, s: number, kind: number): void {
   const i = cursor;
   cursor = i + 1 < STAIN_CAP ? i + 1 : 0;
@@ -32,11 +38,11 @@ function put(x: number, y: number, s: number, kind: number): void {
 }
 
 export function stampBlood(x: number, y: number, salt: number): void {
-  const n = 3 + (salt & 3);
+  const n = 2 + (salt & 3);
   for (let k = 0; k < n; k++) {
-    const ox = ((salt + k * 17) % 17) - 8;
-    const oy = ((salt + k * 9) % 15) - 7;
-    put(x + ox, y + oy, 5 + ((salt + k) & 5), STAIN_BLOOD);
+    const ox = ((salt + k * 17) % 15) - 7;
+    const oy = ((salt + k * 9) % 13) - 6;
+    put(x + ox, y + oy, 4 + ((salt + k) & 5), STAIN_BLOOD);
   }
 }
 
@@ -51,7 +57,7 @@ export function paintStains(ctx: CanvasRenderingContext2D): void {
   ctx.save();
   for (let i = 0; i < STAIN_CAP; i++) {
     const kind = sk[i] ?? 0;
-    if (kind === STAIN_BLOOD) paintBlood(ctx, sx[i] ?? 0, sy[i] ?? 0, ss[i] ?? 3);
+    if (kind === STAIN_BLOOD) paintBlood(ctx, sx[i] ?? 0, sy[i] ?? 0, ss[i] ?? 3, stainFade(i));
     else if (kind === STAIN_CASE) paintCasing(ctx, sx[i] ?? 0, sy[i] ?? 0);
   }
   ctx.restore();
