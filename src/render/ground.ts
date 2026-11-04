@@ -484,10 +484,10 @@ const TRAM_MARKS = [
 
 export function paintGround(ctx: CanvasRenderingContext2D): void {
   build();
-  const wash = bound === ZONE_BOILER ? "#3a1810" : bound === ZONE_TRAM ? "#152028" : "#24303c";
+  const wash = bound === ZONE_BOILER ? "#141210" : bound === ZONE_TRAM ? "#1c242c" : "#24303c";
   const tile = bound === ZONE_BOILER ? "tile_metal_seamless" : "tile_stone_seamless";
-  const groutInk = bound === ZONE_BOILER ? "rgba(72,28,14,0.62)" : bound === ZONE_TRAM ? "rgba(24,40,56,0.6)" : "rgba(36,48,62,0.55)";
-  const shade = bound === ZONE_BOILER ? "rgba(56,18,8,0.36)" : bound === ZONE_TRAM ? "rgba(8,18,32,0.32)" : "rgba(16,24,36,0.22)";
+  const groutInk = bound === ZONE_BOILER ? "rgba(22,20,18,0.72)" : bound === ZONE_TRAM ? "rgba(20,28,36,0.5)" : "rgba(36,48,62,0.55)";
+  const shade = bound === ZONE_BOILER ? "rgba(8,8,10,0.42)" : bound === ZONE_TRAM ? "rgba(10,16,22,0.18)" : "rgba(16,24,36,0.22)";
   ctx.fillStyle = wash;
   ctx.fillRect(0, 108, ARENA_W, ARENA_H - 108);
   tileSheet(ctx, tile, 0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);

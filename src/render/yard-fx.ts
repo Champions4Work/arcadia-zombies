@@ -82,9 +82,12 @@ const BOILER_BUILDINGS = [
 
 const BOILER_BELTS: { x: number; y: number; w: number; vert: number }[] = [];
 
-const BOILER_PIPES = [
-  { x: 296, y: 232, len: 368, vert: 0 },
-  { x: 296, y: 268, len: 368, vert: 0 },
+const BOILER_PIPES: { x: number; y: number; len: number; vert: number }[] = [];
+
+const BOILER_GLOW = [
+  { x: 332, y: 340 },
+  { x: 628, y: 340 },
+  { x: 336, y: 596 },
 ];
 
 const BOILER_PROPS: { id: string; x: number; y: number }[] = [
@@ -96,11 +99,6 @@ const BOILER_PROPS: { id: string; x: number; y: number }[] = [
   { id: "lamp", x: 352, y: 208 },
   { id: "lamp", x: 480, y: 206 },
   { id: "lamp", x: 608, y: 208 },
-  { id: "breakable_boiler", x: 400, y: 248 },
-  { id: "pipes_blue_tank", x: 480, y: 246 },
-  { id: "breakable_boiler", x: 560, y: 248 },
-  { id: "valve_steam", x: 440, y: 278 },
-  { id: "valve_steam", x: 520, y: 278 },
   { id: "breakable_boiler", x: 332, y: 340 },
   { id: "valve_steam", x: 336, y: 386 },
   { id: "pipes_blue_tank", x: 334, y: 430 },
@@ -134,9 +132,9 @@ const BOILER_POOLS = [
 ];
 
 const BOILER_STEAM = [
-  { x: 424, y: 232 },
-  { x: 480, y: 268 },
-  { x: 536, y: 232 },
+  { x: 332, y: 328 },
+  { x: 628, y: 328 },
+  { x: 336, y: 584 },
 ];
 
 const TRAM_BUILDINGS = [
@@ -145,14 +143,14 @@ const TRAM_BUILDINGS = [
   { x: 620, y: 210 },
 ];
 
-const TRAM_BELTS = [
-  { x: 296, y: 250, w: 368, vert: 0 },
-  { x: 296, y: 300, w: 368, vert: 0 },
+const TRAM_BELTS: { x: number; y: number; w: number; vert: number }[] = [];
+
+const TRAM_CARS = [
+  { x: 348, y: 500 },
+  { x: 612, y: 500 },
 ];
 
-const TRAM_PIPES = [
-  { x: 296, y: 232, len: 368, vert: 0 },
-];
+const TRAM_PIPES: { x: number; y: number; len: number; vert: number }[] = [];
 
 const TRAM_PROPS: { id: string; x: number; y: number }[] = [
   { id: "window_lit", x: 328, y: 188 },
@@ -163,11 +161,6 @@ const TRAM_PROPS: { id: string; x: number; y: number }[] = [
   { id: "lamp", x: 348, y: 204 },
   { id: "lamp", x: 480, y: 202 },
   { id: "lamp", x: 612, y: 204 },
-  { id: "crate_stack", x: 400, y: 248 },
-  { id: "crate_stack", x: 480, y: 246 },
-  { id: "crate_stack", x: 560, y: 248 },
-  { id: "decal_hazard", x: 440, y: 278 },
-  { id: "decal_hazard", x: 520, y: 278 },
   { id: "crate_stack", x: 332, y: 340 },
   { id: "crate", x: 336, y: 368 },
   { id: "crate_stack", x: 332, y: 396 },
@@ -200,7 +193,8 @@ const TRAM_POOLS = [
 ];
 
 const TRAM_STEAM = [
-  { x: 424, y: 232 },
+  { x: 348, y: 488 },
+  { x: 612, y: 488 },
 ];
 
 let yardBound = ZONE_BRASS;
@@ -505,6 +499,66 @@ function paintCrossBelt(
   blitScaled(ctx, "crate", cx, cy, 1.35);
 }
 
+export const HERO_X = 480;
+export const HERO_Y = 320;
+export const HERO_R = 120;
+
+function closeToHero(x: number, y: number): boolean {
+  const dx = x - HERO_X;
+  const dy = y - HERO_Y;
+  return dx * dx + dy * dy < HERO_R * HERO_R;
+}
+
+export function heroCrowd(): number {
+  let n = 0;
+  for (const p of propsOf()) {
+    if (p.y <= 220) continue;
+    if (closeToHero(p.x, p.y)) n++;
+  }
+  for (const belt of beltsOf()) {
+    const x1 = belt.x + belt.w;
+    for (let x = belt.x; x <= x1; x += 16) if (closeToHero(x, belt.y)) n++;
+  }
+  for (const pipe of pipesOf()) {
+    if (pipe.y <= 236) continue;
+    const x1 = pipe.x + pipe.len;
+    for (let x = pipe.x; x <= x1; x += 16) if (closeToHero(x, pipe.y)) n++;
+  }
+  for (const vent of ventsOf()) if (closeToHero(vent.x, vent.y)) n++;
+  for (const tank of tanksOf()) {
+    if (tank.y <= 220) continue;
+    if (closeToHero(tank.x, tank.y)) n++;
+  }
+  if (yardBound === ZONE_TRAM) {
+    for (const car of TRAM_CARS) if (closeToHero(car.x, car.y)) n++;
+  }
+  return n;
+}
+
+function furnaceGlow(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+  const g = ctx.createRadialGradient(x, y - 10, 4, x, y, 64);
+  g.addColorStop(0, "rgba(255,150,40,0.62)");
+  g.addColorStop(0.45, "rgba(255,90,16,0.24)");
+  g.addColorStop(1, "rgba(20,8,0,0)");
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.ellipse(x, y - 4, 58, 34, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function paintTramCar(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+  paintShadow(ctx, x, y, 48, 8);
+  blitScaled(ctx, "conveyor", x, y, 1.2);
+  blitSheet(ctx, "crate_stack", x - 22, y - 10);
+  blitSheet(ctx, "crate_stack", x + 18, y - 10);
+  blitSheet(ctx, "window_lit", x - 12, y - 30);
+  blitSheet(ctx, "window_lit", x + 14, y - 30);
+  blitSheet(ctx, "lamp", x + 30, y - 8);
+}
+
 export function yardPropHits(x0: number, y0: number, x1: number, y1: number): number {
   let n = 0;
   for (const b of buildingsOf()) {
@@ -518,6 +572,16 @@ export function yardPropHits(x0: number, y0: number, x1: number, y1: number): nu
   }
   for (const pipe of pipesOf()) {
     if (pipe.x >= x0 && pipe.x <= x1 && pipe.y >= y0 && pipe.y <= y1) n++;
+  }
+  if (yardBound === ZONE_TRAM) {
+    for (const car of TRAM_CARS) {
+      if (car.x >= x0 && car.x <= x1 && car.y >= y0 && car.y <= y1) n++;
+    }
+  }
+  if (yardBound === ZONE_BOILER) {
+    for (const glow of BOILER_GLOW) {
+      if (glow.x >= x0 && glow.x <= x1 && glow.y >= y0 && glow.y <= y1) n++;
+    }
   }
   return n;
 }
@@ -536,17 +600,6 @@ export function paintYardLive(
     lampRay(ctx, pool.x, pool.y);
   }
   paintBrickWall(ctx);
-  if (yardBound === ZONE_BOILER) {
-    ctx.fillStyle = "rgba(40,12,8,0.28)";
-    ctx.fillRect(296, 176, 368, 52);
-    ctx.fillStyle = "rgba(110,36,12,0.26)";
-    ctx.fillRect(0, 112, 960, 528);
-  } else if (yardBound === ZONE_TRAM) {
-    ctx.fillStyle = "rgba(16,24,36,0.26)";
-    ctx.fillRect(296, 176, 368, 52);
-    ctx.fillStyle = "rgba(12,40,64,0.26)";
-    ctx.fillRect(0, 112, 960, 528);
-  }
   for (const run of pipesOf()) {
     if (!visible(run.x, run.y, camX, camY, vw, vh, run.len + 20)) continue;
     paintCrossPipe(ctx, run.x, run.y, run.len, tick);
@@ -568,10 +621,22 @@ export function paintYardLive(
     if (!visible(f.x, f.y, camX, camY, vw, vh, 60)) continue;
     blitSheet(ctx, "lamp", f.x, f.y);
   }
+  if (yardBound === ZONE_BOILER) {
+    for (const glow of BOILER_GLOW) {
+      if (!visible(glow.x, glow.y, camX, camY, vw, vh, 80)) continue;
+      furnaceGlow(ctx, glow.x, glow.y);
+    }
+  }
   for (const p of propsOf()) {
     if (!visible(p.x, p.y, camX, camY, vw, vh, 90)) continue;
     paintShadow(ctx, p.x, p.y, 12, 4);
     blitSheet(ctx, p.id, p.x, p.y);
+  }
+  if (yardBound === ZONE_TRAM) {
+    for (const car of TRAM_CARS) {
+      if (!visible(car.x, car.y, camX, camY, vw, vh, 90)) continue;
+      paintTramCar(ctx, car.x, car.y);
+    }
   }
   const belts = beltsOf();
   for (let i = 0; i < belts.length; i++) {

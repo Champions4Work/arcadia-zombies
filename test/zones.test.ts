@@ -10,7 +10,7 @@ import {
   zoneTitleAt,
 } from "../src/sim/zones";
 import { bindGround, groundKind, KIND_BRASS, KIND_BRASS_W, KIND_RAIL_H, KIND_RAIL_V, KIND_VENT } from "../src/render/ground";
-import { bindYard, yardPropHits, YARD_CLEAR, PHONE_CAM } from "../src/render/yard-fx";
+import { bindYard, heroCrowd, yardPropHits, YARD_CLEAR, PHONE_CAM } from "../src/render/yard-fx";
 import { reviewHorde, reviewZoneFromSearch } from "../src/shell/review-shot";
 
 function stubCtx(texts: string[]): CanvasRenderingContext2D {
@@ -180,9 +180,19 @@ describe("wave districts", () => {
     expect(tram.includes("crate_stack")).toBe(true);
     expect(tram.includes("decal_hazard")).toBe(true);
     expect(tram.includes("conveyor")).toBe(true);
+    expect(yard.includes("function paintTramCar")).toBe(true);
+    expect(yard.includes("function furnaceGlow")).toBe(true);
+    expect(yard.includes("rgba(110,36,12")).toBe(false);
     expect(yard.includes("#1a0c08")).toBe(true);
     expect(yard.includes("#141820")).toBe(true);
     expect(yard.includes("#2a1812")).toBe(true);
+  });
+
+  it("keeps the hero spawn clear in the later districts", () => {
+    bindYard(ZONE_BOILER);
+    expect(heroCrowd()).toBe(0);
+    bindYard(ZONE_TRAM);
+    expect(heroCrowd()).toBe(0);
   });
 
   it("keeps the spawn floor open and the walls dressed in every district", () => {
