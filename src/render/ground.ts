@@ -28,9 +28,9 @@ const ROWS = (ARENA_H / TILE) | 0;
 const FLOOR0 = 7;
 const MAX_FEAT = 80;
 const MAX_VENT = 16;
-const STONE = ["#6a5848", "#5c4c3e", "#7a6856", "#4e4238", "#8a7462", "#3e342c"];
-const STONE_D = ["#3a322c", "#2e2824", "#463830", "#322820"];
-const STONE_W = ["#4a5240", "#3e4838", "#5a6250", "#364034"];
+const STONE = ["#4a3e34", "#40362e", "#56483c", "#362e28", "#5c4e42", "#2c2620"];
+const STONE_D = ["#2a2420", "#221c1a", "#322820", "#241c18"];
+const STONE_W = ["#3a3e34", "#32362c", "#44483c", "#2c3028"];
 const cells = new Uint8Array(COLS * ROWS);
 const fk = new Uint8Array(MAX_FEAT);
 const fx = new Float32Array(MAX_FEAT);
@@ -250,11 +250,11 @@ function cobbleField(ctx: CanvasRenderingContext2D): void {
       const sx = x + ox;
       const h = hash(sx, y);
       const pal = h % 17 < 2 ? STONE_W : h % 17 < 6 ? STONE_D : STONE;
-      ctx.fillStyle = pal[h % pal.length] ?? "#6a5848";
+      ctx.fillStyle = pal[h % pal.length] ?? "#4a3e34";
       ctx.fillRect(sx + 1, y + 1, 8 + (h & 1), 5);
-      ctx.fillStyle = "rgba(255,236,210,0.12)";
+      ctx.fillStyle = "rgba(255,236,210,0.05)";
       ctx.fillRect(sx + 1, y + 1, 8, 1);
-      ctx.fillStyle = "rgba(0,0,0,0.22)";
+      ctx.fillStyle = "rgba(0,0,0,0.28)";
       ctx.fillRect(sx + 1, y + 5, 8, 1);
     }
   }
@@ -263,21 +263,21 @@ function cobbleField(ctx: CanvasRenderingContext2D): void {
 function plate(ctx: CanvasRenderingContext2D, x: number, y: number, worn: number): void {
   ctx.fillStyle = "#4a2c08";
   ctx.fillRect(x, y, TILE, TILE);
-  ctx.fillStyle = worn ? "#8a7040" : "#c49038";
+  ctx.fillStyle = worn ? "#6a5428" : "#8a6830";
   ctx.fillRect(x + 1, y + 1, 14, 14);
-  ctx.fillStyle = "rgba(255,241,194,0.38)";
+  ctx.fillStyle = "rgba(255,241,194,0.14)";
   ctx.fillRect(x + 2, y + 2, 12, 2);
-  ctx.fillStyle = "rgba(0,0,0,0.24)";
+  ctx.fillStyle = "rgba(0,0,0,0.32)";
   ctx.fillRect(x + 2, y + 12, 12, 2);
   if ((hash(x, y) & 3) === 0) {
-    ctx.strokeStyle = "rgba(255,241,194,0.16)";
+    ctx.strokeStyle = "rgba(255,241,194,0.08)";
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(x + 4, y + 4);
     ctx.lineTo(x + 12, y + 12);
     ctx.stroke();
   }
-  ctx.fillStyle = "#fff1c2";
+  ctx.fillStyle = "#c4a878";
   ctx.fillRect(x + 2, y + 2, 1.6, 1.6);
   ctx.fillRect(x + 12, y + 2, 1.6, 1.6);
   ctx.fillRect(x + 2, y + 12, 1.6, 1.6);
@@ -291,18 +291,18 @@ function rail(ctx: CanvasRenderingContext2D, x: number, y: number, vert: number)
   if (vert) {
     ctx.fillRect(x + 1, y + 1, 4, 14);
     ctx.fillRect(x + 11, y + 1, 4, 14);
-    ctx.fillStyle = "#c8d4de";
+    ctx.fillStyle = "#8a96a0";
     ctx.fillRect(x + 5, y, 2, TILE);
     ctx.fillRect(x + 9, y, 2, TILE);
-    ctx.fillStyle = "#f2f7fb";
+    ctx.fillStyle = "#b8c0c6";
     ctx.fillRect(x + 5, y, 1, TILE);
   } else {
     ctx.fillRect(x + 1, y + 1, 14, 4);
     ctx.fillRect(x + 1, y + 11, 14, 4);
-    ctx.fillStyle = "#c8d4de";
+    ctx.fillStyle = "#8a96a0";
     ctx.fillRect(x, y + 5, TILE, 2);
     ctx.fillRect(x, y + 9, TILE, 2);
-    ctx.fillStyle = "#f2f7fb";
+    ctx.fillStyle = "#b8c0c6";
     ctx.fillRect(x, y + 5, TILE, 1);
   }
 }
@@ -312,7 +312,7 @@ function grate(ctx: CanvasRenderingContext2D, x: number, y: number, vent: number
   ctx.fillRect(x, y, TILE, TILE);
   ctx.fillStyle = "#3a2a18";
   ctx.fillRect(x + 2, y + 2, 12, 12);
-  ctx.fillStyle = "#c49038";
+  ctx.fillStyle = "#8a6830";
   for (let i = 0; i < 4; i++) ctx.fillRect(x + 3, y + 3 + i * 3, 10, 1.2);
   if (!vent) return;
   ctx.fillStyle = "#0c0806";
@@ -329,7 +329,7 @@ function rubbleTile(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   ctx.fillRect(x + 2 + (h % 6), y + 3 + ((h >>> 3) % 5), 5, 4);
   ctx.fillStyle = "#8a7462";
   ctx.fillRect(x + 7 + ((h >>> 5) % 4), y + 8, 4, 3);
-  ctx.fillStyle = "#c49038";
+  ctx.fillStyle = "#8a6830";
   ctx.fillRect(x + 4 + ((h >>> 7) % 7), y + 6, 2, 2);
 }
 
@@ -384,7 +384,7 @@ function rubblePile(ctx: CanvasRenderingContext2D, x: number, y: number, s: numb
     ctx.fillStyle = i & 1 ? "#6a5848" : "#4e4238";
     ctx.fillRect(x + ox * 2, y + oy * 2, 4 + (i & 2), 3 + (i & 1));
   }
-  ctx.fillStyle = "#a87828";
+  ctx.fillStyle = "#7a5a20";
   ctx.fillRect(x + (s & 3), y - 1, 3, 2);
 }
 
@@ -408,8 +408,8 @@ function lamp(ctx: CanvasRenderingContext2D, x: number, y: number): void {
 
 function pool(ctx: CanvasRenderingContext2D, x: number, y: number, r: number): void {
   const g = ctx.createRadialGradient(x, y, 4, x, y, r);
-  g.addColorStop(0, "rgba(255,180,70,0.3)");
-  g.addColorStop(0.45, "rgba(255,140,40,0.12)");
+  g.addColorStop(0, "rgba(255,180,70,0.16)");
+  g.addColorStop(0.45, "rgba(255,140,40,0.06)");
   g.addColorStop(1, "rgba(255,120,30,0)");
   ctx.fillStyle = g;
   ctx.beginPath();

@@ -9,7 +9,12 @@ import { fieldPlan } from "../src/render/draw";
 import { fogCoverBox } from "../src/render/map-events";
 import { hurtAlpha } from "../src/render/veil";
 import { H, W } from "../src/sim/types";
-import { blurbFor, difficultyLabel, formatClock, pauseHit, weaponBadge, PAUSE_X, PAUSE_Y } from "../src/render/hud";
+import { blurbFor, difficultyLabel, drawHud, formatClock, pauseHit, weaponBadge, PAUSE_X, PAUSE_Y } from "../src/render/hud";
+import { drawWeaponRack, WPN_TAGS } from "../src/render/weapons";
+import { bindHud, layoutHud } from "../src/shell/hud-layout";
+import { computeFit } from "../src/shell/fit";
+import { playView } from "../src/shell/play-view";
+import { readViewport, ZERO_INSETS } from "../src/shell/viewport";
 import type { BulletPaint, Glyph } from "../src/render/plugins";
 import type { World } from "../src/sim/types";
 
@@ -81,6 +86,63 @@ describe("actor plugins", () => {
     expect(n).toBe(1);
     paintLayers(ctx, w, LAYER_BACK);
     expect(n).toBe(1);
+  });
+});
+
+function stubCtx(texts: string[]): CanvasRenderingContext2D {
+  const grad = { addColorStop() {} };
+  const noop = () => {};
+  const ctx: Record<string, unknown> = {
+    canvas: { width: 390 },
+    fillStyle: "",
+    strokeStyle: "",
+    lineWidth: 1,
+    font: "",
+    textAlign: "left",
+    textBaseline: "alphabetic",
+    globalAlpha: 1,
+    lineJoin: "round",
+    lineCap: "round",
+    fillText(text: string) { texts.push(text); },
+    strokeText(text: string) { texts.push(text); },
+    measureText(text: string) { return { width: String(text).length * 6 }; },
+    createLinearGradient() { return grad; },
+    createRadialGradient() { return grad; },
+  };
+  return new Proxy(ctx, {
+    get(target, key) {
+      if (key in target) return target[key as string];
+      return noop;
+    },
+    set(target, key, value) {
+      target[key as string] = value;
+      return true;
+    },
+  }) as unknown as CanvasRenderingContext2D;
+}
+
+describe("weapon rack", () => {
+  it("paints icon slots and never writes the old text tags", () => {
+    const texts: string[] = [];
+    const vp = readViewport({ innerWidth: 390, innerHeight: 844, devicePixelRatio: 3 }, ZERO_INSETS);
+    const pv = playView(vp.cssW, vp.cssH);
+    const fit = computeFit(vp.cssW, vp.cssH, vp.dpr, pv.viewW, pv.viewH, ZERO_INSETS);
+    bindHud(layoutHud(vp, fit));
+    drawWeaponRack(stubCtx(texts), createWorld(1));
+    expect(texts.some((t) => WPN_TAGS.includes(t))).toBe(false);
+    expect(texts.join("")).not.toMatch(/RIVET|SHOT|FLAME|HARP|MORT/);
+  });
+
+  it("keeps the live HUD free of the old GEARHEART and DIFFICULTY plates", () => {
+    const texts: string[] = [];
+    const vp = readViewport({ innerWidth: 390, innerHeight: 844, devicePixelRatio: 3 }, ZERO_INSETS);
+    const pv = playView(vp.cssW, vp.cssH);
+    const fit = computeFit(vp.cssW, vp.cssH, vp.dpr, pv.viewW, pv.viewH, ZERO_INSETS);
+    bindHud(layoutHud(vp, fit));
+    drawHud(stubCtx(texts), createWorld(1));
+    expect(texts).not.toContain("GEARHEART");
+    expect(texts).not.toContain("DIFFICULTY");
+    expect(texts).not.toContain("YARD");
   });
 });
 

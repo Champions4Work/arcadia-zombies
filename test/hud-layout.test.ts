@@ -2,7 +2,10 @@ import { computeFit } from "../src/shell/fit";
 import {
   boxInside,
   boxesOverlap,
+  circleBox,
+  clampStick,
   hudBoxes,
+  hudHitAt,
   layoutHud,
   offerCards,
   offerHit,
@@ -13,24 +16,34 @@ import { playChromeHidden, showMenuChrome } from "../src/shell/play-chrome";
 import { PHASE_PLAY, PHASE_TITLE } from "../src/shell/session";
 import { playView } from "../src/shell/play-view";
 import { phoneChrome } from "../src/shell/phone";
-import { readViewport, ZERO_INSETS } from "../src/shell/viewport";
+import { readViewport, ZERO_INSETS, type Insets } from "../src/shell/viewport";
 
 const PHONES = [
-  { w: 390, h: 844, dpr: 3 },
-  { w: 844, h: 390, dpr: 3 },
+  { w: 390, h: 844, dpr: 3, safe: ZERO_INSETS },
+  { w: 844, h: 390, dpr: 3, safe: ZERO_INSETS },
+  { w: 430, h: 932, dpr: 3, safe: { l: 0, r: 0, t: 47, b: 78 } },
+  { w: 390, h: 844, dpr: 3, safe: { l: 0, r: 0, t: 47, b: 78 } },
+  { w: 1280, h: 800, dpr: 1, safe: ZERO_INSETS },
 ] as const;
 
-function scene(w: number, h: number, dpr: number) {
-  const vp = readViewport({ innerWidth: w, innerHeight: h, devicePixelRatio: dpr }, ZERO_INSETS);
+function scene(w: number, h: number, dpr: number, safe: Insets = ZERO_INSETS) {
+  const vp = readViewport({ innerWidth: w, innerHeight: h, devicePixelRatio: dpr }, safe);
   const pv = playView(vp.cssW, vp.cssH);
   const fit = computeFit(vp.cssW, vp.cssH, vp.dpr, pv.viewW, pv.viewH, ZERO_INSETS);
   const hud = layoutHud(vp, fit);
   return { vp, fit, hud, pv };
 }
 
+function restJoy(w: number, h: number, dpr: number, safe: Insets) {
+  const { vp, hud } = scene(w, h, dpr, safe);
+  const frame = stickFrame(hud);
+  const chrome = phoneChrome(vp.cssW, vp.cssH, 0, 0, frame);
+  return { hud, frame, chrome, joy: circleBox({ x: chrome.restX, y: chrome.restY, r: chrome.joyR }) };
+}
+
 describe("viewport chrome", () => {
   it("fills at least 90% of 390x844 and 844x390 with HUD overlaid and no overlaps", () => {
-    for (const phone of PHONES) {
+    for (const phone of PHONES.slice(0, 2)) {
       const { vp, fit, hud } = scene(phone.w, phone.h, phone.dpr);
       expect(fit.cssW).toBe(vp.cssW);
       expect(fit.cssH).toBe(vp.cssH);
@@ -53,16 +66,44 @@ describe("viewport chrome", () => {
       expect(hud.xp.y + hud.xp.h).toBeCloseTo(vp.cssH - vp.safe.b, 0);
       expect(hud.hero.x).toBeLessThan(vp.cssW * 0.4);
       const frame = stickFrame(hud);
-      const chrome = phoneChrome(vp.cssW, vp.cssH, vp.safe.l, vp.safe.b, frame);
-      const joy = {
-        x: chrome.restX - chrome.joyR,
-        y: chrome.restY - chrome.joyR,
-        w: chrome.joyR * 2,
-        h: chrome.joyR * 2,
-      };
+      const chrome = phoneChrome(vp.cssW, vp.cssH, 0, 0, frame);
+      const joy = circleBox({ x: chrome.restX, y: chrome.restY, r: chrome.joyR });
       expect(boxInside(joy, { x: 0, y: 0, w: vp.cssW, h: vp.cssH }, 1)).toBe(true);
       expect(joy.y + joy.h).toBeLessThanOrEqual(hud.xp.y + 1);
     }
+  });
+
+  it("keeps every HUD rect off every other HUD rect and off the rest stick", () => {
+    for (const phone of PHONES) {
+      const { hud, frame, joy } = restJoy(phone.w, phone.h, phone.dpr, phone.safe);
+      const boxes = hudBoxes(hud);
+      for (const box of boxes) expect(boxInside(box, hud.view, 0.5)).toBe(true);
+      for (let i = 0; i < boxes.length; i++) {
+        for (let j = i + 1; j < boxes.length; j++) {
+          expect(boxesOverlap(boxes[i]!, boxes[j]!)).toBe(false);
+        }
+      }
+      expect(boxInside(joy, frame, 1)).toBe(true);
+      for (const box of boxes) expect(boxesOverlap(joy, box)).toBe(false);
+      expect(hud.hero.h).toBeLessThanOrEqual(56);
+      expect(hud.difficulty.h).toBeLessThanOrEqual(32);
+      expect(hud.weapons.h).toBeLessThanOrEqual(40);
+      expect(hud.minimap.h).toBeLessThanOrEqual(32);
+      expect(hud.ability.w).toBeGreaterThanOrEqual(48);
+      expect(hud.ability.h).toBeGreaterThanOrEqual(48);
+      expect(hud.hero.y).toBeGreaterThan(hud.view.h * 0.55);
+      expect(hud.difficulty.y).toBeLessThan(hud.view.h * 0.2);
+    }
+  });
+
+  it("clamps a floating stick into the playfield so its disc never covers HUD", () => {
+    const { hud, frame, chrome } = restJoy(390, 844, 3, { l: 0, r: 0, t: 47, b: 78 });
+    const origin = clampStick(hud.hero.x + 4, hud.hero.y + 4, chrome.joyR, frame);
+    const joy = circleBox({ x: origin.x, y: origin.y, r: chrome.joyR });
+    expect(boxInside(joy, frame, 1)).toBe(true);
+    for (const box of hudBoxes(hud)) expect(boxesOverlap(joy, box)).toBe(false);
+    expect(hudHitAt(hud, hud.hero.x + 2, hud.hero.y + 2)).toBe(true);
+    expect(hudHitAt(hud, frame.x + frame.w / 2, frame.y + frame.h / 2)).toBe(false);
   });
 
   it("hides mute and the volume slider while playing", () => {
