@@ -1,5 +1,6 @@
+import { blitSheetFit } from "../art/sheet";
 import { currentHud } from "../shell/hud-layout";
-import { BRASS_HI, COPPER, IRON, SOOT, STEAM_DIM } from "../shell/theme";
+import { COPPER, SOOT } from "../shell/theme";
 import { LAYER_HUD, registerFx, registerLayer } from "./plugins";
 import {
   FX_BOOM, UPG_WPN_FLAME, UPG_WPN_HARP, UPG_WPN_MORT, UPG_WPN_RIVET, UPG_WPN_SHOT,
@@ -40,11 +41,7 @@ export function drawWeaponRack(c: CanvasRenderingContext2D, w: World): void {
     const lv = w.upgrades[id] ?? 0;
     const x = x0 + i * (slot + gap);
     const y = box.y + Math.max(0, (box.h - slot) / 2);
-    c.fillStyle = lv > 0 ? IRON : SOOT;
-    c.fillRect(x, y, slot, slot);
-    c.strokeStyle = lv > 0 ? BRASS_HI : STEAM_DIM;
-    c.lineWidth = 1.6;
-    c.strokeRect(x + 0.5, y + 0.5, slot - 1, slot - 1);
+    blitSheetFit(c, "power_slot", x, y, slot, slot);
     drawIcon(c, id, x + slot / 2, y + slot * 0.42, Math.max(7, slot * 0.36));
     const pipW = Math.max(2.2, (slot - 8) / 5 - 1);
     for (let p = 0; p < 5; p++) {
@@ -52,6 +49,7 @@ export function drawWeaponRack(c: CanvasRenderingContext2D, w: World): void {
       c.fillRect(x + 4 + p * (pipW + 1), y + slot - 6, pipW, 3);
     }
     c.strokeStyle = OUTLINE;
+    c.lineWidth = 1.2;
     c.strokeRect(x + 4, y + slot - 6, slot - 8, 3);
   }
   c.restore();

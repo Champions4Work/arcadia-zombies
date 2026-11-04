@@ -1,27 +1,18 @@
-# Art bible
+# Arcadia look
 
-`docs/DESIGN.md` owns HUD slots, systems order, and the product lock. This file owns the look, the palette, and the `az_art_v2` blit list. If the two files disagree on slots or resources, `docs/DESIGN.md` wins.
-
-## Look
-
-Painted, lit steampunk at dusk. Dark stone and iron. Amber lamps. Cyan tanks. One goggled brass hunter in an open center. A dense, readable horde.
-
-Do not ship a flat grey yard, a pixel-plate HUD, a cream joystick, or a second live resource bar.
+Locked to `docs/target_look.jpg`, `docs/target_look2.png`, and the approved `art/az_art_v2` pack. Those frames and sprites are the art bible. New colors, scales, or HUD geometry do not land unless this file changes in the same change.
 
 ## References
 
-Review size is 390x844 CSS pixels.
+**Image 1** is the phone composition: dusk stone yard, warm amber lamps, one goggled hunter in the open center, slim top wave pill, heart ring bottom-left, five power slots, round ultimate bottom-right, thin XP bar, empty center.
 
-- `docs/target_look.jpg` is image 1. Phone composition. Wide amber rank bar. Heart, five power slots, ultimate, and XP.
-- `docs/target_look2.png` is image 2. World density and brass chrome. Yellow conveyor chevrons. Blue pipes. Lit buildings.
+**Image 2** is the polish and world density: framed brass panels, hero portrait with HP and energy bars, chapter title, wave and kill counts, circular minimap, objectives, dense zombie hordes, blood decals, glowing pickups, shell casings, muzzle flash, blue energy tanks, conveyor arrows.
 
-Those two files land with [pull request 46](https://github.com/Champions4Work/arcadia-zombies/pull/46) until they are on `main`. Capture against the same frames on that pull request until then.
-
-Image 2 paints a hero portrait with HP and energy bars. That second bar is paint. Do not add an energy pool.
+Phone HUD keeps image 1 geometry. Desktop and chrome borrow image 2 frames, icons with counts, glow, and depth.
 
 ## Palette
 
-Sampled from both frames. Night stone stays darker than the hero. Health is cyan. Lamps and XP are amber. Danger is one red.
+Sampled from both frames. Night stone, iron, leather, and amber carry the yard. Health is cyan. Energy tanks are the same cyan. One danger red. XP is lamp amber.
 
 | Role | Hex | Key |
 | --- | --- | --- |
@@ -55,87 +46,62 @@ Sampled from both frames. Night stone stays darker than the hero. Health is cyan
 | Black | `#080604` | `o` |
 | Cyan | `#7ae0d4` | `a` |
 
-Sprite sources use only these hexes.
+Sprite sources and theme tokens use only these hexes. `test/palette.test.ts` fails on any other catalog key.
 
-## Pack paths
+## Light
 
-Source PNGs live in `art/az_art_v2/`. The manifest is `art/az_art_v2/manifest.json`. Hero height in the source pack is 128 px.
+Key light from above. Upper faces catch amber. Soft elliptical contact shadows. Lamps throw amber discs. Energy tanks throw cyan discs. A radial vignette holds the corners. Blood sits as dark rust stains, never a cartoon spray.
 
-Pull request 46 packs those PNGs to these files:
+## Actors
 
-- `src/art/packed/actors.webp`
-- `src/art/packed/world.webp`
-- `src/art/packed/hud.webp`
-- `src/art/packed/tile_stone_seamless.webp`
-- `src/art/packed/tile_metal_seamless.webp`
-- `src/art/packed/pack.ts`
+- One signature hero: goggled helm, leather coat, brass rifle, amber muzzle flash, a cyan foot ring when moving.
+- Kits recolor leather and metal. They keep the same silhouette.
+- Common foes are hunched dark zombies, readable at a glance.
+- Elites and the Clockwork Tank read as heavier iron, spikes optional.
+- Pickups glow. Spent casings are tiny brass ticks.
 
-The packer on that branch is `scripts/pack-art.py`. Blit the packed frame. Do not redraw a packed sprite in code.
+## Ground
 
-## HUD sprites
+Dark brick and flagstone. Rails are dull iron with chevron arrows. Crates, gears, pipes, lamp posts, and cyan tanks sit as props. The floor stays darker than the hero.
 
-Phone slots live in `docs/DESIGN.md`. Blit these frames into those slots.
+## HUD
 
-| Slot | Sprite |
-| --- | --- |
-| HP heart ring | `heart_ring` |
-| Power-up tray, five discs | `power_slot` |
-| Ultimate ring | `ultimate_button` |
-| Full-width XP bar | `xp_bar_frame` |
-| Minimap, top-left | `minimap_frame` |
-| Objectives, top-right | `objectives_panel` |
+Phone (image 1), with image 2 frames:
 
-Optional brass frames: `panel_frame_glow`, `panel_frame_gears`, `panel_frame_pipes`, `panel_frame_small`, `ring_frame_a`, `ring_frame_b`.
+- Slim top bar. Brass-framed wave / chapter pill. Clock and kills on the right with icons. Pause at the safe corner.
+- Top left: circular minimap with a gold rim. A small portrait and dual bars (HP, energy) sit on that cluster without crossing the center.
+- Bottom left: cyan heart ring.
+- Bottom center: five round power slots with counts.
+- Bottom right: large round ultimate.
+- Thin full-width XP bar on the bottom safe edge, LV on the right.
+- Empty center playfield. No resting joystick.
+- Objectives stay off the phone center; they may dock under the top-right cluster on a wide view.
+- Movement is drag-anywhere. A stick appears only while a finger is down, above the XP bar.
 
-The wide amber rank bar on image 1 has no pack frame yet. Draw that bar to match image 1. Do not replace it with a slim pill.
+## Type and chrome
 
-Do not blit a second resource bar.
+Clean system sans. Thin, tracked, uppercase. Glass discs and brass-framed pills. Soft amber or cyan glow. No square pixel plates. No giant cream joystick.
 
-## World sprites
+## Art pack
 
-| Need | Sprites |
-| --- | --- |
-| Steam valves and blue liquid | `valve_steam`, `pipes_blue_tank`, `steam_1` through `steam_4`, `blue_glow`, `blue_puddle` |
-| Belts and conveyors | `conveyor` with yellow chevrons. Belts drop upgrade crates. |
-| Lit spawn buildings | `building_wall_door`, `window_lit`, `lamp` |
-| Crates and breakables | `crate`, `crate_stack`, `barrel`, `breakable_boiler`, `breakable_gear_pylon` |
-| Vents with slowdown | `decal_vent`, `decal_grate`, `decal_hazard` |
-| Floor | `tile_stone_seamless`, `tile_metal_seamless` |
+Gameplay sprites come from `art/az_art_v2` (the approved 44-PNG pack, hero = 128px). `scripts/pack-art.py` converts them to webp atlases in `src/art/packed`. Code adds walk bob, lean, left-flip, amber floor tint, additive lamp pools, steam frame cycling, a dark vignette, and a warm multiply grade. Do not replace a packed sprite with a code-drawn stand-in.
 
-## Actor sprites
+## Scale and budget
 
-| Need | Sprites |
-| --- | --- |
-| Hunter | `hero_idle`, `hero_walk_1` through `hero_walk_4` |
-| Horde | `zombie_worker`, `zombie_crawler`, `zombie_tubes`, `zombie_bloater`, `brute` |
+The gzip checker in `scripts/size.mjs` is 220 KB. The old 124 KB cap was for code-drawn pixels. The packed webp atlases are already compressed, so they add nearly their raw size, about 61 KB, on top of the sim and shell. That is why the budget moved. Re-run the packer before changing the number.
 
-Hits leave rust blood. Shots throw brass casings and an amber muzzle.
+## Acceptance
 
-## Ten-point check
+Each item must be visible in the 390×844 and 1280×800 screenshots shipped with the change. Scope order if the gzip budget is tight: world props and lighting, then HUD, then effects. Later PRs may add density; they still show the same side-by-side with the reference frames.
 
-A look-changing shot is unfinished if any row is missing.
+1. Pipes with glowing blue liquid tanks, valves venting animated steam puffs.
+2. Conveyor belts with moving arrows that deliver power-up crates and upgrades.
+3. Lit buildings with warm windows, banners, and lamps casting light pools. Zombies read as leaving building doorways.
+4. Crates, barrels, and props around the yard. Odd brass structures are marked as future breakables.
+5. Floor vents keep the vent slowdown mechanic. Grates carry hazard stripes.
+6. Objectives panel top-right (ACTIVATE THE STEAM GATE, HOLD THE AREA timer, Survive all waves) plus a wave counter and kill count.
+7. Minimap top-left, next to the hero portrait.
+8. Health keeps our heart-ring design. The old energy bar is the power-up / ultimate ring.
+9. XP bar full width at the bottom with an LV label.
+10. Dense readable zombie hordes, blood decals, shell casings, muzzle flash, and a hero clearly shooting a signature gun.
 
-1. Steam valves and blue liquid pipes. Blit `valve_steam` and `pipes_blue_tank`. Cycle the steam frames.
-2. Belts and conveyors deliver power-ups. Blit `conveyor` with yellow chevrons. Drop crates onto the yard.
-3. Lit buildings that zombies spawn from. Blit `building_wall_door`, `window_lit`, and `lamp`. Foes leave the door.
-4. Crates and breakable props. Blit `crate`, `crate_stack`, `barrel`, `breakable_boiler`, and `breakable_gear_pylon`.
-5. Vents with slowdown. Blit `decal_vent`, `decal_grate`, and `decal_hazard`. Keep the vent slowdown.
-6. Objectives top-right with wave and kills. Blit `objectives_panel`. Wave and kill counts stay in the top strip.
-7. Minimap top-left. Blit `minimap_frame` in the top-left safe corner.
-8. Health with a power-ups tray. Blit `heart_ring` and five `power_slot` frames. No energy bar.
-9. XP bar full-width at the bottom. Blit `xp_bar_frame`. The LV label sits on the right.
-10. Dense hordes with blood, casings, and muzzle flash. Blit the actor sheet. Keep the hunter readable.
-
-## Review gate
-
-Every pull request that changes how the game looks must ship a 390x844 phone screenshot beside both reference frames.
-
-- Review size is 390x844 CSS pixels.
-- Show the live capture next to `docs/target_look.jpg` and `docs/target_look2.png`.
-- Ship one sheet with both refs, or two linked pairs a reviewer can open without a local build.
-- A pair with only one reference does not pass.
-- Copy-only or sim-only work does not owe this gate.
-
-Do not merge a look-changing pull request until Sasta reads the compare shots.
-
-Until the reference frames land on `main`, capture against the same two files on pull request 46.

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint .",
+    "lint": "eslint . && node scripts/pack-atlas.mjs && node scripts/check-pack.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "size": "node scripts/size.mjs",

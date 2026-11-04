@@ -153,7 +153,7 @@ let bestWave = roster.bestWave;
 
 const canvas = document.getElementById("game") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
-ctx.imageSmoothingEnabled = true;
+ctx.imageSmoothingEnabled = false;
 const veil = document.getElementById("veil") as HTMLElement;
 const headline = document.getElementById("headline") as HTMLElement;
 const sub = document.getElementById("sub") as HTMLElement;
@@ -567,7 +567,7 @@ function placeJoy(): void {
     matchMedia("(pointer: coarse)").matches,
     matchMedia("(hover: none)").matches,
   );
-  const show = playing && (stick.on || rest);
+  const show = playing && stick.on && !rest;
   joy.hidden = !show;
   if (!show) return;
   const hud = layoutHud(vp, fit);

@@ -156,8 +156,8 @@ describe("hurt veil", () => {
 });
 
 describe("horde yard", () => {
-  it("keeps the baked yard under a horde blit", () => {
-    expect(fieldPlan(true)).toEqual({ yard: true, sprites: true });
+  it("keeps the baked yard and paints packed actors in a horde", () => {
+    expect(fieldPlan(true)).toEqual({ yard: true, sprites: false });
     expect(fieldPlan(false)).toEqual({ yard: true, sprites: false });
   });
 });

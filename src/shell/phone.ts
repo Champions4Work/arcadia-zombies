@@ -1,6 +1,6 @@
 export const PHONE_MAX_W = 720;
-export const PHONE_JOY_R = 84;
-export const DESK_JOY_R = 72;
+export const PHONE_JOY_R = 40;
+export const DESK_JOY_R = 36;
 export const JOY_INSET = 24;
 
 const PLAY_GESTURES = ["gesturestart", "gesturechange", "gestureend", "touchmove"] as const;

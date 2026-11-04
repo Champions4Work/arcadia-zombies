@@ -1,6 +1,6 @@
 import { FONT_BODY, FONT_DISPLAY } from "../shell/theme";
 
-export const OUTLINE = "#1c120c";
+export const OUTLINE = "#0c0a08";
 export const FONT = FONT_DISPLAY;
 export const COPY_FONT = FONT_BODY;
 export const SCALE = 3;
@@ -12,14 +12,14 @@ export interface Metal {
   edge: string;
 }
 
-export const BRASS: Metal = { hi: "#fff1c2", mid: "#f0b03a", lo: "#a86a14", edge: "#4a2c08" };
-export const COPPER: Metal = { hi: "#ffd0b4", mid: "#e07040", lo: "#8a3418", edge: "#3e160c" };
-export const STEEL: Metal = { hi: "#f2f7fb", mid: "#8ea4b6", lo: "#4d6272", edge: "#243038" };
-export const GREEN: Metal = { hi: "#eaffb0", mid: "#8ed43a", lo: "#3e8618", edge: "#143808" };
-export const GREEN_BOOT: Metal = { hi: "#c6e878", mid: "#4f8e20", lo: "#27520e", edge: "#0e2406" };
-export const BLUE: Metal = { hi: "#d8fbff", mid: "#3ec4e4", lo: "#1478a4", edge: "#083048" };
-export const PURPLE: Metal = { hi: "#f6d8ff", mid: "#c45aee", lo: "#7428a8", edge: "#2c0848" };
-export const SKIN: Metal = { hi: "#ffe0c4", mid: "#f0b088", lo: "#c07858", edge: "#6a3828" };
+export const BRASS: Metal = { hi: "#e8c46a", mid: "#c8963a", lo: "#7a5418", edge: "#0c0a08" };
+export const COPPER: Metal = { hi: "#e8a030", mid: "#b85a28", lo: "#6a3018", edge: "#0c0a08" };
+export const STEEL: Metal = { hi: "#a8a49c", mid: "#6a6660", lo: "#3a3230", edge: "#0c0a08" };
+export const GREEN: Metal = { hi: "#6ec04a", mid: "#3a8a28", lo: "#1e4a18", edge: "#0c0a08" };
+export const GREEN_BOOT: Metal = { hi: "#4a6a28", mid: "#1e4a18", lo: "#0c0a08", edge: "#0c0a08" };
+export const BLUE: Metal = { hi: "#8ab83a", mid: "#3a8a28", lo: "#1e4a18", edge: "#0c0a08" };
+export const PURPLE: Metal = { hi: "#e8a030", mid: "#b85a28", lo: "#6a3018", edge: "#0c0a08" };
+export const SKIN: Metal = { hi: "#efe6d4", mid: "#c8b89a", lo: "#5a3a18", edge: "#0c0a08" };
 
 export function font(px: number, weight = 700): string {
   return `${weight} ${px}px ${FONT}`;
@@ -113,9 +113,9 @@ export function cog(ctx: CanvasRenderingContext2D, x: number, y: number, r: numb
   ctx.stroke();
   if (glow) {
     const g = ctx.createRadialGradient(0, 0, r * 0.05, 0, 0, r * 0.55);
-    g.addColorStop(0, "#fff6d0");
-    g.addColorStop(0.45, "#ffb030");
-    g.addColorStop(1, "rgba(255,120,20,0.15)");
+    g.addColorStop(0, "#f4f0e4");
+    g.addColorStop(0.45, "#e8a030");
+    g.addColorStop(1, "rgba(90,58,24,0.15)");
     ctx.beginPath();
     ctx.arc(0, 0, r * 0.48, 0, Math.PI * 2);
     ctx.fillStyle = g;
@@ -136,14 +136,14 @@ export function cog(ctx: CanvasRenderingContext2D, x: number, y: number, r: numb
 export function rivet(ctx: CanvasRenderingContext2D, x: number, y: number, r = 1.6): void {
   ctx.beginPath();
   ctx.arc(x, y, r, 0, Math.PI * 2);
-  ctx.fillStyle = "#6a4010";
+  ctx.fillStyle = "#5a3a18";
   ctx.fill();
   ctx.lineWidth = 0.7;
   ctx.strokeStyle = OUTLINE;
   ctx.stroke();
   ctx.beginPath();
   ctx.arc(x - r * 0.25, y - r * 0.28, r * 0.55, 0, Math.PI * 2);
-  ctx.fillStyle = "#fff1c2";
+  ctx.fillStyle = "#efe6d4";
   ctx.fill();
 }
 

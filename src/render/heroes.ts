@@ -1,3 +1,4 @@
+import { blitAtlas, heroFrameId } from "../art/atlas";
 import {
   CHAR_ALCHEMIST, CHAR_BRUTE, CHAR_GUNSLINGER, CHAR_TINKER,
 } from "../sim/characters";
@@ -6,8 +7,8 @@ import {
 } from "./paint";
 import { FRAME_N, motionOf, POSE_ATK, POSE_N, type Motion } from "./poses";
 
-export const HERO_W = 66;
-export const HERO_H = 84;
+export const HERO_W = 48;
+export const HERO_H = 72;
 
 export const HAT_DOME = 0;
 export const HAT_BRIM = 1;
@@ -149,10 +150,10 @@ export function drawHeroKit(ctx: CanvasRenderingContext2D, frame: number, pose: 
 }
 
 export function drawHeroPortrait(ctx: CanvasRenderingContext2D, id: number): void {
-  ctx.save();
-  ctx.translate(HERO_W / 2, HERO_H - 4);
-  drawHeroKit(ctx, 0, 0, id);
-  ctx.restore();
+  ctx.imageSmoothingEnabled = false;
+  ctx.fillStyle = "#241c14";
+  ctx.fillRect(0, 0, HERO_W, HERO_H);
+  blitAtlas(ctx, heroFrameId(id, 0, 0), HERO_W / 2, HERO_H - 2, 3, false);
 }
 
 export function heroCellCount(): number {

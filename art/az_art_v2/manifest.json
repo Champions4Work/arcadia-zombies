@@ -1,0 +1,489 @@
+{
+ "scale_note": "hero = 128px tall; all sprites sized relative to it",
+ "sprites": {
+  "hero_idle": {
+   "file": "hero_idle.png",
+   "category": "hero",
+   "w": 74,
+   "h": 128,
+   "anchor": {
+    "x": 37,
+    "y": 127
+   },
+   "anchor_note": "feet/base"
+  },
+  "hero_walk_1": {
+   "file": "hero_walk_1.png",
+   "category": "hero",
+   "w": 79,
+   "h": 128,
+   "anchor": {
+    "x": 39,
+    "y": 127
+   },
+   "anchor_note": "feet/base"
+  },
+  "hero_walk_2": {
+   "file": "hero_walk_2.png",
+   "category": "hero",
+   "w": 78,
+   "h": 128,
+   "anchor": {
+    "x": 39,
+    "y": 127
+   },
+   "anchor_note": "feet/base"
+  },
+  "hero_walk_3": {
+   "file": "hero_walk_3.png",
+   "category": "hero",
+   "w": 78,
+   "h": 128,
+   "anchor": {
+    "x": 39,
+    "y": 127
+   },
+   "anchor_note": "feet/base"
+  },
+  "hero_walk_4": {
+   "file": "hero_walk_4.png",
+   "category": "hero",
+   "w": 76,
+   "h": 128,
+   "anchor": {
+    "x": 38,
+    "y": 127
+   },
+   "anchor_note": "feet/base"
+  },
+  "zombie_worker": {
+   "file": "zombie_worker.png",
+   "category": "enemy",
+   "w": 69,
+   "h": 124,
+   "anchor": {
+    "x": 34,
+    "y": 123
+   },
+   "anchor_note": "feet/base"
+  },
+  "zombie_crawler": {
+   "file": "zombie_crawler.png",
+   "category": "enemy",
+   "w": 75,
+   "h": 104,
+   "anchor": {
+    "x": 37,
+    "y": 103
+   },
+   "anchor_note": "feet/base"
+  },
+  "zombie_tubes": {
+   "file": "zombie_tubes.png",
+   "category": "enemy",
+   "w": 71,
+   "h": 128,
+   "anchor": {
+    "x": 35,
+    "y": 127
+   },
+   "anchor_note": "feet/base"
+  },
+  "zombie_bloater": {
+   "file": "zombie_bloater.png",
+   "category": "enemy",
+   "w": 110,
+   "h": 136,
+   "anchor": {
+    "x": 55,
+    "y": 135
+   },
+   "anchor_note": "feet/base"
+  },
+  "brute": {
+   "file": "brute.png",
+   "category": "enemy",
+   "w": 148,
+   "h": 196,
+   "anchor": {
+    "x": 74,
+    "y": 195
+   },
+   "anchor_note": "feet/base"
+  },
+  "crate": {
+   "file": "crate.png",
+   "category": "prop",
+   "w": 71,
+   "h": 80,
+   "anchor": {
+    "x": 35,
+    "y": 79
+   },
+   "anchor_note": "feet/base"
+  },
+  "crate_stack": {
+   "file": "crate_stack.png",
+   "category": "prop",
+   "w": 92,
+   "h": 112,
+   "anchor": {
+    "x": 46,
+    "y": 111
+   },
+   "anchor_note": "feet/base"
+  },
+  "barrel": {
+   "file": "barrel.png",
+   "category": "prop",
+   "w": 51,
+   "h": 88,
+   "anchor": {
+    "x": 25,
+    "y": 87
+   },
+   "anchor_note": "feet/base"
+  },
+  "pipes_blue_tank": {
+   "file": "pipes_blue_tank.png",
+   "category": "prop",
+   "w": 133,
+   "h": 168,
+   "anchor": {
+    "x": 66,
+    "y": 167
+   },
+   "anchor_note": "feet/base"
+  },
+  "valve_steam": {
+   "file": "valve_steam.png",
+   "category": "prop",
+   "w": 78,
+   "h": 96,
+   "anchor": {
+    "x": 39,
+    "y": 95
+   },
+   "anchor_note": "feet/base"
+  },
+  "conveyor": {
+   "file": "conveyor.png",
+   "category": "prop",
+   "w": 176,
+   "h": 128,
+   "anchor": {
+    "x": 88,
+    "y": 127
+   },
+   "anchor_note": "feet/base"
+  },
+  "lamp": {
+   "file": "lamp.png",
+   "category": "prop",
+   "w": 47,
+   "h": 176,
+   "anchor": {
+    "x": 23,
+    "y": 175
+   },
+   "anchor_note": "feet/base"
+  },
+  "building_wall_door": {
+   "file": "building_wall_door.png",
+   "category": "prop",
+   "w": 262,
+   "h": 256,
+   "anchor": {
+    "x": 131,
+    "y": 255
+   },
+   "anchor_note": "feet/base"
+  },
+  "panel_frame_glow": {
+   "file": "panel_frame_glow.png",
+   "category": "hud",
+   "w": 360,
+   "h": 169,
+   "anchor": {
+    "x": 180,
+    "y": 84
+   },
+   "anchor_note": "center"
+  },
+  "ultimate_button": {
+   "file": "ultimate_button.png",
+   "category": "hud",
+   "w": 148,
+   "h": 150,
+   "anchor": {
+    "x": 74,
+    "y": 75
+   },
+   "anchor_note": "center"
+  },
+  "heart_ring": {
+   "file": "heart_ring.png",
+   "category": "hud",
+   "w": 119,
+   "h": 120,
+   "anchor": {
+    "x": 59,
+    "y": 60
+   },
+   "anchor_note": "center"
+  },
+  "power_slot": {
+   "file": "power_slot.png",
+   "category": "hud",
+   "w": 75,
+   "h": 72,
+   "anchor": {
+    "x": 37,
+    "y": 36
+   },
+   "anchor_note": "center"
+  },
+  "objectives_panel": {
+   "file": "objectives_panel.png",
+   "category": "hud",
+   "w": 200,
+   "h": 374,
+   "anchor": {
+    "x": 100,
+    "y": 187
+   },
+   "anchor_note": "center"
+  },
+  "panel_frame_gears": {
+   "file": "panel_frame_gears.png",
+   "category": "hud",
+   "w": 320,
+   "h": 190,
+   "anchor": {
+    "x": 160,
+    "y": 95
+   },
+   "anchor_note": "center"
+  },
+  "panel_frame_pipes": {
+   "file": "panel_frame_pipes.png",
+   "category": "hud",
+   "w": 320,
+   "h": 129,
+   "anchor": {
+    "x": 160,
+    "y": 64
+   },
+   "anchor_note": "center"
+  },
+  "minimap_frame": {
+   "file": "minimap_frame.png",
+   "category": "hud",
+   "w": 175,
+   "h": 180,
+   "anchor": {
+    "x": 87,
+    "y": 90
+   },
+   "anchor_note": "center"
+  },
+  "ring_frame_a": {
+   "file": "ring_frame_a.png",
+   "category": "hud",
+   "w": 121,
+   "h": 120,
+   "anchor": {
+    "x": 60,
+    "y": 60
+   },
+   "anchor_note": "center"
+  },
+  "ring_frame_b": {
+   "file": "ring_frame_b.png",
+   "category": "hud",
+   "w": 118,
+   "h": 120,
+   "anchor": {
+    "x": 59,
+    "y": 60
+   },
+   "anchor_note": "center"
+  },
+  "panel_frame_small": {
+   "file": "panel_frame_small.png",
+   "category": "hud",
+   "w": 200,
+   "h": 134,
+   "anchor": {
+    "x": 100,
+    "y": 67
+   },
+   "anchor_note": "center"
+  },
+  "xp_bar_frame": {
+   "file": "xp_bar_frame.png",
+   "category": "hud",
+   "w": 480,
+   "h": 140,
+   "anchor": {
+    "x": 240,
+    "y": 70
+   },
+   "anchor_note": "center"
+  },
+  "steam_1": {
+   "file": "steam_1.png",
+   "category": "fx",
+   "w": 44,
+   "h": 40,
+   "anchor": {
+    "x": 22,
+    "y": 20
+   },
+   "anchor_note": "center"
+  },
+  "steam_2": {
+   "file": "steam_2.png",
+   "category": "fx",
+   "w": 71,
+   "h": 64,
+   "anchor": {
+    "x": 35,
+    "y": 32
+   },
+   "anchor_note": "center"
+  },
+  "steam_3": {
+   "file": "steam_3.png",
+   "category": "fx",
+   "w": 94,
+   "h": 84,
+   "anchor": {
+    "x": 47,
+    "y": 42
+   },
+   "anchor_note": "center"
+  },
+  "steam_4": {
+   "file": "steam_4.png",
+   "category": "fx",
+   "w": 86,
+   "h": 90,
+   "anchor": {
+    "x": 43,
+    "y": 45
+   },
+   "anchor_note": "center"
+  },
+  "blue_puddle": {
+   "file": "blue_puddle.png",
+   "category": "fx",
+   "w": 150,
+   "h": 83,
+   "anchor": {
+    "x": 75,
+    "y": 41
+   },
+   "anchor_note": "center"
+  },
+  "blue_glow": {
+   "file": "blue_glow.png",
+   "category": "fx",
+   "w": 110,
+   "h": 96,
+   "anchor": {
+    "x": 55,
+    "y": 48
+   },
+   "anchor_note": "center"
+  },
+  "window_lit": {
+   "file": "window_lit.png",
+   "category": "prop",
+   "w": 51,
+   "h": 72,
+   "anchor": {
+    "x": 25,
+    "y": 71
+   },
+   "anchor_note": "feet/base"
+  },
+  "breakable_boiler": {
+   "file": "breakable_boiler.png",
+   "category": "breakable",
+   "w": 140,
+   "h": 128,
+   "anchor": {
+    "x": 70,
+    "y": 127
+   },
+   "anchor_note": "feet/base"
+  },
+  "breakable_gear_pylon": {
+   "file": "breakable_gear_pylon.png",
+   "category": "breakable",
+   "w": 138,
+   "h": 120,
+   "anchor": {
+    "x": 69,
+    "y": 119
+   },
+   "anchor_note": "feet/base"
+  },
+  "tile_stone_seamless": {
+   "file": "tile_stone_seamless.png",
+   "category": "tile",
+   "w": 256,
+   "h": 256,
+   "anchor": {
+    "x": 0,
+    "y": 0
+   },
+   "anchor_note": "top-left, tiles seamlessly"
+  },
+  "tile_metal_seamless": {
+   "file": "tile_metal_seamless.png",
+   "category": "tile",
+   "w": 256,
+   "h": 256,
+   "anchor": {
+    "x": 0,
+    "y": 0
+   },
+   "anchor_note": "top-left, tiles seamlessly"
+  },
+  "decal_hazard": {
+   "file": "decal_hazard.png",
+   "category": "floor_decal",
+   "w": 130,
+   "h": 128,
+   "anchor": {
+    "x": 65,
+    "y": 64
+   },
+   "anchor_note": "center"
+  },
+  "decal_vent": {
+   "file": "decal_vent.png",
+   "category": "floor_decal",
+   "w": 130,
+   "h": 128,
+   "anchor": {
+    "x": 65,
+    "y": 64
+   },
+   "anchor_note": "center"
+  },
+  "decal_grate": {
+   "file": "decal_grate.png",
+   "category": "floor_decal",
+   "w": 130,
+   "h": 128,
+   "anchor": {
+    "x": 65,
+    "y": 64
+   },
+   "anchor_note": "center"
+  }
+ }
+}

@@ -3,8 +3,11 @@ import { xpNeed } from "../sim/progress";
 import { EV_LEVEL, FX_XP, MAX_FX, type World } from "../sim/types";
 import { type Fit, worldToCss } from "../shell/fit";
 import { type HudLayout } from "../shell/hud-layout";
-import { BRASS_HI, COPPER, IRON, SOOT, STEAM, XP } from "../shell/theme";
-import { BRASS, font, OUTLINE, roundRect } from "./paint";
+import { blitAtlas } from "../art/atlas";
+import { hudType } from "../art/look";
+import { blitSheetFit } from "../art/sheet";
+import { pixelWell } from "../art/chrome";
+import { BRASS_HI, IRON, STEAM, XP } from "../shell/theme";
 
 function caption(
   ctx: CanvasRenderingContext2D,
@@ -15,15 +18,7 @@ function caption(
   color: string,
   align: CanvasTextAlign = "left",
 ): void {
-  ctx.font = font(size, 800);
-  ctx.textAlign = align;
-  ctx.textBaseline = "top";
-  ctx.lineJoin = "round";
-  ctx.lineWidth = Math.max(2, size * 0.16);
-  ctx.strokeStyle = OUTLINE;
-  ctx.strokeText(text, x, y);
-  ctx.fillStyle = color;
-  ctx.fillText(text, x, y);
+  hudType(ctx, text, x, y, size, color, align);
 }
 
 export const GEM_CAP = 48;
@@ -166,6 +161,10 @@ export function tickXpGain(dt: number, layout: HudLayout, xp: number): void {
   if (sparkMs > 0) sparkMs = sparkMs > dt ? sparkMs - dt : 0;
 }
 
+export function xpLevelText(level: number): string {
+  return `LV ${level + 1}`;
+}
+
 export function xpFillT(need: number): number {
   if (need <= 0) return 0;
   const t = shownXp / need;
@@ -175,56 +174,25 @@ export function xpFillT(need: number): number {
 export function drawXpBar(ctx: CanvasRenderingContext2D, layout: HudLayout, need: number): void {
   const box = layout.xp;
   const t = xpFillT(need);
-  const glow = glowMs / 280;
   ctx.save();
-  roundRect(ctx, box.x, box.y, box.w, box.h, 8);
-  ctx.fillStyle = SOOT;
-  ctx.fill();
-  ctx.strokeStyle = OUTLINE;
-  ctx.lineWidth = 2;
-  ctx.stroke();
+  blitSheetFit(ctx, "xp_bar_frame", box.x, box.y - 4, box.w, box.h + 8);
+  pixelWell(ctx, box.x + 4, box.y + 2, box.w - 62, box.h - 4);
   const pad = 4;
   const badge = Math.min(58, box.w * 0.15);
   const innerW = box.w - pad * 2 - badge;
-  roundRect(ctx, box.x + pad, box.y + pad, innerW, box.h - pad * 2, 5);
   ctx.fillStyle = IRON;
-  ctx.fill();
+  ctx.fillRect(box.x + pad, box.y + pad, innerW, box.h - pad * 2);
   const fillW = Math.max(t > 0 ? 6 : 0, innerW * t);
   if (fillW > 0) {
-    roundRect(ctx, box.x + pad, box.y + pad, fillW, box.h - pad * 2, 5);
-    const bar = ctx.createLinearGradient(box.x, box.y, box.x + box.w, box.y);
-    bar.addColorStop(0, BRASS_HI);
-    bar.addColorStop(0.45, XP);
-    bar.addColorStop(1, COPPER);
-    ctx.fillStyle = bar;
-    ctx.globalAlpha = 0.88 + Math.min(0.12, glow * 0.12);
-    ctx.fill();
-    ctx.globalAlpha = 1;
-    if (glow > 0) {
-      ctx.fillStyle = `rgba(255,210,80,${0.22 * glow})`;
-      roundRect(ctx, box.x + pad, box.y + pad, fillW, box.h - pad * 2, 5);
-      ctx.fill();
-    }
+    ctx.fillStyle = glowMs > 0 ? BRASS_HI : XP;
+    ctx.fillRect(box.x + pad, box.y + pad, fillW, box.h - pad * 2);
   }
   if (sparkMs > 0) {
-    const s = sparkMs / 220;
-    caption(ctx, "+XP", box.x + pad + fillW + 8, box.y + box.h * 0.18, Math.min(12, box.h * 0.5), `rgba(255,243,176,${s})`);
+    caption(ctx, "+XP", box.x + pad + fillW + 8, box.y + box.h * 0.18, 11, STEAM);
   }
-  caption(ctx, `LV ${shownLevel}`, box.x + box.w - badge / 2, box.y + box.h * 0.2, Math.min(15, box.h * 0.52), STEAM, "center");
+  caption(ctx, xpLevelText(shownLevel), box.x + box.w - badge / 2, box.y + box.h * 0.28, 12, STEAM, "center");
   if (popMs > 0) {
-    const p = popMs / 640;
-    const scale = 1 + (1 - p) * 0.35;
-    ctx.save();
-    ctx.translate(box.x + box.w - badge / 2, box.y - 10 - (1 - p) * 12);
-    ctx.scale(scale, scale);
-    caption(ctx, `${popLevel}`, 0, 0, 18, `rgba(255,241,194,${p})`, "center");
-    ctx.restore();
-    const burst = 8 + (1 - p) * 18;
-    ctx.strokeStyle = `rgba(255,176,32,${p})`;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(box.x + box.w * 0.5, box.y + box.h * 0.5, burst, 0, Math.PI * 2);
-    ctx.stroke();
+    caption(ctx, `${popLevel}`, box.x + box.w - badge / 2, box.y - 12, 14, BRASS_HI, "center");
   }
   ctx.restore();
   drawGems(ctx);
@@ -235,20 +203,7 @@ function drawGems(ctx: CanvasRenderingContext2D): void {
   ctx.save();
   for (let i = 0; i < GEM_CAP; i++) {
     if (gemOn[i] === 0) continue;
-    const life = (gemLife[i] ?? 0) / GEM_LIFE;
-    const x = gemX[i] ?? 0;
-    const y = gemY[i] ?? 0;
-    ctx.beginPath();
-    ctx.moveTo(x, y - 5);
-    ctx.lineTo(x + 4, y);
-    ctx.lineTo(x, y + 5);
-    ctx.lineTo(x - 4, y);
-    ctx.closePath();
-    ctx.fillStyle = `rgba(255,210,80,${0.35 + life * 0.65})`;
-    ctx.fill();
-    ctx.strokeStyle = BRASS.edge;
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    blitAtlas(ctx, "xp-0", gemX[i] ?? 0, gemY[i] ?? 0, 1);
   }
   ctx.restore();
 }

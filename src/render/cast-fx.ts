@@ -1,3 +1,4 @@
+import { blitAtlas, shotFrameId } from "../art/atlas";
 import { Z_GAS, Z_KIND, Z_KNIGHT } from "../sim/foes";
 import { EV_LEVEL, WPN_FLAME, WPN_HARP, WPN_MORT, WPN_SHOT, type World } from "../sim/types";
 import { blob, BRASS, cog, COPPER, font, pill, STEEL } from "./paint";
@@ -45,16 +46,18 @@ export function paintAura(
   ctx.restore();
 }
 
+function shotAim(vx: number, vy: number): { dir: number; flip: boolean } {
+  if (Math.abs(vx) >= Math.abs(vy)) return { dir: vx >= 0 ? 1 : 0, flip: false };
+  return { dir: vy >= 0 ? 3 : 2, flip: false };
+}
+
+function blitShot(ctx: CanvasRenderingContext2D, gun: number, x: number, y: number, vx: number, vy: number): void {
+  const aim = shotAim(vx, vy);
+  blitAtlas(ctx, shotFrameId(gun, aim.dir), x, y, 1, aim.flip);
+}
+
 export function paintRivetBolt(ctx: CanvasRenderingContext2D, x: number, y: number, vx: number, vy: number): void {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(Math.atan2(vy, vx || 1));
-  ctx.globalCompositeOperation = "lighter";
-  streak(ctx, 26, 5.2, "#fff8e4", "rgba(255,140,40,0.85)");
-  ctx.globalCompositeOperation = "source-over";
-  pill(ctx, 3, 0, 18, 5.4, 0, EMBER, 1.1);
-  bloom(ctx, 10, 0, 5.5, "#fff8e4", "rgba(255,160,40,0.8)");
-  ctx.restore();
+  blitShot(ctx, 0, x, y, vx, vy);
 }
 
 export function paintPellet(ctx: CanvasRenderingContext2D, x: number, y: number, vx: number, vy: number): void {
@@ -108,23 +111,10 @@ export function paintBomb(ctx: CanvasRenderingContext2D, x: number, y: number, t
 export function paintWeaponShot(
   ctx: CanvasRenderingContext2D, gun: number, x: number, y: number, vx: number, vy: number, life: number, tick: number, j: number,
 ): number {
-  if (gun === WPN_FLAME) {
-    paintFlameJet(ctx, x, y, life, tick, j);
-    return 1;
-  }
-  if (gun === WPN_HARP) {
-    paintHarpoon(ctx, x, y, vx, vy);
-    return 1;
-  }
-  if (gun === WPN_MORT) {
-    paintBomb(ctx, x, y, tick);
-    return 1;
-  }
-  if (gun === WPN_SHOT) {
-    paintPellet(ctx, x, y, vx, vy);
-    return 1;
-  }
-  return 0;
+  if (gun !== WPN_FLAME && gun !== WPN_HARP && gun !== WPN_MORT && gun !== WPN_SHOT) return 0;
+  blitShot(ctx, gun, x, y, vx, vy);
+  if (gun === WPN_FLAME && (((tick + j + life) >> 1) & 1)) blitAtlas(ctx, "flame-1", x, y, 1);
+  return 1;
 }
 
 export const paintFlash: FxPaint = (ctx, x, y, age, a) => {

@@ -1,0 +1,429 @@
+{
+  "scale_note": "hero = 128px tall; all sprites sized relative to it",
+  "hero_px": 48,
+  "sheets": {
+    "actors": {
+      "file": "actors.webp",
+      "w": 333,
+      "h": 76
+    },
+    "world": {
+      "file": "world.webp",
+      "w": 728,
+      "h": 142
+    },
+    "hud": {
+      "file": "hud.webp",
+      "w": 950,
+      "h": 254
+    },
+    "tile_stone_seamless": {
+      "file": "tile_stone_seamless.webp",
+      "w": 128,
+      "h": 128
+    },
+    "tile_metal_seamless": {
+      "file": "tile_metal_seamless.webp",
+      "w": 128,
+      "h": 128
+    }
+  },
+  "sprites": {
+    "brute": {
+      "sheet": "actors",
+      "x": 1,
+      "y": 1,
+      "w": 56,
+      "h": 74,
+      "ax": 28,
+      "ay": 73
+    },
+    "zombie_bloater": {
+      "sheet": "actors",
+      "x": 58,
+      "y": 1,
+      "w": 41,
+      "h": 51,
+      "ax": 21,
+      "ay": 51
+    },
+    "hero_walk_1": {
+      "sheet": "actors",
+      "x": 100,
+      "y": 1,
+      "w": 30,
+      "h": 48,
+      "ax": 15,
+      "ay": 48
+    },
+    "hero_walk_2": {
+      "sheet": "actors",
+      "x": 131,
+      "y": 1,
+      "w": 29,
+      "h": 48,
+      "ax": 15,
+      "ay": 48
+    },
+    "hero_walk_3": {
+      "sheet": "actors",
+      "x": 161,
+      "y": 1,
+      "w": 29,
+      "h": 48,
+      "ax": 15,
+      "ay": 48
+    },
+    "hero_idle": {
+      "sheet": "actors",
+      "x": 191,
+      "y": 1,
+      "w": 28,
+      "h": 48,
+      "ax": 14,
+      "ay": 48
+    },
+    "hero_walk_4": {
+      "sheet": "actors",
+      "x": 220,
+      "y": 1,
+      "w": 28,
+      "h": 48,
+      "ax": 14,
+      "ay": 48
+    },
+    "zombie_tubes": {
+      "sheet": "actors",
+      "x": 249,
+      "y": 1,
+      "w": 27,
+      "h": 48,
+      "ax": 13,
+      "ay": 48
+    },
+    "zombie_worker": {
+      "sheet": "actors",
+      "x": 277,
+      "y": 1,
+      "w": 26,
+      "h": 46,
+      "ax": 13,
+      "ay": 46
+    },
+    "zombie_crawler": {
+      "sheet": "actors",
+      "x": 304,
+      "y": 1,
+      "w": 28,
+      "h": 39,
+      "ax": 14,
+      "ay": 39
+    },
+    "building_wall_door": {
+      "sheet": "world",
+      "x": 1,
+      "y": 1,
+      "w": 105,
+      "h": 102,
+      "ax": 52,
+      "ay": 102
+    },
+    "lamp": {
+      "sheet": "world",
+      "x": 107,
+      "y": 1,
+      "w": 19,
+      "h": 70,
+      "ax": 9,
+      "ay": 70
+    },
+    "pipes_blue_tank": {
+      "sheet": "world",
+      "x": 127,
+      "y": 1,
+      "w": 53,
+      "h": 67,
+      "ax": 26,
+      "ay": 67
+    },
+    "conveyor": {
+      "sheet": "world",
+      "x": 181,
+      "y": 1,
+      "w": 70,
+      "h": 51,
+      "ax": 35,
+      "ay": 51
+    },
+    "breakable_boiler": {
+      "sheet": "world",
+      "x": 252,
+      "y": 1,
+      "w": 56,
+      "h": 51,
+      "ax": 28,
+      "ay": 51
+    },
+    "decal_grate": {
+      "sheet": "world",
+      "x": 309,
+      "y": 1,
+      "w": 52,
+      "h": 51,
+      "ax": 26,
+      "ay": 26
+    },
+    "decal_hazard": {
+      "sheet": "world",
+      "x": 362,
+      "y": 1,
+      "w": 52,
+      "h": 51,
+      "ax": 26,
+      "ay": 26
+    },
+    "decal_vent": {
+      "sheet": "world",
+      "x": 415,
+      "y": 1,
+      "w": 52,
+      "h": 51,
+      "ax": 26,
+      "ay": 26
+    },
+    "breakable_gear_pylon": {
+      "sheet": "world",
+      "x": 468,
+      "y": 1,
+      "w": 55,
+      "h": 48,
+      "ax": 28,
+      "ay": 48
+    },
+    "crate_stack": {
+      "sheet": "world",
+      "x": 524,
+      "y": 1,
+      "w": 37,
+      "h": 45,
+      "ax": 18,
+      "ay": 44
+    },
+    "blue_glow": {
+      "sheet": "world",
+      "x": 562,
+      "y": 1,
+      "w": 50,
+      "h": 43,
+      "ax": 25,
+      "ay": 22
+    },
+    "steam_4": {
+      "sheet": "world",
+      "x": 613,
+      "y": 1,
+      "w": 39,
+      "h": 40,
+      "ax": 19,
+      "ay": 20
+    },
+    "steam_3": {
+      "sheet": "world",
+      "x": 653,
+      "y": 1,
+      "w": 42,
+      "h": 38,
+      "ax": 21,
+      "ay": 19
+    },
+    "valve_steam": {
+      "sheet": "world",
+      "x": 696,
+      "y": 1,
+      "w": 31,
+      "h": 38,
+      "ax": 16,
+      "ay": 38
+    },
+    "blue_puddle": {
+      "sheet": "world",
+      "x": 1,
+      "y": 104,
+      "w": 68,
+      "h": 37,
+      "ax": 34,
+      "ay": 18
+    },
+    "barrel": {
+      "sheet": "world",
+      "x": 70,
+      "y": 104,
+      "w": 20,
+      "h": 35,
+      "ax": 10,
+      "ay": 35
+    },
+    "crate": {
+      "sheet": "world",
+      "x": 91,
+      "y": 104,
+      "w": 28,
+      "h": 32,
+      "ax": 14,
+      "ay": 32
+    },
+    "steam_2": {
+      "sheet": "world",
+      "x": 120,
+      "y": 104,
+      "w": 32,
+      "h": 29,
+      "ax": 16,
+      "ay": 14
+    },
+    "window_lit": {
+      "sheet": "world",
+      "x": 153,
+      "y": 104,
+      "w": 20,
+      "h": 29,
+      "ax": 10,
+      "ay": 28
+    },
+    "steam_1": {
+      "sheet": "world",
+      "x": 174,
+      "y": 104,
+      "w": 20,
+      "h": 18,
+      "ax": 10,
+      "ay": 9
+    },
+    "objectives_panel": {
+      "sheet": "hud",
+      "x": 1,
+      "y": 1,
+      "w": 100,
+      "h": 187,
+      "ax": 50,
+      "ay": 94
+    },
+    "panel_frame_gears": {
+      "sheet": "hud",
+      "x": 102,
+      "y": 1,
+      "w": 160,
+      "h": 95,
+      "ax": 80,
+      "ay": 48
+    },
+    "minimap_frame": {
+      "sheet": "hud",
+      "x": 263,
+      "y": 1,
+      "w": 88,
+      "h": 90,
+      "ax": 44,
+      "ay": 45
+    },
+    "panel_frame_glow": {
+      "sheet": "hud",
+      "x": 352,
+      "y": 1,
+      "w": 180,
+      "h": 84,
+      "ax": 90,
+      "ay": 42
+    },
+    "ultimate_button": {
+      "sheet": "hud",
+      "x": 533,
+      "y": 1,
+      "w": 74,
+      "h": 75,
+      "ax": 37,
+      "ay": 38
+    },
+    "xp_bar_frame": {
+      "sheet": "hud",
+      "x": 608,
+      "y": 1,
+      "w": 240,
+      "h": 70,
+      "ax": 120,
+      "ay": 35
+    },
+    "panel_frame_small": {
+      "sheet": "hud",
+      "x": 849,
+      "y": 1,
+      "w": 100,
+      "h": 67,
+      "ax": 50,
+      "ay": 34
+    },
+    "panel_frame_pipes": {
+      "sheet": "hud",
+      "x": 1,
+      "y": 189,
+      "w": 160,
+      "h": 64,
+      "ax": 80,
+      "ay": 32
+    },
+    "heart_ring": {
+      "sheet": "hud",
+      "x": 162,
+      "y": 189,
+      "w": 60,
+      "h": 60,
+      "ax": 30,
+      "ay": 30
+    },
+    "ring_frame_a": {
+      "sheet": "hud",
+      "x": 223,
+      "y": 189,
+      "w": 60,
+      "h": 60,
+      "ax": 30,
+      "ay": 30
+    },
+    "ring_frame_b": {
+      "sheet": "hud",
+      "x": 284,
+      "y": 189,
+      "w": 59,
+      "h": 60,
+      "ax": 30,
+      "ay": 30
+    },
+    "power_slot": {
+      "sheet": "hud",
+      "x": 344,
+      "y": 189,
+      "w": 38,
+      "h": 36,
+      "ax": 18,
+      "ay": 18
+    },
+    "tile_stone_seamless": {
+      "sheet": "tile_stone_seamless",
+      "x": 0,
+      "y": 0,
+      "w": 128,
+      "h": 128,
+      "ax": 0,
+      "ay": 0
+    },
+    "tile_metal_seamless": {
+      "sheet": "tile_metal_seamless",
+      "x": 0,
+      "y": 0,
+      "w": 128,
+      "h": 128,
+      "ax": 0,
+      "ay": 0
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import { blitAtlas } from "../art/atlas";
 import { CHAR_ALCHEMIST, CHAR_BRUTE, CHAR_GUNSLINGER } from "../sim/characters";
 import { MUZZLE_HAND_X, MUZZLE_HAND_Y } from "../sim/muzzle";
 import { EV_SHOT, WPN_FLAME, WPN_HARP, WPN_MORT, WPN_SHOT, type World } from "../sim/types";
@@ -273,53 +274,18 @@ export function paintKnightShield(ctx: CanvasRenderingContext2D, x: number, y: n
 }
 
 export function paintHealVial(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number, i: number): void {
-  const bob = Math.sin(tick * 0.18 + i) * 1.8;
-  const iy = y + bob;
-  paintAura(ctx, x, iy, 20, tick + i * 7, "rgba(180,255,190,0.7)", "rgba(80,220,120,0.2)");
-  pill(ctx, x, iy + 1, 8, 12, 0, GREEN, 1.6);
-  pill(ctx, x, iy - 7, 5, 4, 0, BRASS, 1.2);
-  blob(ctx, x, iy - 10, 2.2, 1.8, COPPER, 1);
-  ctx.strokeStyle = "#fff8d0";
-  ctx.lineWidth = 1.6;
-  ctx.beginPath();
-  ctx.moveTo(x - 2.4, iy);
-  ctx.lineTo(x + 2.4, iy);
-  ctx.moveTo(x, iy - 2.4);
-  ctx.lineTo(x, iy + 2.4);
-  ctx.stroke();
+  const bob = (tick >> 3 & 1) + (i & 1);
+  paintAura(ctx, x, y - bob, 12, tick + i * 7, "rgba(46,154,72,0.55)", "rgba(30,74,24,0.18)");
+  blitAtlas(ctx, "hp-0", x, y - bob, 2);
 }
 
 export function paintCrate(ctx: CanvasRenderingContext2D, x: number, y: number, hw: number, hh: number): void {
-  const wood: Metal = { hi: "#f0c48a", mid: "#c48448", lo: "#7a4a22", edge: "#3a2010" };
-  ctx.save();
-  ctx.globalAlpha = 0.28;
-  ctx.fillStyle = "#1c120c";
-  ctx.beginPath();
-  ctx.ellipse(x, y + hh * 0.55, hw * 0.9, hh * 0.28, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-  blob(ctx, x, y, hw, hh, wood, 2);
-  pill(ctx, x, y - hh * 0.15, hw * 1.7, 3.2, 0, BRASS, 1.2);
-  pill(ctx, x, y + hh * 0.25, hw * 1.7, 3.2, 0, BRASS, 1.2);
-  pill(ctx, x - hw * 0.55, y, 3.2, hh * 1.5, 0, BRASS, 1.1);
-  pill(ctx, x + hw * 0.55, y, 3.2, hh * 1.5, 0, BRASS, 1.1);
-  rivet(ctx, x - hw + 4, y - hh + 4, 1.4);
-  rivet(ctx, x + hw - 4, y - hh + 4, 1.4);
-  rivet(ctx, x - hw + 4, y + hh - 4, 1.4);
-  rivet(ctx, x + hw - 4, y + hh - 4, 1.4);
-  cog(ctx, x, y, 3.6, 0.2, COPPER, 6, false);
+  const scale = hw + hh > 28 ? 2 : 1;
+  blitAtlas(ctx, "chest-0", x, y, scale);
 }
 
 export function paintChest(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number): void {
-  const iy = (y | 0) - ((tick >> 4 & 1) << 1);
-  const ix = x | 0;
-  paintAura(ctx, ix, iy - 6, 26, tick, "rgba(255,220,110,0.7)", "rgba(255,170,40,0.18)");
-  blob(ctx, ix, iy - 2, 16, 11, BRASS, 2);
-  pill(ctx, ix, iy - 12, 30, 8, 0, { hi: "#fff1c2", mid: "#f0b03a", lo: "#a86a14", edge: "#4a2c08" }, 1.6);
-  pill(ctx, ix, iy + 4, 28, 5, 0, COPPER, 1.3);
-  blob(ctx, ix, iy - 1, 3.2, 3.6, { hi: "#2a1c10", mid: "#1c120c", lo: "#120c08", edge: "#0a0604" }, 1.1);
-  rivet(ctx, ix - 10, iy - 8, 1.2);
-  rivet(ctx, ix + 10, iy - 8, 1.2);
+  blitAtlas(ctx, (tick >> 4) & 1 ? "chest-1" : "chest-0", x, y, 2);
 }
 
 function block(ctx: CanvasRenderingContext2D, x: number, y: number, s: string, w = 1, h = 1): void {

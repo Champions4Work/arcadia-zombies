@@ -1,33 +1,28 @@
 import { CHARACTERS, characterAt, isUnlocked } from "../sim/characters";
-import { bakeRaw } from "../render/paint";
-import { drawHeroPortrait, HERO_H, HERO_W } from "../render/heroes";
-
-const portraits = new Map<number, HTMLCanvasElement>();
-
-function portrait(index: number): HTMLCanvasElement {
-  let hit = portraits.get(index);
-  if (!hit) {
-    hit = bakeRaw(HERO_W, HERO_H, (ctx) => drawHeroPortrait(ctx, index));
-    portraits.set(index, hit);
-  }
-  return hit;
-}
+import { blitSheet, sheetsReady } from "../art/sheet";
+import { HERO_H, HERO_W } from "../render/heroes";
 
 function paintSwatch(canvas: HTMLCanvasElement, index: number): void {
   const c = canvas.getContext("2d");
   if (!c) return;
-  c.imageSmoothingEnabled = true;
-  c.imageSmoothingQuality = "high";
-  c.fillStyle = "#4a3018";
-  c.fillRect(0, 0, canvas.width, canvas.height);
-  const g = c.createRadialGradient(canvas.width / 2, canvas.height * 0.7, 4, canvas.width / 2, canvas.height * 0.75, canvas.width * 0.42);
-  g.addColorStop(0, "rgba(16,10,8,0.45)");
-  g.addColorStop(1, "rgba(16,10,8,0)");
-  c.fillStyle = g;
-  c.beginPath();
-  c.ellipse(canvas.width / 2, canvas.height * 0.82, canvas.width * 0.32, canvas.height * 0.1, 0, 0, Math.PI * 2);
-  c.fill();
-  c.drawImage(portrait(index), 0, 0, canvas.width, canvas.height);
+  const draw = (): void => {
+    c.imageSmoothingEnabled = true;
+    c.fillStyle = "#241c14";
+    c.fillRect(0, 0, canvas.width, canvas.height);
+    const g = c.createRadialGradient(canvas.width / 2, canvas.height * 0.7, 4, canvas.width / 2, canvas.height * 0.75, canvas.width * 0.42);
+    g.addColorStop(0, "rgba(16,10,8,0.45)");
+    g.addColorStop(1, "rgba(16,10,8,0)");
+    c.fillStyle = g;
+    c.beginPath();
+    c.ellipse(canvas.width / 2, canvas.height * 0.82, canvas.width * 0.32, canvas.height * 0.1, 0, 0, Math.PI * 2);
+    c.fill();
+    if (!sheetsReady()) {
+      requestAnimationFrame(draw);
+      return;
+    }
+    blitSheet(c, "hero_idle", canvas.width / 2, canvas.height - 6, (index & 1) === 1);
+  };
+  draw();
 }
 
 export function mountPicker(root: HTMLElement, onPick: (index: number) => void): void {
