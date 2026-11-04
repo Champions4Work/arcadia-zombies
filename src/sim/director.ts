@@ -6,10 +6,10 @@ import {
 
 export const FRIENDLY_TICK = 7200;
 const HZ = 60;
-const PCT_CAP = 280;
-const PACK_CAP = 8;
-const FLOOR_CAP = 16;
-const ELITE_CAP = 80;
+const PCT_CAP = 640;
+const PACK_CAP = 10;
+const FLOOR_CAP = 20;
+const ELITE_CAP = 90;
 
 export function playerPower(w: World): number {
   return w.level
@@ -28,15 +28,15 @@ export function playerPower(w: World): number {
 
 export function expectedPower(tick: number): number {
   const min = tick / (HZ * 60);
-  return 2 + ((min * 3) | 0);
+  return 2 + ((min * 2) | 0);
 }
 
 export function threatPct(w: World): number {
   if (w.tick < FRIENDLY_TICK) return 100;
   const min = w.tick / (HZ * 60);
   const over = playerPower(w) - expectedPower(w.tick);
-  const extra = over > 0 ? over * 12 : 0;
-  const time = ((min - 2) * 10) | 0;
+  const extra = over > 0 ? over * 24 : 0;
+  const time = ((min - 2) * 16) | 0;
   const n = 100 + time + extra;
   return n > PCT_CAP ? PCT_CAP : n;
 }
@@ -65,7 +65,7 @@ export function directorFloor(w: World): number {
   if (w.tick < FRIENDLY_TICK) return 0;
   const min = (w.tick / (HZ * 60)) | 0;
   const over = playerPower(w) - expectedPower(w.tick);
-  const n = 4 + min + (over > 0 ? over >> 1 : 0);
+  const n = 5 + min + (over > 0 ? over >> 1 : 0);
   return n > FLOOR_CAP ? FLOOR_CAP : n;
 }
 
@@ -79,6 +79,6 @@ export function directorElite(w: World): number {
   if (w.tick < FRIENDLY_TICK) return 0;
   const over = playerPower(w) - expectedPower(w.tick);
   const min = (w.tick / (HZ * 60)) | 0;
-  const n = (min - 2) * 8 + (over > 0 ? over * 4 : 0);
+  const n = (min - 2) * 10 + (over > 0 ? over * 6 : 0);
   return n > ELITE_CAP ? ELITE_CAP : n;
 }

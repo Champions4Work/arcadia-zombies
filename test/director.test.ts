@@ -26,8 +26,8 @@ describe("adaptive director", () => {
     expect(threatPct(w)).toBeGreaterThan(100);
     expect(scaleThreat(10, w)).toBeGreaterThan(10);
     expect(directorSpawn(CURVE.spawnMin, w)).toBeGreaterThanOrEqual(CURVE.spawnMin);
-    expect(directorFloor(w)).toBeLessThanOrEqual(16);
-    expect(directorElite(w)).toBeLessThanOrEqual(80);
+    expect(directorFloor(w)).toBeLessThanOrEqual(20);
+    expect(directorElite(w)).toBeLessThanOrEqual(90);
   });
 
   it("deals late contact damage on ash crown even to a standing player", () => {

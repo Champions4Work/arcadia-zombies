@@ -24,6 +24,8 @@ export const CURVE = {
   hpNum: 100,
   hpPer: 10,
   hpQuad: 36,
+  hpLate: 160,
+  hpLateAfter: 4,
   dmgNum: 100,
   dmgPer: 35,
   speedNum: 100,
@@ -82,7 +84,11 @@ export function spawnEvery(tier: number): number {
 }
 
 export function hpScale(tier: number): number {
-  return CURVE.hpNum + tier * CURVE.hpPer + tier * tier * CURVE.hpQuad;
+  const t = tier < 0 ? 0 : tier;
+  const early = CURVE.hpNum + t * CURVE.hpPer + t * t * CURVE.hpQuad;
+  if (t <= CURVE.hpLateAfter) return early;
+  const late = t - CURVE.hpLateAfter;
+  return early + late * late * CURVE.hpLate;
 }
 
 export function scaledHp(base: number, tier: number): number {
