@@ -1,6 +1,8 @@
 import { ARENA_H, ARENA_W } from "../src/sim/arena";
 import { H, W } from "../src/sim/types";
 import { copyGroundWindow, yardColor } from "../src/render/ground-atlas";
+import { ZONE_BRASS } from "../src/sim/zones";
+import { bindYard } from "../src/render/yard-fx";
 import {
   FEAT_GEAR,
   FEAT_LAMP,
@@ -26,6 +28,7 @@ import {
   groundFeatureCount,
   groundKind,
   groundRows,
+  bindGround,
   paintGround,
   ventCount,
   ventFxCount,
@@ -54,6 +57,11 @@ function featTally(): Uint16Array {
 }
 
 describe("yard floor map", () => {
+  beforeEach(() => {
+    bindGround(ZONE_BRASS);
+    bindYard(ZONE_BRASS);
+  });
+
   it("covers the arena on a 16px grid", () => {
     expect(TILE).toBe(16);
     expect(groundCols() * TILE).toBe(ARENA_W);

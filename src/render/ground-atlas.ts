@@ -21,6 +21,7 @@ import {
   groundFeatureCount,
   groundKind,
   groundRows,
+  groundZone,
 } from "./ground";
 import { pack } from "./horde-sprites";
 
@@ -43,6 +44,7 @@ const LAMP = pack(0xc8, 0x88, 0x38);
 const LAMP_DIM = pack(0x6a, 0x42, 0x20);
 const pix = new Uint32Array(ARENA_W * ARENA_H);
 let ready = 0;
+let stamped = -1;
 
 function hash(x: number, y: number, s = 0): number {
   let n = Math.imul(x, 374761393) + Math.imul(y, 668265263) + Math.imul(s, 1442695041);
@@ -135,8 +137,10 @@ function glow(cx: number, cy: number, r: number): void {
 }
 
 function stamp(): void {
-  if (ready) return;
+  const z = groundZone();
+  if (ready && stamped === z) return;
   ready = 1;
+  stamped = z;
   pix.fill(EDGE);
   cobbleField();
   const cols = groundCols();

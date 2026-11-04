@@ -99,7 +99,7 @@ import {
 import { chestLanded, dropChest } from "./sim/chest";
 import { armDevJump, isWon, killCount, lichUp, setRunEndless, takeCue } from "./sim/finale";
 import { fillHorde, HORDE_BULLETS, HORDE_ZOMBIES } from "./sim/horde";
-import { reviewHorde, wantsFeelShot, wantsReviewShot } from "./shell/review-shot";
+import { reviewHorde, reviewZoneFromSearch, wantsFeelShot, wantsReviewShot } from "./shell/review-shot";
 import {
   hasMod,
   loadMods,
@@ -213,7 +213,7 @@ if ((!store || !loadGuideSeen(store)) && location.hash !== "#horde" && !wantsRev
 function makeWorld(seed: number) {
   const next = createWorld(seed, survivor, mods);
   if (location.hash === "#horde") fillHorde(next, HORDE_ZOMBIES, HORDE_BULLETS);
-  if (wantsReviewShot(location.search, location.hash)) reviewHorde(next);
+  if (wantsReviewShot(location.search, location.hash)) reviewHorde(next, reviewZoneFromSearch(location.search));
   return next;
 }
 

@@ -8,6 +8,7 @@ import {
   EV_SHOT, MAX_BULLETS, MAX_ZOMBIES, UPG_WPN_FLAME, UPG_WPN_HARP, UPG_WPN_MORT, UPG_WPN_RIVET,
   UPG_WPN_SHOT, WPN_RIVET, Z_BRUTE, type World,
 } from "../sim/types";
+import { ZONE_BOILER, ZONE_BRASS, ZONE_TRAM, ZONE_WAVE } from "../sim/zones";
 
 export const REVIEW_HORDE = 40;
 export const REVIEW_RING = 58;
@@ -24,6 +25,12 @@ export function wantsFeelShot(search = "", hash = ""): boolean {
   return search.includes("feel=1") || hash === "#feel";
 }
 
+export function reviewZoneFromSearch(search = ""): number {
+  if (search.includes("zone=tram")) return ZONE_TRAM;
+  if (search.includes("zone=boiler")) return ZONE_BOILER;
+  return ZONE_BRASS;
+}
+
 export function reviewWalkOn(): boolean {
   return walkOn;
 }
@@ -32,7 +39,7 @@ export function setReviewWalk(on: boolean): void {
   walkOn = on;
 }
 
-export function reviewHorde(w: World): number {
+export function reviewHorde(w: World, zone = ZONE_BRASS): number {
   walkOn = true;
   w.px = ARENA_W * 0.5;
   w.py = ARENA_H * 0.5;
@@ -44,7 +51,7 @@ export function reviewHorde(w: World): number {
   w.banner = 0;
   w.fireCd = 0;
   w.kills = 47;
-  w.wave = 4;
+  w.wave = zone === ZONE_TRAM ? ZONE_WAVE[ZONE_TRAM] : zone === ZONE_BOILER ? ZONE_WAVE[ZONE_BOILER] : 4;
   w.level = 11;
   w.xp = 40;
   w.tick = 48;

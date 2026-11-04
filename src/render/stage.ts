@@ -1,7 +1,7 @@
 import { ARENA_H, ARENA_W } from "../sim/arena";
 import { H, W } from "../sim/types";
 import { blitSheet, sheetsReady, steamFrame } from "../art/sheet";
-import { eachVentFx, paintGround } from "./ground";
+import { eachVentFx, groundZone, paintGround } from "./ground";
 
 const STAGE = 2;
 export const CLOCK_X = 240;
@@ -9,6 +9,13 @@ export const CLOCK_Y = 78;
 
 let yard: HTMLCanvasElement | null = null;
 let yardPacked = 0;
+let yardZone = -1;
+
+export function bindStage(id: number): void {
+  if (yardZone === id) return;
+  yardZone = id;
+  yard = null;
+}
 
 function drawYard(ctx: CanvasRenderingContext2D): void {
   const sky = ctx.createLinearGradient(0, 0, 0, 150);
@@ -56,6 +63,11 @@ export function drawStageFx(ctx: CanvasRenderingContext2D, tick: number, camX: n
 }
 
 export function drawYardWindow(ctx: CanvasRenderingContext2D, camX: number, camY: number, vw = W, vh = H): void {
+  const z = groundZone();
+  if (yardZone !== z) {
+    yardZone = z;
+    yard = null;
+  }
   if (sheetsReady() && yardPacked === 0) {
     yard = null;
     yardPacked = 1;
