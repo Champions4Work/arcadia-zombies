@@ -14,26 +14,17 @@ import { LAYER_BACK, LAYER_FRONT, LAYER_HUD, LAYER_MID, paintLayers } from "./pl
 import "./map-events";
 import "./boss";
 import { absorbShake, shakePixels } from "./shake";
-import { drawStage } from "./stage";
+import { drawStage, drawStageFx } from "./stage";
+import { paintHurt, paintVeil } from "./veil";
 
 let lastPx = 0;
 let lastPy = 0;
 let walk = 0;
-let yard: HTMLCanvasElement | null = null;
 
 function countAlive(flag: Uint8Array, n: number): number {
   let k = 0;
   for (let i = 0; i < n; i++) if (flag[i]) k++;
   return k;
-}
-
-function hordeYard(): HTMLCanvasElement {
-  if (yard) return yard;
-  const g = document.createElement("canvas");
-  g.width = W;
-  g.height = H;
-  yard = g;
-  return g;
 }
 
 export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boolean; shake?: boolean }): void {
@@ -58,7 +49,8 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
   if (sx !== 0 || sy !== 0) c.translate(sx, sy);
   c.translate(-camX, -camY);
   if (horde) {
-    renderHorde(c, w, hordeYard());
+    renderHorde(c, w);
+    drawStageFx(c, w.tick, camX, camY);
     paintDecals(c, w);
     paintProps(c, w);
     paintPlayer(c, w, moving);
@@ -67,7 +59,7 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
     drawTesla(c, w);
     paintFx(c, w);
   } else {
-    drawStage(c, w.tick);
+    drawStage(c, w.tick, camX, camY);
     paintLayers(c, w, LAYER_BACK);
     paintDecals(c, w);
     paintActors(c, w, moving);
@@ -82,18 +74,8 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
   drawLich(c, w);
   drawChestGround(c, w);
   c.restore();
-  const vig = c.createRadialGradient(W / 2, H * 0.55, 90, W / 2, H * 0.5, 300);
-  vig.addColorStop(0, "rgba(0,0,0,0)");
-  vig.addColorStop(1, "rgba(16,8,24,0.28)");
-  c.fillStyle = vig;
-  c.fillRect(0, 0, W, H);
-  if (w.hurtCd > 0) {
-    const g = c.createRadialGradient(W / 2, H / 2, 60, W / 2, H / 2, 280);
-    g.addColorStop(0, "rgba(160,0,0,0)");
-    g.addColorStop(1, `rgba(120,0,0,${Math.min(0.4, w.hurtCd / 90)})`);
-    c.fillStyle = g;
-    c.fillRect(0, 0, W, H);
-  }
+  paintVeil(c);
+  if (w.hurtCd > 0) paintHurt(c, Math.min(1, w.hurtCd / 90));
   paintLayers(c, w, LAYER_FRONT);
   if (w.choosing) {
     c.fillStyle = "rgba(8,6,16,0.42)";
