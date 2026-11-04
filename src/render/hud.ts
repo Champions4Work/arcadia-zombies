@@ -214,57 +214,7 @@ function clockPanel(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
 }
 
 function paintHeroBust(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number): void {
-  ctx.fillStyle = "#3a2418";
-  ctx.beginPath();
-  ctx.ellipse(cx, cy + r * 0.82, r * 0.98, r * 0.42, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#5a3a22";
-  ctx.beginPath();
-  ctx.ellipse(cx - r * 0.5, cy + r * 0.62, r * 0.38, r * 0.3, -0.35, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.ellipse(cx + r * 0.5, cy + r * 0.62, r * 0.38, r * 0.3, 0.35, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = BRASS;
-  ctx.fillRect(cx - r * 0.34, cy + r * 0.36, r * 0.68, 3.2);
-  ctx.fillStyle = "#c49264";
-  ctx.beginPath();
-  ctx.ellipse(cx, cy + r * 0.22, r * 0.28, r * 0.22, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#2a1c12";
-  ctx.beginPath();
-  ctx.ellipse(cx, cy - r * 0.08, r * 0.5, r * 0.42, 0, Math.PI, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = BRASS;
-  ctx.beginPath();
-  ctx.ellipse(cx, cy - r * 0.22, r * 0.5, r * 0.4, 0, Math.PI, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = BRASS_HI;
-  ctx.beginPath();
-  ctx.ellipse(cx, cy - r * 0.4, r * 0.22, r * 0.12, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#d8a050";
-  ctx.fillRect(cx - r * 0.52, cy - r * 0.12, r * 1.04, 4);
-  ctx.fillStyle = "#1a1008";
-  ctx.fillRect(cx - r * 0.5, cy - r * 0.06, r, r * 0.28);
-  const gx = r * 0.2;
-  const gy = cy + r * 0.06;
-  for (const side of [-1, 1]) {
-    ctx.beginPath();
-    ctx.ellipse(cx + side * gx, gy, r * 0.2, r * 0.16, 0, 0, Math.PI * 2);
-    ctx.fillStyle = BRASS;
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(cx + side * gx, gy, r * 0.15, r * 0.12, 0, 0, Math.PI * 2);
-    ctx.fillStyle = "#0ad8d0";
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(cx + side * gx - r * 0.05, gy - r * 0.04, r * 0.06, r * 0.045, 0, 0, Math.PI * 2);
-    ctx.fillStyle = "#e8ffff";
-    ctx.fill();
-  }
-  ctx.fillStyle = BRASS;
-  ctx.fillRect(cx - r * 0.08, gy - r * 0.04, r * 0.16, 3);
+  blitSheetFit(ctx, "hero_idle", cx - r * 0.95, cy - r * 1.2, r * 1.9, r * 2.25);
 }
 
 function lvBadge(ctx: CanvasRenderingContext2D, x: number, y: number): void {
@@ -539,11 +489,11 @@ function checkLine(
 }
 
 function objectives(ctx: CanvasRenderingContext2D, w: World, layout: HudLayout): void {
-  const phone = layout.view.w < 720;
+  const phone = phoneHud(layout);
   const x = layout.clock.x - (phone ? 16 : 0);
   const y = layout.clock.y + layout.clock.h + 6;
-  const bw = phone ? Math.min(156, layout.view.w - x - 8) : Math.min(188, layout.view.w - x - 16);
-  const bh = phone ? 108 : 124;
+  const bw = phone ? Math.min(168, layout.view.w - x - 8) : Math.min(196, layout.view.w - x - 16);
+  const bh = phone ? 118 : 128;
   const hold = Math.max(0, 240 - ((w.tick / 60) | 0) % 240);
   blitSheetFit(ctx, "panel_frame_gears", x - 10, y - 10, bw + 20, bh + 20);
   ctx.fillStyle = "rgba(8,10,16,0.78)";
@@ -579,11 +529,9 @@ export function drawHud(ctx: CanvasRenderingContext2D, w: World): void {
   pauseButton(ctx, layout.pause);
   if (!w.choosing) {
     minimap(ctx, w, layout.minimap);
-    if (!phoneHud(layout)) {
-      portrait(ctx, w, layout.face);
-      restStick(ctx, layout);
-      skillKeys(ctx, layout);
-    }
+    portrait(ctx, w, layout.face);
+    restStick(ctx, layout);
+    skillKeys(ctx, layout);
     drawWeaponRack(ctx, w);
     ability(ctx, w, layout.ability);
     objectives(ctx, w, layout);

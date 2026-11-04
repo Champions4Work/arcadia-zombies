@@ -1,13 +1,13 @@
 import {
-  BRASS, BRASS_HI, BRASS_LO, CYAN, FONT_BODY, GLASS, INK, IRON, PANEL, XP,
+  BRASS, BRASS_HI, BRASS_LO, FONT_BODY, GLASS, INK, IRON, PANEL, XP,
 } from "../shell/theme";
 import { PX } from "./palette";
-import { blitSheet, blitSheetLean, foeSpriteId, spriteOf } from "./sheet";
+import { blitSheet, blitSheetLean, foeSpriteId, heroSpriteId, spriteOf } from "./sheet";
 
 export const HERO_LOOK_W = 40;
 export const HERO_LOOK_H = 52;
 export const HERO_PACK_H = 64;
-export const HERO_DRAW_SCALE = 1.25;
+export const HERO_DRAW_SCALE = 1.4;
 export const FOE_TO_HERO = 0.58;
 export const BRUTE_TO_HERO = 1.12;
 export const CASE_W = 4.2;
@@ -129,30 +129,6 @@ export function shambleSway(tick: number, kind: number): number {
   return Math.sin(tick * rate + 1.7) * (kind === 2 ? 0.035 : 0.07);
 }
 
-export function paintRifle(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  nx: number,
-  ny: number,
-  s: number,
-  bob: number,
-): void {
-  const hx = x + nx * 9 * s;
-  const hy = y - 22 * s - bob + ny * 7;
-  ctx.save();
-  ctx.translate(hx, hy);
-  ctx.rotate(Math.atan2(ny, nx));
-  ctx.fillStyle = PX.n;
-  ctx.fillRect(-8 * s, -3.2 * s, 10 * s, 6.4 * s);
-  ctx.fillRect(-3 * s, 2 * s, 3.6 * s, 7 * s);
-  ctx.fillStyle = BRASS;
-  ctx.fillRect(-1 * s, -2.2 * s, 28 * s, 4.4 * s);
-  ctx.fillStyle = BRASS_HI;
-  ctx.fillRect(20 * s, -1.6 * s, 10 * s, 3.2 * s);
-  ctx.restore();
-}
-
 export function paintSignatureHero(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -169,167 +145,35 @@ export function paintSignatureHero(
   const mag = Math.max(0.2, Math.hypot(aimX, aimY));
   const nx = aimX / mag;
   const ny = aimY / mag;
-  paintShadow(ctx, x, y, 16 * s, 6 * s);
+  paintShadow(ctx, x, y, 14 * s, 5 * s);
   ctx.save();
-  ctx.fillStyle = "rgba(62,220,220,0.5)";
+  ctx.fillStyle = "rgba(62,220,220,0.32)";
   ctx.beginPath();
-  ctx.ellipse(x, y + 3, 14 * s, 5 * s, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y + 3, 11 * s, 4 * s, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.strokeStyle = CYAN;
-  ctx.globalAlpha = 0.96;
-  ctx.lineWidth = 2.4 * s;
-  ctx.stroke();
   ctx.restore();
-  paintDiveSuit(ctx, x, y, s, bob, flip, tick, moving);
-  paintRifle(ctx, x, y, nx, ny, s, bob);
+  blitSheetLean(ctx, heroSpriteId(moving, tick), x, y, flip, bob, 0, s);
   if (!shoot) return;
-  const mx = x + nx * 36 * s;
-  const my = y - 22 * s - bob + ny * 10;
+  const side = flip ? -1 : 1;
+  const mx = x + side * 34 * s + nx * 4;
+  const my = y - 26 * s - bob + ny * 5;
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
   ctx.fillStyle = "rgba(255,110,24,0.98)";
   ctx.beginPath();
-  ctx.ellipse(mx, my, 20, 12, Math.atan2(ny, nx), 0, Math.PI * 2);
+  ctx.ellipse(mx, my, 14, 8, Math.atan2(ny, nx), 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = "rgba(255,230,110,0.98)";
   ctx.beginPath();
-  ctx.ellipse(mx, my, 9, 5.4, Math.atan2(ny, nx), 0, Math.PI * 2);
+  ctx.ellipse(mx, my, 7, 4, Math.atan2(ny, nx), 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = "#ffe07a";
-  ctx.lineWidth = 4.2;
+  ctx.lineWidth = 3.2;
   ctx.lineCap = "round";
   ctx.beginPath();
   ctx.moveTo(mx, my);
-  ctx.lineTo(mx + nx * 62, my + ny * 62);
+  ctx.lineTo(mx + nx * 18, my + ny * 18);
   ctx.stroke();
-  ctx.restore();
-}
-
-function paintDiveSuit(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  s: number,
-  bob: number,
-  flip: boolean,
-  tick: number,
-  moving: boolean,
-): void {
-  const frame = moving ? (tick >> 3) & 3 : 0;
-  const liftL = frame === 1 ? 3.2 : frame === 2 ? 1.2 : 0;
-  const liftR = frame === 3 ? 3.2 : frame === 2 ? 1.2 : 0;
-  ctx.save();
-  ctx.translate(x, y - bob);
-  if (flip) ctx.scale(-1, 1);
-  ctx.fillStyle = "#12100c";
-  ctx.beginPath();
-  ctx.ellipse(11.2 * s, -19 * s, 5.4 * s, 9.4 * s, 0.22, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#2a2014";
-  ctx.beginPath();
-  ctx.ellipse(11.2 * s, -19 * s, 4.2 * s, 8 * s, 0.22, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = BRASS_LO;
-  ctx.fillRect(7.6 * s, -25.2 * s, 7.6 * s, 1.8 * s);
-  ctx.fillRect(7.8 * s, -19.4 * s, 7.2 * s, 1.6 * s);
-  ctx.fillRect(8 * s, -13.8 * s, 6.6 * s, 1.6 * s);
-  ctx.fillStyle = "rgba(70,230,255,0.55)";
-  ctx.beginPath();
-  ctx.ellipse(12.2 * s, -19.2 * s, 1.6 * s, 4.2 * s, 0.22, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = BRASS_LO;
-  ctx.lineWidth = 1.6 * s;
-  ctx.beginPath();
-  ctx.arc(6.4 * s, -28.6 * s, 6.8 * s, 0.15, 1.55);
-  ctx.stroke();
-  ctx.fillStyle = "#1a1008";
-  ctx.fillRect(-5.4 * s, -12.4 * s + liftL, 4.6 * s, 13.6 * s - liftL);
-  ctx.fillRect(0.8 * s, -12.4 * s + liftR, 4.6 * s, 13.6 * s - liftR);
-  ctx.fillStyle = "#3a2418";
-  ctx.fillRect(-4.8 * s, -11.6 * s + liftL, 3.4 * s, 9.2 * s - liftL);
-  ctx.fillRect(1.2 * s, -11.6 * s + liftR, 3.4 * s, 9.2 * s - liftR);
-  ctx.fillStyle = BRASS_LO;
-  ctx.fillRect(-5.6 * s, -0.8 * s + liftL, 5 * s, 3.2 * s);
-  ctx.fillRect(0.6 * s, -0.8 * s + liftR, 5 * s, 3.2 * s);
-  ctx.fillStyle = "#1a1008";
-  ctx.beginPath();
-  ctx.ellipse(0, -16.4 * s, 6.8 * s, 8.4 * s, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#3a2418";
-  ctx.beginPath();
-  ctx.ellipse(0.3 * s, -16.8 * s, 5.4 * s, 7.2 * s, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#241610";
-  ctx.beginPath();
-  ctx.ellipse(-1.6 * s, -16.6 * s, 3.4 * s, 6.2 * s, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = BRASS_LO;
-  ctx.fillRect(-4.6 * s, -20.4 * s, 9.2 * s, 2.2 * s);
-  ctx.fillRect(-3.8 * s, -15.2 * s, 7.6 * s, 1.6 * s);
-  ctx.fillStyle = "#5a3a22";
-  ctx.beginPath();
-  ctx.ellipse(-7.2 * s, -21.6 * s, 4.2 * s, 3.2 * s, -0.32, 0, Math.PI * 2);
-  ctx.ellipse(7.2 * s, -21.6 * s, 4.2 * s, 3.2 * s, 0.32, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#2a1c12";
-  ctx.beginPath();
-  ctx.ellipse(-7 * s, -21.8 * s, 2.8 * s, 2.1 * s, -0.32, 0, Math.PI * 2);
-  ctx.ellipse(7 * s, -21.8 * s, 2.8 * s, 2.1 * s, 0.32, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = BRASS;
-  ctx.beginPath();
-  ctx.ellipse(0, -24.8 * s, 6.4 * s, 2.4 * s, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = BRASS_LO;
-  ctx.fillRect(-5.2 * s, -26.2 * s, 10.4 * s, 2.4 * s);
-  ctx.fillStyle = "#5a3a18";
-  ctx.beginPath();
-  ctx.ellipse(0, -34.2 * s, 10.6 * s, 9.8 * s, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = BRASS_LO;
-  ctx.beginPath();
-  ctx.ellipse(0, -34.2 * s, 9.8 * s, 9.2 * s, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = BRASS;
-  ctx.beginPath();
-  ctx.ellipse(0.4 * s, -35.2 * s, 8.2 * s, 7.6 * s, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = BRASS_HI;
-  ctx.beginPath();
-  ctx.ellipse(-1.6 * s, -38.8 * s, 4.4 * s, 3.2 * s, -0.4, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = INK;
-  ctx.lineWidth = 1.5 * s;
-  ctx.beginPath();
-  ctx.ellipse(0, -34.2 * s, 10.6 * s, 9.8 * s, 0, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.fillStyle = "#0c0806";
-  ctx.fillRect(-8.6 * s, -37.2 * s, 17.2 * s, 6.4 * s);
-  ctx.fillStyle = "#1a1008";
-  ctx.fillRect(-8 * s, -36.4 * s, 16 * s, 4.8 * s);
-  for (const side of [-1, 1]) {
-    ctx.beginPath();
-    ctx.ellipse(side * 3.4 * s, -34.2 * s, 3.2 * s, 2.6 * s, 0, 0, Math.PI * 2);
-    ctx.fillStyle = BRASS;
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(side * 3.4 * s, -34.2 * s, 2.6 * s, 2.1 * s, 0, 0, Math.PI * 2);
-    ctx.fillStyle = "#0ad8d0";
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(side * 3.4 * s - 0.7 * s, -34.8 * s, 0.8 * s, 0.55 * s, 0, 0, Math.PI * 2);
-    ctx.fillStyle = "#e8ffff";
-    ctx.fill();
-  }
-  ctx.fillStyle = BRASS;
-  ctx.fillRect(-1.4 * s, -35.2 * s, 2.8 * s, 1.8 * s);
-  ctx.fillStyle = BRASS_HI;
-  ctx.beginPath();
-  ctx.ellipse(-8.8 * s, -30.4 * s, 0.8 * s, 0.8 * s, 0, 0, Math.PI * 2);
-  ctx.ellipse(8.8 * s, -30.4 * s, 0.8 * s, 0.8 * s, 0, 0, Math.PI * 2);
-  ctx.ellipse(-6.2 * s, -42.2 * s, 0.7 * s, 0.7 * s, 0, 0, Math.PI * 2);
-  ctx.ellipse(6.2 * s, -42.2 * s, 0.7 * s, 0.7 * s, 0, 0, Math.PI * 2);
-  ctx.fill();
   ctx.restore();
 }
 
