@@ -90,6 +90,10 @@ describe("viewport chrome", () => {
       expect(hud.weapons.h).toBeLessThanOrEqual(40);
       expect(hud.minimap.h).toBeGreaterThanOrEqual(52);
       expect(hud.minimap.h).toBeLessThanOrEqual(88);
+      expect(hud.face.w).toBeGreaterThanOrEqual(64);
+      expect(hud.face.h).toBeGreaterThanOrEqual(28);
+      expect(hud.face.x).toBeGreaterThanOrEqual(hud.minimap.x + hud.minimap.w);
+      expect(hud.face.y).toBeGreaterThanOrEqual(hud.minimap.y);
       expect(hud.clock.h).toBeGreaterThanOrEqual(32);
       expect(hud.ability.w).toBeGreaterThanOrEqual(48);
       expect(hud.ability.h).toBeGreaterThanOrEqual(48);

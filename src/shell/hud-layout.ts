@@ -24,6 +24,7 @@ export interface HudLayout {
   clock: Box;
   pause: Circle;
   minimap: Box;
+  face: Box;
   weapons: Box;
   ability: Box;
 }
@@ -77,6 +78,7 @@ export function hudBoxes(layout: HudLayout): Box[] {
     layout.clock,
     circleBox(layout.pause),
     layout.minimap,
+    layout.face,
     layout.weapons,
     layout.ability,
   ];
@@ -137,7 +139,14 @@ export function layoutHud(vp: Viewport, fit: Fit): HudLayout {
     w: Math.max(72, clock.x - gap - (minimap.x + minimap.w + gap)),
     h: rowH,
   };
-  return { view, frame: frameBox(fit), hero, xp, difficulty, clock, pause, minimap, weapons, ability };
+  const faceS = Math.round((portrait ? 36 : 32) * u);
+  const face = {
+    x: minimap.x + minimap.w + gap,
+    y: difficulty.y + difficulty.h + gap,
+    w: faceS + 70,
+    h: faceS,
+  };
+  return { view, frame: frameBox(fit), hero, xp, difficulty, clock, pause, minimap, face, weapons, ability };
 }
 
 export function pauseHitAt(layout: HudLayout, x: number, y: number): boolean {
@@ -158,6 +167,7 @@ export function hudHitAt(layout: HudLayout, x: number, y: number): boolean {
 export function stickFrame(layout: HudLayout): Box {
   const top = Math.max(
     layout.minimap.y + layout.minimap.h,
+    layout.face.y + layout.face.h,
     layout.difficulty.y + layout.difficulty.h,
     layout.clock.y + layout.clock.h,
     layout.pause.y + layout.pause.r,

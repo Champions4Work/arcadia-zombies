@@ -2,7 +2,10 @@ import { stampBlood, stampCasing } from "../render/stains";
 import { ARENA_H, ARENA_W } from "../sim/arena";
 import { Z_ELITE } from "../sim/foes";
 import { mapState } from "../sim/map-events";
-import { EV_SHOT, MAX_ZOMBIES, Z_BRUTE, type World } from "../sim/types";
+import {
+  EV_SHOT, MAX_ZOMBIES, UPG_WPN_FLAME, UPG_WPN_HARP, UPG_WPN_MORT, UPG_WPN_RIVET,
+  UPG_WPN_SHOT, Z_BRUTE, type World,
+} from "../sim/types";
 
 export const REVIEW_HORDE = 36;
 export const REVIEW_RING = 108;
@@ -27,6 +30,12 @@ export function reviewHorde(w: World): number {
   w.wave = 4;
   w.level = 11;
   w.xp = 40;
+  w.tick = 48;
+  w.upgrades[UPG_WPN_RIVET] = 3;
+  w.upgrades[UPG_WPN_SHOT] = 2;
+  w.upgrades[UPG_WPN_FLAME] = 1;
+  w.upgrades[UPG_WPN_HARP] = 1;
+  w.upgrades[UPG_WPN_MORT] = 2;
   w.events[EV_SHOT] = 1;
   const bag = mapState(w);
   bag.banner = 0;
@@ -48,11 +57,16 @@ export function reviewHorde(w: World): number {
     z.vx[i] = 0;
     z.vy[i] = 0;
     stampBlood(z.x[i] ?? 0, (z.y[i] ?? 0) + 6, i * 3);
-    if ((i & 1) === 0) stampCasing(w.px - 18 - (i % 7) * 4, w.py + 8 + ((i * 3) % 9), i);
+    stampBlood((z.x[i] ?? 0) + 8, (z.y[i] ?? 0) + 10, i * 5);
+    stampCasing(w.px - 20 - (i % 9) * 5, w.py + 6 + ((i * 4) % 14), i);
     n++;
   }
   stampCasing(w.px - 14, w.py + 8, 9);
   stampCasing(w.px + 10, w.py + 12, 11);
+  stampCasing(w.px - 22, w.py + 16, 13);
+  stampCasing(w.px + 16, w.py + 4, 15);
   stampBlood(w.px + 22, w.py + 16, 5);
+  stampBlood(w.px - 28, w.py + 20, 7);
+  stampBlood(w.px + 8, w.py + 24, 9);
   return n;
 }
