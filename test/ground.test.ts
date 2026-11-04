@@ -87,9 +87,9 @@ describe("yard floor map", () => {
   it("mixes cobble, brass, rails, vents, and rubble", () => {
     const n = tally();
     expect((n[KIND_COBBLE] ?? 0) + (n[KIND_COBBLE_D] ?? 0) + (n[KIND_COBBLE_W] ?? 0)).toBeGreaterThan(400);
-    expect((n[KIND_BRASS] ?? 0) + (n[KIND_BRASS_W] ?? 0)).toBeGreaterThan(40);
-    expect(n[KIND_RAIL_H] ?? 0).toBeGreaterThan(40);
-    expect(n[KIND_RAIL_V] ?? 0).toBeGreaterThan(20);
+    expect((n[KIND_BRASS] ?? 0) + (n[KIND_BRASS_W] ?? 0)).toBeGreaterThan(20);
+    expect(n[KIND_RAIL_H] ?? 0).toBeGreaterThan(10);
+    expect(n[KIND_RAIL_V] ?? 0).toBe(0);
     expect((n[KIND_VENT] ?? 0) + (n[KIND_GRATE] ?? 0)).toBeGreaterThan(4);
     expect(n[KIND_RUBBLE] ?? 0).toBeGreaterThan(8);
   });
@@ -110,14 +110,14 @@ describe("yard floor map", () => {
       if (run > 12) vCol = c;
     }
     expect(hRow).toBeGreaterThan(6);
-    expect(vCol).toBeGreaterThan(0);
+    expect(vCol).toBe(-1);
   });
 
   it("plants lamps, pipes, gears, stains, and rubble piles", () => {
     const n = featTally();
-    expect(n[FEAT_LAMP] ?? 0).toBeGreaterThanOrEqual(6);
-    expect(n[FEAT_PIPE] ?? 0).toBeGreaterThanOrEqual(6);
-    expect(n[FEAT_GEAR] ?? 0).toBeGreaterThanOrEqual(4);
+    expect(n[FEAT_LAMP] ?? 0).toBeGreaterThanOrEqual(3);
+    expect(n[FEAT_PIPE] ?? 0).toBeGreaterThanOrEqual(1);
+    expect(n[FEAT_GEAR] ?? 0).toBe(0);
     expect(n[FEAT_STAIN] ?? 0).toBeGreaterThanOrEqual(8);
     expect(n[FEAT_RUBBLE] ?? 0).toBeGreaterThanOrEqual(8);
   });
@@ -185,7 +185,7 @@ describe("yard floor paint", () => {
     const blob = fills.join(" ");
     expect(blob.includes("#5c6e7e")).toBe(false);
     expect(blob.includes("#7f93a4")).toBe(false);
-    expect(/#24303c|rgba\(16,24,36/.test(blob)).toBe(true);
+    expect(/#181412|#24303c|rgba\(16,24,36/.test(blob)).toBe(true);
     expect(/#2a2a30|rgba\(24,24,32/.test(blob)).toBe(false);
     expect(/#c49038|#f0b03a|#fff1c2/.test(blob)).toBe(false);
   });

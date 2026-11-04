@@ -1,4 +1,5 @@
 import { ARENA_H, ARENA_W } from "../sim/arena";
+import { stampBlood, stampCasing } from "../render/stains";
 import { BOSS_TANK, bossMaxHp } from "../sim/boss";
 import { UNIONS } from "../sim/evolve";
 import {
@@ -7,7 +8,7 @@ import {
 import { beginLevel, xpNeed } from "../sim/progress";
 import {
   MAX_BULLETS, MAX_ZOMBIES, UNION_BRIAR, UPG_DYNAMO, UPG_FIRE, UPG_HP, UPG_MAX, UPG_TESLA,
-  Z_BRUTE, Z_GHOUL, Z_SHAMBLER, type World,
+  EV_SHOT, Z_BRUTE, Z_GHOUL, Z_SHAMBLER, type World,
 } from "../sim/types";
 
 const ROW = [Z_SHAMBLER, Z_GHOUL, Z_BRUTE, Z_SPITTER, Z_GAS, Z_KNIGHT, Z_RAT];
@@ -142,9 +143,12 @@ export function stageObjectives(w: World): void {
   w.hurtCd = 0;
   w.px = ARENA_W / 2;
   w.py = ARENA_H / 2;
+  w.aimX = 0.92;
+  w.aimY = -0.18;
+  w.events[EV_SHOT] = 1;
   const z = w.zombies;
   for (let i = 0; i < MAX_ZOMBIES; i++) z.alive[i] = 0;
-  const n = 16;
+  const n = 40;
   for (let i = 0; i < n; i++) {
     const a = (i / n) * Math.PI * 2;
     z.alive[i] = 1;
@@ -154,6 +158,10 @@ export function stageObjectives(w: World): void {
     z.vx[i] = 0;
     z.vy[i] = 0;
     z.hp[i] = foeHp(Z_SHAMBLER, w.rank, false);
+  }
+  for (let i = 0; i < 96; i++) {
+    stampBlood(w.px + ((i * 37) % 140) - 70, w.py + ((i * 53) % 120) - 60, i);
+    if ((i & 3) === 0) stampCasing(w.px + ((i * 19) % 80) - 40, w.py + ((i * 23) % 70) - 35, i);
   }
 }
 

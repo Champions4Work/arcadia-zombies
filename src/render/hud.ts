@@ -113,19 +113,22 @@ function plate(ctx: CanvasRenderingContext2D, box: Box, id = "panel_frame_small"
 }
 
 function drawHealth(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
+  const layout = currentHud();
+  const phone = layout?.phone ?? false;
   const frac = w.maxHp > 0 ? Math.max(0, Math.min(1, w.hp / w.maxHp)) : 0;
   const low = frac <= 0.35;
   const cx = box.x + box.w / 2;
   const cy = box.y + box.h / 2;
   const r = Math.min(box.w, box.h) * 0.42;
+  const heartCol = low ? DANGER : phone ? CYAN : HEALTH;
   blitSheetFit(ctx, "heart_ring", box.x - 8, box.y - 8, box.w + 16, box.h + 16);
   ctx.beginPath();
   ctx.arc(cx, cy, r + 4, 0, Math.PI * 2);
-  ctx.strokeStyle = BRASS;
-  ctx.lineWidth = 3.4;
+  ctx.strokeStyle = phone ? CYAN : BRASS;
+  ctx.lineWidth = phone ? 3 : 3.4;
   ctx.stroke();
-  ringMeter(ctx, cx, cy, r, frac, low ? DANGER : HEALTH);
-  heartIcon(ctx, cx, cy + 1, r * 0.62, low ? DANGER : STEAM);
+  ringMeter(ctx, cx, cy, r, frac, heartCol);
+  heartIcon(ctx, cx, cy + 1, r * 0.62, heartCol);
   if (w.meta.revive > 0) ink(ctx, "REV", cx, box.y + 8, 9, COPPER, "center");
 }
 
@@ -164,14 +167,34 @@ function stampInk(
   ctx.restore();
 }
 
-function banner(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
+function banner(ctx: CanvasRenderingContext2D, w: World, box: Box, phone: boolean): void {
   plate(ctx, box, "panel_frame_pipes");
-  ctx.fillStyle = "#8a5a20";
-  ctx.fillRect(box.x + 8, box.y + 18, box.w - 16, 12);
-  ctx.fillStyle = "#e0a040";
-  ctx.fillRect(box.x + 10, box.y + 20, (box.w - 20) * 0.86, 8);
-  stampInk(ctx, zoneChapterAt(w.wave), box.x + box.w / 2, box.y + 12, 12, "#f0d080");
-  stampInk(ctx, zoneTitleAt(w.wave), box.x + box.w / 2, box.y + box.h - 12, 11, "#fff6df");
+  if (!phone) {
+    ctx.fillStyle = "#8a5a20";
+    ctx.fillRect(box.x + 8, box.y + 18, box.w - 16, 12);
+    ctx.fillStyle = "#e0a040";
+    ctx.fillRect(box.x + 10, box.y + 20, (box.w - 20) * 0.86, 8);
+    stampInk(ctx, zoneChapterAt(w.wave), box.x + box.w / 2, box.y + 12, 12, "#f0d080");
+    stampInk(ctx, zoneTitleAt(w.wave), box.x + box.w / 2, box.y + box.h - 12, 11, "#fff6df");
+    return;
+  }
+  const cy = box.y + box.h / 2;
+  ctx.fillStyle = "#c56a18";
+  ctx.fillRect(box.x + 6, box.y + 6, box.w - 12, box.h - 12);
+  ctx.fillStyle = "#f0a030";
+  ctx.fillRect(box.x + 34, box.y + 8, Math.max(8, box.w - 44), box.h - 16);
+  ctx.fillStyle = "#1a1008";
+  ctx.beginPath();
+  ctx.arc(box.x + 20, cy, 9, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#f6e2a8";
+  ctx.beginPath();
+  ctx.moveTo(box.x + 16, cy - 5);
+  ctx.lineTo(box.x + 16, cy + 5);
+  ctx.lineTo(box.x + 25, cy);
+  ctx.closePath();
+  ctx.fill();
+  stampInk(ctx, difficultyLabel(w.rank), box.x + 34 + Math.max(8, box.w - 44) / 2, cy, 14, "#1a1008");
 }
 
 function skull(ctx: CanvasRenderingContext2D, x: number, y: number): void {
@@ -192,9 +215,16 @@ function skull(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   ctx.fillRect(x + 1.4, y + 3.2, 1.4, 2.4);
 }
 
-function clockPanel(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
+function clockPanel(ctx: CanvasRenderingContext2D, w: World, box: Box, phone: boolean): void {
   plate(ctx, box, "panel_frame_small");
   const face = waveFace(w);
+  if (phone) {
+    stampInk(ctx, formatClock(w.tick), box.x + 8, box.y + 12, 12, "#fff6df", "left");
+    stampInk(ctx, `Wave ${face.n}/${face.of}`, box.x + box.w - 8, box.y + 12, 10, "#f0d080", "right");
+    skull(ctx, box.x + 14, box.y + box.h - 14);
+    ink(ctx, `${w.kills | 0}`, box.x + 24, box.y + box.h - 14, 12, "#f6f1e6");
+    return;
+  }
   const wave = face.n;
   const cap = face.of;
   stampInk(ctx, `Wave ${wave}/${cap}`, box.x + 8, box.y + 10, 11, "#fff6df", "left");
@@ -519,14 +549,16 @@ export function drawHud(ctx: CanvasRenderingContext2D, w: World): void {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   drawHealth(ctx, w, layout.hero);
   drawXp(ctx, w, layout);
-  if (!w.choosing) banner(ctx, w, layout.difficulty);
-  clockPanel(ctx, w, layout.clock);
+  if (!w.choosing) banner(ctx, w, layout.difficulty, layout.phone);
+  clockPanel(ctx, w, layout.clock, layout.phone);
   pauseButton(ctx, layout.pause);
   if (!w.choosing) {
     minimap(ctx, w, layout.minimap);
-    portrait(ctx, w, layout.face);
-    restStick(ctx, layout);
-    skillKeys(ctx, layout);
+    if (!layout.phone && layout.face.w > 0) portrait(ctx, w, layout.face);
+    if (!layout.phone) {
+      restStick(ctx, layout);
+      skillKeys(ctx, layout);
+    }
     drawWeaponRack(ctx, w);
     ability(ctx, w, layout.ability);
     objectives(ctx, w, layout.objectives);

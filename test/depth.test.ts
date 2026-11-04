@@ -216,7 +216,7 @@ describe("gameplay depth hooks", () => {
     expect(src.includes("breakable_gear_pylon")).toBe(true);
     expect(src.includes("decal_vent")).toBe(true);
     expect(src.includes("decal_grate")).toBe(true);
-    expect(src.includes("decal_hazard")).toBe(true);
+    expect(src.includes("decal_hazard")).toBe(false);
   });
 
   it("parks a glowing crate in the review frame and keeps vent pads on the yard", () => {
@@ -225,7 +225,8 @@ describe("gameplay depth hooks", () => {
     expect(cargoOn(w, 0)).toBe(1);
     expect(cargoPhase(w, 0)).toBe(CARGO_LAND);
     expect(cargoKind(w, 0)).toBe(CARGO_UPG);
-    expect(Math.abs(cargoX(w, 0) - (w.px + 14))).toBeLessThan(0.1);
+    expect(Math.abs(cargoX(w, 0) - 468)).toBeLessThan(0.1);
+    expect(Math.abs(cargoY(w, 0) - 404)).toBeLessThan(0.1);
     expect(ventCount(w)).toBeGreaterThanOrEqual(3);
     expect(ventX(w, 0)).toBeGreaterThan(0);
     expect(ventY(w, 0)).toBeGreaterThan(0);

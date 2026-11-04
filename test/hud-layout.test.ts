@@ -91,21 +91,27 @@ describe("viewport chrome", () => {
       expect(hud.weapons.h).toBeLessThanOrEqual(48);
       expect(hud.minimap.h).toBeGreaterThanOrEqual(52);
       expect(hud.minimap.h).toBeLessThanOrEqual(96);
-      expect(hud.face.w).toBeGreaterThanOrEqual(64);
-      expect(hud.face.h).toBeGreaterThanOrEqual(28);
-      expect(hud.face.x).toBeGreaterThanOrEqual(hud.minimap.x + hud.minimap.w);
-      expect(hud.face.y).toBeGreaterThanOrEqual(hud.minimap.y);
-      expect(hud.face.x + hud.face.w).toBeLessThan(hud.clock.x - 8);
+      if (!hud.phone) {
+        expect(hud.face.w).toBeGreaterThanOrEqual(64);
+        expect(hud.face.h).toBeGreaterThanOrEqual(28);
+        expect(hud.face.x).toBeGreaterThanOrEqual(hud.minimap.x + hud.minimap.w);
+        expect(hud.face.y).toBeGreaterThanOrEqual(hud.minimap.y);
+        expect(hud.face.x + hud.face.w).toBeLessThan(hud.clock.x - 8);
+      } else {
+        expect(hud.face.w).toBe(0);
+      }
       const phonePortrait = phone.h > phone.w && phone.w <= 480;
       if (phonePortrait) {
         expect(hud.hero.h).toBeGreaterThanOrEqual(52);
         expect(hud.weapons.h).toBeGreaterThanOrEqual(40);
         expect(hud.ability.h).toBeGreaterThanOrEqual(60);
       }
-      const painted = circleBox({ x: hud.hero.x + 36, y: hud.hero.y - 94, r: 30 });
-      expect(boxesOverlap(painted, hud.hero)).toBe(false);
-      expect(boxesOverlap(painted, hud.ability)).toBe(false);
-      expect(painted.x).toBeGreaterThanOrEqual(-0.5);
+      if (!hud.phone) {
+        const painted = circleBox({ x: hud.hero.x + 36, y: hud.hero.y - 94, r: 30 });
+        expect(boxesOverlap(painted, hud.hero)).toBe(false);
+        expect(boxesOverlap(painted, hud.ability)).toBe(false);
+        expect(painted.x).toBeGreaterThanOrEqual(-0.5);
+      }
       expect(hud.clock.h).toBeGreaterThanOrEqual(32);
       expect(hud.ability.w).toBeGreaterThanOrEqual(48);
       expect(hud.ability.h).toBeGreaterThanOrEqual(48);

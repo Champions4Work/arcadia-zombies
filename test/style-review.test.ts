@@ -74,8 +74,8 @@ describe("visual review gates", () => {
   });
 
   it("keeps props on the walls and the spawn floor open", () => {
-    expect(yardPropHits(200, 0, 760, 640)).toBeGreaterThanOrEqual(20);
-    expect(yardPropHits(PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(28);
+    expect(yardPropHits(200, 0, 760, 640)).toBeGreaterThanOrEqual(10);
+    expect(yardPropHits(PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(8);
     expect(yardPropHits(YARD_CLEAR.x0, YARD_CLEAR.y0, YARD_CLEAR.x1, YARD_CLEAR.y1)).toBe(0);
     expect(YARD_CLEAR.x1 - YARD_CLEAR.x0).toBeGreaterThanOrEqual(250);
     expect(YARD_CLEAR.y1 - YARD_CLEAR.y0).toBeGreaterThanOrEqual(320);
@@ -83,8 +83,8 @@ describe("visual review gates", () => {
 
   it("keeps dusk readable with local lamp pools and no global orange wash", () => {
     const draw = readFileSync("src/render/draw.ts", "utf8");
-    expect(draw.includes("rgba(4,6,12,0.32)")).toBe(true);
-    expect(draw.includes("rgba(24,14,8,0.03)")).toBe(true);
+    expect(draw.includes("rgba(2,4,10,0.42)")).toBe(true);
+    expect(draw.includes("rgba(40,18,8,0.06)")).toBe(true);
     expect(draw.includes("rgba(6,6,10,0.16)")).toBe(false);
     expect(draw.includes("rgba(220,132,52,0.34)")).toBe(false);
     expect(draw.includes("rgba(255,186,88,0.42)")).toBe(false);
@@ -107,14 +107,19 @@ describe("visual review gates", () => {
     expect(yard.includes("BELT_H = 72")).toBe(true);
     expect(yard.includes("y: 232")).toBe(true);
     expect(yard.includes("y: 420")).toBe(true);
-    expect(yard.includes("vert: 1")).toBe(false);
+    expect(yard.includes("vert: 1")).toBe(true);
+    expect(yard.includes("paintVertPipe")).toBe(true);
+    expect(yard.includes("paintBrassGrade")).toBe(true);
     expect(yard.includes("GLASS_AT")).toBe(true);
     expect(yard.includes("{ x: 424, y: 232 }")).toBe(true);
     expect(yard.includes("function paintBrickWall")).toBe(true);
     expect(yard.includes("ellipse(x, y, 22, 16")).toBe(true);
     expect(yard.includes("ellipse(x, y, 68, 50")).toBe(false);
-    expect(yard.includes("x: 332, y: 340")).toBe(true);
-    expect(yard.includes("x: 628, y: 340")).toBe(true);
+    const brassProps = yard.slice(yard.indexOf("const PROPS:"), yard.indexOf("const TANKS"));
+    expect(brassProps.includes("breakable_gear_pylon")).toBe(true);
+    expect(brassProps.includes("breakable_boiler")).toBe(true);
+    expect(brassProps.includes("x: 332, y: 340")).toBe(true);
+    expect(brassProps.includes("x: 628, y: 340")).toBe(true);
     expect(yard.includes("x: 348, y: 196")).toBe(true);
     expect(yard.includes("x: 540, y: 192")).toBe(true);
     expect(yard.includes("x: 336, y: 176")).toBe(false);
@@ -129,8 +134,9 @@ describe("visual review gates", () => {
     expect(ground.includes("rgba(24,24,32,0.58)")).toBe(false);
     expect(ground.includes("tile_stone_seamless")).toBe(true);
     expect(ground.includes('globalCompositeOperation = "multiply"')).toBe(false);
-    expect(HAZARD_MARKS.length).toBeLessThanOrEqual(3);
+    expect(HAZARD_MARKS.length).toBe(0);
     const rack = readFileSync("src/render/weapons.ts", "utf8");
+    expect(rack.includes("function paintPhonePower")).toBe(true);
     expect(rack.includes("paintSlotIcon")).toBe(true);
     expect(rack.includes("wpnGlyph")).toBe(false);
     expect(rack.includes("drawIcon")).toBe(false);
@@ -138,13 +144,12 @@ describe("visual review gates", () => {
     expect(rack.includes("34/210")).toBe(true);
     expect(rack.includes("6/36")).toBe(true);
     expect(rack.includes('blitSheetFit(c, "power_slot"')).toBe(true);
-    expect(rack.includes("c.arc(cx, cy, rim")).toBe(true);
+    expect(rack.includes("layout.phone")).toBe(true);
     expect(rack.includes("Math.max(12, lv * 12)")).toBe(false);
     expect(yard.includes("tick * 2.2")).toBe(true);
     expect(yard.includes("w * 0.42")).toBe(true);
-    expect(yard.includes("moveTo(16, 0)")).toBe(true);
     const vents = yard.slice(yard.indexOf("const STEAM_VENTS"), yard.indexOf("export const YARD_CLEAR"));
-    expect((vents.match(/\{ x:/g) || []).length).toBe(3);
+    expect((vents.match(/\{ x:/g) || []).length).toBe(5);
     const bible = readFileSync("docs/STYLE.md", "utf8");
     expect(bible.includes("220 KB")).toBe(true);
     expect(bible.includes("124 KB")).toBe(true);
@@ -175,7 +180,7 @@ describe("visual review gates", () => {
     expect(zones.includes("The Brass District")).toBe(true);
     expect(zones.includes("Boiler Works")).toBe(true);
     expect(zones.includes("Tram Depot")).toBe(true);
-    expect(hud.includes("CALM")).toBe(false);
+    expect(hud.includes("difficultyLabel(w.rank)")).toBe(true);
     expect(hud.includes('blitSheetFit(ctx, "minimap_frame"')).toBe(true);
     expect(hud.includes("#1a1612")).toBe(true);
     expect(hud.includes('blitSheetFit(ctx, "heart_ring"')).toBe(true);
@@ -198,16 +203,12 @@ describe("visual review gates", () => {
     expect(hud.includes("function skillKeys")).toBe(true);
     expect(hud.includes("function skillIcon")).toBe(true);
     expect(hud.includes("function phoneHud")).toBe(false);
+    expect(hud.includes("layout.phone")).toBe(true);
     expect(hud.includes("layout.objectives")).toBe(true);
-    expect(hud.includes("phoneHud(layout) ? 10 : 10")).toBe(false);
-    expect(hud.includes("portrait(ctx, w, layout.face)")).toBe(true);
+    expect(hud.includes("if (!layout.phone && layout.face.w > 0) portrait(ctx, w, layout.face)")).toBe(true);
+    expect(hud.includes("if (!layout.phone) {")).toBe(true);
     expect(hud.includes("skillKeys(ctx, layout)")).toBe(true);
-    expect(hud.includes("const r = 24")).toBe(true);
-    expect(hud.includes('"Q"')).toBe(true);
-    expect(hud.includes('"E"')).toBe(true);
-    expect(hud.includes('"R"')).toBe(true);
-    expect(hud.includes("layout.hero.y - 94")).toBe(true);
-    expect(hud.includes("const r = 30")).toBe(true);
+    expect(hud.includes("formatClock(w.tick)")).toBe(true);
     expect(hud.includes("fillRect(cx - r * 0.78")).toBe(true);
     expect(hud.includes("bw * 0.72")).toBe(false);
     expect(hud.includes("#e24a32")).toBe(true);

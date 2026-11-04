@@ -75,11 +75,11 @@ export function reviewHorde(w: World, zone = ZONE_BRASS): number {
     dx += ((i * 13) % 19) - 9;
     dy += ((i * 29) % 23) - 11;
     const d2 = dx * dx + dy * dy;
-    const ring = REVIEW_RING + (i % 28);
+    const ring = REVIEW_RING + (i % 22);
     if (d2 < 1) {
       dx = ring;
       dy = ((i * 11) % 25) - 12;
-    } else if (d2 < 52 * 52) {
+    } else if (d2 < 46 * 46) {
       const m = ring / Math.sqrt(d2);
       const dx0 = dx * m;
       const dy0 = dy * m;
@@ -98,6 +98,9 @@ export function reviewHorde(w: World, zone = ZONE_BRASS): number {
     z.vy[i] = 0;
     stampBlood(z.x[i] ?? 0, (z.y[i] ?? 0) + 6, i * 3);
     n++;
+  }
+  for (let c = 0; c < 18; c++) {
+    stampCasing(w.px - 58 + ((c * 31) % 104), w.py + 6 + ((c * 17) % 56), c * 5);
   }
   juiceHit(3, z.x[3] ?? w.px, z.y[3] ?? w.py, 2, z.kind[3] ?? 0, false, w.tick, w.px, w.py);
   juiceHit(7, z.x[7] ?? w.px, z.y[7] ?? w.py, 4, Z_BRUTE, false, w.tick, w.px, w.py);

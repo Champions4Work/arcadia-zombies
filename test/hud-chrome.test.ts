@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { createWorld } from "../src/sim/world";
-import { drawHud } from "../src/render/hud";
+import { drawHud, difficultyLabel } from "../src/render/hud";
 import { bindHud, layoutHud } from "../src/shell/hud-layout";
 import { computeFit } from "../src/shell/fit";
 import { playView } from "../src/shell/play-view";
@@ -46,28 +46,28 @@ function bindPhone(): void {
 }
 
 describe("phone HUD chrome", () => {
-  it("keeps heart, loadout, wave, and objectives and drops the energy bar", () => {
+  it("keeps heart, five slots, wave, objectives, and drops portrait and ammo strip", () => {
     const texts: string[] = [];
     bindPhone();
     const hud = layoutHud(
       readViewport({ innerWidth: 390, innerHeight: 844, devicePixelRatio: 3 }, ZERO_INSETS),
       computeFit(390, 844, 3, playView(390, 844).viewW, playView(390, 844).viewH, ZERO_INSETS),
     );
-    expect(hud.face.w).toBeGreaterThanOrEqual(64);
-    expect(hud.face.h).toBeGreaterThanOrEqual(28);
+    expect(hud.phone).toBe(true);
+    expect(hud.face.w).toBe(0);
     expect(hud.hero.w).toBeGreaterThanOrEqual(52);
     expect(hud.weapons.h).toBeGreaterThanOrEqual(40);
-    expect(hud.minimap.w).toBeGreaterThanOrEqual(80);
+    expect(hud.minimap.w).toBeGreaterThanOrEqual(64);
     expect(hud.xp.h).toBeGreaterThanOrEqual(18);
-    drawHud(stubCtx(texts), createWorld(1));
+    const w = createWorld(1);
+    drawHud(stubCtx(texts), w);
     expect(texts).toContain("Objectives");
-    expect(texts).toContain("Chapter 1");
-    expect(texts).toContain("The Brass District");
+    expect(texts).toContain(difficultyLabel(w.rank));
     expect(texts.some((t) => t.startsWith("Wave "))).toBe(true);
     expect(texts).not.toContain("120/120");
-    expect(texts).toContain("Q");
-    expect(texts).toContain("E");
-    expect(texts).toContain("R");
+    expect(texts).not.toContain("240/240");
+    expect(texts).not.toContain("34/210");
+    expect(texts).not.toContain("Q");
   });
 
   it("does not fill a same-color disc under the heart glyph", () => {
@@ -76,6 +76,6 @@ describe("phone HUD chrome", () => {
     const body = hud.slice(start, hud.indexOf("function drawXp"));
     expect(body.includes("heartIcon")).toBe(true);
     expect(body.includes("ctx.arc(cx, cy, r * 0.58")).toBe(false);
-    expect(body.includes("low ? DANGER : STEAM")).toBe(true);
+    expect(body.includes("phone ? CYAN : HEALTH")).toBe(true);
   });
 });

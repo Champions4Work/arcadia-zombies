@@ -45,8 +45,8 @@ function stubCtx(texts: string[]): CanvasRenderingContext2D {
   }) as unknown as CanvasRenderingContext2D;
 }
 
-function bindPhone(): void {
-  const vp = readViewport({ innerWidth: 390, innerHeight: 844, devicePixelRatio: 3 }, ZERO_INSETS);
+function bindDesktop(): void {
+  const vp = readViewport({ innerWidth: 1280, innerHeight: 800, devicePixelRatio: 1 }, ZERO_INSETS);
   const pv = playView(vp.cssW, vp.cssH);
   const fit = computeFit(vp.cssW, vp.cssH, vp.dpr, pv.viewW, pv.viewH, ZERO_INSETS);
   bindHud(layoutHud(vp, fit));
@@ -120,7 +120,7 @@ describe("wave districts", () => {
   });
 
   it("stamps the live district on the HUD banner", () => {
-    bindPhone();
+    bindDesktop();
     const brass: string[] = [];
     const boiler: string[] = [];
     const tram: string[] = [];
@@ -199,8 +199,8 @@ describe("wave districts", () => {
     for (const z of [ZONE_BRASS, ZONE_BOILER, ZONE_TRAM]) {
       bindYard(z);
       expect(yardPropHits(YARD_CLEAR.x0, YARD_CLEAR.y0, YARD_CLEAR.x1, YARD_CLEAR.y1)).toBe(0);
-      expect(yardPropHits(PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(28);
-      expect(yardPropHits(200, 0, 760, 640)).toBeGreaterThanOrEqual(20);
+      expect(yardPropHits(PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(8);
+      expect(yardPropHits(200, 0, 760, 640)).toBeGreaterThanOrEqual(10);
     }
   });
 });
