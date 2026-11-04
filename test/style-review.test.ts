@@ -30,6 +30,17 @@ describe("visual review gates", () => {
     expect(yard.includes("valve_steam")).toBe(true);
   });
 
+  it("keeps spawn telegraphs and kill puffs on pack sprites, and aligns vertical belts", () => {
+    const yard = readFileSync("src/render/yard-fx.ts", "utf8");
+    const door = yard.slice(yard.indexOf("export function paintDoorSpawn"));
+    expect(door.includes("window_lit")).toBe(true);
+    expect(door.includes("building_wall_door")).toBe(false);
+    expect(yard.includes("ctx.rotate(Math.PI / 2)")).toBe(true);
+    const puff = readFileSync("src/render/cast-fx.ts", "utf8");
+    expect(puff.includes("paintZombie")).toBe(true);
+    expect(puff.includes("zombieGlyph")).toBe(false);
+  });
+
   it("stamps blood and casings on hit or shot without growing past the cap", () => {
     resetStains();
     expect(stainCount()).toBe(0);

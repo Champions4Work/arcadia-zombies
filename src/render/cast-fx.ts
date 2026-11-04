@@ -1,9 +1,9 @@
 import { blitAtlas, shotFrameId } from "../art/atlas";
-import { Z_GAS, Z_KIND, Z_KNIGHT } from "../sim/foes";
+import { paintZombie } from "../art/look";
+import { Z_ELITE, Z_GAS, Z_KIND, Z_KNIGHT } from "../sim/foes";
 import { EV_LEVEL, WPN_FLAME, WPN_HARP, WPN_MORT, WPN_SHOT, type World } from "../sim/types";
 import { blob, BRASS, cog, COPPER, font, pill, STEEL } from "./paint";
-import { zombieGlyph, type FxPaint, type Glyph } from "./plugins";
-import { POSE_DIE } from "./poses";
+import { type FxPaint } from "./plugins";
 
 const EMBER = { hi: "#fff6d0", mid: "#ffb040", lo: "#e06010", edge: "#7a2808" };
 const STEAM = { hi: "#f4f8fa", mid: "#c5d0d6", lo: "#7a8a92", edge: "#3a4448" };
@@ -167,7 +167,6 @@ export const paintSpark: FxPaint = (ctx, x, y, age, a) => {
   ctx.restore();
 };
 
-const LIMP: Glyph = { w: 48, h: 68, draw() {} };
 let crowd = false;
 
 export function markCrowdFx(on: boolean): void {
@@ -187,7 +186,7 @@ export const paintPuff: FxPaint = (ctx, x, y, age, raw) => {
   if (puffDrawsCorpse(age, kind)) {
     ctx.save();
     ctx.globalAlpha = Math.max(0, 1 - age / 14);
-    zombieGlyph(kind, () => LIMP).draw(ctx, x, y + age * 0.8, age, 1, 0, POSE_DIE);
+    paintZombie(ctx, x, y + age * 0.8, kind, (raw & Z_ELITE) !== 0, age, 1);
     ctx.restore();
   }
   const s = (gas ? 18 : 13) + age * (gas ? 2 : 1.35);

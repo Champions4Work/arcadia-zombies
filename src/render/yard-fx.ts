@@ -138,7 +138,13 @@ export function paintYardLive(
     const belt = BELTS[i];
     if (!belt) continue;
     if (!visible(belt.x, belt.y, camX, camY, vw, vh, 220)) continue;
-    blitSheet(ctx, "conveyor", belt.x + belt.w * 0.5, belt.y);
+    const midX = belt.vert ? belt.x : belt.x + belt.w * 0.5;
+    const midY = belt.vert ? belt.y + belt.w * 0.5 : belt.y;
+    ctx.save();
+    ctx.translate(midX, midY);
+    if (belt.vert) ctx.rotate(Math.PI / 2);
+    blitSheet(ctx, "conveyor", 0, 0);
+    ctx.restore();
     const ang = belt.vert ? Math.PI / 2 : 0;
     const span = belt.w;
     const off = (tick * 1.4 + i * 20) % 26;
@@ -161,9 +167,9 @@ export function paintYardLive(
 
 export function paintDoorSpawn(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number): void {
   ctx.save();
-  ctx.globalAlpha = 0.85;
-  blitSheet(ctx, "building_wall_door", x, y + 8);
+  ctx.globalAlpha = 0.9;
+  blitSheet(ctx, "window_lit", x, y + 4);
   ctx.restore();
-  ctx.fillStyle = (tick >> 2 & 1) ? "rgba(232,160,48,0.4)" : "rgba(232,160,48,0.18)";
-  ctx.fillRect(x - 8, y - 14, 16, 18);
+  ctx.fillStyle = (tick >> 2 & 1) ? "rgba(232,160,48,0.45)" : "rgba(232,160,48,0.2)";
+  ctx.fillRect(x - 6, y - 12, 12, 16);
 }
