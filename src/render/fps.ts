@@ -113,7 +113,7 @@ export function noteFrame(now: number): void {
 export function fpsDump(): { mid: number; avg: number; min: number; max: number } {
   if (sampleN <= 0) {
     const v = shown < 0 ? 0 : shown;
-    return { mid: v, avg: v, min: v, max: v };
+    return { "mid": v, "avg": v, "min": v, "max": v };
   }
   let min = 1e9;
   let max = 0;
@@ -130,10 +130,10 @@ export function fpsDump(): { mid: number; avg: number; min: number; max: number 
   copy.sort();
   const mid = copy[sampleN >> 1] ?? shown;
   return {
-    mid: Math.round(mid),
-    avg: Math.round(sum / sampleN),
-    min: Math.round(min),
-    max: Math.round(max),
+    "mid": Math.round(mid),
+    "avg": Math.round(sum / sampleN),
+    "min": Math.round(min),
+    "max": Math.round(max),
   };
 }
 
