@@ -1,6 +1,6 @@
 import { paintBlood, paintCasing } from "../art/look";
 
-export const STAIN_CAP = 96;
+export const STAIN_CAP = 160;
 export const STAIN_BLOOD = 1;
 export const STAIN_CASE = 2;
 
@@ -32,11 +32,11 @@ function put(x: number, y: number, s: number, kind: number): void {
 }
 
 export function stampBlood(x: number, y: number, salt: number): void {
-  const n = 1 + (salt & 1);
+  const n = 2 + (salt & 3);
   for (let k = 0; k < n; k++) {
-    const ox = ((salt + k * 17) % 11) - 5;
-    const oy = ((salt + k * 9) % 9) - 4;
-    put(x + ox, y + oy, 8 + ((salt + k) & 7), STAIN_BLOOD);
+    const ox = ((salt + k * 17) % 15) - 7;
+    const oy = ((salt + k * 9) % 13) - 6;
+    put(x + ox, y + oy, 4 + ((salt + k) & 5), STAIN_BLOOD);
   }
 }
 

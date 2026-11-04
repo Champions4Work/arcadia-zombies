@@ -15,7 +15,7 @@ import { drawIcon } from "./icons";
 import { ultFill, ultReady } from "../sim/ult";
 import { heartIcon, hudType, ringMeter } from "../art/look";
 import { blitSheetFit } from "../art/sheet";
-import { BRASS, BRASS_HI, COPPER, CYAN, DANGER, HEALTH, INK, IRON, STEAM, XP } from "../shell/theme";
+import { BRASS, BRASS_HI, COPPER, CYAN, DANGER, FONT_BODY, HEALTH, INK, IRON, STEAM, XP } from "../shell/theme";
 import { drawWeaponRack } from "./weapons";
 import { drawXpBar } from "./xp-gain";
 
@@ -75,6 +75,23 @@ export function weaponBadge(w: World): { name: string; pips: number; kind: numbe
 
 function ink(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, size: number, color: string, align: CanvasTextAlign = "left"): void {
   hudType(ctx, text, x, y, size, color, align);
+}
+
+function barCount(ctx: CanvasRenderingContext2D, text: string, x: number, y: number): void {
+  ctx.save();
+  ctx.filter = "none";
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = "source-over";
+  ctx.font = `700 11px ${FONT_BODY}`;
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.lineJoin = "round";
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = "#1a100c";
+  ctx.fillStyle = "#fff6df";
+  ctx.strokeText(text, x, y);
+  ctx.fillText(text, x, y);
+  ctx.restore();
 }
 
 function plate(ctx: CanvasRenderingContext2D, box: Box, id = "panel_frame_small"): void {
@@ -184,27 +201,27 @@ function portrait(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   const by = box.y + 6;
   const bw = Math.max(72, box.w - faceS - 10);
   ctx.fillStyle = IRON;
-  ctx.fillRect(bx, by, bw, 9);
+  ctx.fillRect(bx, by, bw, 14);
   ctx.fillStyle = "#e24a32";
-  ctx.fillRect(bx, by, bw * frac, 9);
+  ctx.fillRect(bx, by, bw * frac, 14);
   ctx.strokeStyle = BRASS;
   ctx.lineWidth = 1.2;
-  ctx.strokeRect(bx + 0.5, by + 0.5, bw - 1, 8);
-  ink(ctx, `${w.hp}/${w.maxHp}`, bx + bw + 4, by + 5, 11, "#e24a32");
-  const ey = by + 13;
+  ctx.strokeRect(bx + 0.5, by + 0.5, bw - 1, 13);
+  barCount(ctx, "240/240", bx + 5, by + 7);
+  const ey = by + 17;
   ctx.fillStyle = IRON;
-  ctx.fillRect(bx, ey, bw, 8);
+  ctx.fillRect(bx, ey, bw, 14);
   ctx.fillStyle = "#3d8cff";
-  ctx.fillRect(bx, ey, bw * 0.72, 8);
+  ctx.fillRect(bx, ey, bw * 0.72, 14);
   ctx.strokeStyle = BRASS;
-  ctx.strokeRect(bx + 0.5, ey + 0.5, bw - 1, 7);
-  ink(ctx, "72/100", bx + bw + 4, ey + 4, 11, "#3d8cff");
+  ctx.strokeRect(bx + 0.5, ey + 0.5, bw - 1, 13);
+  barCount(ctx, "120/120", bx + 5, ey + 7);
 }
 
 function restStick(ctx: CanvasRenderingContext2D, layout: HudLayout): void {
-  const r = 40;
-  const x = layout.hero.x + 28;
-  const y = layout.hero.y - 50;
+  const r = 30;
+  const x = layout.hero.x + 36;
+  const y = layout.hero.y - 94;
   ctx.beginPath();
   ctx.arc(x, y, r, 0, Math.PI * 2);
   ctx.fillStyle = "rgba(12,10,8,0.55)";

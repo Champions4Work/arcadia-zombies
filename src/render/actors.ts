@@ -17,7 +17,7 @@ import {
   bulletPaint, fxPaint, registerBullet, registerFx, registerZombie, type BulletPaint, type Glyph,
 } from "./plugins";
 import { blitAtlas, foeFrameId } from "../art/atlas";
-import { foeWorldH, paintCasing, paintSignatureHero, paintZombie } from "../art/look";
+import { foeWorldH, paintSignatureHero, paintZombie } from "../art/look";
 import { stampCasing } from "./stains";
 
 export const BIN_LO = -80;
@@ -28,6 +28,7 @@ const SPAN = HI - LO + 1;
 const bin = new Uint16Array(SPAN);
 let seq = new Int32Array(256);
 let tmp = new Int32Array(256);
+let caseTick = -1;
 
 function atlasGlyph(kind: number): Glyph {
   return {
@@ -55,15 +56,10 @@ export function paintPlayer(ctx: CanvasRenderingContext2D, w: World, moving: boo
 function paintHero(ctx: CanvasRenderingContext2D, w: World, moving: boolean): void {
   const shoot = (w.events[EV_SHOT] ?? 0) !== 0;
   paintSignatureHero(ctx, w.px, w.py, w.aimX, w.aimY, moving, shoot, w.tick);
-  if (shoot) {
+  if (shoot && w.tick !== caseTick) {
+    caseTick = w.tick;
     const ox = -w.aimX * 16 - 8;
     const oy = 8 - w.aimY * 4;
-    paintCasing(ctx, w.px + ox, w.py + oy);
-    paintCasing(ctx, w.px + ox - 8, w.py + oy + 5);
-    paintCasing(ctx, w.px + ox - 16, w.py + oy + 9);
-    paintCasing(ctx, w.px + ox + 6, w.py + oy + 7);
-    paintCasing(ctx, w.px + ox - 4, w.py + oy + 12);
-    paintCasing(ctx, w.px + ox - 20, w.py + oy + 3);
     stampCasing(w.px + ox - 4, w.py + oy + 2, w.tick);
     stampCasing(w.px + ox - 10, w.py + oy + 7, w.tick + 3);
     stampCasing(w.px + ox - 16, w.py + oy + 11, w.tick + 6);

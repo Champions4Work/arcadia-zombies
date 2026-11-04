@@ -143,7 +143,7 @@ export function layoutHud(vp: Viewport, fit: Fit): HudLayout {
   const face = {
     x: minimap.x + minimap.w + gap,
     y: difficulty.y + difficulty.h + gap,
-    w: faceS + 86,
+    w: faceS + 96,
     h: faceS,
   };
   return { view, frame: frameBox(fit), hero, xp, difficulty, clock, pause, minimap, face, weapons, ability };

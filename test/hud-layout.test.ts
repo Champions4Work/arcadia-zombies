@@ -99,6 +99,10 @@ describe("viewport chrome", () => {
       expect(hud.ability.h).toBeGreaterThanOrEqual(48);
       expect(hud.hero.y).toBeGreaterThan(hud.view.h * 0.55);
       expect(hud.difficulty.y).toBeLessThan(hud.view.h * 0.2);
+      const painted = circleBox({ x: hud.hero.x + 36, y: hud.hero.y - 94, r: 30 });
+      expect(boxesOverlap(painted, hud.hero)).toBe(false);
+      expect(boxesOverlap(painted, hud.ability)).toBe(false);
+      expect(painted.x).toBeGreaterThanOrEqual(-0.5);
     }
   });
 

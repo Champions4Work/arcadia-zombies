@@ -106,7 +106,7 @@ export function paintDecals(ctx: CanvasRenderingContext2D, w: World): void {
   for (let i = 0; i < 12; i++) {
     const hx = 80 + ((i * 97) % (ARENA_W - 160));
     const hy = 140 + ((i * 53) % (ARENA_H - 200));
-    paintBlood(ctx, hx, hy, 6 + (i & 5));
+    paintBlood(ctx, hx, hy, 4 + (i & 3));
   }
   paintStains(ctx);
   const a = w.arena;
