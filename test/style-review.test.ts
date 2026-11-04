@@ -81,16 +81,16 @@ describe("visual review gates", () => {
     expect(YARD_CLEAR.y1 - YARD_CLEAR.y0).toBeGreaterThanOrEqual(320);
   });
 
-  it("keeps dusk dark with local lamp pools and no global orange wash", () => {
+  it("keeps dusk readable with local lamp pools and no global orange wash", () => {
     const draw = readFileSync("src/render/draw.ts", "utf8");
-    expect(draw.includes("rgba(4,6,12,0.72)")).toBe(true);
-    expect(draw.includes("rgba(24,14,8,0.08)")).toBe(true);
+    expect(draw.includes("rgba(4,6,12,0.32)")).toBe(true);
+    expect(draw.includes("rgba(24,14,8,0.03)")).toBe(true);
     expect(draw.includes("rgba(6,6,10,0.16)")).toBe(false);
     expect(draw.includes("rgba(220,132,52,0.34)")).toBe(false);
     expect(draw.includes("rgba(255,186,88,0.42)")).toBe(false);
     const yard = readFileSync("src/render/yard-fx.ts", "utf8");
     expect(yard.includes("ellipse(x, y + 10, 72, 44")).toBe(true);
-    expect(yard.includes("function lampRay")).toBe(true);
+    expect(yard.includes("lampRay(ctx, pool")).toBe(false);
     expect(yard.includes("decal_vent")).toBe(true);
     expect(yard.includes("valve_steam")).toBe(true);
     expect(yard.includes("function doorPool")).toBe(true);
@@ -128,6 +128,7 @@ describe("visual review gates", () => {
     const ground = readFileSync("src/render/ground.ts", "utf8");
     expect(ground.includes("rgba(24,24,32,0.58)")).toBe(false);
     expect(ground.includes("tile_stone_seamless")).toBe(true);
+    expect(ground.includes('globalCompositeOperation = "multiply"')).toBe(false);
     expect(HAZARD_MARKS.length).toBeLessThanOrEqual(3);
     const rack = readFileSync("src/render/weapons.ts", "utf8");
     expect(rack.includes("paintSlotIcon")).toBe(true);

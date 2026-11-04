@@ -263,26 +263,6 @@ function lampPool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   ctx.restore();
 }
 
-function lampRay(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  ctx.save();
-  ctx.globalCompositeOperation = "lighter";
-  ctx.translate(x, y - 6);
-  ctx.rotate(-0.38);
-  const g = ctx.createLinearGradient(0, 0, 0, -96);
-  g.addColorStop(0, "rgba(255,196,110,0.28)");
-  g.addColorStop(0.55, "rgba(255,170,70,0.1)");
-  g.addColorStop(1, "rgba(255,160,60,0)");
-  ctx.fillStyle = g;
-  ctx.beginPath();
-  ctx.moveTo(-7, 0);
-  ctx.lineTo(9, 0);
-  ctx.lineTo(30, -96);
-  ctx.lineTo(-24, -96);
-  ctx.closePath();
-  ctx.fill();
-  ctx.restore();
-}
-
 function blitScaled(ctx: CanvasRenderingContext2D, id: string, x: number, y: number, sc: number): void {
   ctx.save();
   ctx.translate(x, y);
@@ -597,7 +577,6 @@ export function paintYardLive(
   for (const pool of poolsOf()) {
     if (!visible(pool.x, pool.y, camX, camY, vw, vh, 60)) continue;
     lampPool(ctx, pool.x, pool.y);
-    lampRay(ctx, pool.x, pool.y);
   }
   paintBrickWall(ctx);
   for (const run of pipesOf()) {

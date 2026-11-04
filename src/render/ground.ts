@@ -487,13 +487,14 @@ export function paintGround(ctx: CanvasRenderingContext2D): void {
   const wash = bound === ZONE_BOILER ? "#141210" : bound === ZONE_TRAM ? "#1c242c" : "#24303c";
   const tile = bound === ZONE_BOILER ? "tile_metal_seamless" : "tile_stone_seamless";
   const groutInk = bound === ZONE_BOILER ? "rgba(22,20,18,0.72)" : bound === ZONE_TRAM ? "rgba(20,28,36,0.5)" : "rgba(36,48,62,0.55)";
-  const shade = bound === ZONE_BOILER ? "rgba(8,8,10,0.42)" : bound === ZONE_TRAM ? "rgba(10,16,22,0.18)" : "rgba(16,24,36,0.22)";
+  const veil = bound === ZONE_BOILER ? 0.55 : bound === ZONE_TRAM ? 0.28 : 0.08;
+  const veilInk = bound === ZONE_BRASS ? "#3a2a1c" : wash;
   ctx.fillStyle = wash;
   ctx.fillRect(0, 108, ARENA_W, ARENA_H - 108);
   tileSheet(ctx, tile, 0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
   ctx.save();
-  ctx.globalAlpha = 0.52;
-  ctx.fillStyle = wash;
+  ctx.globalAlpha = veil;
+  ctx.fillStyle = veilInk;
   ctx.fillRect(0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
   ctx.restore();
   ctx.save();
@@ -512,11 +513,6 @@ export function paintGround(ctx: CanvasRenderingContext2D): void {
     ctx.lineTo(ARENA_W, y + 0.5);
     ctx.stroke();
   }
-  ctx.restore();
-  ctx.save();
-  ctx.globalCompositeOperation = "multiply";
-  ctx.fillStyle = shade;
-  ctx.fillRect(0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
   ctx.restore();
   for (let r = FLOOR0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
