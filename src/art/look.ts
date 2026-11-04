@@ -274,33 +274,36 @@ export function paintEnergyTank(ctx: CanvasRenderingContext2D, x: number, y: num
 }
 
 export function paintBlood(ctx: CanvasRenderingContext2D, x: number, y: number, s: number): void {
-  ctx.fillStyle = "#6a0c08";
-  ctx.globalAlpha = 0.9;
-  ctx.beginPath();
-  ctx.ellipse(x, y, s * 4.2, s * 2.2, 0.45, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#c81814";
-  ctx.beginPath();
-  ctx.ellipse(x - s * 0.15, y - s * 0.1, s * 2.4, s * 1.2, 0.25, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#f03020";
-  ctx.beginPath();
-  ctx.ellipse(x - s * 0.3, y - s * 0.2, s * 1.1, s * 0.55, 0.15, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#4a0808";
-  ctx.fillRect(x + s * 1.4, y - 1, 8, 3);
-  ctx.fillRect(x - s * 1.1, y + 4, 7, 2);
+  const seed = ((x * 13 + y * 7 + s * 17) | 0);
+  const n = 4 + (seed & 3);
+  const fade = 0.6 + (seed & 3) * 0.05;
+  const span = 4 + (s & 7);
+  ctx.fillStyle = "#4a100e";
+  for (let i = 0; i < n; i++) {
+    const ox = ((seed + i * 19) % (span * 2 + 1)) - span;
+    const oy = ((seed + i * 11) % (span + 3)) - (span >> 1);
+    const rw = 2 + ((seed + i * 5) % Math.max(3, span >> 1));
+    const rh = 1 + ((seed + i * 3) % Math.max(2, span >> 2));
+    ctx.globalAlpha = fade;
+    ctx.beginPath();
+    ctx.ellipse(x + ox, y + oy, rw, rh, ((seed + i) % 8) * 0.28, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.fillStyle = "#2a0808";
+  ctx.fillRect(x + 3 + (seed % 3), y + 1, 2, 1);
+  ctx.fillRect(x - 4, y + 3, 1, 2);
+  ctx.fillRect(x + 1, y - 3, 1, 1);
   ctx.globalAlpha = 1;
 }
 
 export function paintCasing(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   ctx.save();
-  ctx.fillStyle = INK;
-  ctx.fillRect(x - 1, y - 1, 13, 6.2);
+  ctx.translate(x, y);
+  ctx.rotate(((x * 13 + y * 7) % 12) * 0.22);
   ctx.fillStyle = BRASS;
-  ctx.fillRect(x, y, 11, 4.2);
+  ctx.fillRect(0, 0, 3.4, 1.4);
   ctx.fillStyle = BRASS_HI;
-  ctx.fillRect(x + 8, y, 3.2, 4.2);
+  ctx.fillRect(2.2, 0, 1.2, 1.4);
   ctx.restore();
 }
 

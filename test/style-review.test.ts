@@ -112,12 +112,28 @@ describe("visual review gates", () => {
     expect(hud.includes("layout.face")).toBe(true);
     expect(hud.includes("const local = 170")).toBe(true);
     expect(hud.includes("function restStick")).toBe(true);
+    expect(hud.includes("layout.hero.y - 94")).toBe(true);
+    expect(hud.includes("const r = 30")).toBe(true);
     expect(hud.includes("fillRect(cx - r * 0.78")).toBe(true);
     expect(hud.includes("bw * 0.72")).toBe(true);
     expect(hud.includes("#e24a32")).toBe(true);
     expect(hud.includes("#3d8cff")).toBe(true);
-    expect(hud.includes("72/100")).toBe(true);
-    expect(hud.includes("${w.hp}/${w.maxHp}")).toBe(true);
+    expect(hud.includes("240/240")).toBe(true);
+    expect(hud.includes("120/120")).toBe(true);
+    expect(hud.includes("function barCount")).toBe(true);
+    expect(hud.includes("strokeText")).toBe(true);
+    expect(hud.includes("#fff6df")).toBe(true);
+    expect(hud.includes("bx + bw + 4")).toBe(false);
+    expect(hud.includes("72/100")).toBe(false);
+    expect(hud.includes("${w.hp}/${w.maxHp}")).toBe(false);
+    const look = readFileSync("src/art/look.ts", "utf8");
+    expect(look.includes("s * 4.2")).toBe(false);
+    expect(look.includes("const fade = 0.6")).toBe(true);
+    expect(look.includes("fillRect(0, 0, 3.4, 1.4)")).toBe(true);
+    expect(look.includes("fillRect(-4, -2, 11, 4.2)")).toBe(false);
+    const shot = readFileSync("src/shell/review-shot.ts", "utf8");
+    expect(shot.includes("Math.cos")).toBe(false);
+    expect(shot.includes("REVIEW_RING *")).toBe(false);
   });
 
   it("keeps spawn telegraphs and kill puffs on pack sprites, and aligns vertical belts", () => {
@@ -172,6 +188,24 @@ describe("visual review gates", () => {
     expect(marked).toBeLessThanOrEqual(8);
     expect(near).toBe(0);
     expect(stainCount()).toBeGreaterThanOrEqual(80);
+    let minY = 1e9;
+    let maxY = -1e9;
+    let minX = 1e9;
+    let maxX = -1e9;
+    const bands = new Set<number>();
+    for (let i = 0; i < w.zombies.alive.length; i++) {
+      if (!w.zombies.alive[i]) continue;
+      const zx = w.zombies.x[i] ?? 0;
+      const zy = w.zombies.y[i] ?? 0;
+      if (zx < minX) minX = zx;
+      if (zx > maxX) maxX = zx;
+      if (zy < minY) minY = zy;
+      if (zy > maxY) maxY = zy;
+      bands.add(((zy / 20) | 0));
+    }
+    expect(maxX - minX).toBeGreaterThan(160);
+    expect(maxY - minY).toBeGreaterThan(160);
+    expect(bands.size).toBeGreaterThanOrEqual(8);
     expect(w.tick).toBe(48);
     expect(w.upgrades[UPG_WPN_RIVET]).toBe(3);
     expect(w.upgrades[UPG_WPN_SHOT]).toBe(2);

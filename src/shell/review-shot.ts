@@ -46,49 +46,43 @@ export function reviewHorde(w: World): number {
   for (let i = 0; i < MAX_ZOMBIES; i++) z.alive[i] = 0;
   let n = 0;
   for (let i = 0; i < REVIEW_HORDE; i++) {
-    const a = (i / REVIEW_HORDE) * Math.PI * 2 + (((i * 13) % 11) - 5) * 0.05;
-    const r = (i < 16 ? REVIEW_RING + (i % 3) * 10 : REVIEW_RING + 36 + (i % 4) * 12) + (((i * 17) % 13) - 6);
+    let dx = ((i * 149) % 241) - 120;
+    let dy = ((i * 197) % 331) - 190;
+    dx += ((i * 13) % 19) - 9;
+    dy += ((i * 29) % 23) - 11;
+    const d2 = dx * dx + dy * dy;
+    const ring = REVIEW_RING + (i % 28);
+    if (d2 < 1) {
+      dx = ring;
+      dy = ((i * 11) % 25) - 12;
+    } else if (d2 < 52 * 52) {
+      const m = ring / Math.sqrt(d2);
+      const dx0 = dx * m;
+      const dy0 = dy * m;
+      const inv = 1 / ring;
+      const t = ((i * 11) % 17) - 8;
+      dx = dx0 + -dy0 * inv * t;
+      dy = dy0 + dx0 * inv * t;
+    }
     const kind = KINDS[i % KINDS.length] ?? 0;
     z.alive[i] = 1;
     z.kind[i] = kind;
-    z.x[i] = w.px + Math.cos(a) * r;
-    z.y[i] = w.py + Math.sin(a) * r;
+    z.x[i] = w.px + dx;
+    z.y[i] = w.py + dy;
     z.hp[i] = kind === Z_BRUTE || (kind & Z_ELITE) !== 0 ? 18 : 1;
     z.vx[i] = 0;
     z.vy[i] = 0;
-    stampBlood(z.x[i] ?? 0, (z.y[i] ?? 0) + 8, i * 3);
-    stampBlood((z.x[i] ?? 0) + 10, (z.y[i] ?? 0) + 14, i * 5);
-    stampCasing((z.x[i] ?? 0) - 12, (z.y[i] ?? 0) + 10, i);
-    stampCasing(w.px - 24 - (i % 11) * 7, w.py + 10 + ((i * 5) % 22), i + 3);
+    stampBlood(z.x[i] ?? 0, (z.y[i] ?? 0) + 6, i * 3);
     n++;
   }
-  stampCasing(w.px - 14, w.py + 8, 9);
-  stampCasing(w.px + 10, w.py + 12, 11);
-  stampCasing(w.px - 22, w.py + 16, 13);
-  stampCasing(w.px + 16, w.py + 4, 15);
-  stampCasing(w.px - 8, w.py + 18, 17);
-  stampCasing(w.px + 4, w.py + 22, 19);
-  stampCasing(w.px - 18, w.py + 26, 21);
-  stampCasing(w.px + 22, w.py + 10, 23);
-  stampCasing(w.px - 28, w.py + 14, 25);
-  stampCasing(w.px - 6, w.py + 28, 27);
-  stampCasing(w.px + 12, w.py + 18, 29);
-  stampBlood(w.px + 22, w.py + 16, 5);
-  stampBlood(w.px - 28, w.py + 20, 7);
-  stampBlood(w.px + 8, w.py + 24, 9);
-  stampBlood(w.px - 40, w.py + 48, 21);
-  stampBlood(w.px + 36, w.py + 54, 33);
-  stampBlood(w.px + 12, w.py + 70, 45);
-  stampBlood(w.px - 18, w.py + 82, 57);
-  stampBlood(w.px - 70, w.py + 130, 61);
-  stampBlood(w.px + 64, w.py + 148, 73);
-  stampBlood(w.px + 8, w.py + 168, 85);
-  stampBlood(w.px - 48, w.py + 188, 91);
-  stampBlood(w.px + 40, w.py + 200, 99);
-  stampCasing(w.px - 60, w.py + 140, 31);
-  stampCasing(w.px + 54, w.py + 156, 41);
-  stampCasing(w.px - 20, w.py + 176, 51);
-  stampCasing(w.px + 28, w.py + 192, 61);
+  for (let c = 0; c < 14; c++) {
+    stampCasing(w.px - 28 + ((c * 17) % 51), w.py + 4 + ((c * 13) % 23), c * 5);
+  }
+  stampBlood(w.px + 18, w.py + 14, 5);
+  stampBlood(w.px - 24, w.py + 22, 9);
+  stampBlood(w.px + 8, w.py + 36, 15);
+  stampBlood(w.px - 36, w.py + 44, 21);
+  stampBlood(w.px + 42, w.py + 58, 27);
   const b = w.bullets;
   for (let j = 0; j < MAX_BULLETS; j++) b.alive[j] = 0;
   for (let j = 0; j < 5; j++) {
