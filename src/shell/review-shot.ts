@@ -64,7 +64,7 @@ export function reviewHorde(w: World): number {
       dx = dx0 + -dy0 * inv * t;
       dy = dy0 + dx0 * inv * t;
     }
-    const kind = KINDS[i % KINDS.length] ?? 0;
+    const kind = i === 7 || i === 24 ? Z_BRUTE : (KINDS[i % KINDS.length] ?? 0);
     z.alive[i] = 1;
     z.kind[i] = kind;
     z.x[i] = w.px + dx;

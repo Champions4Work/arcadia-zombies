@@ -83,7 +83,7 @@ Phone slots live in `docs/DESIGN.md`. Blit these frames into those slots.
 | Ultimate ring | `ultimate_button` |
 | Full-width XP bar | `xp_bar_frame` |
 | Minimap, top-left | `minimap_frame` |
-| Objectives, top-right | `objectives_panel` |
+| Objectives, top-right | Dark translucent box, gold header, green checks |
 
 Optional brass frames: `panel_frame_glow`, `panel_frame_gears`, `panel_frame_pipes`, `panel_frame_small`, `ring_frame_a`, `ring_frame_b`.
 
@@ -120,7 +120,7 @@ A look-changing shot is unfinished if any row is missing.
 3. Lit buildings that zombies spawn from. Blit `building_wall_door`, `window_lit`, and `lamp`. Foes leave the door.
 4. Crates and breakable props. Blit `crate`, `crate_stack`, `barrel`, `breakable_boiler`, and `breakable_gear_pylon`.
 5. Vents with slowdown. Blit `decal_vent`, `decal_grate`, and `decal_hazard`. Keep the vent slowdown.
-6. Objectives top-right with wave and kills. Blit `objectives_panel`. Wave and kill counts stay in the top strip.
+6. Objectives top-right with a gold header and green checks. Chapter banner and Wave n/8 plus kills stay in the top strip.
 7. Minimap top-left. Blit `minimap_frame` in the top-left safe corner.
 8. Health with a power-ups tray. Blit `heart_ring` and five `power_slot` frames. No energy bar.
 9. XP bar full-width at the bottom. Blit `xp_bar_frame`. The LV label sits on the right.

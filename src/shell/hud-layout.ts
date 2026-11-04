@@ -115,7 +115,7 @@ export function layoutHud(vp: Viewport, fit: Fit): HudLayout {
     w: Math.min(wpnW, midW),
     h: wpnH,
   };
-  const rowH = Math.round((portrait ? 28 : 26) * u);
+  const rowH = Math.round((portrait ? 40 : 34) * u);
   const topY = inner.y + gap;
   const pauseR = Math.round(11 * u);
   const pause = {
@@ -123,8 +123,8 @@ export function layoutHud(vp: Viewport, fit: Fit): HudLayout {
     y: topY + rowH / 2,
     r: pauseR,
   };
-  const clockW = Math.round((portrait ? 96 : 100) * u);
-  const clockH = Math.round((portrait ? 40 : 36) * u);
+  const clockW = Math.round((portrait ? 104 : 108) * u);
+  const clockH = Math.round((portrait ? 50 : 44) * u);
   const clock = {
     x: pause.x - pauseR - gap - clockW,
     y: topY,
@@ -139,7 +139,7 @@ export function layoutHud(vp: Viewport, fit: Fit): HudLayout {
     w: Math.max(72, clock.x - gap - (minimap.x + minimap.w + gap)),
     h: rowH,
   };
-  const faceS = Math.round((portrait ? 48 : 40) * u);
+  const faceS = Math.round((portrait ? 56 : 46) * u);
   const face = {
     x: minimap.x + minimap.w + gap,
     y: difficulty.y + difficulty.h + gap,

@@ -22,13 +22,13 @@ describe("visual review gates", () => {
     expect(HERO_DRAW_SCALE).toBe(1.42);
   });
 
-  it("scales normal foes to 0.58 of hero height and brutes to 0.74x", () => {
+  it("scales normal foes to 0.58 of hero height and brutes to 1.12x", () => {
     expect(FOE_TO_HERO).toBe(0.58);
-    expect(BRUTE_TO_HERO).toBe(0.74);
+    expect(BRUTE_TO_HERO).toBe(1.12);
     expect(foeWorldH(0)).toBeCloseTo(64 * 0.58);
-    expect(foeWorldH(Z_BRUTE)).toBeCloseTo(64 * 0.74);
+    expect(foeWorldH(Z_BRUTE)).toBeCloseTo(64 * 1.12);
     expect(foeWorldScale(0, 62)).toBeCloseTo((64 * 0.58) / 62);
-    expect(foeWorldScale(Z_BRUTE, 98)).toBeCloseTo((64 * 0.74) / 98);
+    expect(foeWorldScale(Z_BRUTE, 98)).toBeCloseTo((64 * 1.12) / 98);
     const look = readFileSync("src/art/look.ts", "utf8");
     expect(look.includes("export function paintRifle")).toBe(true);
     expect(look.includes("ellipse(x, y + 3, 18, 6.5")).toBe(true);
@@ -42,6 +42,8 @@ describe("visual review gates", () => {
     expect(look.includes("ellipse(mx, my, 10.5, 6.8")).toBe(true);
     expect(look.includes("rgba(255,96,16,0.95)")).toBe(true);
     expect(look.includes("Math.sin(tick * 0.28)")).toBe(true);
+    expect(look.includes("rgba(255,96,16,0.95)")).toBe(true);
+    expect(look.includes("kind !== 2")).toBe(true);
     const actors = readFileSync("src/render/actors.ts", "utf8");
     expect(actors.includes("hp >= 3")).toBe(false);
     expect(actors.includes("paintElite")).toBe(false);
@@ -99,27 +101,36 @@ describe("visual review gates", () => {
     expect(yard.includes("moveTo(14, 0)")).toBe(true);
   });
 
-  it("blits the objectives frame without filling a solid plate", () => {
+  it("paints a dark objectives box and a clear hero bust", () => {
     const hud = readFileSync("src/render/hud.ts", "utf8");
     const start = hud.indexOf("function checkLine");
     const obj = hud.slice(start, hud.indexOf("export function drawHud"));
-    expect(obj.includes('blitSheetFit(ctx, "objectives_panel"')).toBe(true);
+    expect(obj.includes('blitSheetFit(ctx, "objectives_panel"')).toBe(false);
     expect(obj.includes("plate(")).toBe(false);
-    expect(obj.includes("fillRect")).toBe(false);
+    expect(obj.includes("rgba(8,10,16,0.78)")).toBe(true);
+    expect(obj.includes("Objectives")).toBe(true);
+    expect(obj.includes("#3ec86a")).toBe(true);
     expect(obj.includes("ACTIVATE STEAM GATE")).toBe(true);
     expect(obj.includes("HOLD THE AREA")).toBe(true);
     expect(obj.includes("SURVIVE ALL WAVES")).toBe(true);
     expect(obj.includes("strokeRect")).toBe(true);
     expect(obj.includes("#f6f1e6")).toBe(true);
-    expect(hud.includes("KILLS")).toBe(true);
-    expect(hud.includes("WAVE")).toBe(true);
+    expect(hud.includes("Wave ${wave}/${cap}")).toBe(true);
+    expect(hud.includes("Chapter 1")).toBe(true);
+    expect(hud.includes("The Brass District")).toBe(true);
+    expect(hud.includes("CALM")).toBe(false);
     expect(hud.includes('blitSheetFit(ctx, "minimap_frame"')).toBe(true);
     expect(hud.includes("#1a1612")).toBe(true);
     expect(hud.includes('blitSheetFit(ctx, "heart_ring"')).toBe(true);
     expect(hud.includes("heartIcon")).toBe(true);
     expect(hud.includes("function portrait")).toBe(true);
+    expect(hud.includes("function paintHeroBust")).toBe(true);
+    expect(hud.includes("function lvBadge")).toBe(true);
+    expect(hud.includes("function stampInk")).toBe(true);
+    expect(hud.includes("LV 12")).toBe(true);
+    expect(hud.includes("#0ad8d0")).toBe(true);
     expect(hud.includes('blitSheetFit(ctx, "ring_frame_a"')).toBe(true);
-    expect(hud.includes('blitSheetFit(ctx, "hero_idle"')).toBe(true);
+    expect(hud.includes('blitSheetFit(ctx, "hero_idle"')).toBe(false);
     expect(hud.includes("layout.face")).toBe(true);
     expect(hud.includes("const local = 170")).toBe(true);
     expect(hud.includes("function restStick")).toBe(true);
@@ -151,6 +162,7 @@ describe("visual review gates", () => {
     const shot = readFileSync("src/shell/review-shot.ts", "utf8");
     expect(shot.includes("Math.cos")).toBe(false);
     expect(shot.includes("REVIEW_RING *")).toBe(false);
+    expect(shot.includes("i === 7 || i === 24 ? Z_BRUTE")).toBe(true);
   });
 
   it("keeps spawn telegraphs and kill puffs on pack sprites, and aligns vertical belts", () => {
@@ -202,7 +214,8 @@ describe("visual review gates", () => {
       if (dx * dx + dy * dy < 40 * 40) near++;
     }
     expect(n).toBe(REVIEW_HORDE);
-    expect(marked).toBeLessThanOrEqual(8);
+    expect(marked).toBeGreaterThanOrEqual(1);
+    expect(marked).toBeLessThanOrEqual(2);
     expect(near).toBe(0);
     expect(stainCount()).toBeGreaterThanOrEqual(80);
     let minY = 1e9;
