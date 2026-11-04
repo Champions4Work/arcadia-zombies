@@ -24,17 +24,18 @@ export const CUE_CLICK = 12;
 export const CUE_SHIELD = 13;
 export const CUE_BOOM = 14;
 export const CUE_WAVE = 15;
-export const CUE_N = 16;
+export const CUE_DASH = 16;
+export const CUE_N = 17;
 export const VOICE_CAP = 8;
 
 const GAP = new Float32Array([
-  0.035, 0.035, 0.035, 0.08, 0.14, 0.08, 0.12, 0.2, 0.3, 0.15, 0.5, 1.5, 0.045, 0.1, 0.22, 0.7,
+  0.035, 0.035, 0.035, 0.08, 0.14, 0.08, 0.12, 0.2, 0.3, 0.15, 0.5, 1.5, 0.045, 0.1, 0.22, 0.7, 0.14,
 ]);
 const DUR = new Float32Array([
-  0.05, 0.11, 0.06, 0.1, 0.08, 0.05, 0.18, 0.26, 0.46, 0.16, 0.42, 0.72, 0.03, 0.12, 0.16, 0.26,
+  0.05, 0.11, 0.06, 0.1, 0.08, 0.05, 0.18, 0.26, 0.46, 0.16, 0.42, 0.72, 0.03, 0.12, 0.16, 0.26, 0.12,
 ]);
 const BASE = new Float32Array([
-  0.05, 0.055, 0.045, 0.04, 0.034, 0.04, 0.05, 0.06, 0.042, 0.05, 0.05, 0.046, 0.04, 0.04, 0.052, 0.044,
+  0.05, 0.055, 0.045, 0.04, 0.034, 0.04, 0.05, 0.06, 0.042, 0.05, 0.05, 0.046, 0.04, 0.04, 0.052, 0.044, 0.048,
 ]);
 
 export interface SfxPrefs {
@@ -51,6 +52,7 @@ export interface SfxTrack {
   choosing: number;
   bossWave: number;
   primed: number;
+  dashT: number;
 }
 
 export interface SfxGate {
@@ -121,7 +123,7 @@ export function mixGain(base: number, active: number): number {
 }
 
 export function createSfxTrack(): SfxTrack {
-  return { choosing: 0, bossWave: -1, primed: 0 };
+  return { choosing: 0, bossWave: -1, primed: 0, dashT: 0 };
 }
 
 export function createSfxGate(): SfxGate {
@@ -216,5 +218,8 @@ export function collectCues(w: World, track: SfxTrack, out: Uint8Array): number 
   if (zombieStruck(w) && (!saw || w.events[EV_SHOT] || w.events[EV_TESLA])) n = put(out, n, CUE_HIT);
   if (w.events[EV_WAVE]) n = put(out, n, CUE_WAVE);
   if (w.events[EV_BOOM]) n = put(out, n, CUE_BOOM);
+  const dash = w.dashT ?? 0;
+  if (dash > 0 && track.dashT === 0) n = put(out, n, CUE_DASH);
+  track.dashT = dash;
   return n;
 }

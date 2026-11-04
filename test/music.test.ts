@@ -77,20 +77,20 @@ describe("music beds", () => {
     expect(telegraph.audible && telegraph.bed).toBe(BED_BOSS);
     expect(fight.audible && fight.bed).toBe(BED_BOSS);
     expect(lich.audible && lich.bed).toBe(BED_BOSS);
-    expect(tempoOf(warn)).toBeCloseTo(82.8, 5);
-    expect(tempoOf(telegraph)).toBeCloseTo(84.8, 5);
-    expect(tempoOf(fight)).toBeCloseTo(86.8, 5);
-    expect(tempoOf(lich)).toBe(88);
+    expect(tempoOf(warn)).toBeCloseTo(78.8, 5);
+    expect(tempoOf(telegraph)).toBeCloseTo(80.8, 5);
+    expect(tempoOf(fight)).toBeCloseTo(82.8, 5);
+    expect(tempoOf(lich)).toBe(84);
     expect(tempoOf(cueFrom(play({ phase: PHASE_OVER, bossOn: 1 }), fight))).toBe(0);
   });
 
   it("holds the horde bed between 36 and 24 and ignores rank", () => {
     const quiet = cueFrom(play({ alive: 35, rank: 8, wave: 1 }), silence());
     expect(quiet.audible && quiet.bed).toBe(BED_WAVE);
-    expect(tempoOf(quiet)).toBe(124);
+    expect(tempoOf(quiet)).toBe(118);
     const entered = cueFrom(play({ alive: 20, toSpawn: 16 }), silence());
     expect(entered.audible && entered.bed).toBe(BED_HORDE);
-    expect(tempoOf(entered)).toBeCloseTo(144.8, 5);
+    expect(tempoOf(entered)).toBeCloseTo(139.2, 5);
     const again = cueFrom(play({ alive: 20, toSpawn: 16 }), entered);
     expect(again).toEqual(entered);
     const held = cueFrom(play({ alive: 24, rank: 8 }), entered);
@@ -102,8 +102,8 @@ describe("music beds", () => {
       bossOn: 0, bossPending: 0, lich: false,
     }, silence());
     expect(messy.audible && messy.bed).toBe(BED_WAVE);
-    expect(tempoOf(messy)).toBe(100);
-    expect(tempoOf(cueFrom(play({ phase: PHASE_TITLE }), silence()))).toBe(72);
+    expect(tempoOf(messy)).toBe(96);
+    expect(tempoOf(cueFrom(play({ phase: PHASE_TITLE }), silence()))).toBe(68);
   });
 
   it("names each bed by the first voice of each timbre", () => {

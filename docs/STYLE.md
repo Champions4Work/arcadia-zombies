@@ -143,6 +143,16 @@ A look-changing shot is unfinished if any row is missing.
 
 The gzip budget in `scripts/size.mjs` is 220 KB. That is the raised cap after the `az_art_v2` webp pack landed. The old 124 KB cap covered code-drawn art. Packed world, HUD, and actor sheets need the extra room. A look PR that adds packed art must raise `scripts/size.mjs` and this paragraph together.
 
+## Sound palette
+
+All audio is procedural Web Audio. Nothing ships as sampled assets. Route everything through the master bus in `src/render/sound.ts`, with separate music and SFX gains that respect the menu sliders and the global mute flag.
+
+**Music beds** (`src/render/music.ts`) use chip timbres: gear ticks, brass stabs, organ pads, steam hiss, thump bass, and bell accents. Beds crossfade by play state: menu (`BED_MENU`), combat wave (`BED_WAVE`), horde pressure (`BED_HORDE`), and boss (`BED_BOSS`). Tempos ramp with `drive` so the yard feels darker and slower at rest and tighter under pressure. A light compressor on the music bus keeps phone speakers out of clip.
+
+**SFX cues** (`src/render/sfx-cues.ts`, `src/render/sfx.ts`) map sim events to short square, triangle, and band-pass noise bursts: rifle and shotgun muzzles, rivet and tesla weapons, hit spark, kill thud, hurt thud, dash vent, level and pick chimes, rank horn, boss siren, wave whistle, UI click, shield ping, and ult boom. Voice pooling and per-cue gaps keep hordes from stacking into distortion.
+
+Tonal color follows the art palette: amber brass for rewards and muzzles, cyan-leaning picks, rust-low kills, and iron-grey thumps. Keep perceived peaks under phone comfort; mix on buses, not per-oscillator sliders.
+
 ## Review gate
 
 Every pull request that changes how the game looks must ship a 390x844 phone screenshot beside both reference frames.

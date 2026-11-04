@@ -123,44 +123,44 @@ function bind(score: Score): Score {
 }
 
 const MENU = bind({
-  bed: BED_MENU, bpm: 72, bpmFull: 72, beats: 3, steps: 12, phrases: 4, rootHz: 196,
+  bed: BED_MENU, bpm: 68, bpmFull: 68, beats: 3, steps: 12, phrases: 4, rootHz: 185,
   voices: [
-    row(TIMBRE_ORGAN, 0.046, 0, 0, 15, [0, 5, 7, 0], [0, REST, 4, REST, 7, REST, 12, REST, 7, REST, 4, 0]),
-    row(TIMBRE_GEAR, 0.03, 2, 0, 15, [0, 0, 0, 0], [0, REST, REST, REST, REST, REST, 0, REST, REST, REST, REST, REST]),
-    row(TIMBRE_STEAM, 0.022, 0, 0, 1, [0, 0, 0, 0], [0, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST]),
+    row(TIMBRE_ORGAN, 0.038, 0, 0, 15, [0, 3, 7, 0], [0, REST, 3, REST, 7, REST, 10, REST, 7, REST, 3, 0]),
+    row(TIMBRE_GEAR, 0.026, 2, 0, 15, [0, 0, 0, 0], [0, REST, REST, REST, REST, REST, 0, REST, REST, REST, REST, REST]),
+    row(TIMBRE_STEAM, 0.018, 0, 0, 1, [0, 0, 0, 0], [0, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST]),
   ],
 });
 
 const WAVE = bind({
-  bed: BED_WAVE, bpm: 100, bpmFull: 124, beats: 4, steps: 16, phrases: 4, rootHz: 55,
+  bed: BED_WAVE, bpm: 96, bpmFull: 118, beats: 4, steps: 16, phrases: 4, rootHz: 55,
   voices: [
-    row(TIMBRE_GEAR, 0.026, 2, 0, 15, [0, 0, 0, 0], [0, REST, 0, REST, 0, REST, 0, REST, 0, REST, 0, REST, 0, REST, 0, REST]),
-    row(TIMBRE_THUMP, 0.068, 0, 0, 15, [0, 0, -2, 0], [0, REST, REST, REST, 0, REST, 7, REST, 0, REST, REST, REST, 0, REST, 5, REST]),
-    row(TIMBRE_BRASS, 0.028, 0, 0, 15, [0, 3, -2, 0], [0, REST, REST, 0, REST, REST, 7, REST, REST, 0, REST, 3, 10, REST, REST, 0]),
-    row(TIMBRE_BRASS, 0.032, 1, 0, 15, [0, 3, 7, 0], [0, REST, 3, REST, 7, REST, 12, REST, 10, REST, 7, REST, 3, REST, 0, REST]),
-    row(TIMBRE_BRASS, 0.018, 1, 0.45, 15, [0, 3, 7, 12], [12, REST, 15, REST, 19, REST, 24, REST, 19, REST, 15, REST, 12, REST, 19, REST]),
+    row(TIMBRE_GEAR, 0.024, 2, 0, 15, [0, 0, 0, 0], [0, REST, 0, REST, 0, REST, 0, REST, 0, REST, 0, REST, 0, REST, 0, REST]),
+    row(TIMBRE_THUMP, 0.058, 0, 0, 15, [0, 0, -2, 0], [0, REST, REST, REST, 0, REST, 7, REST, 0, REST, REST, REST, 0, REST, 5, REST]),
+    row(TIMBRE_BRASS, 0.024, 0, 0, 15, [0, 3, -2, 0], [0, REST, REST, 0, REST, REST, 7, REST, REST, 0, REST, 3, 10, REST, REST, 0]),
+    row(TIMBRE_BRASS, 0.028, 1, 0, 15, [0, 3, 7, 0], [0, REST, 3, REST, 7, REST, 10, REST, 8, REST, 7, REST, 3, REST, 0, REST]),
+    row(TIMBRE_BRASS, 0.015, 1, 0.45, 15, [0, 3, 7, 10], [10, REST, 12, REST, 15, REST, 19, REST, 15, REST, 12, REST, 10, REST, 15, REST]),
   ],
 });
 
 const HORDE = bind({
-  bed: BED_HORDE, bpm: 132, bpmFull: 148, beats: 4, steps: 16, phrases: 4, rootHz: 55,
+  bed: BED_HORDE, bpm: 128, bpmFull: 142, beats: 4, steps: 16, phrases: 4, rootHz: 55,
   voices: [
-    row(TIMBRE_GEAR, 0.03, 2, 0, 15, [0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
-    row(TIMBRE_THUMP, 0.072, 0, 0, 15, [0, -1, 0, -2], [0, REST, REST, 0, 0, REST, 7, 0, 0, REST, REST, 0, 0, REST, 3, 0]),
-    row(TIMBRE_BRASS, 0.034, 1, 0, 15, [0, 1, 6, 0], [REST, 0, REST, 7, REST, 0, REST, 12, REST, 0, REST, 7, REST, 3, REST, 12]),
-    row(TIMBRE_ORGAN, 0.036, -1, 0.25, 15, [0, 0, 1, 0], [0, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST]),
-    row(TIMBRE_STEAM, 0.028, 0, 0.5, 5, [0, 0, 0, 0], [0, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST]),
+    row(TIMBRE_GEAR, 0.028, 2, 0, 15, [0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+    row(TIMBRE_THUMP, 0.062, 0, 0, 15, [0, -1, 0, -2], [0, REST, REST, 0, 0, REST, 7, 0, 0, REST, REST, 0, 0, REST, 3, 0]),
+    row(TIMBRE_BRASS, 0.03, 1, 0, 15, [0, 1, 6, 0], [REST, 0, REST, 7, REST, 0, REST, 10, REST, 0, REST, 7, REST, 3, REST, 10]),
+    row(TIMBRE_ORGAN, 0.03, -1, 0.25, 15, [0, 0, 1, 0], [0, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST]),
+    row(TIMBRE_STEAM, 0.024, 0, 0.5, 5, [0, 0, 0, 0], [0, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST]),
   ],
 });
 
 const BOSS = bind({
-  bed: BED_BOSS, bpm: 80, bpmFull: 88, beats: 4, steps: 16, phrases: 4, rootHz: 55,
+  bed: BED_BOSS, bpm: 76, bpmFull: 84, beats: 4, steps: 16, phrases: 4, rootHz: 55,
   voices: [
-    row(TIMBRE_GEAR, 0.036, 1, 0, 15, [0, 0, 0, 0], [0, REST, REST, REST, REST, REST, REST, REST, 0, REST, REST, REST, REST, REST, REST, REST]),
-    row(TIMBRE_THUMP, 0.076, -1, 0, 15, [0, -2, -5, 0], [0, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST]),
-    row(TIMBRE_ORGAN, 0.046, 1, 0, 15, [0, 3, 7, 10], [0, REST, REST, 3, REST, REST, 7, REST, 12, REST, 10, REST, 7, REST, 3, 0]),
-    row(TIMBRE_BRASS, 0.026, 0, 0.5, 15, [0, -2, -5, 0], [0, REST, REST, REST, 7, REST, REST, REST, REST, REST, REST, REST, 10, REST, REST, REST]),
-    row(TIMBRE_BELL, 0.04, 2, 0.75, 1, [0, 0, 0, 0], [0, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST]),
+    row(TIMBRE_GEAR, 0.032, 1, 0, 15, [0, 0, 0, 0], [0, REST, REST, REST, REST, REST, REST, REST, 0, REST, REST, REST, REST, REST, REST, REST]),
+    row(TIMBRE_THUMP, 0.068, -1, 0, 15, [0, -2, -5, 0], [0, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST]),
+    row(TIMBRE_ORGAN, 0.04, 1, 0, 15, [0, 3, 7, 10], [0, REST, REST, 3, REST, REST, 7, REST, 10, REST, 8, REST, 7, REST, 3, 0]),
+    row(TIMBRE_BRASS, 0.022, 0, 0.5, 15, [0, -2, -5, 0], [0, REST, REST, REST, 7, REST, REST, REST, REST, REST, REST, REST, 10, REST, REST, REST]),
+    row(TIMBRE_BELL, 0.034, 2, 0.75, 1, [0, 0, 0, 0], [0, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST, REST]),
   ],
 });
 
@@ -345,11 +345,17 @@ function ensure(bus: Bus): boolean {
   if (musicGain && decks) return false;
   const mg = bus.ctx.createGain();
   mg.gain.value = musicLevel();
+  const comp = bus.ctx.createDynamicsCompressor();
+  comp.threshold.value = -22;
+  comp.knee.value = 10;
+  comp.ratio.value = 10;
+  comp.attack.value = 0.004;
+  comp.release.value = 0.16;
   const left = makeDeck(bus.ctx);
   const right = makeDeck(bus.ctx);
   left.gain.connect(mg);
   right.gain.connect(mg);
-  mg.connect(bus.master);
+  mg.connect(comp).connect(bus.master);
   musicGain = mg;
   decks = [left, right];
   noise = noiseBuf(bus.ctx);
@@ -463,21 +469,21 @@ function hitGear(ctx: AudioContext, dest: AudioNode, t: number, vol: number): vo
 
 function hitThump(ctx: AudioContext, dest: AudioNode, t: number, hz: number, vol: number): void {
   const gain = ctx.createGain();
-  shape(gain.gain, t, vol, 0, 0.1);
+  shape(gain.gain, t, vol, 0, 0.09);
   gain.connect(dest);
-  const node = tone(ctx, gain, "triangle", hz, t, t + 0.12);
-  node.frequency.exponentialRampToValueAtTime(Math.max(1, hz * 0.42), t + 0.09);
+  const node = tone(ctx, gain, "triangle", hz, t, t + 0.11);
+  node.frequency.exponentialRampToValueAtTime(Math.max(1, hz * 0.42), t + 0.08);
 }
 
 function hitBrass(ctx: AudioContext, dest: AudioNode, t: number, hz: number, vol: number): void {
   const gain = ctx.createGain();
-  shape(gain.gain, t, vol, 0.003, 0.1);
+  shape(gain.gain, t, vol, 0.003, 0.09);
   gain.connect(dest);
-  tone(ctx, gain, "square", hz, t, t + 0.12);
+  tone(ctx, gain, "square", hz, t, t + 0.11);
   const mix = ctx.createGain();
-  mix.gain.value = 0.22;
+  mix.gain.value = 0.18;
   mix.connect(gain);
-  tone(ctx, mix, "square", hz * 2, t, t + 0.07);
+  tone(ctx, mix, "square", hz * 2, t, t + 0.06);
 }
 
 function hitOrgan(ctx: AudioContext, dest: AudioNode, t: number, hz: number, vol: number): void {

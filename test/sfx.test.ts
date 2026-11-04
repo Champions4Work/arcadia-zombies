@@ -1,4 +1,5 @@
 import { applyUpgrade, sawAngle, sawRadius, takeXp, xpNeed } from "../src/sim/progress";
+import { tryDash, stepDash } from "../src/sim/dash.hot";
 import { step } from "../src/sim/step.hot";
 import {
   EV_BOOM, EV_HURT, EV_KILL, EV_LEVEL, EV_RANK, EV_SAW, EV_SHIELD, EV_SHOT, EV_SIREN, EV_TESLA, EV_WAVE, FX_SPARK,
@@ -11,7 +12,7 @@ import {
   sfxMuted, sfxVolume, type SfxSink,
 } from "../src/render/sfx";
 import {
-  admitCue, clampSfxVolume, collectCues, createSfxTrack, CUE_BOOM, CUE_BOSS, CUE_CLICK, CUE_DEATH, CUE_HIT, CUE_HURT,
+  admitCue, clampSfxVolume, collectCues, createSfxTrack, CUE_BOOM, CUE_BOSS, CUE_CLICK, CUE_DASH, CUE_DEATH, CUE_HIT, CUE_HURT,
   CUE_LEVEL, CUE_N, CUE_PICK, CUE_RANK, CUE_RIFLE, CUE_RIVET, CUE_SAW, CUE_SHIELD, CUE_SHOTGUN, CUE_TESLA, CUE_WAVE,
   cueBase, cueDur, cueGap, cuePreempts, createSfxGate, isBossWave, loadSfxPrefs, mixGain,
   saveSfxPrefs, SFX_MUTE_KEY, SFX_VOL_DEFAULT, SFX_VOL_KEY, sfxMuteLabel,
@@ -202,6 +203,17 @@ describe("world cues", () => {
     heard.length = 0;
     vols.length = 0;
     t = 0;
+  });
+
+  it("whooshes when a dash burst starts", () => {
+    const w = createWorld(20);
+    quiet(w);
+    tryDash(w, { dx: 1, dy: 0, dash: 1 });
+    stepDash(w);
+    const out = new Uint8Array(CUE_N);
+    const n = collectCues(w, createSfxTrack(), out);
+    expect(Array.from(out.subarray(0, n))).toContain(CUE_DASH);
+    expect(cueDur(CUE_DASH)).toBeLessThan(0.2);
   });
 
   it("sirens when a boss warning is up", () => {

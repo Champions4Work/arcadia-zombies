@@ -92,7 +92,7 @@ Do this work after the art pack is on `main`. Do not start a later row until the
 1. **World and props.** Pipes, tanks, valves, belts, lamps, and buildings at image 2 **silhouette** density. **Sparse** crates and breakables on edges. Dark, decluttered center lane. Spawn doorways readable.
 2. **HUD match.** Fit the 390x844 layout to image 1. Heart, five power slots, ultimate, XP, map, and objectives. No energy bar.
 3. **Effects and feel.** Smooth move, dash, hit flash, trauma shake from `src/render/shake.ts`, and 60 fps on a phone. Feedback in `src/render/juice.ts` stays on the camera and the draw path, not the sim body.
-4. **Chip-style music and SFX.** Redo the music bed (`BedId` in `src/render/music.ts`) and the cues as chip and brass. Route them through the existing mixer buses.
+4. **Chip-style music and SFX.** Procedural chip and brass beds plus combat cues live in `src/render/music.ts` and `src/render/sfx.ts`. Palette and bus rules are in `docs/STYLE.md` under Sound palette.
 5. **Objectives and waves.** Surface the live objective, the wave, and the kill count in the top-right cluster. Wave beats stay the director. The HUD reports them.
 6. **Gameplay depth.** Upgrade belt, breakable props, and vent slowdown. New verbs use the props from row 1. They do not add a new resource beside HP.
 
