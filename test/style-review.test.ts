@@ -191,8 +191,9 @@ describe("visual review gates", () => {
     expect(hud.includes("function restStick")).toBe(true);
     expect(hud.includes("function skillKeys")).toBe(true);
     expect(hud.includes("function skillIcon")).toBe(true);
-    expect(hud.includes("function phoneHud")).toBe(true);
-    expect(hud.includes("if (!phoneHud(layout))")).toBe(false);
+    expect(hud.includes("function phoneHud")).toBe(false);
+    expect(hud.includes("layout.objectives")).toBe(true);
+    expect(hud.includes("phoneHud(layout) ? 10 : 10")).toBe(false);
     expect(hud.includes("portrait(ctx, w, layout.face)")).toBe(true);
     expect(hud.includes("skillKeys(ctx, layout)")).toBe(true);
     expect(hud.includes("const r = 24")).toBe(true);
