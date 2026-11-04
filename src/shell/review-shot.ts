@@ -75,7 +75,7 @@ export function reviewHorde(w: World): number {
     stampBlood(z.x[i] ?? 0, (z.y[i] ?? 0) + 6, i * 3);
     n++;
   }
-  for (let c = 0; c < 14; c++) {
+  for (let c = 0; c < 24; c++) {
     stampCasing(w.px - 28 + ((c * 17) % 51), w.py + 4 + ((c * 13) % 23), c * 5);
   }
   stampBlood(w.px + 18, w.py + 14, 5);
@@ -83,6 +83,10 @@ export function reviewHorde(w: World): number {
   stampBlood(w.px + 8, w.py + 36, 15);
   stampBlood(w.px - 36, w.py + 44, 21);
   stampBlood(w.px + 42, w.py + 58, 27);
+  stampBlood(w.px + 28, w.py - 18, 33);
+  stampBlood(w.px - 16, w.py - 12, 39);
+  stampBlood(w.px + 52, w.py + 8, 45);
+  stampBlood(w.px - 44, w.py + 16, 51);
   const b = w.bullets;
   for (let j = 0; j < MAX_BULLETS; j++) b.alive[j] = 0;
   for (let j = 0; j < 5; j++) {

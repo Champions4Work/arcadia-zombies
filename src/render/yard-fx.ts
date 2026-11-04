@@ -9,6 +9,8 @@ const BUILDINGS = [
   { x: 620, y: 100 },
   { x: 350, y: 200 },
   { x: 610, y: 200 },
+  { x: 340, y: 300 },
+  { x: 620, y: 300 },
   { x: 355, y: 510 },
   { x: 605, y: 510 },
 ];
@@ -18,6 +20,8 @@ const BELTS = [
   { x: 530, y: 168, w: 90, vert: 0 },
   { x: 348, y: 210, w: 120, vert: 1 },
   { x: 612, y: 210, w: 120, vert: 1 },
+  { x: 340, y: 448, w: 90, vert: 1 },
+  { x: 620, y: 448, w: 90, vert: 1 },
 ];
 
 const PROPS: { id: string; x: number; y: number }[] = [
@@ -63,6 +67,28 @@ const PROPS: { id: string; x: number; y: number }[] = [
   { id: "lamp", x: 420, y: 460 },
   { id: "lamp", x: 500, y: 520 },
   { id: "lamp", x: 560, y: 580 },
+  { id: "pipes_blue_tank", x: 340, y: 360 },
+  { id: "pipes_blue_tank", x: 340, y: 440 },
+  { id: "pipes_blue_tank", x: 620, y: 360 },
+  { id: "pipes_blue_tank", x: 620, y: 440 },
+  { id: "valve_steam", x: 340, y: 400 },
+  { id: "valve_steam", x: 620, y: 400 },
+  { id: "window_lit", x: 340, y: 248 },
+  { id: "window_lit", x: 620, y: 248 },
+  { id: "window_lit", x: 340, y: 560 },
+  { id: "window_lit", x: 620, y: 560 },
+  { id: "decal_vent", x: 340, y: 250 },
+  { id: "decal_vent", x: 620, y: 250 },
+  { id: "decal_vent", x: 340, y: 470 },
+  { id: "decal_vent", x: 620, y: 470 },
+  { id: "decal_grate", x: 354, y: 600 },
+  { id: "decal_grate", x: 606, y: 600 },
+  { id: "crate", x: 360, y: 620 },
+  { id: "barrel", x: 400, y: 612 },
+  { id: "crate_stack", x: 560, y: 616 },
+  { id: "barrel", x: 600, y: 608 },
+  { id: "breakable_boiler", x: 340, y: 580 },
+  { id: "breakable_gear_pylon", x: 620, y: 580 },
 ];
 
 const TANKS = [
@@ -72,6 +98,10 @@ const TANKS = [
   { x: 612, y: 310 },
   { x: 568, y: 500 },
   { x: 430, y: 588 },
+  { x: 340, y: 360 },
+  { x: 340, y: 440 },
+  { x: 620, y: 360 },
+  { x: 620, y: 440 },
 ];
 
 const POOLS = [
@@ -85,11 +115,16 @@ const POOLS = [
   { x: 420, y: 460 },
   { x: 500, y: 520 },
   { x: 560, y: 580 },
+  { x: 340, y: 360 },
+  { x: 620, y: 360 },
 ];
 
 const STEAM_VENTS = [
   { x: 348, y: 188 },
   { x: 348, y: 268 },
+  { x: 612, y: 268 },
+  { x: 348, y: 348 },
+  { x: 612, y: 348 },
 ];
 
 export const YARD_CLEAR = { x0: 368, y0: 188, x1: 588, y1: 428 };
@@ -100,15 +135,35 @@ function visible(x: number, y: number, camX: number, camY: number, vw: number, v
 }
 
 function lampPool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  const g = ctx.createRadialGradient(x, y - 10, 2, x, y + 10, 58);
-  g.addColorStop(0, "rgba(255,186,96,0.42)");
-  g.addColorStop(0.45, "rgba(255,140,48,0.18)");
+  const g = ctx.createRadialGradient(x, y - 10, 2, x, y + 10, 78);
+  g.addColorStop(0, "rgba(255,196,110,0.62)");
+  g.addColorStop(0.4, "rgba(255,150,56,0.28)");
   g.addColorStop(1, "rgba(10,10,14,0)");
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.ellipse(x, y + 10, 52, 32, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y + 10, 72, 44, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function lampRay(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  ctx.translate(x, y - 6);
+  ctx.rotate(-0.38);
+  const g = ctx.createLinearGradient(0, 0, 0, -96);
+  g.addColorStop(0, "rgba(255,196,110,0.28)");
+  g.addColorStop(0.55, "rgba(255,170,70,0.1)");
+  g.addColorStop(1, "rgba(255,160,60,0)");
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.moveTo(-7, 0);
+  ctx.lineTo(9, 0);
+  ctx.lineTo(30, -96);
+  ctx.lineTo(-24, -96);
+  ctx.closePath();
   ctx.fill();
   ctx.restore();
 }
@@ -146,14 +201,14 @@ function bluePool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
 function steamPuff(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number): void {
   const lift = ((tick * 0.35) % 18);
   ctx.save();
-  ctx.globalAlpha = 0.22;
-  ctx.fillStyle = "#7a8088";
+  ctx.globalAlpha = 0.28;
+  ctx.fillStyle = "#8a9098";
   ctx.beginPath();
-  ctx.ellipse(x, y - 6 - lift * 0.2, 9, 13, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y - 6 - lift * 0.2, 10, 14, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.globalAlpha = 0.16;
+  ctx.globalAlpha = 0.2;
   ctx.beginPath();
-  ctx.ellipse(x + 5, y - 16 - lift * 0.25, 7, 10, 0.2, 0, Math.PI * 2);
+  ctx.ellipse(x + 5, y - 16 - lift * 0.25, 8, 11, 0.2, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
@@ -202,6 +257,7 @@ export function paintYardLive(
   for (const pool of POOLS) {
     if (!visible(pool.x, pool.y, camX, camY, vw, vh, 60)) continue;
     lampPool(ctx, pool.x, pool.y);
+    lampRay(ctx, pool.x, pool.y);
   }
   for (const tank of TANKS) {
     if (!visible(tank.x, tank.y, camX, camY, vw, vh, 50)) continue;
