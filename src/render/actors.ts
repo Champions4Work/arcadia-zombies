@@ -163,7 +163,7 @@ export function paintActors(ctx: CanvasRenderingContext2D, w: World, moving: boo
     else if (id < 0) {
       ctx.globalAlpha = 1;
       if (!hidden) paintHero(ctx, w, moving);
-    } else if (!offScreen(z.x[id] ?? 0, z.y[id] ?? 0, 96, obs.camX, obs.camY)) {
+    } else if (!offScreen(z.x[id] ?? 0, z.y[id] ?? 0, 96, obs.camX, obs.camY, obs.viewW, obs.viewH)) {
       if (shade < 1) ctx.globalAlpha = shade;
       paintOne(ctx, w, id);
     }
@@ -188,7 +188,7 @@ export function paintBullets(ctx: CanvasRenderingContext2D, w: World): void {
   const b = w.bullets;
   for (let i = 0; i < b.alive.length; i++) {
     if (!b.alive[i]) continue;
-    if (offScreen(b.x[i] ?? 0, b.y[i] ?? 0, 24, w.arena.camX, w.arena.camY)) continue;
+    if (offScreen(b.x[i] ?? 0, b.y[i] ?? 0, 24, w.arena.camX, w.arena.camY, w.arena.viewW, w.arena.viewH)) continue;
     if (paintWeapon(ctx, w, i)) continue;
     const paint = projectileFor(b.hp[i] ?? 0, bulletPaint(b.kind[i] ?? 0, defaultBolt));
     paint(ctx, b.x[i] ?? 0, b.y[i] ?? 0, b.vx[i] ?? 1, b.vy[i] ?? 0, w.tick);
@@ -210,7 +210,7 @@ export function paintFx(ctx: CanvasRenderingContext2D, w: World): void {
     if (!kind) continue;
     const x = w.fxX[i] ?? 0;
     const y = w.fxY[i] ?? 0;
-    if (offScreen(x, y, 48, camX, camY)) continue;
+    if (offScreen(x, y, 48, camX, camY, w.arena.viewW, w.arena.viewH)) continue;
     const age = w.tick - (w.fxTick[i] ?? 0);
     fxPaint(kind, paintSpark)(ctx, x, y, age, w.fxA[i] ?? 0, w.tick);
   }

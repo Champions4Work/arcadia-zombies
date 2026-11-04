@@ -58,10 +58,10 @@ export function drawWeaponRack(c: CanvasRenderingContext2D, w: World): void {
     c.textBaseline = "middle";
     c.fillText(tag, x + bw / 2, y + box.h * 0.38);
     c.restore();
-    const pipW = Math.max(4, (bw - 12) / 5 - 2);
+    const pipW = Math.max(3, (bw - 10) / 5 - 2);
     for (let p = 0; p < 5; p++) {
       c.fillStyle = p < lv ? EMBER : SOOT;
-      c.fillRect(x + 6 + p * (pipW + 2), y + box.h - 10, pipW, 5);
+      c.fillRect(x + 5 + p * (pipW + 2), y + box.h - 8, pipW, 4);
     }
   }
   c.textAlign = "left";

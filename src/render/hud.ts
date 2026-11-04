@@ -11,9 +11,10 @@ import {
   UNION_CROWN, UNION_HALO, UNION_HEART, UNION_HOWITZER, UPG_DMG, UPG_FIRE, UPG_HP, UPG_MAX, UPG_MORTAR,
   UPG_PIERCE, UPG_SAWS, UPG_SHIELD, UPG_SHOTGUN, UPG_SPEED, UPG_TESLA, UPG_VENT, W, Z_BRUTE, Z_GHOUL, type World,
 } from "../sim/types";
-import { currentHud, pauseHitAt } from "../shell/hud-layout";
+import { currentHud, offerCards, pauseHitAt } from "../shell/hud-layout";
 import type { Box, Circle, HudLayout } from "../shell/hud-layout";
 import { BRASS, cog, flame, font, heart, lit, OUTLINE, rivet, roundRect } from "./paint";
+import { drawXpBar } from "./xp-gain";
 
 const BLURB = [
   "Chain a spark through nearby foes.",
@@ -224,30 +225,9 @@ function drawHealth(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   }
 }
 
-function drawXp(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
+function drawXp(ctx: CanvasRenderingContext2D, w: World, layout: HudLayout): void {
   const need = pacedXpNeed(xpNeed(w.level), w.mods);
-  const t = need <= 0 ? 0 : Math.min(1, w.xp / need);
-  brassPanel(ctx, box.x, box.y, box.w, box.h, 8, "#120c08");
-  const pad = 5;
-  const badge = Math.min(64, box.w * 0.16);
-  roundRect(ctx, box.x + pad, box.y + pad, box.w - pad * 2 - badge, box.h - pad * 2, 6);
-  ctx.fillStyle = "#1a1008";
-  ctx.fill();
-  const fillW = Math.max(6, (box.w - pad * 2 - badge) * t);
-  roundRect(ctx, box.x + pad, box.y + pad, fillW, box.h - pad * 2, 6);
-  const bar = ctx.createLinearGradient(box.x, box.y, box.x + box.w, box.y);
-  bar.addColorStop(0, "#fff3b0");
-  bar.addColorStop(0.45, "#ffb020");
-  bar.addColorStop(1, "#ff6a10");
-  ctx.fillStyle = bar;
-  ctx.shadowColor = "#ffb020";
-  ctx.shadowBlur = 14;
-  ctx.fill();
-  ctx.shadowBlur = 0;
-  ctx.lineWidth = 1.4;
-  ctx.strokeStyle = OUTLINE;
-  ctx.stroke();
-  ink(ctx, `LV ${w.level}`, box.x + box.w - badge / 2, box.y + box.h * 0.22, Math.min(16, box.h * 0.55), "#fff8ee", "center");
+  drawXpBar(ctx, layout, need);
 }
 
 function fitInk(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, size: number, max: number, color: string, weight = 800): void {
@@ -444,7 +424,7 @@ export function drawHud(ctx: CanvasRenderingContext2D, w: World): void {
   const dpr = ctx.canvas.width / Math.max(1, layout.view.w);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   drawHealth(ctx, w, layout.hero);
-  drawXp(ctx, w, layout.xp);
+  drawXp(ctx, w, layout);
   if (!w.choosing) banner(ctx, w, layout.difficulty);
   clockPanel(ctx, w, layout.clock);
   pauseButton(ctx, layout.pause);
@@ -653,9 +633,18 @@ function drawCard(ctx: CanvasRenderingContext2D, x: number, y: number, w: number
 
 export function drawCards(ctx: CanvasRenderingContext2D, w: World): void {
   if (!w.choosing) return;
+  const layout = currentHud();
+  const slots = offerCount(w);
+  const cards = layout ? offerCards(layout.view, slots) : null;
+  ctx.save();
+  if (layout) {
+    const dpr = ctx.canvas.width / Math.max(1, layout.view.w);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  const midX = layout ? layout.view.w / 2 : W / 2;
+  const by = cards?.[0] ? cards[0].y - 28 : CARD_Y - 24;
   const bw = 168;
-  const bx = (W - bw) / 2;
-  const by = CARD_Y - 24;
+  const bx = midX - bw / 2;
   roundRect(ctx, bx, by, bw, 20, 9);
   const ribbon = ctx.createLinearGradient(bx, by, bx, by + 20);
   ribbon.addColorStop(0, "#c45ad4");
@@ -665,12 +654,12 @@ export function drawCards(ctx: CanvasRenderingContext2D, w: World): void {
   ctx.lineWidth = 2;
   ctx.strokeStyle = OUTLINE;
   ctx.stroke();
-  ink(ctx, "CHOOSE YOUR UPGRADE", W / 2, by + 4, 10, "#fff8ee", "center");
-  const slots = offerCount(w);
+  ink(ctx, "CHOOSE YOUR UPGRADE", midX, by + 4, 10, "#fff8ee", "center");
   for (let i = 0; i < slots; i++) {
-    const f = cardFrame(i, slots);
+    const f = cards?.[i] ?? cardFrame(i, slots);
     drawCard(ctx, f.x, f.y, f.w, f.h, offerId(w, i), i, w);
   }
+  ctx.restore();
   ctx.textAlign = "left";
   ctx.textBaseline = "alphabetic";
 }

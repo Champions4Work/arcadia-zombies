@@ -1,6 +1,7 @@
 import { awardRun, applyWorkshop, emptyWorkshop, loadWorkshop, saveWorkshop, tryBuy } from "./meta/workshop";
 import { fpsReadout, noteFrame, toggleFps, toggleFromKey } from "./render/fps";
 import { setNumbersOn, stopRemaining } from "./render/juice";
+import { resetXpGain, syncXpGain, tickXpGain } from "./render/xp-gain";
 import { setMusicOn, setMusicWave } from "./render/music";
 import { chestSkipKey } from "./render/chestFx";
 import { draw } from "./render/draw";
@@ -11,8 +12,9 @@ import { setMuted, unlockAudio } from "./render/sound";
 import { renderBench } from "./shell/bench";
 import { codexStamp, emptyCodex, loadCodex, observe, renderBook, saveCodex } from "./shell/codex";
 import { applyCanvas, screenToGame, type Fit } from "./shell/fit";
-import { bindHud, layoutHud, stickFrame } from "./shell/hud-layout";
-import { showMenuChrome } from "./shell/play-chrome";
+import { bindHud, currentHud, layoutHud, offerHit, rerollCss, stickFrame } from "./shell/hud-layout";
+import { playChromeHidden, showMenuChrome } from "./shell/play-chrome";
+import { applyPlayView } from "./shell/play-view";
 import { mountResults } from "./shell/results-dom";
 import { resultBadges, resultFromWorld } from "./shell/results";
 import {
@@ -26,7 +28,7 @@ import {
   saveDebug,
   shouldSample,
 } from "./shell/run-log";
-import { bindViewport, readInsets, readViewport } from "./shell/viewport";
+import { bindViewport, readInsets, readViewport, ZERO_INSETS } from "./shell/viewport";
 import { mountPicker, paintPicker } from "./shell/picker";
 import {
   captureRun,
@@ -195,10 +197,17 @@ let world = makeWorld(1);
 applyWorkshop(world, shop);
 let fit: Fit = applyCanvas(canvas, ctx, innerWidth, innerHeight, devicePixelRatio || 1, W, H);
 bindHud(layoutHud(viewNow(), fit));
-bindViewport(() => {
+
+function fitPlay(): void {
   const vp = viewNow();
-  fit = applyCanvas(canvas, ctx, vp.cssW, vp.cssH, vp.dpr, W, H, vp.safe);
+  const pv = applyPlayView(world.arena, vp.cssW, vp.cssH);
+  fit = applyCanvas(canvas, ctx, vp.cssW, vp.cssH, vp.dpr, pv.viewW, pv.viewH, ZERO_INSETS);
   bindHud(layoutHud(vp, fit));
+}
+
+fitPlay();
+bindViewport(() => {
+  fitPlay();
 });
 const results = mountResults(panel);
 results.onCopy(() => {
@@ -247,7 +256,10 @@ function paint(): void {
   backBtn.hidden = !fitting;
   bench.hidden = !fitting;
   opts.hidden = fitting || !showMenuChrome(session.phase);
-  sfxBox.hidden = fitting || !showMenuChrome(session.phase);
+  const chrome = playChromeHidden(playing);
+  muteBtn.hidden = chrome.mute;
+  sfxBox.hidden = chrome.sfx || fitting || !showMenuChrome(session.phase);
+  document.body.classList.toggle("play", playing);
   debugBtn.textContent = debugOn ? "Debug logs: On" : "Debug logs: Off";
   debugBtn.setAttribute("aria-pressed", debugOn ? "true" : "false");
   if (session.phase === PHASE_TITLE) {
@@ -394,6 +406,7 @@ function startRun(): void {
       world.wpnCd.fill(9999);
     }
     resetSfxPlayback();
+    resetXpGain();
     resetTracker(tracker);
     runLineText = "";
     runShare = null;
@@ -662,7 +675,13 @@ addEventListener("pointerdown", (e) => {
     return;
   }
   if (world.choosing) {
-    if (rerollHit(p.x, p.y)) pendingReroll = 1;
+    const hud = currentHud();
+    if (hud) {
+      const roll = rerollCss(hud.view);
+      if (e.clientX >= roll.x && e.clientX <= roll.x + roll.w && e.clientY >= roll.y && e.clientY <= roll.y + roll.h) {
+        pendingReroll = 1;
+      } else pendingPick = offerHit(hud.view, offerCount(world), e.clientX, e.clientY);
+    } else if (rerollHit(p.x, p.y)) pendingReroll = 1;
     else pendingPick = cardSlot(p.x, p.y, offerCount(world));
     return;
   }
@@ -793,9 +812,12 @@ function frame(now: number): void {
   } else {
     acc = 0;
   }
-  const vp = viewNow();
-  fit = applyCanvas(canvas, ctx, vp.cssW, vp.cssH, vp.dpr, W, H, vp.safe);
-  bindHud(layoutHud(vp, fit));
+  fitPlay();
+  const hud = currentHud();
+  if (hud) {
+    syncXpGain(world, hud, fit);
+    tickXpGain(16, hud, world.xp);
+  }
   const showHud = session.phase === PHASE_PLAY || session.phase === PHASE_PAUSE;
   draw(ctx, world, { hud: showHud, shake: session.shake });
   placeJoy();

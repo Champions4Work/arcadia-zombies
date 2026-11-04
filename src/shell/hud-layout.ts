@@ -39,7 +39,7 @@ export function currentHud(): HudLayout | null {
   return bound;
 }
 
-export function frameBox(fit: Fit, gameW = W, gameH = H): Box {
+export function frameBox(fit: Fit, gameW = fit.viewW || W, gameH = fit.viewH || H): Box {
   return { x: fit.ox, y: fit.oy, w: gameW * fit.scale, h: gameH * fit.scale };
 }
 
@@ -92,15 +92,15 @@ export function layoutHud(vp: Viewport, fit: Fit): HudLayout {
   const portrait = vp.cssH > vp.cssW;
   const u = portrait ? clamp(inner.w / 390, 0.85, 1.15) : clamp(inner.h / 360, 0.78, 1.05);
   const gap = Math.max(6, 8 * u);
-  const xpH = Math.round((portrait ? 26 : 20) * u);
-  const xp = { x: inner.x, y: inner.y + inner.h - xpH, w: inner.w, h: xpH };
-  const heroW = Math.round((portrait ? 118 : 100) * u);
-  const heroH = Math.round((portrait ? 88 : 72) * u);
+  const xpH = Math.round((portrait ? 22 : 18) * u);
+  const xp = { x: inner.x + gap, y: inner.y + inner.h - xpH, w: inner.w - gap * 2, h: xpH };
+  const heroW = Math.round((portrait ? 100 : 92) * u);
+  const heroH = Math.round((portrait ? 70 : 60) * u);
   const hero = { x: inner.x + gap, y: xp.y - gap - heroH, w: heroW, h: heroH };
-  const abilW = Math.round((portrait ? 92 : 80) * u);
-  const abilH = Math.round((portrait ? 76 : 64) * u);
+  const abilW = Math.round((portrait ? 80 : 72) * u);
+  const abilH = Math.round((portrait ? 64 : 56) * u);
   const ability = { x: inner.x + inner.w - gap - abilW, y: xp.y - gap - abilH, w: abilW, h: abilH };
-  const wpnH = Math.round((portrait ? 40 : 30) * u);
+  const wpnH = Math.round((portrait ? 32 : 26) * u);
   const weapons = portrait
     ? { x: inner.x + gap, y: hero.y - gap - wpnH, w: inner.w - gap * 2, h: wpnH }
     : {
@@ -110,34 +110,33 @@ export function layoutHud(vp: Viewport, fit: Fit): HudLayout {
       h: wpnH,
     };
   const topY = inner.y + gap;
-  const rowH = Math.round((portrait ? 46 : 40) * u);
-  const mute = 124;
-  const pauseR = Math.round(15 * u);
+  const rowH = Math.round((portrait ? 36 : 34) * u);
+  const pauseR = Math.round(14 * u);
   const pause = {
-    x: inner.x + inner.w - mute - pauseR,
+    x: inner.x + inner.w - gap - pauseR,
     y: topY + rowH / 2,
     r: pauseR,
   };
-  const clockW = Math.round((portrait ? 124 : 118) * u);
+  const clockW = Math.round((portrait ? 108 : 112) * u);
   const clock = {
     x: pause.x - pauseR - gap - clockW,
     y: topY,
     w: clockW,
     h: rowH,
   };
-  const diffW = Math.round((portrait ? 170 : 188) * u);
+  const diffW = Math.round((portrait ? 140 : 160) * u);
   const difficulty = {
-    x: Math.max(inner.x + gap, clock.x - gap - diffW),
+    x: inner.x + gap,
     y: topY,
-    w: Math.min(diffW, Math.max(96, clock.x - gap - (inner.x + gap))),
+    w: Math.min(diffW, Math.max(88, clock.x - gap - (inner.x + gap))),
     h: rowH,
   };
-  const mapS = Math.round((portrait ? 76 : 62) * u);
+  const mapS = Math.round((portrait ? 56 : 52) * u);
   const minimap = {
     x: inner.x + gap,
-    y: portrait ? topY + rowH + gap : Math.max(topY + rowH + gap, hero.y - gap - mapS - 18),
+    y: topY + rowH + gap,
     w: mapS,
-    h: mapS + 18,
+    h: mapS + 14,
   };
   if (boxesOverlap(minimap, hero)) minimap.y = Math.max(topY + rowH + gap, hero.y - gap - minimap.h);
   if (boxesOverlap(minimap, difficulty) || boxesOverlap(minimap, clock)) {
@@ -154,14 +153,40 @@ export function pauseHitAt(layout: HudLayout, x: number, y: number): boolean {
 }
 
 export function stickFrame(layout: HudLayout): Box {
-  const top = Math.max(layout.view.y, layout.difficulty.y + layout.difficulty.h);
-  const bottom = Math.min(layout.hero.y, layout.weapons.y);
   return {
     x: layout.view.x,
-    y: top,
+    y: layout.view.y,
     w: layout.view.w,
-    h: Math.max(1, bottom - top),
+    h: Math.max(1, layout.xp.y - layout.view.y),
   };
+}
+
+export function offerCards(view: Box, slots: number): Box[] {
+  const n = Math.max(1, slots);
+  const gap = 10;
+  const w = Math.max(96, Math.min(168, (view.w - 24 - gap * (n - 1)) / n));
+  const h = Math.min(170, Math.max(120, view.h * 0.26));
+  const row = w * n + gap * (n - 1);
+  const x0 = view.x + (view.w - row) / 2;
+  const y = view.y + Math.max(72, view.h * 0.22);
+  const cards: Box[] = [];
+  for (let i = 0; i < n; i++) cards.push({ x: x0 + i * (w + gap), y, w, h });
+  return cards;
+}
+
+export function offerHit(view: Box, slots: number, x: number, y: number): number {
+  const cards = offerCards(view, slots);
+  for (let i = 0; i < cards.length; i++) {
+    const card = cards[i];
+    if (!card) continue;
+    if (x >= card.x && x <= card.x + card.w && y >= card.y && y <= card.y + card.h) return i + 1;
+  }
+  return 0;
+}
+
+export function rerollCss(view: Box): Box {
+  const w = Math.min(180, view.w * 0.42);
+  return { x: view.x + (view.w - w) / 2, y: view.y + view.h * 0.72, w, h: 36 };
 }
 
 function clamp(n: number, lo: number, hi: number): number {
