@@ -1,7 +1,7 @@
 import { applyUpgrade, sawAngle, sawRadius, takeXp, xpNeed } from "../src/sim/progress";
 import { step } from "../src/sim/step.hot";
 import {
-  EV_HURT, EV_KILL, EV_LEVEL, EV_RANK, EV_SAW, EV_SHIELD, EV_SHOT, EV_SIREN, EV_TESLA, FX_SPARK,
+  EV_BOOM, EV_HURT, EV_KILL, EV_LEVEL, EV_RANK, EV_SAW, EV_SHIELD, EV_SHOT, EV_SIREN, EV_TESLA, EV_WAVE, FX_SPARK,
   UPG_PIERCE, UPG_SAWS, UPG_SHIELD, UPG_SHOTGUN, UPG_TESLA, type Input, type World,
 } from "../src/sim/types";
 import { createWorld } from "../src/sim/world";
@@ -11,9 +11,9 @@ import {
   sfxMuted, sfxVolume, type SfxSink,
 } from "../src/render/sfx";
 import {
-  admitCue, clampSfxVolume, collectCues, createSfxTrack, CUE_BOSS, CUE_CLICK, CUE_DEATH, CUE_HIT, CUE_HURT, CUE_LEVEL,
-  CUE_N, CUE_PICK, CUE_RANK, CUE_RIFLE, CUE_RIVET, CUE_SAW, CUE_SHIELD, CUE_SHOTGUN, CUE_TESLA,
-  cueBase, cueDur, cueGap, createSfxGate, isBossWave, loadSfxPrefs, mixGain,
+  admitCue, clampSfxVolume, collectCues, createSfxTrack, CUE_BOOM, CUE_BOSS, CUE_CLICK, CUE_DEATH, CUE_HIT, CUE_HURT,
+  CUE_LEVEL, CUE_N, CUE_PICK, CUE_RANK, CUE_RIFLE, CUE_RIVET, CUE_SAW, CUE_SHIELD, CUE_SHOTGUN, CUE_TESLA, CUE_WAVE,
+  cueBase, cueDur, cueGap, cuePreempts, createSfxGate, isBossWave, loadSfxPrefs, mixGain,
   saveSfxPrefs, SFX_MUTE_KEY, SFX_VOL_DEFAULT, SFX_VOL_KEY, sfxMuteLabel,
   sfxVolumePercent, shotCue, VOICE_CAP, voicesAt,
 } from "../src/render/sfx-cues";
@@ -123,6 +123,10 @@ describe("rate limit", () => {
     expect(mixGain(0.08, 0)).toBeLessThanOrEqual(0.08);
     expect(mixGain(0.08, 4)).toBeLessThan(mixGain(0.08, 0));
     expect(sum).toBeLessThan(1);
+    expect(cueDur(CUE_CLICK)).toBeLessThan(0.05);
+    expect(cueDur(CUE_HIT)).toBeLessThan(0.08);
+    expect(cueDur(CUE_PICK)).toBeLessThan(0.2);
+    expect(cueDur(CUE_RIFLE)).toBeLessThan(0.08);
   });
 
   it("drops repeats inside the gap and extras past the voice cap", () => {
@@ -206,6 +210,22 @@ describe("world cues", () => {
     w.events[EV_SIREN] = 1;
     const n = collectCues(w, createSfxTrack(), out);
     expect(Array.from(out.subarray(0, n))).toContain(CUE_BOSS);
+  });
+
+  it("stings a new wave and blasts an ult boom", () => {
+    const out = new Uint8Array(CUE_N);
+    const waveWorld = createWorld(1);
+    waveWorld.events[EV_WAVE] = 1;
+    const waves = collectCues(waveWorld, createSfxTrack(), out);
+    expect(Array.from(out.subarray(0, waves))).toContain(CUE_WAVE);
+    expect(cueDur(CUE_WAVE)).toBeLessThan(0.4);
+    const boomWorld = createWorld(1);
+    boomWorld.events[EV_BOOM] = 1;
+    const booms = collectCues(boomWorld, createSfxTrack(), out);
+    expect(Array.from(out.subarray(0, booms))).toContain(CUE_BOOM);
+    expect(cueDur(CUE_BOOM)).toBeLessThan(0.25);
+    expect(cuePreempts(CUE_WAVE)).toBe(true);
+    expect(cuePreempts(CUE_BOOM)).toBe(true);
   });
 
   it("horns on a rank change and sirens once on a boss wave", () => {

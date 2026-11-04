@@ -1,6 +1,7 @@
 import {
-  EV_HURT, EV_KILL, EV_LEVEL, EV_RANK, EV_SAW, EV_SHIELD, EV_SHOT, EV_SIREN, EV_TESLA, FX_SPARK,
-  MAX_FX, UPG_PIERCE, UPG_SHOTGUN, WPN_FLAME, WPN_HARP, WPN_MORT, WPN_SHOT, type World,
+  EV_BOOM, EV_HURT, EV_KILL, EV_LEVEL, EV_RANK, EV_SAW, EV_SHIELD, EV_SHOT, EV_SIREN, EV_TESLA,
+  EV_WAVE, FX_SPARK, MAX_FX, UPG_PIERCE, UPG_SHOTGUN, WPN_FLAME, WPN_HARP, WPN_MORT, WPN_SHOT,
+  type World,
 } from "../sim/types";
 
 export const SFX_MUTE_KEY = "arcadia.sfx.muted";
@@ -21,17 +22,19 @@ export const CUE_RANK = 10;
 export const CUE_BOSS = 11;
 export const CUE_CLICK = 12;
 export const CUE_SHIELD = 13;
-export const CUE_N = 14;
+export const CUE_BOOM = 14;
+export const CUE_WAVE = 15;
+export const CUE_N = 16;
 export const VOICE_CAP = 8;
 
 const GAP = new Float32Array([
-  0.035, 0.035, 0.035, 0.08, 0.14, 0.08, 0.12, 0.2, 0.3, 0.15, 0.5, 1.5, 0.045, 0.1,
+  0.035, 0.035, 0.035, 0.08, 0.14, 0.08, 0.12, 0.2, 0.3, 0.15, 0.5, 1.5, 0.045, 0.1, 0.22, 0.7,
 ]);
 const DUR = new Float32Array([
-  0.05, 0.11, 0.06, 0.1, 0.08, 0.05, 0.18, 0.26, 0.46, 0.16, 0.42, 0.72, 0.03, 0.12,
+  0.05, 0.11, 0.06, 0.1, 0.08, 0.05, 0.18, 0.26, 0.46, 0.16, 0.42, 0.72, 0.03, 0.12, 0.16, 0.26,
 ]);
 const BASE = new Float32Array([
-  0.05, 0.055, 0.045, 0.04, 0.034, 0.04, 0.05, 0.06, 0.042, 0.05, 0.05, 0.046, 0.04, 0.04,
+  0.05, 0.055, 0.045, 0.04, 0.034, 0.04, 0.05, 0.06, 0.042, 0.05, 0.05, 0.046, 0.04, 0.04, 0.052, 0.044,
 ]);
 
 export interface SfxPrefs {
@@ -138,7 +141,7 @@ export function resetSfxGate(gate: SfxGate): void {
 }
 
 export function cuePreempts(id: number): boolean {
-  return id === CUE_BOSS || id === CUE_RANK || id === CUE_PICK;
+  return id === CUE_BOSS || id === CUE_RANK || id === CUE_PICK || id === CUE_BOOM || id === CUE_WAVE;
 }
 
 export function voicesAt(gate: SfxGate, now: number): number {
@@ -211,5 +214,7 @@ export function collectCues(w: World, track: SfxTrack, out: Uint8Array): number 
   if (saw) n = put(out, n, CUE_SAW);
   if (w.events[EV_KILL]) n = put(out, n, CUE_DEATH);
   if (zombieStruck(w) && (!saw || w.events[EV_SHOT] || w.events[EV_TESLA])) n = put(out, n, CUE_HIT);
+  if (w.events[EV_WAVE]) n = put(out, n, CUE_WAVE);
+  if (w.events[EV_BOOM]) n = put(out, n, CUE_BOOM);
   return n;
 }

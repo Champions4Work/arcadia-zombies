@@ -2,8 +2,8 @@ import type { World } from "../sim/types";
 import { getBus, isMuted, type Bus } from "./sound";
 import {
   admitCue, clampSfxVolume, collectCues, createSfxGate, createSfxTrack,
-  CUE_BOSS, CUE_CLICK, CUE_DEATH, CUE_HIT, CUE_HURT, CUE_LEVEL, CUE_N, CUE_PICK,
-  CUE_RANK, CUE_RIFLE, CUE_RIVET, CUE_SAW, CUE_SHIELD, CUE_SHOTGUN, CUE_TESLA,
+  CUE_BOOM, CUE_BOSS, CUE_CLICK, CUE_DEATH, CUE_HIT, CUE_HURT, CUE_LEVEL, CUE_N, CUE_PICK,
+  CUE_RANK, CUE_RIFLE, CUE_RIVET, CUE_SAW, CUE_SHIELD, CUE_SHOTGUN, CUE_TESLA, CUE_WAVE,
   cueBase, cueDur, loadSfxPrefs, mixGain, resetSfxGate, SFX_VOL_DEFAULT, saveSfxPrefs,
   voicesAt, type SfxPrefs, type Store,
 } from "./sfx-cues";
@@ -102,6 +102,11 @@ function ensure(bus: Bus): GainNode {
   return gain;
 }
 
+function wobble(when: number, id: number): number {
+  const u = Math.imul(((when * 4096) | 0) ^ id, 0x9e3779b1) >>> 0;
+  return 0.975 + (u & 15) * 0.0032;
+}
+
 function tone(
   ctx: AudioContext, dest: AudioNode, t: number, type: OscillatorType,
   f0: number, f1: number, dur: number, vol: number,
@@ -109,9 +114,10 @@ function tone(
   if (vol < 0.0002 || dur <= 0) return;
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
+  const twist = wobble(t, (f0 | 0) ^ type.length);
   osc.type = type;
-  osc.frequency.setValueAtTime(f0, t);
-  if (f1 !== f0) osc.frequency.exponentialRampToValueAtTime(f1 < 30 ? 30 : f1, t + dur);
+  osc.frequency.setValueAtTime(f0 * twist, t);
+  if (f1 !== f0) osc.frequency.exponentialRampToValueAtTime((f1 < 30 ? 30 : f1) * twist, t + dur);
   gain.gain.setValueAtTime(vol, t);
   gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
   osc.connect(gain).connect(dest);
@@ -140,13 +146,13 @@ function siren(ctx: AudioContext, dest: AudioNode, t: number, vol: number): void
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
   osc.type = "square";
-  osc.frequency.setValueAtTime(494, t);
-  osc.frequency.linearRampToValueAtTime(370, t + 0.16);
-  osc.frequency.linearRampToValueAtTime(494, t + 0.32);
-  osc.frequency.linearRampToValueAtTime(370, t + 0.48);
-  osc.frequency.linearRampToValueAtTime(494, t + 0.64);
+  osc.frequency.setValueAtTime(622, t);
+  osc.frequency.linearRampToValueAtTime(415, t + 0.12);
+  osc.frequency.linearRampToValueAtTime(622, t + 0.24);
+  osc.frequency.linearRampToValueAtTime(370, t + 0.4);
+  osc.frequency.linearRampToValueAtTime(740, t + 0.56);
   gain.gain.setValueAtTime(0.0001, t);
-  gain.gain.exponentialRampToValueAtTime(vol, t + 0.03);
+  gain.gain.exponentialRampToValueAtTime(vol, t + 0.02);
   gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.7);
   osc.connect(gain).connect(dest);
   osc.start(t);
@@ -156,58 +162,73 @@ function siren(ctx: AudioContext, dest: AudioNode, t: number, vol: number): void
 function renderCue(ctx: AudioContext, dest: AudioNode, id: number, t: number, vol: number): void {
   switch (id) {
     case CUE_RIFLE:
-      tone(ctx, dest, t, "square", 780, 520, 0.04, vol);
-      burst(ctx, dest, t, 0.025, vol * 0.5, 2600);
+      tone(ctx, dest, t, "square", 1680, 420, 0.032, vol);
+      burst(ctx, dest, t, 0.018, vol * 0.55, 3200);
       return;
     case CUE_SHOTGUN:
-      tone(ctx, dest, t, "sine", 150, 55, 0.1, vol);
-      burst(ctx, dest, t, 0.09, vol * 0.85, 380);
+      tone(ctx, dest, t, "square", 220, 70, 0.08, vol);
+      burst(ctx, dest, t, 0.07, vol * 0.9, 900);
+      burst(ctx, dest, t, 0.04, vol * 0.45, 2400);
       return;
     case CUE_RIVET:
-      tone(ctx, dest, t, "square", 1480, 860, 0.045, vol);
-      tone(ctx, dest, t, "triangle", 2200, 1400, 0.03, vol * 0.45);
+      tone(ctx, dest, t, "square", 1860, 980, 0.028, vol);
+      tone(ctx, dest, t + 0.018, "square", 1480, 740, 0.024, vol * 0.7);
       return;
     case CUE_TESLA:
-      tone(ctx, dest, t, "square", 1860, 280, 0.09, vol);
-      tone(ctx, dest, t + 0.02, "sawtooth", 2400, 700, 0.06, vol * 0.35);
+      tone(ctx, dest, t, "square", 1980, 240, 0.07, vol);
+      tone(ctx, dest, t + 0.016, "square", 2640, 880, 0.045, vol * 0.4);
+      burst(ctx, dest, t, 0.05, vol * 0.35, 2800);
       return;
     case CUE_SAW:
-      tone(ctx, dest, t, "sawtooth", 190, 160, 0.07, vol);
-      tone(ctx, dest, t, "square", 310, 240, 0.06, vol * 0.55);
+      tone(ctx, dest, t, "square", 280, 140, 0.06, vol);
+      tone(ctx, dest, t, "triangle", 420, 210, 0.05, vol * 0.5);
+      burst(ctx, dest, t, 0.05, vol * 0.4, 1600);
       return;
     case CUE_HIT:
-      burst(ctx, dest, t, 0.035, vol, 1700);
-      tone(ctx, dest, t, "sine", 240, 140, 0.04, vol * 0.6);
+      burst(ctx, dest, t, 0.028, vol, 2100);
+      tone(ctx, dest, t, "square", 310, 120, 0.03, vol * 0.7);
       return;
     case CUE_DEATH:
-      tone(ctx, dest, t, "sawtooth", 168, 46, 0.16, vol);
-      burst(ctx, dest, t, 0.1, vol * 0.4, 220);
+      tone(ctx, dest, t, "square", 196, 55, 0.14, vol);
+      burst(ctx, dest, t, 0.08, vol * 0.45, 280);
       return;
     case CUE_HURT:
-      tone(ctx, dest, t, "triangle", 96, 48, 0.24, vol);
-      burst(ctx, dest, t, 0.08, vol * 0.35, 140);
+      tone(ctx, dest, t, "square", 110, 48, 0.16, vol);
+      burst(ctx, dest, t, 0.06, vol * 0.4, 180);
       return;
     case CUE_LEVEL:
-      tone(ctx, dest, t, "triangle", 523, 523, 0.18, vol * 0.7);
-      tone(ctx, dest, t + 0.08, "triangle", 659, 659, 0.18, vol * 0.7);
-      tone(ctx, dest, t + 0.16, "sine", 784, 784, 0.26, vol * 0.65);
+      tone(ctx, dest, t, "square", 523, 523, 0.08, vol * 0.75);
+      tone(ctx, dest, t + 0.07, "square", 659, 659, 0.08, vol * 0.75);
+      tone(ctx, dest, t + 0.14, "square", 784, 784, 0.16, vol * 0.7);
       return;
     case CUE_PICK:
-      tone(ctx, dest, t, "sine", 620, 980, 0.12, vol);
-      tone(ctx, dest, t + 0.06, "triangle", 980, 1320, 0.1, vol * 0.55);
+      tone(ctx, dest, t, "square", 784, 784, 0.05, vol);
+      tone(ctx, dest, t + 0.05, "square", 1175, 1175, 0.08, vol * 0.65);
       return;
     case CUE_RANK:
-      tone(ctx, dest, t, "sawtooth", 123, 123, 0.4, vol * 0.8);
-      tone(ctx, dest, t, "square", 185, 185, 0.4, vol * 0.45);
+      tone(ctx, dest, t, "square", 196, 196, 0.22, vol * 0.8);
+      tone(ctx, dest, t, "square", 294, 294, 0.22, vol * 0.5);
+      tone(ctx, dest, t + 0.16, "square", 392, 392, 0.2, vol * 0.45);
       return;
     case CUE_BOSS:
       siren(ctx, dest, t, vol);
       return;
     case CUE_CLICK:
-      tone(ctx, dest, t, "square", 1680, 1200, 0.025, vol);
+      tone(ctx, dest, t, "square", 2100, 1600, 0.018, vol);
       return;
     case CUE_SHIELD:
-      tone(ctx, dest, t, "sine", 320, 480, 0.1, vol);
+      tone(ctx, dest, t, "triangle", 392, 588, 0.08, vol);
+      tone(ctx, dest, t + 0.04, "square", 784, 784, 0.06, vol * 0.45);
+      return;
+    case CUE_BOOM:
+      tone(ctx, dest, t, "square", 180, 55, 0.12, vol);
+      burst(ctx, dest, t, 0.1, vol * 0.8, 420);
+      burst(ctx, dest, t, 0.05, vol * 0.4, 1800);
+      return;
+    case CUE_WAVE:
+      tone(ctx, dest, t, "square", 392, 392, 0.06, vol * 0.7);
+      tone(ctx, dest, t + 0.06, "square", 523, 523, 0.06, vol * 0.7);
+      tone(ctx, dest, t + 0.12, "square", 784, 784, 0.12, vol * 0.65);
       return;
     default:
       return;
