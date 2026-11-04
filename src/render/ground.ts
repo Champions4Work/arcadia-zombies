@@ -241,10 +241,15 @@ function build(): void {
     add(FEAT_GEAR, 480, 360, 12, 6);
     add(FEAT_GEAR, 820, 520, 12, 6);
   } else {
-    add(FEAT_PIPE, 296, 132, 368, 0);
-    add(FEAT_LAMP, 348, 156, 74, 0);
+    add(FEAT_PIPE, 296, 128, 88, 0);
+    add(FEAT_PIPE, 576, 128, 88, 0);
+    add(FEAT_PIPE, 304, 112, 72, 1);
+    add(FEAT_PIPE, 656, 112, 72, 1);
+    add(FEAT_LAMP, 324, 156, 74, 0);
+    add(FEAT_LAMP, 396, 156, 74, 0);
     add(FEAT_LAMP, 480, 156, 74, 0);
-    add(FEAT_LAMP, 612, 156, 74, 0);
+    add(FEAT_LAMP, 564, 156, 74, 0);
+    add(FEAT_LAMP, 636, 156, 74, 0);
   }
   for (let i = 0; i < 14; i++) {
     const hx = hash(i, 9);

@@ -105,13 +105,15 @@ describe("visual review gates", () => {
     expect(yard.includes("TANK_SCALE")).toBe(true);
     expect(yard.includes("BUILD_SCALE")).toBe(true);
     expect(yard.includes("BELT_H = 72")).toBe(true);
-    expect(yard.includes("y: 232")).toBe(true);
+    expect(yard.includes("y: 232")).toBe(false);
+    expect(yard.includes("y: 218")).toBe(true);
     expect(yard.includes("y: 658")).toBe(true);
     expect(yard.includes("vert: 1")).toBe(false);
     expect(yard.includes("paintVertPipe")).toBe(true);
     expect(yard.includes("paintBrassGrade")).toBe(true);
     expect(yard.includes("GLASS_AT")).toBe(true);
-    expect(yard.includes("{ x: 424, y: 232 }")).toBe(true);
+    expect(yard.includes("{ x: 424, y: 232 }")).toBe(false);
+    expect(yard.includes("{ x: 318, y: 648 }")).toBe(true);
     expect(yard.includes("function paintBrickWall")).toBe(true);
     expect(yard.includes("ellipse(x, y, 22, 16")).toBe(true);
     expect(yard.includes("ellipse(x, y, 68, 50")).toBe(false);

@@ -27,6 +27,10 @@ Closed **[#87](https://github.com/Champions4Work/arcadia-zombies/pull/87)** prov
 
 Review **`docs/reviews/r31/`** against r30. The brass yard keeps **`tile_stone_seamless`** (#90) but moves the **power-up belt to `y: 658`** (bottom edge) so **`CARGO_*` crates ride and land outside `YARD_CLEAR`**, not through the hunter lane. **`reviewDepth`** parks a glowing **`crate_stack` on that perimeter belt**, not on blue pads in the center. Perimeter **`PROPS`** densify with **`window_lit`**, side **`conveyor`**, **`blue_puddle`**, duplicate **`pipes_blue_tank` / `valve_steam` / `decal_grate` / `decal_vent`** runs on both rails—no **`crate` / `barrel` / `crate_stack`** inside the vertical fight band. Coordinator **Read** must compare r31 play vs r30 before merge.
 
+## Round 32 — world perimeter pass (no center densify)
+
+Review **`docs/reviews/r32/`** against r31 and both art-bible refs. **Perimeter densify is OK:** five lit **`building_wall_door`** spawn facades, top-corner **`conveyor`** segments, duplicate **`pipes_blue_tank` / `valve_steam` / `window_lit` / `lamp`** on both rails, bottom **`y: 648`** blue-liquid run for cargo only. **Center densify stays banned:** no **`crate` / `barrel` / `crate_stack`** in **`YARD_CLEAR`**, and no full-width **`y: 232`** cyan glass runway—blue liquid reads on **edge pipes and tanks**, not a neon pad row through the fight floor. Coordinator **Read** must compare r32 play vs refs before merge; do **not** auto-merge look PRs.
+
 ## References (art bible)
 
 Review size is 390×844 CSS pixels. These two files are the art bible. Every visual PR compares against both.
