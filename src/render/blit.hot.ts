@@ -61,7 +61,7 @@ function blitFlip(frame: Uint32Array, spr: Sprite, dx: number, dy: number): void
   }
 }
 
-function blitFlash(frame: Uint32Array, spr: Sprite, dx: number, dy: number): void {
+function blitFlash(frame: Uint32Array, spr: Sprite, dx: number, dy: number, flip: boolean): void {
   const sw = spr.w;
   const sh = spr.h;
   const pix = spr.pix;
@@ -70,7 +70,8 @@ function blitFlash(frame: Uint32Array, spr: Sprite, dx: number, dy: number): voi
       const drow = (dy + y) * W + dx;
       const srow = y * sw;
       for (let x = 0; x < sw; x++) {
-        if ((pix[srow + x] ?? 0) !== 0) frame[drow + x] = FLASH;
+        const sx = flip ? sw - 1 - x : x;
+        if ((pix[srow + sx] ?? 0) !== 0) frame[drow + x] = FLASH;
       }
     }
     return;
@@ -87,7 +88,8 @@ function blitFlash(frame: Uint32Array, spr: Sprite, dx: number, dy: number): voi
     const drow = (dy + y) * W + dx;
     const srow = y * sw;
     for (let x = x0; x < x1; x++) {
-      if ((pix[srow + x] ?? 0) !== 0) frame[drow + x] = FLASH;
+      const sx = flip ? sw - 1 - x : x;
+      if ((pix[srow + sx] ?? 0) !== 0) frame[drow + x] = FLASH;
     }
   }
 }
@@ -128,7 +130,7 @@ export function composeHorde(w: World, frame: Uint32Array): void {
       const dx = (x - spr.ox) | 0;
       const dy = (y - spr.oy) | 0;
       const flip = (w.px - (z.x[i] ?? 0)) < 0;
-      if (live > 0 && enemyFlash(i) > 0) blitFlash(frame, spr, dx, dy);
+      if (live > 0 && enemyFlash(i) > 0) blitFlash(frame, spr, dx, dy, flip);
       else if (flip) blitFlip(frame, spr, dx, dy);
       else blit(frame, spr, dx, dy);
       i = yNext[i] ?? -1;

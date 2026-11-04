@@ -178,12 +178,23 @@ export const paintSpark: FxPaint = (ctx, x, y, age, a) => {
 };
 
 const LIMP: Glyph = { w: 48, h: 68, draw() {} };
+let crowd = false;
+
+export function markCrowdFx(on: boolean): void {
+  crowd = on;
+}
+
+export function puffDrawsCorpse(age: number, kind: number): boolean {
+  if (crowd) return false;
+  if ((kind & Z_KIND) === Z_GAS) return false;
+  return age >= 0 && age < 12;
+}
 
 export const paintPuff: FxPaint = (ctx, x, y, age, raw) => {
   if (age < 0 || age >= 22) return;
   const kind = raw & Z_KIND;
   const gas = kind === Z_GAS;
-  if (!gas && age < 12) {
+  if (puffDrawsCorpse(age, kind)) {
     ctx.save();
     ctx.globalAlpha = Math.max(0, 1 - age / 14);
     zombieGlyph(kind, () => LIMP).draw(ctx, x, y + age * 0.8, age, 1, 0, POSE_DIE);
