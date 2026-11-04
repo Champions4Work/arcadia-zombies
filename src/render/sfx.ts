@@ -2,7 +2,7 @@ import type { World } from "../sim/types";
 import { getBus, isMuted, type Bus } from "./sound";
 import {
   admitCue, clampSfxVolume, collectCues, createSfxGate, createSfxTrack,
-  CUE_BOOM, CUE_BOSS, CUE_CLICK, CUE_DEATH, CUE_HIT, CUE_HURT, CUE_LEVEL, CUE_N, CUE_PICK,
+  CUE_BOOM, CUE_BOSS, CUE_CLICK, CUE_DASH, CUE_DEATH, CUE_HIT, CUE_HURT, CUE_LEVEL, CUE_N, CUE_PICK,
   CUE_RANK, CUE_RIFLE, CUE_RIVET, CUE_SAW, CUE_SHIELD, CUE_SHOTGUN, CUE_TESLA, CUE_WAVE,
   cueBase, cueDur, loadSfxPrefs, mixGain, resetSfxGate, SFX_VOL_DEFAULT, saveSfxPrefs,
   voicesAt, type SfxPrefs, type Store,
@@ -61,6 +61,7 @@ export function resetSfxPlayback(): void {
   track.choosing = 0;
   track.bossWave = -1;
   track.primed = 0;
+  track.dashT = 0;
   resetSfxGate(gate);
 }
 
@@ -162,73 +163,86 @@ function siren(ctx: AudioContext, dest: AudioNode, t: number, vol: number): void
 function renderCue(ctx: AudioContext, dest: AudioNode, id: number, t: number, vol: number): void {
   switch (id) {
     case CUE_RIFLE:
-      tone(ctx, dest, t, "square", 1680, 420, 0.032, vol);
-      burst(ctx, dest, t, 0.018, vol * 0.55, 3200);
+      tone(ctx, dest, t, "square", 1920, 520, 0.024, vol);
+      burst(ctx, dest, t, 0.012, vol * 0.5, 3400);
+      tone(ctx, dest, t, "triangle", 110, 55, 0.04, vol * 0.35);
       return;
     case CUE_SHOTGUN:
-      tone(ctx, dest, t, "square", 220, 70, 0.08, vol);
-      burst(ctx, dest, t, 0.07, vol * 0.9, 900);
-      burst(ctx, dest, t, 0.04, vol * 0.45, 2400);
+      tone(ctx, dest, t, "square", 240, 62, 0.07, vol);
+      burst(ctx, dest, t, 0.065, vol * 0.85, 820);
+      burst(ctx, dest, t, 0.035, vol * 0.4, 2200);
       return;
     case CUE_RIVET:
-      tone(ctx, dest, t, "square", 1860, 980, 0.028, vol);
-      tone(ctx, dest, t + 0.018, "square", 1480, 740, 0.024, vol * 0.7);
+      tone(ctx, dest, t, "square", 1760, 920, 0.022, vol);
+      tone(ctx, dest, t + 0.014, "square", 1320, 660, 0.02, vol * 0.72);
+      burst(ctx, dest, t, 0.01, vol * 0.25, 4200);
       return;
     case CUE_TESLA:
-      tone(ctx, dest, t, "square", 1980, 240, 0.07, vol);
-      tone(ctx, dest, t + 0.016, "square", 2640, 880, 0.045, vol * 0.4);
-      burst(ctx, dest, t, 0.05, vol * 0.35, 2800);
+      tone(ctx, dest, t, "square", 2100, 280, 0.055, vol * 0.85);
+      tone(ctx, dest, t + 0.012, "square", 2800, 920, 0.04, vol * 0.38);
+      burst(ctx, dest, t, 0.045, vol * 0.32, 3000);
       return;
     case CUE_SAW:
-      tone(ctx, dest, t, "square", 280, 140, 0.06, vol);
-      tone(ctx, dest, t, "triangle", 420, 210, 0.05, vol * 0.5);
-      burst(ctx, dest, t, 0.05, vol * 0.4, 1600);
+      tone(ctx, dest, t, "square", 300, 130, 0.055, vol);
+      tone(ctx, dest, t, "triangle", 450, 200, 0.045, vol * 0.48);
+      burst(ctx, dest, t, 0.045, vol * 0.38, 1700);
       return;
     case CUE_HIT:
-      burst(ctx, dest, t, 0.028, vol, 2100);
-      tone(ctx, dest, t, "square", 310, 120, 0.03, vol * 0.7);
+      tone(ctx, dest, t, "square", 680, 240, 0.022, vol * 0.55);
+      burst(ctx, dest, t, 0.02, vol * 0.75, 2400);
       return;
     case CUE_DEATH:
-      tone(ctx, dest, t, "square", 196, 55, 0.14, vol);
-      burst(ctx, dest, t, 0.08, vol * 0.45, 280);
+      tone(ctx, dest, t, "square", 220, 48, 0.16, vol);
+      tone(ctx, dest, t + 0.04, "triangle", 90, 42, 0.12, vol * 0.55);
+      burst(ctx, dest, t, 0.09, vol * 0.5, 320);
+      burst(ctx, dest, t + 0.02, 0.05, vol * 0.28, 1400);
       return;
     case CUE_HURT:
-      tone(ctx, dest, t, "square", 110, 48, 0.16, vol);
-      burst(ctx, dest, t, 0.06, vol * 0.4, 180);
+      tone(ctx, dest, t, "square", 98, 44, 0.14, vol);
+      burst(ctx, dest, t, 0.055, vol * 0.42, 160);
       return;
     case CUE_LEVEL:
-      tone(ctx, dest, t, "square", 523, 523, 0.08, vol * 0.75);
-      tone(ctx, dest, t + 0.07, "square", 659, 659, 0.08, vol * 0.75);
-      tone(ctx, dest, t + 0.14, "square", 784, 784, 0.16, vol * 0.7);
+      tone(ctx, dest, t, "square", 494, 494, 0.07, vol * 0.72);
+      tone(ctx, dest, t + 0.065, "square", 622, 622, 0.07, vol * 0.72);
+      tone(ctx, dest, t + 0.13, "square", 740, 740, 0.14, vol * 0.68);
       return;
     case CUE_PICK:
-      tone(ctx, dest, t, "square", 784, 784, 0.05, vol);
-      tone(ctx, dest, t + 0.05, "square", 1175, 1175, 0.08, vol * 0.65);
+      tone(ctx, dest, t, "square", 740, 988, 0.045, vol);
+      tone(ctx, dest, t + 0.045, "square", 988, 1175, 0.07, vol * 0.62);
+      tone(ctx, dest, t + 0.08, "triangle", 1480, 1480, 0.06, vol * 0.35);
       return;
     case CUE_RANK:
-      tone(ctx, dest, t, "square", 196, 196, 0.22, vol * 0.8);
-      tone(ctx, dest, t, "square", 294, 294, 0.22, vol * 0.5);
-      tone(ctx, dest, t + 0.16, "square", 392, 392, 0.2, vol * 0.45);
+      tone(ctx, dest, t, "square", 185, 185, 0.2, vol * 0.78);
+      tone(ctx, dest, t, "square", 277, 277, 0.2, vol * 0.48);
+      tone(ctx, dest, t + 0.14, "square", 370, 370, 0.18, vol * 0.42);
       return;
     case CUE_BOSS:
       siren(ctx, dest, t, vol);
       return;
     case CUE_CLICK:
-      tone(ctx, dest, t, "square", 2100, 1600, 0.018, vol);
+      tone(ctx, dest, t, "square", 2400, 1800, 0.012, vol * 0.85);
+      burst(ctx, dest, t, 0.008, vol * 0.2, 5200);
       return;
     case CUE_SHIELD:
-      tone(ctx, dest, t, "triangle", 392, 588, 0.08, vol);
-      tone(ctx, dest, t + 0.04, "square", 784, 784, 0.06, vol * 0.45);
+      tone(ctx, dest, t, "triangle", 370, 554, 0.07, vol);
+      tone(ctx, dest, t + 0.035, "square", 740, 740, 0.055, vol * 0.42);
       return;
     case CUE_BOOM:
-      tone(ctx, dest, t, "square", 180, 55, 0.12, vol);
-      burst(ctx, dest, t, 0.1, vol * 0.8, 420);
-      burst(ctx, dest, t, 0.05, vol * 0.4, 1800);
+      tone(ctx, dest, t, "square", 165, 48, 0.11, vol);
+      burst(ctx, dest, t, 0.095, vol * 0.78, 380);
+      burst(ctx, dest, t, 0.045, vol * 0.38, 1900);
       return;
     case CUE_WAVE:
-      tone(ctx, dest, t, "square", 392, 392, 0.06, vol * 0.7);
-      tone(ctx, dest, t + 0.06, "square", 523, 523, 0.06, vol * 0.7);
-      tone(ctx, dest, t + 0.12, "square", 784, 784, 0.12, vol * 0.65);
+      tone(ctx, dest, t, "square", 330, 330, 0.08, vol * 0.62);
+      tone(ctx, dest, t + 0.07, "square", 440, 440, 0.08, vol * 0.62);
+      tone(ctx, dest, t + 0.14, "square", 554, 554, 0.1, vol * 0.58);
+      tone(ctx, dest, t + 0.22, "triangle", 880, 660, 0.14, vol * 0.4);
+      return;
+    case CUE_DASH:
+      burst(ctx, dest, t, 0.055, vol * 0.65, 1900);
+      burst(ctx, dest, t, 0.035, vol * 0.32, 520);
+      tone(ctx, dest, t, "square", 920, 260, 0.045, vol * 0.52);
+      tone(ctx, dest, t + 0.018, "triangle", 440, 120, 0.07, vol * 0.38);
       return;
     default:
       return;
