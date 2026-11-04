@@ -5,7 +5,7 @@ import { H, W } from "./types";
 export const ARENA_W = W * 2;
 export const ARENA_H = H * 2;
 export const EDGE_PAD = 10;
-export const MAX_OBS = 32;
+export const MAX_OBS = 40;
 export const MAX_HEAL = 16;
 export const MAX_TELE = 20;
 export const OB_BOILER = 0;
@@ -36,6 +36,10 @@ export const PROP_ROWS = Math.ceil(ARENA_H / PROP_CELL);
 export const PROP_CELLS = PROP_COLS * PROP_ROWS;
 export const PROP_REACH = 16;
 export const PROP_NODES = MAX_OBS * 16;
+
+export function propBreaks(kind: number): boolean {
+  return kind === OB_BARREL || kind === OB_BOILER || kind === OB_CRATE || kind === OB_GEAR;
+}
 
 export interface Arena {
   camX: number;

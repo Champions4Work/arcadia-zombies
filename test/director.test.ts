@@ -1,4 +1,4 @@
-import { directorElite, directorFloor, directorSpawn, FRIENDLY_TICK, playerPower, scaleThreat, threatPct } from "../src/sim/director";
+import { directorElite, directorFloor, directorPack, directorSpawn, FRIENDLY_TICK, playerPower, scaleThreat, threatPct } from "../src/sim/director";
 import { CURVE, scaledDmg } from "../src/sim/difficulty";
 import { foeContact } from "../src/sim/foes";
 import { step } from "../src/sim/step.hot";
@@ -53,5 +53,21 @@ describe("adaptive director", () => {
     expect(hit).toBeGreaterThan(0);
     expect(w.hurt).toBe(hit);
     expect(w.hp).toBe(40 - hit);
+  });
+
+  it("keeps spawn tables on the locked director curve", () => {
+    expect(CURVE.spawnBase).toBe(36);
+    expect(CURVE.spawnPer).toBe(6);
+    expect(CURVE.spawnMin).toBe(4);
+    const w = createWorld(1);
+    w.tick = 0;
+    expect(directorPack(w)).toBe(0);
+    expect(directorFloor(w)).toBe(0);
+    expect(directorElite(w)).toBe(0);
+    w.tick = FRIENDLY_TICK - 1;
+    expect(directorPack(w)).toBe(0);
+    expect(directorFloor(w)).toBe(0);
+    expect(directorElite(w)).toBe(0);
+    expect(directorSpawn(CURVE.spawnBase, w)).toBe(CURVE.spawnBase);
   });
 });

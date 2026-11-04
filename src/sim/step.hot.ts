@@ -10,6 +10,7 @@ import { openTouchedChest, stepChest } from "./chest";
 import { emitFx, hurtZombie, killZombie } from "./combat.hot";
 import { directorFloor, directorPack, directorSpawn, scaleThreat } from "./director";
 import { scaledDmg, spawnEvery, tierAt } from "./difficulty";
+import { stepDepth, ventSlowMul } from "./depth.hot";
 import { holdSpawns, lichMinion, stepFinale, watchFinale } from "./finale";
 import {
   foeContact, foeTouchR2, GAS_FUSE_R2, rollKind, Z_GAS, Z_KIND, Z_KNIGHT, Z_SPITTER,
@@ -203,7 +204,7 @@ export function step(w: World, input: Input): void {
     w.events[EV_RANK] = 1;
   }
   if (w.teslaFlash > 0) w.teslaFlash--;
-  slidePlayer(w, input.dx, input.dy, moveSpeed(w) * bossSpeedMul(w));
+  slidePlayer(w, input.dx, input.dy, moveSpeed(w) * bossSpeedMul(w) * ventSlowMul(w));
   updateCamera(w);
   const z = w.zombies;
   let alive = 0;
@@ -329,6 +330,7 @@ export function step(w: World, input: Input): void {
   tickTelegraphs(w);
   stepBoss(w);
   if (!hasMod(w.mods, MOD_NOHEAL)) pickupHeals(w);
+  stepDepth(w);
   chargeUlt(w, w.events[EV_KILL] ?? 0);
   stepUlt(w);
   stepWarn(w);

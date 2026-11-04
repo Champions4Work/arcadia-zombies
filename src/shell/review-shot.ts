@@ -2,6 +2,7 @@ import { juiceHit, tickJuice } from "../render/juice";
 import { stampBlood, stampCasing } from "../render/stains";
 import { ARENA_H, ARENA_W } from "../sim/arena";
 import { Z_ELITE } from "../sim/foes";
+import { reviewDepth } from "../sim/depth";
 import { mapState } from "../sim/map-events";
 import {
   EV_SHOT, MAX_BULLETS, MAX_ZOMBIES, UPG_WPN_FLAME, UPG_WPN_HARP, UPG_WPN_MORT, UPG_WPN_RIVET,
@@ -106,6 +107,7 @@ export function reviewHorde(w: World): number {
   stampBlood(w.px - 16, w.py - 12, 39);
   stampBlood(w.px + 52, w.py + 8, 45);
   stampBlood(w.px - 44, w.py + 16, 51);
+  reviewDepth(w);
   const b = w.bullets;
   for (let j = 0; j < MAX_BULLETS; j++) b.alive[j] = 0;
   for (let j = 0; j < 5; j++) {

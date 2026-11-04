@@ -55,6 +55,20 @@ export default tseslint.config(
       }],
     },
   },
+  {
+    files: ["src/sim/**"],
+    rules: {
+      "no-restricted-imports": ["error", {
+        patterns: [{
+          group: [".cursor", ".cursor/**", "**/.cursor/**"],
+          message: "Skills stay in .cursor/skills and are not imported into the bundle.",
+        }, {
+          group: ["**/yard-fx", "../render/yard-fx", "../../render/yard-fx"],
+          message: "Sim owns belts, breakables, and vent slow. Paint stays in render. Do not import yard-fx.",
+        }],
+      }],
+    },
+  },
   { files: ["scripts/**", "*.config.*"], languageOptions: { globals: { process: "readonly", console: "readonly" } } },
   {
     files: ["scripts/ui-shots.mjs", "scripts/review-phone.mjs"],
