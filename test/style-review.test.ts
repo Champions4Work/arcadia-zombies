@@ -162,6 +162,8 @@ describe("visual review gates", () => {
     expect(obj.includes("ACTIVATE STEAM GATE")).toBe(true);
     expect(obj.includes("HOLD THE AREA")).toBe(true);
     expect(obj.includes("SURVIVE ALL WAVES")).toBe(true);
+    expect(obj.includes("objectiveRows")).toBe(true);
+    expect(obj.includes("w.rank > 0")).toBe(false);
     expect(obj.includes("strokeRect")).toBe(true);
     expect(obj.includes("#f6f1e6")).toBe(true);
     expect(hud.includes("Wave ${wave}/${cap}")).toBe(true);
