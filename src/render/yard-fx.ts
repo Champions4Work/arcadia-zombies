@@ -333,8 +333,6 @@ export function paintYardLive(
     const belt = BELTS[i];
     if (!belt) continue;
     if (!visible(belt.x, belt.y, camX, camY, vw, vh, 220)) continue;
-    const midX = belt.vert ? belt.x : belt.x + belt.w * 0.5;
-    const midY = belt.vert ? belt.y + belt.w * 0.5 : belt.y;
     const tile = 56;
     for (let s = 0; s < belt.w; s += tile) {
       const tx = belt.vert ? belt.x : belt.x + s;
