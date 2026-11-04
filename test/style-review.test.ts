@@ -167,8 +167,13 @@ describe("visual review gates", () => {
     expect(obj.includes("strokeRect")).toBe(true);
     expect(obj.includes("#f6f1e6")).toBe(true);
     expect(hud.includes("Wave ${wave}/${cap}")).toBe(true);
-    expect(hud.includes("Chapter 1")).toBe(true);
-    expect(hud.includes("The Brass District")).toBe(true);
+    expect(hud.includes("zoneChapterAt")).toBe(true);
+    expect(hud.includes("zoneTitleAt")).toBe(true);
+    const zones = readFileSync("src/sim/zones.ts", "utf8");
+    expect(zones.includes("Chapter 1")).toBe(true);
+    expect(zones.includes("The Brass District")).toBe(true);
+    expect(zones.includes("Boiler Works")).toBe(true);
+    expect(zones.includes("Tram Depot")).toBe(true);
     expect(hud.includes("CALM")).toBe(false);
     expect(hud.includes('blitSheetFit(ctx, "minimap_frame"')).toBe(true);
     expect(hud.includes("#1a1612")).toBe(true);

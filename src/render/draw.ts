@@ -20,8 +20,10 @@ import "./depth";
 import { absorbShake, shakePixels } from "./shake";
 import { drawStageFx, drawYardWindow } from "./stage";
 import { paintHurt, paintVeil } from "./veil";
-import { paintYardLive } from "./yard-fx";
+import { bindYard, paintYardLive } from "./yard-fx";
 import { reviewWalkOn } from "../shell/review-shot";
+import { zoneAt } from "../sim/zones";
+import { bindGround } from "./ground";
 
 let lastPx = 0;
 let lastPy = 0;
@@ -64,6 +66,9 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
   c.clip();
   if (sx !== 0 || sy !== 0) c.translate(sx, sy);
   c.translate(-camX, -camY);
+  const zone = zoneAt(w.wave);
+  bindGround(zone);
+  bindYard(zone);
   const plan = fieldPlan(horde, viewW, viewH);
   if (plan.yard) drawYardWindow(c, camX, camY, viewW, viewH);
   paintYardLive(c, w.tick, camX, camY, viewW, viewH);

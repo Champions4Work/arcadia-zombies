@@ -1,6 +1,7 @@
 import { ARENA_H, ARENA_W } from "../sim/arena";
 import { H, W } from "../sim/types";
 import { blitSheet, tileSheet } from "../art/sheet";
+import { ZONE_BOILER, ZONE_BRASS, ZONE_TRAM } from "../sim/zones";
 import { BRASS, cog, COPPER, type Metal, OUTLINE, rivet } from "./paint";
 
 export const TILE = 16;
@@ -40,6 +41,28 @@ const vy = new Float32Array(MAX_VENT);
 let featN = 0;
 let ventN = 0;
 let ready = 0;
+let bound = ZONE_BRASS;
+
+export function bindGround(id: number): void {
+  const z = id === ZONE_BOILER || id === ZONE_TRAM ? id : ZONE_BRASS;
+  if (z === bound && ready) return;
+  bound = z;
+  ready = 0;
+  featN = 0;
+  ventN = 0;
+  cells.fill(0);
+  fk.fill(0);
+  fx.fill(0);
+  fy.fill(0);
+  fa.fill(0);
+  fb.fill(0);
+  vx.fill(0);
+  vy.fill(0);
+}
+
+export function groundZone(): number {
+  return bound;
+}
 
 function hash(x: number, y: number, s = 0): number {
   let n = Math.imul(x, 374761393) + Math.imul(y, 668265263) + Math.imul(s, 1442695041);
@@ -48,6 +71,21 @@ function hash(x: number, y: number, s = 0): number {
 }
 
 function brassPad(c: number, r: number): number {
+  if (bound === ZONE_BOILER) {
+    if (r >= 8 && r <= 20 && c >= 2 && c <= 58) return 1;
+    if (r >= 18 && r <= 28 && c >= 38 && c <= 58) return 1;
+    if (r >= 20 && r <= 32 && c >= 2 && c <= 18) return 1;
+    if (r >= 26 && r <= 34 && c >= 16 && c <= 42) return 1;
+    return 0;
+  }
+  if (bound === ZONE_TRAM) {
+    if (r >= 8 && r <= 10 && c >= 4 && c <= 56) return 1;
+    if (r >= 15 && r <= 17 && c >= 4 && c <= 56) return 1;
+    if (r >= 21 && r <= 23 && c >= 4 && c <= 56) return 1;
+    if (r >= 27 && r <= 29 && c >= 4 && c <= 56) return 1;
+    if (r >= 33 && r <= 35 && c >= 4 && c <= 56) return 1;
+    return 0;
+  }
   if (r >= 8 && r <= 13 && c >= 9 && c <= 20) return 1;
   if (r >= 10 && r <= 11 && c >= 3 && c <= 52) return 1;
   if (r >= 12 && r <= 18 && c >= 48 && c <= 57) return 1;
@@ -59,10 +97,14 @@ function brassPad(c: number, r: number): number {
 }
 
 function railH(r: number): number {
+  if (bound === ZONE_TRAM) return r === 9 || r === 16 || r === 22 || r === 28 || r === 34 ? 1 : 0;
+  if (bound === ZONE_BOILER) return r === 22 ? 1 : 0;
   return r === 9 || r === 34 ? 1 : 0;
 }
 
 function railV(c: number): number {
+  if (bound === ZONE_TRAM) return c === 13 || c === 30 || c === 47 ? 1 : 0;
+  if (bound === ZONE_BOILER) return c === 8 || c === 52 ? 1 : 0;
   return c === 13 || c === 47 ? 1 : 0;
 }
 
@@ -115,11 +157,13 @@ function build(): void {
         cells[i] = KIND_RUBBLE;
         continue;
       }
-      if (h % 61 === 0) {
+      const ventEvery = bound === ZONE_BOILER ? 31 : bound === ZONE_TRAM ? 71 : 61;
+      const grateEvery = bound === ZONE_BOILER ? 37 : bound === ZONE_TRAM ? 29 : 47;
+      if (h % ventEvery === 0) {
         cells[i] = KIND_VENT;
         continue;
       }
-      if (h % 47 === 0) {
+      if (h % grateEvery === 0) {
         cells[i] = KIND_GRATE;
         continue;
       }
@@ -133,34 +177,105 @@ function build(): void {
   forceVent(52, 20);
   forceVent(18, 28);
   forceVent(40, 32);
-  add(FEAT_PIPE, 24, 136, 140, 0);
-  add(FEAT_PIPE, 164, 136, 90, 1);
-  add(FEAT_PIPE, 720, 148, 200, 0);
-  add(FEAT_PIPE, 920, 148, 80, 1);
-  add(FEAT_PIPE, 40, 220, 180, 0);
-  add(FEAT_PIPE, 40, 220, 70, 1);
-  add(FEAT_PIPE, 40, 360, 180, 0);
-  add(FEAT_PIPE, 780, 300, 110, 1);
-  add(FEAT_PIPE, 40, 520, 200, 0);
-  add(FEAT_PIPE, 880, 440, 160, 1);
-  add(FEAT_LAMP, 56, 148, 72, 0);
-  add(FEAT_LAMP, 188, 188, 68, 0);
-  add(FEAT_LAMP, 352, 156, 74, 0);
-  add(FEAT_LAMP, 332, 208, 70, 0);
-  add(FEAT_LAMP, 708, 168, 76, 0);
-  add(FEAT_LAMP, 868, 228, 68, 0);
-  add(FEAT_LAMP, 248, 368, 80, 0);
-  add(FEAT_LAMP, 648, 392, 78, 0);
-  add(FEAT_LAMP, 332, 210, 68, 0);
-  add(FEAT_LAMP, 628, 210, 68, 0);
-  add(FEAT_LAMP, 348, 490, 68, 0);
-  add(FEAT_LAMP, 620, 490, 68, 0);
-  add(FEAT_GEAR, 120, 210, 14, 8);
-  add(FEAT_GEAR, 332, 250, 12, 7);
-  add(FEAT_GEAR, 610, 180, 15, 8);
-  add(FEAT_GEAR, 790, 340, 13, 6);
-  add(FEAT_GEAR, 330, 470, 16, 8);
-  add(FEAT_GEAR, 860, 520, 11, 7);
+  if (bound === ZONE_BOILER) {
+    forceVent(12, 18);
+    forceVent(20, 24);
+    forceVent(44, 26);
+    forceVent(36, 16);
+  }
+  if (bound === ZONE_TRAM) {
+    forceVent(13, 18);
+    forceVent(30, 28);
+    forceVent(47, 18);
+  }
+  if (bound === ZONE_BOILER) {
+    add(FEAT_PIPE, 20, 150, 220, 0);
+    add(FEAT_PIPE, 40, 150, 240, 1);
+    add(FEAT_PIPE, 700, 160, 220, 0);
+    add(FEAT_PIPE, 900, 160, 200, 1);
+    add(FEAT_PIPE, 36, 260, 200, 0);
+    add(FEAT_PIPE, 36, 260, 120, 1);
+    add(FEAT_PIPE, 36, 400, 200, 0);
+    add(FEAT_PIPE, 760, 280, 140, 1);
+    add(FEAT_PIPE, 36, 540, 220, 0);
+    add(FEAT_PIPE, 860, 400, 180, 1);
+    add(FEAT_LAMP, 64, 160, 80, 0);
+    add(FEAT_LAMP, 200, 200, 76, 0);
+    add(FEAT_LAMP, 360, 170, 82, 0);
+    add(FEAT_LAMP, 340, 220, 78, 0);
+    add(FEAT_LAMP, 700, 180, 84, 0);
+    add(FEAT_LAMP, 860, 240, 76, 0);
+    add(FEAT_LAMP, 240, 380, 86, 0);
+    add(FEAT_LAMP, 640, 400, 84, 0);
+    add(FEAT_LAMP, 340, 220, 76, 0);
+    add(FEAT_LAMP, 620, 220, 76, 0);
+    add(FEAT_LAMP, 348, 500, 76, 0);
+    add(FEAT_LAMP, 620, 500, 76, 0);
+    add(FEAT_GEAR, 110, 220, 16, 8);
+    add(FEAT_GEAR, 340, 260, 14, 7);
+    add(FEAT_GEAR, 600, 190, 16, 8);
+    add(FEAT_GEAR, 800, 350, 14, 6);
+    add(FEAT_GEAR, 320, 480, 18, 8);
+    add(FEAT_GEAR, 850, 530, 13, 7);
+  } else if (bound === ZONE_TRAM) {
+    add(FEAT_PIPE, 40, 148, 80, 1);
+    add(FEAT_PIPE, 880, 148, 80, 1);
+    add(FEAT_PIPE, 40, 292, 80, 1);
+    add(FEAT_PIPE, 880, 292, 80, 1);
+    add(FEAT_PIPE, 40, 452, 80, 1);
+    add(FEAT_PIPE, 880, 452, 80, 1);
+    add(FEAT_PIPE, 24, 148, 120, 0);
+    add(FEAT_PIPE, 800, 148, 120, 0);
+    add(FEAT_PIPE, 24, 452, 120, 0);
+    add(FEAT_PIPE, 800, 452, 120, 0);
+    add(FEAT_LAMP, 80, 152, 64, 0);
+    add(FEAT_LAMP, 220, 152, 64, 0);
+    add(FEAT_LAMP, 360, 152, 64, 0);
+    add(FEAT_LAMP, 500, 152, 64, 0);
+    add(FEAT_LAMP, 640, 152, 64, 0);
+    add(FEAT_LAMP, 800, 152, 64, 0);
+    add(FEAT_LAMP, 80, 296, 64, 0);
+    add(FEAT_LAMP, 480, 296, 64, 0);
+    add(FEAT_LAMP, 800, 296, 64, 0);
+    add(FEAT_LAMP, 80, 456, 64, 0);
+    add(FEAT_LAMP, 480, 456, 64, 0);
+    add(FEAT_LAMP, 800, 456, 64, 0);
+    add(FEAT_GEAR, 140, 200, 12, 6);
+    add(FEAT_GEAR, 480, 200, 12, 6);
+    add(FEAT_GEAR, 820, 200, 12, 6);
+    add(FEAT_GEAR, 140, 360, 12, 6);
+    add(FEAT_GEAR, 480, 360, 12, 6);
+    add(FEAT_GEAR, 820, 520, 12, 6);
+  } else {
+    add(FEAT_PIPE, 24, 136, 140, 0);
+    add(FEAT_PIPE, 164, 136, 90, 1);
+    add(FEAT_PIPE, 720, 148, 200, 0);
+    add(FEAT_PIPE, 920, 148, 80, 1);
+    add(FEAT_PIPE, 40, 220, 180, 0);
+    add(FEAT_PIPE, 40, 220, 70, 1);
+    add(FEAT_PIPE, 40, 360, 180, 0);
+    add(FEAT_PIPE, 780, 300, 110, 1);
+    add(FEAT_PIPE, 40, 520, 200, 0);
+    add(FEAT_PIPE, 880, 440, 160, 1);
+    add(FEAT_LAMP, 56, 148, 72, 0);
+    add(FEAT_LAMP, 188, 188, 68, 0);
+    add(FEAT_LAMP, 352, 156, 74, 0);
+    add(FEAT_LAMP, 332, 208, 70, 0);
+    add(FEAT_LAMP, 708, 168, 76, 0);
+    add(FEAT_LAMP, 868, 228, 68, 0);
+    add(FEAT_LAMP, 248, 368, 80, 0);
+    add(FEAT_LAMP, 648, 392, 78, 0);
+    add(FEAT_LAMP, 332, 210, 68, 0);
+    add(FEAT_LAMP, 628, 210, 68, 0);
+    add(FEAT_LAMP, 348, 490, 68, 0);
+    add(FEAT_LAMP, 620, 490, 68, 0);
+    add(FEAT_GEAR, 120, 210, 14, 8);
+    add(FEAT_GEAR, 332, 250, 12, 7);
+    add(FEAT_GEAR, 610, 180, 15, 8);
+    add(FEAT_GEAR, 790, 340, 13, 6);
+    add(FEAT_GEAR, 330, 470, 16, 8);
+    add(FEAT_GEAR, 860, 520, 11, 7);
+  }
   for (let i = 0; i < 14; i++) {
     const hx = hash(i, 9);
     add(FEAT_STAIN, 40 + (hx % 880), 130 + ((hx >>> 8) % 470), 10 + (hx % 16), 6 + ((hx >>> 4) % 10));
@@ -353,18 +468,36 @@ export const HAZARD_MARKS = [
   [36, 12],
 ] as const;
 
+const BOILER_MARKS = [
+  [8, 10],
+  [22, 14],
+  [36, 12],
+  [16, 24],
+  [44, 26],
+] as const;
+
+const TRAM_MARKS = [
+  [13, 9],
+  [30, 18],
+  [47, 28],
+] as const;
+
 export function paintGround(ctx: CanvasRenderingContext2D): void {
   build();
-  ctx.fillStyle = "#24303c";
+  const wash = bound === ZONE_BOILER ? "#141210" : bound === ZONE_TRAM ? "#1c242c" : "#24303c";
+  const tile = bound === ZONE_BOILER ? "tile_metal_seamless" : "tile_stone_seamless";
+  const groutInk = bound === ZONE_BOILER ? "rgba(22,20,18,0.72)" : bound === ZONE_TRAM ? "rgba(20,28,36,0.5)" : "rgba(36,48,62,0.55)";
+  const shade = bound === ZONE_BOILER ? "rgba(8,8,10,0.42)" : bound === ZONE_TRAM ? "rgba(10,16,22,0.18)" : "rgba(16,24,36,0.22)";
+  ctx.fillStyle = wash;
   ctx.fillRect(0, 108, ARENA_W, ARENA_H - 108);
-  tileSheet(ctx, "tile_stone_seamless", 0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
+  tileSheet(ctx, tile, 0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
   ctx.save();
   ctx.globalAlpha = 0.52;
-  ctx.fillStyle = "#24303c";
+  ctx.fillStyle = wash;
   ctx.fillRect(0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
   ctx.restore();
   ctx.save();
-  ctx.strokeStyle = "rgba(36,48,62,0.55)";
+  ctx.strokeStyle = groutInk;
   ctx.lineWidth = 1;
   const grout = TILE * 2;
   for (let x = 0; x <= ARENA_W; x += grout) {
@@ -382,7 +515,7 @@ export function paintGround(ctx: CanvasRenderingContext2D): void {
   ctx.restore();
   ctx.save();
   ctx.globalCompositeOperation = "multiply";
-  ctx.fillStyle = "rgba(16,24,36,0.22)";
+  ctx.fillStyle = shade;
   ctx.fillRect(0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
   ctx.restore();
   for (let r = FLOOR0; r < ROWS; r++) {
@@ -401,8 +534,9 @@ export function paintGround(ctx: CanvasRenderingContext2D): void {
       else if (k === KIND_RUBBLE) rubbleTile(ctx, x, y);
     }
   }
-  for (let i = 0; i < HAZARD_MARKS.length; i++) {
-    const mark = HAZARD_MARKS[i];
+  const marks = bound === ZONE_BOILER ? BOILER_MARKS : bound === ZONE_TRAM ? TRAM_MARKS : HAZARD_MARKS;
+  for (let i = 0; i < marks.length; i++) {
+    const mark = marks[i];
     if (!mark) continue;
     blitSheet(ctx, "decal_hazard", mark[0] * TILE + 8, mark[1] * TILE + 14);
   }
