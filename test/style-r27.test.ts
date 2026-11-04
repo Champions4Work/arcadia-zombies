@@ -24,7 +24,7 @@ describe("r27 art-bible pass", () => {
   it("densifies brass yard with side breakables, vents, and cyan pipe runs", () => {
     const yard = readFileSync("src/render/yard-fx.ts", "utf8");
     const brassProps = yard.slice(yard.indexOf("const PROPS:"), yard.indexOf("const TANKS"));
-    const brassPipes = yard.slice(yard.indexOf("const PIPE_RUNS:"), yard.indexOf("const BELT_H"));
+    const brassPipes = yard.slice(yard.indexOf("const PIPE_RUNS = ["), yard.indexOf("const BELT_H"));
     expect(yard.includes("y: 420")).toBe(true);
     expect(yard.includes("paintBrassGrade")).toBe(true);
     expect(yard.includes("paintVertPipe")).toBe(true);

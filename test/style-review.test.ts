@@ -83,8 +83,8 @@ describe("visual review gates", () => {
 
   it("keeps dusk readable with local lamp pools and no global orange wash", () => {
     const draw = readFileSync("src/render/draw.ts", "utf8");
-    expect(draw.includes("rgba(4,6,12,0.32)")).toBe(true);
-    expect(draw.includes("rgba(24,14,8,0.03)")).toBe(true);
+    expect(draw.includes("rgba(2,4,10,0.42)")).toBe(true);
+    expect(draw.includes("rgba(40,18,8,0.06)")).toBe(true);
     expect(draw.includes("rgba(6,6,10,0.16)")).toBe(false);
     expect(draw.includes("rgba(220,132,52,0.34)")).toBe(false);
     expect(draw.includes("rgba(255,186,88,0.42)")).toBe(false);
@@ -107,15 +107,19 @@ describe("visual review gates", () => {
     expect(yard.includes("BELT_H = 72")).toBe(true);
     expect(yard.includes("y: 232")).toBe(true);
     expect(yard.includes("y: 420")).toBe(true);
-    expect(yard.includes("vert: 1")).toBe(false);
+    expect(yard.includes("vert: 1")).toBe(true);
+    expect(yard.includes("paintVertPipe")).toBe(true);
+    expect(yard.includes("paintBrassGrade")).toBe(true);
     expect(yard.includes("GLASS_AT")).toBe(true);
     expect(yard.includes("{ x: 424, y: 232 }")).toBe(true);
     expect(yard.includes("function paintBrickWall")).toBe(true);
     expect(yard.includes("ellipse(x, y, 22, 16")).toBe(true);
     expect(yard.includes("ellipse(x, y, 68, 50")).toBe(false);
     const brassProps = yard.slice(yard.indexOf("const PROPS:"), yard.indexOf("const TANKS"));
-    expect(brassProps.includes("x: 332, y: 340")).toBe(false);
-    expect(brassProps.includes("x: 628, y: 340")).toBe(false);
+    expect(brassProps.includes("breakable_gear_pylon")).toBe(true);
+    expect(brassProps.includes("breakable_boiler")).toBe(true);
+    expect(brassProps.includes("x: 332, y: 340")).toBe(true);
+    expect(brassProps.includes("x: 628, y: 340")).toBe(true);
     expect(yard.includes("x: 348, y: 196")).toBe(true);
     expect(yard.includes("x: 540, y: 192")).toBe(true);
     expect(yard.includes("x: 336, y: 176")).toBe(false);
@@ -145,7 +149,7 @@ describe("visual review gates", () => {
     expect(yard.includes("tick * 2.2")).toBe(true);
     expect(yard.includes("w * 0.42")).toBe(true);
     const vents = yard.slice(yard.indexOf("const STEAM_VENTS"), yard.indexOf("export const YARD_CLEAR"));
-    expect((vents.match(/\{ x:/g) || []).length).toBe(1);
+    expect((vents.match(/\{ x:/g) || []).length).toBe(5);
     const bible = readFileSync("docs/STYLE.md", "utf8");
     expect(bible.includes("220 KB")).toBe(true);
     expect(bible.includes("124 KB")).toBe(true);
