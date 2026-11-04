@@ -8,16 +8,27 @@ Painted, lit steampunk at dusk. Dark stone and iron. Amber lamps. Cyan tanks. On
 
 Do not ship a flat grey yard, a pixel-plate HUD, a cream joystick, or a second live resource bar.
 
-## References
+## Hard lesson: darken and declutter
 
-Review size is 390x844 CSS pixels.
+Adding props does not move the yard toward the refs. Failed attempts proved it:
 
-- `docs/target_look.jpg` is image 1. Phone composition. Wide amber rank bar. Heart, five power slots, ultimate, and XP.
-- `docs/target_look2.png` is image 2. World density and brass chrome. Yellow conveyor chevrons. Blue pipes. Lit buildings.
+- **Densify PRs [#78](https://github.com/Champions4Work/arcadia-zombies/pull/78) and [#83](https://github.com/Champions4Work/arcadia-zombies/pull/83)** — more crates, barrels, and yard clutter made the middle **busier**, not closer to image 2.
+- **Round 28 / [#82](https://github.com/Champions4Work/arcadia-zombies/pull/82)** — grade and fill pushed **too bright and too busy**.
 
-Those two files land with [pull request 46](https://github.com/Champions4Work/arcadia-zombies/pull/46) until they are on `main`. Capture against the same frames on that pull request until then.
+The correct direction is **darken + declutter** the center yard while keeping a **few readable silhouettes**: belt chevrons, blue tanks and pipe runs, steam valves, lit building windows. Props belong on walls and rails; the hunter’s lane stays open. Horde density comes from **actors and stains**, not from stacking breakables in `YARD_CLEAR`.
 
-Image 2 paints a hero portrait with HP and energy bars. That second bar is paint. Do not add an energy pool.
+## References (art bible)
+
+Review size is 390×844 CSS pixels. These two files are the art bible. Every visual PR compares against both.
+
+| File | Role |
+| --- | --- |
+| `docs/target_look.jpg` | **Image 1** — phone HUD and layout bible. Wide amber rank bar. Heart, five power slots, ultimate, XP, minimap slot, top strip. |
+| `docs/target_look2.png` | **Image 2** — world and atmosphere bible. Dark yard, belts, blue tanks and pipes, steam, lit windows, dense horde chrome. |
+
+Ship a 390×844 phone shot plus side-by-side compares to both refs (`docs/reviews/README.md`). Do not merge look-changing work without coordinator **Read** review on those compares.
+
+Image 2 paints a hero portrait with HP and energy bars. That second bar is paint. Do not add an energy pool or copy image 2’s desktop HUD (portrait strip, energy/ammo trays, parked stick) onto phone.
 
 ## Palette
 
@@ -89,6 +100,8 @@ Optional brass frames: `panel_frame_glow`, `panel_frame_gears`, `panel_frame_pip
 
 The wide amber rank bar on image 1 has no pack frame yet. Draw that bar to match image 1. Do not replace it with a slim pill.
 
+**HUD [#84](https://github.com/Champions4Work/arcadia-zombies/pull/84)** landed image 1 phone chrome. Keep that layout. Do not swap in image 2 desktop HUD chrome on phone.
+
 Do not blit a second resource bar.
 
 ## World sprites
@@ -98,7 +111,7 @@ Do not blit a second resource bar.
 | Steam valves and blue liquid | `valve_steam`, `pipes_blue_tank`, `steam_1` through `steam_4`, `blue_glow`, `blue_puddle` |
 | Belts and conveyors | `conveyor` with yellow chevrons. Belts drop upgrade crates. |
 | Lit spawn buildings | `building_wall_door`, `window_lit`, `lamp` |
-| Crates and breakables | `crate`, `crate_stack`, `barrel`, `breakable_boiler`, `breakable_gear_pylon` |
+| Crates and breakables (sparse) | `crate`, `crate_stack`, `barrel`, `breakable_boiler`, `breakable_gear_pylon` — edge rails only, not a filled center |
 | Vents with slowdown | `decal_vent`, `decal_grate`, `decal_hazard` |
 | Floor | `tile_stone_seamless`, `tile_metal_seamless` |
 
@@ -118,7 +131,7 @@ A look-changing shot is unfinished if any row is missing.
 1. Steam valves and blue liquid pipes. Blit `valve_steam` and `pipes_blue_tank`. Cycle the steam frames.
 2. Belts and conveyors deliver power-ups. Blit `conveyor` with yellow chevrons. Drop crates onto the yard.
 3. Lit buildings that zombies spawn from. Blit `building_wall_door`, `window_lit`, and `lamp`. Foes leave the door.
-4. Crates and breakable props. Blit `crate`, `crate_stack`, `barrel`, `breakable_boiler`, and `breakable_gear_pylon`.
+4. Crates and breakable props, **sparse**. Blit `crate`, `crate_stack`, `barrel`, `breakable_boiler`, and `breakable_gear_pylon` on walls and belts. Do not carpet the open yard.
 5. Vents with slowdown. Blit `decal_vent`, `decal_grate`, and `decal_hazard`. Keep the vent slowdown.
 6. Objectives top-right with a gold header and green checks. Chapter banner and Wave n/8 plus kills stay in the top strip.
 7. Minimap top-left. Blit `minimap_frame` in the top-left safe corner.
@@ -140,6 +153,6 @@ Every pull request that changes how the game looks must ship a 390x844 phone scr
 - A pair with only one reference does not pass.
 - Copy-only or sim-only work does not owe this gate.
 
-Do not merge a look-changing pull request until Sasta reads the compare shots.
+Do not merge a look-changing pull request until coordinator **Read** review approves the compare shots.
 
-Until the reference frames land on `main`, capture against the same two files on pull request 46.
+Artifact layout and filenames: `docs/reviews/README.md`.
