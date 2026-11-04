@@ -310,6 +310,9 @@ describe("boss attacks", () => {
       stroke() { ops.push("stroke"); },
       save() { ops.push("save"); },
       restore() { ops.push("restore"); },
+      createRadialGradient() { return { addColorStop() {} }; },
+      fill() { ops.push("fill"); },
+      arc() {},
     };
     drawTesla(ctx as unknown as CanvasRenderingContext2D, w);
     expect(ops).toContain(`l ${w.boss.x} ${w.boss.y - 16}`);

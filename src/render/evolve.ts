@@ -25,10 +25,23 @@ function crown(c: CanvasRenderingContext2D, w: World): void {
   c.beginPath();
   c.arc(x, y - 18, 4, 0, Math.PI * 2);
   c.fill();
-  c.strokeStyle = "rgba(255,220,90,0.9)";
-  c.lineWidth = 3;
+  const pulse = 0.9 + 0.1 * Math.sin(w.tick * 0.16);
+  const halo = c.createRadialGradient(w.px, w.py - 30, 8, w.px, w.py - 30, 44 * pulse);
+  halo.addColorStop(0, "rgba(255,220,90,0.38)");
+  halo.addColorStop(1, "rgba(255,220,90,0)");
+  c.fillStyle = halo;
   c.beginPath();
-  c.arc(w.px, w.py - 30, 30, 0, Math.PI * 2);
+  c.arc(w.px, w.py - 30, 44 * pulse, 0, Math.PI * 2);
+  c.fill();
+  c.strokeStyle = "rgba(255,220,90,0.95)";
+  c.lineWidth = 3.2;
+  c.beginPath();
+  c.arc(w.px, w.py - 30, 32 * pulse, 0, Math.PI * 2);
+  c.stroke();
+  c.strokeStyle = "rgba(255,246,192,0.55)";
+  c.lineWidth = 1.4;
+  c.beginPath();
+  c.arc(w.px, w.py - 30, 38 * pulse, 0, Math.PI * 2);
   c.stroke();
   if (w.teslaFlash <= 0) return;
   c.strokeStyle = CROWN;
@@ -40,8 +53,15 @@ function crown(c: CanvasRenderingContext2D, w: World): void {
 
 function heart(c: CanvasRenderingContext2D, w: World): void {
   const p = (w.tick % 40) / 40;
+  const g = c.createRadialGradient(w.px, w.py - 16, 4, w.px, w.py - 16, 22 + p * 20);
+  g.addColorStop(0, "rgba(255,180,90,0.4)");
+  g.addColorStop(1, "rgba(255,180,90,0)");
+  c.fillStyle = g;
+  c.beginPath();
+  c.arc(w.px, w.py - 16, 22 + p * 20, 0, Math.PI * 2);
+  c.fill();
   c.strokeStyle = HEART;
-  c.lineWidth = 2;
+  c.lineWidth = 2.4;
   c.globalAlpha = 1 - p;
   c.beginPath();
   c.arc(w.px, w.py, 16 + p * 48, 0, Math.PI * 2);
@@ -78,6 +98,15 @@ function howitzer(c: CanvasRenderingContext2D, w: World): void {
   c.beginPath();
   c.arc(w.px, w.py - 20, 78, -0.7, 0.45);
   c.stroke();
+  if (kick) {
+    const g = c.createRadialGradient(x + 28, y + 6, 1, x + 28, y + 6, 16);
+    g.addColorStop(0, "rgba(255,230,160,0.9)");
+    g.addColorStop(1, "rgba(255,80,20,0)");
+    c.fillStyle = g;
+    c.beginPath();
+    c.arc(x + 28, y + 6, 16, 0, Math.PI * 2);
+    c.fill();
+  }
   c.globalAlpha = 1;
 }
 
@@ -89,6 +118,13 @@ function calliope(c: CanvasRenderingContext2D, w: World): void {
     px(c, x + i * 7, y - h, i % 2 ? BRASS : "#d4784a", 5, h + 14);
   }
   const p = (w.tick % 28) / 28;
+  const ring = c.createRadialGradient(w.px, w.py - 20, 8, w.px, w.py - 20, 24 + p * 70);
+  ring.addColorStop(0, "rgba(215,255,246,0.28)");
+  ring.addColorStop(1, "rgba(215,255,246,0)");
+  c.fillStyle = ring;
+  c.beginPath();
+  c.arc(w.px, w.py - 20, 24 + p * 70, 0, Math.PI * 2);
+  c.fill();
   c.strokeStyle = STEAM;
   c.lineWidth = 3;
   c.globalAlpha = 0.85 * (1 - p);

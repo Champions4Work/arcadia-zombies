@@ -43,7 +43,7 @@ export function hurtZombie(w: World, i: number, dmg: number): void {
   const hit = cannonHit(dmg, w.mods);
   const z = w.zombies;
   z.hp[i] = (z.hp[i] ?? 1) - hit;
-  emitFx(w, FX_SPARK, z.x[i] ?? 0, z.y[i] ?? 0, 0);
+  emitFx(w, FX_SPARK, z.x[i] ?? 0, z.y[i] ?? 0, w.aimX || w.aimY ? Math.atan2(w.aimY, w.aimX || 1) : 0);
   const killed = (z.hp[i] ?? 0) <= 0;
   if (killed) killZombie(w, i);
   juiceHit(i, z.x[i] ?? 0, z.y[i] ?? 0, hit, z.kind[i] ?? 0, killed, w.tick);

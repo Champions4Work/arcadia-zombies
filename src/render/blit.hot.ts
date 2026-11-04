@@ -115,7 +115,7 @@ export function composeHorde(w: World, frame: Uint32Array): void {
     if (!b.alive[j]) continue;
     const x = (b.x[j] ?? 0) - camX;
     const y = (b.y[j] ?? 0) - camY;
-    const spr = bulletSprite(b.vx[j] ?? 0, b.vy[j] ?? 0);
+    const spr = bulletSprite(b.vx[j] ?? 0, b.vy[j] ?? 0, w.bGun[j] ?? 0);
     const dx = (x - spr.ox) | 0;
     const dy = (y - spr.oy) | 0;
     if (culled(dx, dy, spr.w, spr.h)) continue;
