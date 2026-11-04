@@ -14,7 +14,7 @@ import { LAYER_BACK, LAYER_FRONT, LAYER_HUD, LAYER_MID, paintLayers } from "./pl
 import "./map-events";
 import "./boss";
 import { absorbShake, shakePixels } from "./shake";
-import { drawStage, drawStageFx } from "./stage";
+import { drawStageFx, drawYardWindow } from "./stage";
 import { paintHurt, paintVeil } from "./veil";
 
 let lastPx = 0;
@@ -25,6 +25,10 @@ function countAlive(flag: Uint8Array, n: number): number {
   let k = 0;
   for (let i = 0; i < n; i++) if (flag[i]) k++;
   return k;
+}
+
+export function fieldPlan(horde: boolean): { yard: boolean; sprites: boolean } {
+  return { yard: true, sprites: horde };
 }
 
 export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boolean; shake?: boolean }): void {
@@ -51,7 +55,9 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
   c.clip();
   if (sx !== 0 || sy !== 0) c.translate(sx, sy);
   c.translate(-camX, -camY);
-  if (horde) {
+  const plan = fieldPlan(horde);
+  if (plan.yard) drawYardWindow(c, camX, camY);
+  if (plan.sprites) {
     renderHorde(c, w);
     drawStageFx(c, w.tick, camX, camY);
     paintDecals(c, w);
@@ -62,7 +68,7 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
     drawTesla(c, w);
     paintFx(c, w);
   } else {
-    drawStage(c, w.tick, camX, camY);
+    drawStageFx(c, w.tick, camX, camY);
     paintLayers(c, w, LAYER_BACK);
     paintDecals(c, w);
     paintActors(c, w, moving);

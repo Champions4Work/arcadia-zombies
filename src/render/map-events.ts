@@ -2,7 +2,7 @@ import {
   CRATE_FALL, DROP_LIVE, fogCover, GEAR_N, gearOn, gearX, gearY, MAP_DROP, MAP_FOG, MAP_GEAR, MAP_LIVE, MAP_VENT,
   MAP_WARN, mapBanner, mapBannerKind, mapKind, mapLabel, mapLife, mapPhase, mapX, mapY, VENT_LIVE, WARN_TICKS,
 } from "../sim/map-events";
-import { W, type World } from "../sim/types";
+import { H, W, type World } from "../sim/types";
 import { BRASS, cog, font, lit, OUTLINE, roundRect } from "./paint";
 import { LAYER_HUD, LAYER_MID, registerLayer } from "./plugins";
 import { puffSprite } from "./sprites";
@@ -158,26 +158,31 @@ let fogDisk: HTMLCanvasElement | null = null;
 function fogPlate(): HTMLCanvasElement {
   if (fogDisk) return fogDisk;
   const c = document.createElement("canvas");
-  c.width = 480;
-  c.height = 480;
+  c.width = W;
+  c.height = H;
   const ctx = c.getContext("2d");
   if (ctx) {
-    const g = ctx.createRadialGradient(240, 240, 28, 240, 240, 240);
+    const g = ctx.createRadialGradient(W * 0.5, H * 0.5, 28, W * 0.5, H * 0.5, 240);
     g.addColorStop(0, "rgba(214,224,230,0.18)");
     g.addColorStop(0.4, "rgba(168,180,190,0.5)");
     g.addColorStop(1, "rgba(86,98,110,0.78)");
     ctx.fillStyle = g;
-    ctx.fillRect(0, 0, 480, 480);
+    ctx.fillRect(0, 0, W, H);
   }
   fogDisk = c;
   return c;
 }
 
+export function fogCoverBox(w: World): { x: number; y: number; w: number; h: number } {
+  return { x: w.arena.camX, y: w.arena.camY, w: W, h: H };
+}
+
 function fog(ctx: CanvasRenderingContext2D, w: World): void {
   const cover = fogCover(w);
   if (cover <= 0) return;
+  const box = fogCoverBox(w);
   ctx.globalAlpha = cover;
-  ctx.drawImage(fogPlate(), w.px - 240, w.py - 240);
+  ctx.drawImage(fogPlate(), box.x, box.y, box.w, box.h);
   ctx.fillStyle = "rgba(232,238,242,0.45)";
   for (let i = 0; i < 4; i++) {
     const x = w.arena.camX + ((i * 90 + w.tick * (0.4 + i * 0.05)) % (W + 80) - 40);

@@ -18,6 +18,18 @@ export default tseslint.config(
   { plugins: { local: { rules: { "no-comments": noComments, "no-hot-alloc": noHotAlloc } } }, rules: { "local/no-comments": "error" } },
   { files: ["**/*.hot.ts"], rules: { "local/no-hot-alloc": "error" } },
   {
+    files: ["src/render/horde-draw.ts"],
+    rules: {
+      "no-restricted-imports": ["error", {
+        paths: [{
+          name: "./ground-atlas",
+          importNames: ["copyGroundWindow"],
+          message: "Horde sprites overlay the cached yard. Do not snap ground into the blit.",
+        }],
+      }],
+    },
+  },
+  {
     files: ["src/render/horde-draw.ts", "src/render/blit.hot.ts", "src/render/ground-atlas.ts", "src/render/actors.ts"],
     rules: {
       "no-restricted-syntax": ["error", {

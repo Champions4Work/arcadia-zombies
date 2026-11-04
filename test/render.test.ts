@@ -5,7 +5,10 @@ import { createWorld } from "../src/sim/world";
 import { projectileFor } from "../src/render/foes";
 import { UPG_FIRE, UPG_SAWS, Z_SHAMBLER } from "../src/sim/types";
 import { paintLayers, registerLayer, registerZombie, zombieGlyph, LAYER_BACK, LAYER_FRONT } from "../src/render/plugins";
+import { fieldPlan } from "../src/render/draw";
+import { fogCoverBox } from "../src/render/map-events";
 import { hurtAlpha } from "../src/render/veil";
+import { H, W } from "../src/sim/types";
 import { blurbFor, difficultyLabel, formatClock, pauseHit, weaponBadge, PAUSE_X, PAUSE_Y } from "../src/render/hud";
 import type { BulletPaint, Glyph } from "../src/render/plugins";
 import type { World } from "../src/sim/types";
@@ -87,5 +90,36 @@ describe("hurt veil", () => {
     expect(hurtAlpha(90)).toBe(0.4);
     expect(hurtAlpha(18)).toBe(0.2);
     expect(hurtAlpha(0)).toBe(0);
+  });
+});
+
+describe("horde yard", () => {
+  it("keeps the baked yard under a horde blit", () => {
+    expect(fieldPlan(true)).toEqual({ yard: true, sprites: true });
+    expect(fieldPlan(false)).toEqual({ yard: true, sprites: false });
+  });
+});
+
+describe("fog surge plate", () => {
+  it("covers the camera view when the player is on an arena edge", () => {
+    const w = createWorld(3);
+    w.px = 40;
+    w.py = 50;
+    w.arena.camX = 0;
+    w.arena.camY = 0;
+    const box = fogCoverBox(w);
+    expect(box.x).toBeLessThanOrEqual(w.arena.camX);
+    expect(box.y).toBeLessThanOrEqual(w.arena.camY);
+    expect(box.x + box.w).toBeGreaterThanOrEqual(w.arena.camX + W);
+    expect(box.y + box.h).toBeGreaterThanOrEqual(w.arena.camY + H);
+    w.px = 920;
+    w.py = 600;
+    w.arena.camX = W;
+    w.arena.camY = H;
+    const far = fogCoverBox(w);
+    expect(far.x).toBeLessThanOrEqual(w.arena.camX);
+    expect(far.y).toBeLessThanOrEqual(w.arena.camY);
+    expect(far.x + far.w).toBeGreaterThanOrEqual(w.arena.camX + W);
+    expect(far.y + far.h).toBeGreaterThanOrEqual(w.arena.camY + H);
   });
 });
