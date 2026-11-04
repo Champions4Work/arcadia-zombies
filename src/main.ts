@@ -479,6 +479,12 @@ function startRun(): void {
       world.fireCd = 99999;
       world.wpnCd.fill(9999);
     }
+    if (import.meta.env.DEV && location.search.includes("shot=objectives")) {
+      void import("./dev/lineup").then((m) => {
+        m.stageObjectives(world);
+        paint();
+      });
+    }
     resetSfxPlayback();
     resetXpGain();
     resetTracker(tracker);
@@ -737,7 +743,7 @@ addEventListener("keydown", (e) => {
     pendingReroll = 1;
     return;
   }
-  if (import.meta.env.DEV && session.phase === PHASE_PLAY && !e.repeat && (k === "b" || k === "n" || k === "e" || k === "v" || k === "h" || k === "k")) {
+  if (import.meta.env.DEV && session.phase === PHASE_PLAY && !e.repeat && (k === "b" || k === "n" || k === "e" || k === "v" || k === "h" || k === "k" || k === "o")) {
     const key = k;
     void import("./dev/lineup").then((m) => {
       if (key === "b") m.lineup(world);
@@ -745,6 +751,7 @@ addEventListener("keydown", (e) => {
       else if (key === "e") m.stageOffer(world);
       else if (key === "h") m.stageChest(world);
       else if (key === "k") m.stageFall(world);
+      else if (key === "o") m.stageObjectives(world);
       else m.stageArmed(world);
     });
     return;
@@ -1006,6 +1013,13 @@ if (new URLSearchParams(location.search).has("e2e")) {
       world.over = true;
       finish(session, 24);
       paint();
+    },
+    "stageObjectives": () => {
+      if (session.phase !== PHASE_PLAY) startRun();
+      void import("./dev/lineup").then((m) => {
+        m.stageObjectives(world);
+        paint();
+      });
     },
   };
   (globalThis as unknown as { "__arcadiaE2e": typeof api })["__arcadiaE2e"] = api;

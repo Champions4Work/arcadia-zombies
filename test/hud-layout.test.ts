@@ -111,7 +111,21 @@ describe("viewport chrome", () => {
       expect(hud.ability.h).toBeGreaterThanOrEqual(48);
       expect(hud.hero.y).toBeGreaterThan(hud.view.h * 0.55);
       expect(hud.difficulty.y).toBeLessThan(hud.view.h * 0.2);
+      expect(hud.objectives.y).toBeGreaterThanOrEqual(hud.clock.y + hud.clock.h);
+      expect(hud.objectives.x + hud.objectives.w).toBeLessThanOrEqual(hud.view.w + 0.5);
     }
+  });
+
+  it("docks the objectives card under the top-right cluster on 390x844", () => {
+    const { hud } = scene(390, 844, 3, { l: 0, r: 0, t: 47, b: 78 });
+    expect(hud.objectives.w).toBeGreaterThanOrEqual(140);
+    expect(hud.objectives.h).toBeGreaterThanOrEqual(90);
+    expect(hud.objectives.x).toBeGreaterThan(hud.view.w * 0.5);
+    expect(hud.objectives.y).toBeLessThan(hud.view.h * 0.35);
+    expect(boxesOverlap(hud.objectives, hud.clock)).toBe(false);
+    expect(boxesOverlap(hud.objectives, hud.difficulty)).toBe(false);
+    const frame = stickFrame(hud);
+    expect(frame.y).toBeGreaterThanOrEqual(hud.objectives.y + hud.objectives.h);
   });
 
   it("clamps a floating stick into the playfield so its disc never covers HUD", () => {

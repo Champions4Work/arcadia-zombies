@@ -1,3 +1,4 @@
+import { ARENA_H, ARENA_W } from "../sim/arena";
 import { BOSS_TANK, bossMaxHp } from "../sim/boss";
 import { UNIONS } from "../sim/evolve";
 import {
@@ -125,6 +126,34 @@ export function stageArmed(w: World): void {
   w.teslaHit[0] = 0;
   const b = w.bullets;
   for (let j = 0; j < b.alive.length; j++) b.alive[j] = 0;
+}
+
+export function stageObjectives(w: World): void {
+  w.over = false;
+  w.choosing = 0;
+  w.wave = 4;
+  w.kills = 72;
+  w.gate = 1;
+  w.holdLeft = 180 * 60;
+  w.toSpawn = 0;
+  w.spawnCd = 99999;
+  w.fireCd = 12;
+  w.hurtCd = 0;
+  w.px = ARENA_W / 2;
+  w.py = ARENA_H / 2;
+  const z = w.zombies;
+  for (let i = 0; i < MAX_ZOMBIES; i++) z.alive[i] = 0;
+  const n = 16;
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2;
+    z.alive[i] = 1;
+    z.kind[i] = Z_SHAMBLER;
+    z.x[i] = w.px + Math.cos(a) * 90;
+    z.y[i] = w.py + Math.sin(a) * 90;
+    z.vx[i] = 0;
+    z.vy[i] = 0;
+    z.hp[i] = foeHp(Z_SHAMBLER, w.rank, false);
+  }
 }
 
 export function rush(w: World): void {
