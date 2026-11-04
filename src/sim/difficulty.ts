@@ -27,7 +27,7 @@ export const CURVE = {
   hpLate: 160,
   hpLateAfter: 4,
   dmgNum: 100,
-  dmgPer: 35,
+  dmgPer: 37,
   speedNum: 100,
   speedPer: 10,
   xpPer: 1,
