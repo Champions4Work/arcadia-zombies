@@ -321,6 +321,7 @@ function hushDecks(ctx: AudioContext): void {
   decks[1].bed = null;
   decks[0].nextT = 0;
   decks[1].nextT = 0;
+  engineCue = silence();
   hushed = true;
 }
 
@@ -586,6 +587,10 @@ function bedChanged(prev: Cue, next: Cue): boolean {
   return prev.audible && next.audible && prev.bed !== next.bed;
 }
 
+export function needsHardStart(next: Cue, liveBed: BedId | null): boolean {
+  return next.audible && liveBed === null;
+}
+
 export function syncMusic(snap: MusicSnap): void {
   const prev = engineCue;
   const next = cueFrom(snap, prev);
@@ -597,6 +602,8 @@ export function syncMusic(snap: MusicSnap): void {
   if (!decks) return;
   if (built || becameAudible(prev, next) || bedChanged(prev, next) || fellSilent(prev, next)) {
     route(prev, next, built, bus.ctx.currentTime);
+  } else if (needsHardStart(next, decks[live].bed)) {
+    route(silence(), next, true, bus.ctx.currentTime);
   } else if (next.audible && decks[live].bed === next.bed) {
     decks[live].drive = next.drive;
   }

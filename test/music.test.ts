@@ -1,7 +1,7 @@
 import {
   BED_BOSS, BED_HORDE, BED_MENU, BED_WAVE,
   bootMusic, cueFrom, musicMuted, musicMuteLabel, musicVolume, musicVolumePercent,
-  parseMusicPrefs, persistMusic, setMusicMuted, setMusicVolume, silence,
+  needsHardStart, parseMusicPrefs, persistMusic, setMusicMuted, setMusicVolume, silence,
   tempoOf, timbresOf, TIMBRE_BELL, TIMBRE_BRASS, TIMBRE_GEAR, TIMBRE_ORGAN, TIMBRE_STEAM, TIMBRE_THUMP,
   type MusicSnap,
 } from "../src/render/music";
@@ -153,5 +153,13 @@ describe("music beds", () => {
     bootMusic(null);
     expect(musicMuted()).toBe(false);
     expect(musicVolume()).toBe(0.8);
+  });
+
+  it("hard-starts an audible cue when hush left the live bed empty", () => {
+    const wave = cueFrom(play(), silence());
+    expect(needsHardStart(wave, null)).toBe(true);
+    expect(needsHardStart(wave, BED_WAVE)).toBe(false);
+    expect(needsHardStart(silence(), null)).toBe(false);
+    expect(needsHardStart(wave, BED_HORDE)).toBe(false);
   });
 });
