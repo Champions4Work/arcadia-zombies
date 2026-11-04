@@ -91,57 +91,51 @@ export function layoutHud(vp: Viewport, fit: Fit): HudLayout {
   const inner = { x: sl, y: st, w: Math.max(1, vp.cssW - sl - sr), h: Math.max(1, vp.cssH - st - sb) };
   const portrait = vp.cssH > vp.cssW;
   const u = portrait ? clamp(inner.w / 390, 0.85, 1.15) : clamp(inner.h / 360, 0.78, 1.05);
-  const gap = Math.max(6, 8 * u);
-  const xpH = Math.round((portrait ? 22 : 18) * u);
+  const gap = Math.max(4, 6 * u);
+  const xpH = Math.round((portrait ? 16 : 14) * u);
   const xp = { x: inner.x + gap, y: inner.y + inner.h - xpH, w: inner.w - gap * 2, h: xpH };
-  const heroW = Math.round((portrait ? 100 : 92) * u);
-  const heroH = Math.round((portrait ? 70 : 60) * u);
-  const hero = { x: inner.x + gap, y: xp.y - gap - heroH, w: heroW, h: heroH };
-  const abilW = Math.round((portrait ? 80 : 72) * u);
-  const abilH = Math.round((portrait ? 64 : 56) * u);
-  const ability = { x: inner.x + inner.w - gap - abilW, y: xp.y - gap - abilH, w: abilW, h: abilH };
-  const wpnH = Math.round((portrait ? 32 : 26) * u);
-  const weapons = portrait
-    ? { x: inner.x + gap, y: hero.y - gap - wpnH, w: inner.w - gap * 2, h: wpnH }
-    : {
-      x: hero.x + hero.w + gap,
-      y: xp.y - gap - wpnH,
-      w: Math.max(64, ability.x - gap - (hero.x + hero.w + gap)),
-      h: wpnH,
-    };
+  const heroS = Math.round((portrait ? 44 : 40) * u);
+  const abilS = Math.round((portrait ? 56 : 52) * u);
+  const slot = Math.round((portrait ? 34 : 30) * u);
+  const slotGap = Math.max(2, Math.round(3 * u));
+  const wpnH = slot;
+  const wpnW = slot * 5 + slotGap * 4;
+  const bottomH = Math.max(heroS, abilS, wpnH);
+  const bottomY = xp.y - gap - bottomH;
+  const hero = { x: inner.x + gap, y: bottomY + bottomH - heroS, w: heroS, h: heroS };
+  const ability = { x: inner.x + inner.w - gap - abilS, y: bottomY + bottomH - abilS, w: abilS, h: abilS };
+  const midLeft = hero.x + hero.w + gap;
+  const midRight = ability.x - gap;
+  const midW = Math.max(slot, midRight - midLeft);
+  const weapons = {
+    x: midLeft + Math.max(0, (midW - wpnW) / 2),
+    y: bottomY + bottomH - wpnH,
+    w: Math.min(wpnW, midW),
+    h: wpnH,
+  };
+  const rowH = Math.round((portrait ? 26 : 24) * u);
   const topY = inner.y + gap;
-  const rowH = Math.round((portrait ? 36 : 34) * u);
-  const pauseR = Math.round(14 * u);
+  const pauseR = Math.round(11 * u);
   const pause = {
     x: inner.x + inner.w - gap - pauseR,
     y: topY + rowH / 2,
     r: pauseR,
   };
-  const clockW = Math.round((portrait ? 108 : 112) * u);
+  const clockW = Math.round((portrait ? 86 : 92) * u);
   const clock = {
     x: pause.x - pauseR - gap - clockW,
     y: topY,
     w: clockW,
     h: rowH,
   };
-  const diffW = Math.round((portrait ? 140 : 160) * u);
+  const mapS = rowH;
+  const minimap = { x: inner.x + gap, y: topY, w: mapS, h: mapS };
   const difficulty = {
-    x: inner.x + gap,
+    x: minimap.x + minimap.w + gap,
     y: topY,
-    w: Math.min(diffW, Math.max(88, clock.x - gap - (inner.x + gap))),
+    w: Math.max(72, clock.x - gap - (minimap.x + minimap.w + gap)),
     h: rowH,
   };
-  const mapS = Math.round((portrait ? 56 : 52) * u);
-  const minimap = {
-    x: inner.x + gap,
-    y: topY + rowH + gap,
-    w: mapS,
-    h: mapS + 14,
-  };
-  if (boxesOverlap(minimap, hero)) minimap.y = Math.max(topY + rowH + gap, hero.y - gap - minimap.h);
-  if (boxesOverlap(minimap, difficulty) || boxesOverlap(minimap, clock)) {
-    minimap.y = Math.max(minimap.y, difficulty.y + difficulty.h + gap);
-  }
   return { view, frame: frameBox(fit), hero, xp, difficulty, clock, pause, minimap, weapons, ability };
 }
 
@@ -152,12 +146,38 @@ export function pauseHitAt(layout: HudLayout, x: number, y: number): boolean {
   return dx * dx + dy * dy <= hit * hit;
 }
 
+export function hudHitAt(layout: HudLayout, x: number, y: number): boolean {
+  if (pauseHitAt(layout, x, y)) return true;
+  for (const box of hudBoxes(layout)) {
+    if (x >= box.x && x < box.x + box.w && y >= box.y && y < box.y + box.h) return true;
+  }
+  return false;
+}
+
 export function stickFrame(layout: HudLayout): Box {
+  const top = Math.max(
+    layout.minimap.y + layout.minimap.h,
+    layout.difficulty.y + layout.difficulty.h,
+    layout.clock.y + layout.clock.h,
+    layout.pause.y + layout.pause.r,
+  ) + 4;
+  const bottom = Math.min(layout.hero.y, layout.weapons.y, layout.ability.y, layout.xp.y) - 4;
   return {
     x: layout.view.x,
-    y: layout.view.y,
+    y: top,
     w: layout.view.w,
-    h: Math.max(1, layout.xp.y - layout.view.y),
+    h: Math.max(1, bottom - top),
+  };
+}
+
+export function clampStick(x: number, y: number, r: number, frame: Box): { x: number; y: number } {
+  const minX = frame.x + r;
+  const maxX = frame.x + frame.w - r;
+  const minY = frame.y + r;
+  const maxY = frame.y + frame.h - r;
+  return {
+    x: maxX < minX ? frame.x + frame.w / 2 : clamp(x, minX, maxX),
+    y: maxY < minY ? frame.y + frame.h / 2 : clamp(y, minY, maxY),
   };
 }
 

@@ -1,12 +1,13 @@
 import { currentHud } from "../shell/hud-layout";
-import { BRASS_HI, COPPER, IRON, SOOT, STEAM, STEAM_DIM } from "../shell/theme";
+import { BRASS_HI, COPPER, IRON, SOOT, STEAM_DIM } from "../shell/theme";
 import { LAYER_HUD, registerFx, registerLayer } from "./plugins";
 import {
   FX_BOOM, UPG_WPN_FLAME, UPG_WPN_HARP, UPG_WPN_MORT, UPG_WPN_RIVET, UPG_WPN_SHOT,
   WPN_COUNT, WPN_RIVET, type World,
 } from "../sim/types";
 import { paintBoom, paintWeaponShot } from "./cast-fx";
-import { font } from "./paint";
+import { drawIcon } from "./icons";
+import { OUTLINE } from "./paint";
 
 const EMBER = COPPER;
 export const WPN_TAGS = ["RIVET", "SHOT", "FLAME", "HARP", "MORT"];
@@ -30,40 +31,28 @@ export function drawWeaponRack(c: CanvasRenderingContext2D, w: World): void {
   const dpr = c.canvas.width / Math.max(1, layout.view.w);
   c.setTransform(dpr, 0, 0, dpr, 0, 0);
   const box = layout.weapons;
-  const slotW = box.w / WPN_COUNT;
+  const gap = 3;
+  const slot = Math.min(box.h, (box.w - gap * (WPN_COUNT - 1)) / WPN_COUNT);
+  const row = slot * WPN_COUNT + gap * (WPN_COUNT - 1);
+  const x0 = box.x + Math.max(0, (box.w - row) / 2);
   for (let i = 0; i < WPN_COUNT; i++) {
     const id = IDS[i] ?? 0;
     const lv = w.upgrades[id] ?? 0;
-    const x = box.x + i * slotW + 2;
-    const y = box.y;
-    const bw = slotW - 4;
+    const x = x0 + i * (slot + gap);
+    const y = box.y + Math.max(0, (box.h - slot) / 2);
     c.fillStyle = lv > 0 ? IRON : SOOT;
-    c.fillRect(x, y, bw, box.h);
+    c.fillRect(x, y, slot, slot);
     c.strokeStyle = lv > 0 ? BRASS_HI : STEAM_DIM;
-    c.lineWidth = 2;
-    c.strokeRect(x + 0.5, y + 0.5, bw - 1, box.h - 1);
-    c.save();
-    c.beginPath();
-    c.rect(x + 2, y + 2, bw - 4, box.h - 4);
-    c.clip();
-    c.fillStyle = lv > 0 ? STEAM : STEAM_DIM;
-    const tag = WPN_TAGS[i] ?? "";
-    let size = Math.max(11, Math.min(13, box.h * 0.36));
-    c.font = font(size, 800);
-    while (size > 11 && c.measureText(tag).width > bw - 8) {
-      size -= 1;
-      c.font = font(size, 800);
-    }
-    c.textAlign = "center";
-    c.textBaseline = "middle";
-    c.fillText(tag, x + bw / 2, y + box.h * 0.38);
-    c.restore();
-    const pipW = Math.max(3, (bw - 10) / 5 - 2);
+    c.lineWidth = 1.6;
+    c.strokeRect(x + 0.5, y + 0.5, slot - 1, slot - 1);
+    drawIcon(c, id, x + slot / 2, y + slot * 0.42, Math.max(7, slot * 0.36));
+    const pipW = Math.max(2.2, (slot - 8) / 5 - 1);
     for (let p = 0; p < 5; p++) {
       c.fillStyle = p < lv ? EMBER : SOOT;
-      c.fillRect(x + 5 + p * (pipW + 2), y + box.h - 8, pipW, 4);
+      c.fillRect(x + 4 + p * (pipW + 1), y + slot - 6, pipW, 3);
     }
+    c.strokeStyle = OUTLINE;
+    c.strokeRect(x + 4, y + slot - 6, slot - 8, 3);
   }
-  c.textAlign = "left";
   c.restore();
 }

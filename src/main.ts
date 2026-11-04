@@ -13,7 +13,7 @@ import { setMuted, unlockAudio } from "./render/sound";
 import { renderBench } from "./shell/bench";
 import { codexStamp, emptyCodex, loadCodex, observe, renderBook, saveCodex } from "./shell/codex";
 import { applyCanvas, screenToGame, type Fit } from "./shell/fit";
-import { bindHud, currentHud, layoutHud, offerHit, rerollCss, stickFrame } from "./shell/hud-layout";
+import { bindHud, clampStick, currentHud, hudHitAt, layoutHud, offerHit, rerollCss, stickFrame } from "./shell/hud-layout";
 import { playChromeHidden, showMenuChrome } from "./shell/play-chrome";
 import { applyPlayView } from "./shell/play-view";
 import { mountResults } from "./shell/results-dom";
@@ -529,13 +529,16 @@ function placeJoy(): void {
   joy.hidden = !show;
   if (!show) return;
   const hud = layoutHud(vp, fit);
-  const chrome = phoneChrome(vp.cssW, vp.cssH, 0, 0, stickFrame(hud));
+  const frame = stickFrame(hud);
+  const chrome = phoneChrome(vp.cssW, vp.cssH, 0, 0, frame);
+  const origin = stick.on ? clampStick(stick.x, stick.y, chrome.joyR, frame) : { x: chrome.restX, y: chrome.restY };
   const size = chrome.joyR * 2;
   joy.style.width = `${size}px`;
   joy.style.height = `${size}px`;
   joy.style.margin = `-${chrome.joyR}px 0 0 -${chrome.joyR}px`;
-  joy.style.left = `${stick.on ? stick.x : chrome.restX}px`;
-  joy.style.top = `${stick.on ? stick.y : chrome.restY}px`;
+  joy.style.left = `${origin.x}px`;
+  joy.style.top = `${origin.y}px`;
+  joy.style.opacity = stick.on ? "0.72" : "0.42";
   knob.style.transform = `translate(${stick.dx * chrome.knobTravel}px,${stick.dy * chrome.knobTravel}px)`;
 }
 
@@ -732,8 +735,13 @@ addEventListener("pointerdown", (e) => {
     else pendingPick = cardSlot(p.x, p.y, offerCount(world));
     return;
   }
+  const hud = currentHud();
+  if (hud && hudHitAt(hud, e.clientX, e.clientY)) return;
+  const frame = hud ? stickFrame(hud) : { x: 0, y: 0, w: viewNow().cssW, h: viewNow().cssH };
+  const chrome = phoneChrome(viewNow().cssW, viewNow().cssH, 0, 0, frame);
+  const origin = clampStick(e.clientX, e.clientY, chrome.joyR, frame);
   stickId = e.pointerId;
-  pressStick(stick, e.clientX, e.clientY);
+  pressStick(stick, origin.x, origin.y);
   input.dx = 0;
   input.dy = 0;
 });
