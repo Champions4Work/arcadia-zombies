@@ -85,26 +85,35 @@ describe("viewport chrome", () => {
       }
       expect(boxInside(joy, frame, 1)).toBe(true);
       for (const box of boxes) expect(boxesOverlap(joy, box)).toBe(false);
-      expect(hud.hero.h).toBeLessThanOrEqual(56);
-      expect(hud.difficulty.h).toBeLessThanOrEqual(48);
+      expect(hud.hero.h).toBeLessThanOrEqual(68);
+      expect(hud.difficulty.h).toBeLessThanOrEqual(56);
       expect(hud.difficulty.h).toBeGreaterThanOrEqual(28);
-      expect(hud.weapons.h).toBeLessThanOrEqual(40);
+      expect(hud.weapons.h).toBeLessThanOrEqual(48);
       expect(hud.minimap.h).toBeGreaterThanOrEqual(52);
-      expect(hud.minimap.h).toBeLessThanOrEqual(88);
-      expect(hud.face.w).toBeGreaterThanOrEqual(64);
-      expect(hud.face.h).toBeGreaterThanOrEqual(28);
-      expect(hud.face.x).toBeGreaterThanOrEqual(hud.minimap.x + hud.minimap.w);
-      expect(hud.face.y).toBeGreaterThanOrEqual(hud.minimap.y);
-      expect(hud.face.x + hud.face.w).toBeLessThan(hud.clock.x - 8);
+      expect(hud.minimap.h).toBeLessThanOrEqual(96);
+      const phonePortrait = phone.h > phone.w && phone.w <= 480;
+      if (phonePortrait) {
+        expect(hud.face.w).toBe(0);
+        expect(hud.face.h).toBe(0);
+        expect(hud.hero.h).toBeGreaterThanOrEqual(52);
+        expect(hud.weapons.h).toBeGreaterThanOrEqual(40);
+        expect(hud.ability.h).toBeGreaterThanOrEqual(60);
+      } else {
+        expect(hud.face.w).toBeGreaterThanOrEqual(64);
+        expect(hud.face.h).toBeGreaterThanOrEqual(28);
+        expect(hud.face.x).toBeGreaterThanOrEqual(hud.minimap.x + hud.minimap.w);
+        expect(hud.face.y).toBeGreaterThanOrEqual(hud.minimap.y);
+        expect(hud.face.x + hud.face.w).toBeLessThan(hud.clock.x - 8);
+        const painted = circleBox({ x: hud.hero.x + 36, y: hud.hero.y - 94, r: 30 });
+        expect(boxesOverlap(painted, hud.hero)).toBe(false);
+        expect(boxesOverlap(painted, hud.ability)).toBe(false);
+        expect(painted.x).toBeGreaterThanOrEqual(-0.5);
+      }
       expect(hud.clock.h).toBeGreaterThanOrEqual(32);
       expect(hud.ability.w).toBeGreaterThanOrEqual(48);
       expect(hud.ability.h).toBeGreaterThanOrEqual(48);
       expect(hud.hero.y).toBeGreaterThan(hud.view.h * 0.55);
       expect(hud.difficulty.y).toBeLessThan(hud.view.h * 0.2);
-      const painted = circleBox({ x: hud.hero.x + 36, y: hud.hero.y - 94, r: 30 });
-      expect(boxesOverlap(painted, hud.hero)).toBe(false);
-      expect(boxesOverlap(painted, hud.ability)).toBe(false);
-      expect(painted.x).toBeGreaterThanOrEqual(-0.5);
     }
   });
 

@@ -81,7 +81,7 @@ export function hudBoxes(layout: HudLayout): Box[] {
     layout.face,
     layout.weapons,
     layout.ability,
-  ];
+  ].filter((box) => box.w > 0 && box.h > 0);
 }
 
 export function layoutHud(vp: Viewport, fit: Fit): HudLayout {
@@ -92,18 +92,20 @@ export function layoutHud(vp: Viewport, fit: Fit): HudLayout {
   const sb = vp.safe.b;
   const inner = { x: sl, y: st, w: Math.max(1, vp.cssW - sl - sr), h: Math.max(1, vp.cssH - st - sb) };
   const portrait = vp.cssH > vp.cssW;
+  const phone = portrait && vp.cssW < 720;
   const u = portrait ? clamp(inner.w / 390, 0.85, 1.15) : clamp(inner.h / 360, 0.78, 1.05);
-  const gap = Math.max(4, 6 * u);
-  const xpH = Math.round((portrait ? 16 : 14) * u);
+  const gap = Math.max(4, (phone ? 8 : 6) * u);
+  const xpH = Math.round((phone ? 20 : portrait ? 16 : 14) * u);
   const xp = { x: inner.x + gap, y: inner.y + inner.h - xpH, w: inner.w - gap * 2, h: xpH };
-  const heroS = Math.round((portrait ? 48 : 42) * u);
-  const abilS = Math.round((portrait ? 60 : 54) * u);
-  const slot = Math.round((portrait ? 34 : 30) * u);
+  const heroS = Math.round((phone ? 58 : portrait ? 48 : 42) * u);
+  const abilS = Math.round((phone ? 68 : portrait ? 60 : 54) * u);
+  const slot = Math.round((phone ? 42 : portrait ? 34 : 30) * u);
   const slotGap = Math.max(2, Math.round(3 * u));
   const wpnH = slot;
   const wpnW = slot * 5 + slotGap * 4;
   const bottomH = Math.max(heroS, abilS, wpnH);
-  const bottomY = xp.y - gap - bottomH;
+  const bottomGap = phone ? 16 : gap;
+  const bottomY = xp.y - bottomGap - bottomH;
   const hero = { x: inner.x + gap, y: bottomY + bottomH - heroS, w: heroS, h: heroS };
   const ability = { x: inner.x + inner.w - gap - abilS, y: bottomY + bottomH - abilS, w: abilS, h: abilS };
   const midLeft = hero.x + hero.w + gap;
@@ -115,23 +117,23 @@ export function layoutHud(vp: Viewport, fit: Fit): HudLayout {
     w: Math.min(wpnW, midW),
     h: wpnH,
   };
-  const rowH = Math.round((portrait ? 40 : 34) * u);
+  const rowH = Math.round((phone ? 48 : portrait ? 40 : 34) * u);
   const topY = inner.y + gap;
-  const pauseR = Math.round(11 * u);
+  const pauseR = Math.round((phone ? 13 : 11) * u);
   const pause = {
     x: inner.x + inner.w - gap - pauseR,
     y: topY + rowH / 2,
     r: pauseR,
   };
-  const clockW = Math.round((portrait ? 104 : 108) * u);
-  const clockH = Math.round((portrait ? 50 : 44) * u);
+  const clockW = Math.round((phone ? 112 : portrait ? 104 : 108) * u);
+  const clockH = Math.round((phone ? 54 : portrait ? 50 : 44) * u);
   const clock = {
     x: pause.x - pauseR - gap - clockW,
     y: topY,
     w: clockW,
     h: clockH,
   };
-  const mapS = Math.round((portrait ? 80 : 70) * u);
+  const mapS = Math.round((phone ? 86 : portrait ? 80 : 70) * u);
   const minimap = { x: inner.x + gap, y: topY, w: mapS, h: mapS };
   const difficulty = {
     x: minimap.x + minimap.w + gap,
@@ -142,12 +144,14 @@ export function layoutHud(vp: Viewport, fit: Fit): HudLayout {
   const faceS = Math.round((portrait ? 56 : 46) * u);
   const faceX = minimap.x + minimap.w + gap;
   const objLeft = clock.x - (portrait ? 16 : 0);
-  const face = {
-    x: faceX,
-    y: difficulty.y + difficulty.h + gap,
-    w: Math.max(faceS + 52, Math.min(faceS + 64, objLeft - faceX - 8)),
-    h: faceS,
-  };
+  const face = phone
+    ? { x: 0, y: 0, w: 0, h: 0 }
+    : {
+      x: faceX,
+      y: difficulty.y + difficulty.h + gap,
+      w: Math.max(faceS + 52, Math.min(faceS + 64, objLeft - faceX - 8)),
+      h: faceS,
+    };
   return { view, frame: frameBox(fit), hero, xp, difficulty, clock, pause, minimap, face, weapons, ability };
 }
 

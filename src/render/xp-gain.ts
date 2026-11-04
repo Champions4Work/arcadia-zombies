@@ -175,25 +175,24 @@ export function drawXpBar(ctx: CanvasRenderingContext2D, layout: HudLayout, need
   const box = layout.xp;
   const t = xpFillT(need);
   ctx.save();
-  blitSheetFit(ctx, "xp_bar_frame", box.x - 4, box.y - 8, box.w + 8, box.h + 16);
-  ctx.strokeStyle = BRASS_HI;
-  ctx.lineWidth = 2.4;
-  ctx.strokeRect(box.x + 1, box.y + 1, box.w - 2, box.h - 2);
-  pixelWell(ctx, box.x + 4, box.y + 2, box.w - 62, box.h - 4);
-  const pad = 4;
+  blitSheetFit(ctx, "xp_bar_frame", box.x - 18, box.y - 10, box.w + 36, box.h + 20);
+  const pad = 10;
   const badge = Math.min(58, box.w * 0.15);
   const innerW = box.w - pad * 2 - badge;
+  const tubeY = box.y + 6;
+  const tubeH = Math.max(6, box.h - 12);
+  pixelWell(ctx, box.x + pad, tubeY, innerW, tubeH);
   ctx.fillStyle = IRON;
-  ctx.fillRect(box.x + pad, box.y + pad, innerW, box.h - pad * 2);
-  const fillW = Math.max(t > 0 ? 6 : 0, innerW * t);
+  ctx.fillRect(box.x + pad + 2, tubeY + 2, innerW - 4, tubeH - 4);
+  const fillW = Math.max(t > 0 ? 6 : 0, (innerW - 4) * t);
   if (fillW > 0) {
     ctx.fillStyle = glowMs > 0 ? BRASS_HI : XP;
-    ctx.fillRect(box.x + pad, box.y + pad, fillW, box.h - pad * 2);
+    ctx.fillRect(box.x + pad + 2, tubeY + 2, fillW, tubeH - 4);
   }
   if (sparkMs > 0) {
     caption(ctx, "+XP", box.x + pad + fillW + 8, box.y + box.h * 0.18, 11, STEAM);
   }
-  caption(ctx, xpLevelText(shownLevel), box.x + box.w - badge / 2, box.y + box.h * 0.28, 12, STEAM, "center");
+  caption(ctx, xpLevelText(shownLevel), box.x + box.w - badge / 2, box.y + box.h * 0.42, 12, STEAM, "center");
   if (popMs > 0) {
     caption(ctx, `${popLevel}`, box.x + box.w - badge / 2, box.y - 12, 14, BRASS_HI, "center");
   }
