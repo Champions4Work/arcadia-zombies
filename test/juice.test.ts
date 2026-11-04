@@ -90,9 +90,12 @@ describe("damage numbers", () => {
     const y0 = numberY(0);
     tickJuice(180);
     expect(numberY(0)).toBeLessThan(y0);
-    juiceHit(1, 12, 40, 3, Z_SHAMBLER, false, 1);
+    juiceHit(1, 12, 40, 3, Z_SHAMBLER, true, 1);
+    expect(lastNumberCrit()).toBe(0);
+    expect(numberScale(1)).toBe(1);
+    juiceHit(2, 12, 40, 3, Z_BRUTE, true, 2);
     expect(lastNumberCrit()).toBe(1);
-    expect(numberScale(1)).toBe(2);
+    expect(numberScale(2)).toBe(1);
     expect(numberColor(1)).toBe(CRIT_COLOR);
     expect(CRIT_COLOR).toBe("#ffe14a");
     for (let i = 0; i < 10000; i++) juiceHit(i % 1500, 1, 1, 1, Z_SHAMBLER, false, i);

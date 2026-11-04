@@ -92,18 +92,28 @@ export const CARD_X0 = Math.floor((W - (CARD_W * OFFER_N + CARD_GAP * (OFFER_N -
 export const SAW_HIT_R2 = 81;
 export const SAW_SPIN = 0.08;
 
+export function stackRank(lv: number): number {
+  if (lv <= 0) return 0;
+  if (lv <= 2) return lv;
+  if (lv === 3) return 2;
+  return 3;
+}
+
 export function xpNeed(level: number): number {
-  return 4 + level * 4;
+  const n = level < 0 ? 0 : level;
+  if (n <= 3) return 8 + n * 6;
+  const late = n - 3;
+  return 32 + late * 16 + late * late * 4;
 }
 
 export function fireEvery(w: World): number {
-  const base = 12 - ((w.upgrades[UPG_FIRE] ?? 0) + w.meta.gun) * 2;
+  const base = 12 - (stackRank(w.upgrades[UPG_FIRE] ?? 0) + w.meta.gun) * 2;
   if (characterAt(w.charId).passive !== PASSIVE_FIRE) return Math.max(3, base);
   return Math.max(3, Math.round(base * 100 / 130));
 }
 
 export function moveSpeed(w: World): number {
-  return 2 + (w.upgrades[UPG_SPEED] ?? 0) * 0.4 + characterAt(w.charId).speed + w.meta.spd;
+  return 2 + stackRank(w.upgrades[UPG_SPEED] ?? 0) * 0.4 + characterAt(w.charId).speed + w.meta.spd;
 }
 
 export function maxHpOf(w: World): number {
@@ -113,17 +123,17 @@ export function maxHpOf(w: World): number {
 
 export function bulletDmg(w: World): number {
   const row = characterAt(w.charId);
-  let dmg = 1 + (w.upgrades[UPG_DMG] ?? 0) + (w.upgrades[EVOL_CANNON] ?? 0) + row.dmg + slugBonus(w) + w.meta.dmg;
+  let dmg = 1 + stackRank(w.upgrades[UPG_DMG] ?? 0) + (w.upgrades[EVOL_CANNON] ?? 0) + row.dmg + slugBonus(w) + w.meta.dmg;
   if (row.passive === PASSIVE_RAGE && w.hp * 2 <= w.maxHp) dmg += RAGE_DMG;
   return dmg;
 }
 
 export function sawRadius(w: World): number {
-  return 26 + (w.upgrades[UPG_SAWS] ?? 0) * 8 + haloReach(w);
+  return 26 + stackRank(w.upgrades[UPG_SAWS] ?? 0) * 8 + haloReach(w);
 }
 
 export function sawCount(w: World): number {
-  return (w.upgrades[UPG_SAWS] ?? 0) + haloBlades(w);
+  return stackRank(w.upgrades[UPG_SAWS] ?? 0) + haloBlades(w);
 }
 
 export function sawDamage(w: World): number {
@@ -156,20 +166,20 @@ export function offerId(w: World, slot: number): number {
 }
 
 export function teslaEvery(w: World): number {
-  const base = 54 - (w.upgrades[UPG_TESLA] ?? 0) * 6 - crownRate(w);
+  const base = 54 - stackRank(w.upgrades[UPG_TESLA] ?? 0) * 6 - crownRate(w);
   return Math.max(crownOn(w) ? 8 : 18, base);
 }
 
 export function teslaRange(w: World): number {
-  return 64 + (w.upgrades[UPG_TESLA] ?? 0) * 20 + (w.upgrades[EVOL_STORM] ?? 0) * 12;
+  return 64 + stackRank(w.upgrades[UPG_TESLA] ?? 0) * 20 + (w.upgrades[EVOL_STORM] ?? 0) * 12;
 }
 
 export function teslaChain(w: World): number {
-  return 40 + (w.upgrades[UPG_TESLA] ?? 0) * 14;
+  return 40 + stackRank(w.upgrades[UPG_TESLA] ?? 0) * 14;
 }
 
 export function teslaPower(w: World): number {
-  return (w.upgrades[UPG_TESLA] ?? 0) + (w.upgrades[EVOL_STORM] ?? 0) + crownHops(w);
+  return stackRank(w.upgrades[UPG_TESLA] ?? 0) + (w.upgrades[EVOL_STORM] ?? 0) + crownHops(w);
 }
 
 export function shieldReload(w: World): number {
@@ -177,19 +187,19 @@ export function shieldReload(w: World): number {
 }
 
 export function ventEvery(w: World): number {
-  return Math.max(22, 78 - (w.upgrades[UPG_VENT] ?? 0) * 10);
+  return Math.max(22, 78 - stackRank(w.upgrades[UPG_VENT] ?? 0) * 10);
 }
 
 export function ventRange(w: World): number {
-  return 32 + (w.upgrades[UPG_VENT] ?? 0) * 14 + (w.upgrades[EVOL_AEGIS] ?? 0) * 8 + heartReach(w);
+  return 32 + stackRank(w.upgrades[UPG_VENT] ?? 0) * 14 + (w.upgrades[EVOL_AEGIS] ?? 0) * 8 + heartReach(w);
 }
 
 export function mortarEvery(w: World): number {
-  return Math.max(16, 96 - (w.upgrades[UPG_MORTAR] ?? 0) * 12 - howitzerRate(w));
+  return Math.max(16, 96 - stackRank(w.upgrades[UPG_MORTAR] ?? 0) * 12 - howitzerRate(w));
 }
 
 export function healEvery(w: World): number {
-  return Math.max(40, 190 - (w.upgrades[UPG_COOLANT] ?? 0) * 26);
+  return Math.max(40, 190 - stackRank(w.upgrades[UPG_COOLANT] ?? 0) * 26);
 }
 
 export function whistleRange(w: World): number {

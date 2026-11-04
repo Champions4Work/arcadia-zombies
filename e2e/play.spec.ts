@@ -54,6 +54,9 @@ test("loads the game and plays a few seconds without page errors", async ({ page
   await page.waitForTimeout(3000);
   await expect(page.locator("#game")).toBeVisible();
   await expect(page.locator("#veil")).not.toHaveClass(/\bon\b/);
+  await expect(page.locator("#sfx")).toBeHidden();
+  await expect(page.locator("#opts")).toBeHidden();
+  await expect(page.locator("#sfx-vol")).toBeHidden();
   const box = await page.locator("#game").boundingBox();
   if (!box) throw new Error("game has no box");
   const x = box.x + Math.min(110, box.width * 0.22);

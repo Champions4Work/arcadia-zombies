@@ -83,6 +83,7 @@ function hurtPlayer(w: World, dmg: number): void {
     return;
   }
   w.hp -= dmg;
+  w.hurt += dmg;
   w.events[EV_HURT] = 1;
   juicePlayerHurt();
   if (w.hp <= 0) w.over = true;

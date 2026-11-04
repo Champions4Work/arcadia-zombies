@@ -29,6 +29,7 @@ export const CURVE = {
   speedNum: 100,
   speedPer: 10,
   xpPer: 1,
+  xpCap: 0,
   scoreBase: 1,
   scorePer: 1,
   shambler: 70,
@@ -102,7 +103,8 @@ export function speedScale(tier: number): number {
 
 export function killXp(kind: number, tier: number): number {
   const base = kind === Z_BRUTE ? 3 : kind === Z_GHOUL ? 2 : 1;
-  return base + tier * CURVE.xpPer;
+  const steps = tier < CURVE.xpCap ? tier : CURVE.xpCap;
+  return base + steps * CURVE.xpPer;
 }
 
 export function scoreMul(tier: number): number {

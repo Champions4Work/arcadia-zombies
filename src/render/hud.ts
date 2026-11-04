@@ -315,7 +315,7 @@ function clockPanel(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   const label = runLabel(w.tick);
   ink(ctx, label, box.x + 28, box.y + 8, label.length > 5 ? 11 : 15, "#fff8ee");
   skull(ctx, box.x + 16, box.y + box.h - 14);
-  ink(ctx, String(w.score), box.x + 28, box.y + box.h - 22, 14, "#fff8ee");
+  ink(ctx, String(w.kills), box.x + 28, box.y + box.h - 22, 14, "#fff8ee");
 }
 
 function pauseButton(ctx: CanvasRenderingContext2D, pause: Circle): void {

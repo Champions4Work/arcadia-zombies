@@ -4,6 +4,7 @@ export interface ResultsUi {
   show(result: RunResult): void;
   hide(): void;
   visible(): boolean;
+  onCopy(fn: () => void): void;
 }
 
 export function mountResults(panel: HTMLElement): ResultsUi {
@@ -26,7 +27,11 @@ export function mountResults(panel: HTMLElement): ResultsUi {
   const seals = document.createElement("div");
   seals.id = "result-seals";
   const go = document.getElementById("go");
-  root.append(banner, stats, build, seals);
+  const copy = document.createElement("button");
+  copy.id = "run-copy";
+  copy.type = "button";
+  copy.textContent = "Copy run log";
+  root.append(banner, stats, build, copy, seals);
   const roster = document.getElementById("roster");
   if (roster && roster.parentElement === panel) panel.insertBefore(root, roster);
   else panel.append(root);
@@ -62,6 +67,9 @@ export function mountResults(panel: HTMLElement): ResultsUi {
       seals.replaceChildren();
     },
     visible: () => open,
+    onCopy(fn) {
+      copy.onclick = fn;
+    },
   };
 }
 

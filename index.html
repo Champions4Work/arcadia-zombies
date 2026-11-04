@@ -53,7 +53,7 @@ canvas{position:fixed;left:0;top:0;display:block;width:100%;height:100dvh;max-wi
 #mods button[aria-pressed="true"]{color:#1c120c;background:linear-gradient(#fff1c2,#f0b03a)}
 #summary{margin:0;max-height:42vh;overflow:auto;touch-action:pan-y;font:700 13px/1.45 Inter,Cantarell,sans-serif;color:#fff1c2;letter-spacing:.06em;text-align:center;white-space:pre-line}
 #go{font:800 18px Inter,Cantarell,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#1c120c;background:linear-gradient(#fff1c2,#f0b03a);border:3px solid #1c120c;border-radius:14px;padding:12px 36px;cursor:pointer}
-#workshop,#back,#codex,#shake,#numbers,#endless,#lb-open,#lb-share,#lb-back,#lb-share-top{font:800 13px/1 Inter,Cantarell,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#fff1c2;background:linear-gradient(#2a1c12,#140c08);border:3px solid #f0b03a;border-radius:12px;padding:10px 14px;cursor:pointer;transition:transform .12s,filter .12s,background .12s}
+#workshop,#back,#codex,#shake,#numbers,#debug,#run-copy,#endless,#lb-open,#lb-share,#lb-back,#lb-share-top{font:800 13px/1 Inter,Cantarell,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#fff1c2;background:linear-gradient(#2a1c12,#140c08);border:3px solid #f0b03a;border-radius:12px;padding:10px 14px;cursor:pointer;transition:transform .12s,filter .12s,background .12s}
 #workshop:hover,#back:hover,#codex:hover,#shake:hover,#numbers:hover,#endless:hover,#lb-open:hover,#lb-share:hover,#lb-back:hover,#lb-share-top:hover{filter:brightness(1.12)}
 #workshop:active,#back:active,#codex:active,#shake:active,#numbers:active,#endless:active,#lb-open:active,#lb-share:active,#lb-back:active,#lb-share-top:active{transform:scale(.97)}
 #bench{display:flex;flex-direction:column;gap:8px;width:min(440px,86vw);max-height:42vh;overflow:auto;touch-action:pan-y}
@@ -63,7 +63,7 @@ canvas{position:fixed;left:0;top:0;display:block;width:100%;height:100dvh;max-wi
 .fit button{font:800 11px Inter,Cantarell,sans-serif;color:#1c120c;background:linear-gradient(#fff1c2,#f0b03a);border:2px solid #1c120c;border-radius:8px;padding:8px;cursor:pointer}
 .fit button:disabled{opacity:.4;cursor:default}
 #opts{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
-#opts[hidden],#sfx[hidden]{display:none}
+#opts[hidden],#sfx[hidden],#veil:not(.on) #sfx,#veil:not(.on) #opts{display:none}
 #go{transition:transform .12s,filter .12s}
 #go:hover{filter:brightness(1.08)}
 #go:active{transform:scale(.97)}
@@ -170,6 +170,7 @@ button{min-height:44px}
     <div id="opts">
       <button id="shake" type="button" aria-label="Screen shake" aria-pressed="true">Screen shake: On</button>
       <button id="numbers" type="button" aria-label="Damage numbers" aria-pressed="true">Damage numbers: On</button>
+      <button id="debug" type="button" aria-label="Debug run logs" aria-pressed="false">Debug logs: Off</button>
       <button id="endless" type="button" hidden aria-label="Endless mode" aria-pressed="false">Endless: Off</button>
     </div>
     <div id="sfx">

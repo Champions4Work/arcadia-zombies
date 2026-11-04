@@ -90,7 +90,8 @@ describe("difficulty ranks", () => {
     expect(killXp(Z_SHAMBLER, 0)).toBe(1);
     expect(killXp(Z_GHOUL, 0)).toBeGreaterThan(killXp(Z_SHAMBLER, 0));
     expect(killXp(Z_BRUTE, 0)).toBeGreaterThan(killXp(Z_GHOUL, 0));
-    expect(killXp(Z_SHAMBLER, 4)).toBe(killXp(Z_SHAMBLER, 0) + 4 * CURVE.xpPer);
+    expect(killXp(Z_SHAMBLER, 4)).toBe(killXp(Z_SHAMBLER, 0) + CURVE.xpCap * CURVE.xpPer);
+    expect(killXp(Z_SHAMBLER, 8)).toBe(killXp(Z_SHAMBLER, 0));
     expect(scoreMul(3)).toBe(CURVE.scoreBase + 3 * CURVE.scorePer);
     expect(mixWeight(4, Z_BRUTE)).toBeGreaterThan(mixWeight(0, Z_BRUTE));
     expect(mixWeight(4, Z_SHAMBLER)).toBeLessThan(mixWeight(0, Z_SHAMBLER));

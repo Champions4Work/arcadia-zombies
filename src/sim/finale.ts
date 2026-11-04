@@ -117,7 +117,7 @@ export function isWon(w: World): boolean {
 }
 
 export function killCount(w: World): number {
-  return of(w).kills;
+  return w.kills;
 }
 
 export function tallyKill(w: World): void {
@@ -301,6 +301,7 @@ function hurtPlayer(w: World, dmg: number): void {
     return;
   }
   w.hp -= dmg;
+  w.hurt += dmg;
   w.events[EV_HURT] = 1;
   juicePlayerHurt();
   fell(w);
