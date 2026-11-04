@@ -25,7 +25,7 @@ describe("r27 art-bible pass", () => {
     const yard = readFileSync("src/render/yard-fx.ts", "utf8");
     const brassProps = yard.slice(yard.indexOf("const PROPS:"), yard.indexOf("const TANKS"));
     const brassPipes = yard.slice(yard.indexOf("const PIPE_RUNS = ["), yard.indexOf("const BELT_H"));
-    expect(yard.includes("y: 420")).toBe(true);
+    expect(yard.includes("y: 658")).toBe(true);
     expect(yard.includes("paintBrassGrade")).toBe(true);
     expect(brassProps.includes("breakable_gear_pylon")).toBe(true);
     expect(brassProps.includes("breakable_boiler")).toBe(true);
@@ -38,7 +38,7 @@ describe("r27 art-bible pass", () => {
     expect(yardPropHits(YARD_CLEAR.x0, YARD_CLEAR.y0, YARD_CLEAR.x1, YARD_CLEAR.y1)).toBe(0);
     expect(yardPropHits(PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(20);
     const depth = readFileSync("src/sim/depth.ts", "utf8");
-    expect(depth.includes("[296, 420, 368, 0]")).toBe(true);
+    expect(depth.includes("[296, 658, 368, 0]")).toBe(true);
     expect(depth.includes("OB_CRATE, 380, 260")).toBe(false);
     expect(depth.includes("OB_BARREL, 420, 480")).toBe(false);
   });

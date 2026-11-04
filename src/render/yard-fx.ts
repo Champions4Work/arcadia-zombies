@@ -11,11 +11,12 @@ const BUILDINGS = [
 ];
 
 const BELTS = [
-  { x: 296, y: 420, w: 368, vert: 0 },
+  { x: 296, y: 658, w: 368, vert: 0 },
 ];
 
 const PIPE_RUNS = [
   { x: 296, y: 232, len: 368, vert: 0 },
+  { x: 296, y: 648, len: 368, vert: 0 },
 ];
 
 const BELT_H = 72;
@@ -25,24 +26,36 @@ const BUILD_SCALE = 1.28;
 const TANK_SCALE = 1.2;
 
 const PROPS: { id: string; x: number; y: number }[] = [
+  { id: "window_lit", x: 324, y: 188 },
   { id: "window_lit", x: 348, y: 196 },
   { id: "window_lit", x: 412, y: 192 },
   { id: "window_lit", x: 476, y: 196 },
   { id: "window_lit", x: 540, y: 192 },
+  { id: "window_lit", x: 636, y: 188 },
   { id: "lamp", x: 360, y: 208 },
   { id: "lamp", x: 480, y: 204 },
   { id: "lamp", x: 600, y: 208 },
   { id: "breakable_gear_pylon", x: 308, y: 520 },
+  { id: "decal_grate", x: 304, y: 640 },
   { id: "decal_grate", x: 368, y: 302 },
   { id: "decal_grate", x: 592, y: 302 },
+  { id: "decal_grate", x: 656, y: 640 },
   { id: "valve_steam", x: 308, y: 468 },
+  { id: "valve_steam", x: 308, y: 612 },
   { id: "decal_vent", x: 310, y: 450 },
+  { id: "decal_vent", x: 310, y: 628 },
+  { id: "conveyor", x: 304, y: 656 },
   { id: "pipes_blue_tank", x: 308, y: 596 },
+  { id: "blue_puddle", x: 312, y: 584 },
   { id: "breakable_boiler", x: 306, y: 648 },
   { id: "breakable_gear_pylon", x: 652, y: 520 },
   { id: "valve_steam", x: 654, y: 468 },
+  { id: "valve_steam", x: 654, y: 612 },
   { id: "decal_vent", x: 656, y: 450 },
+  { id: "decal_vent", x: 656, y: 628 },
+  { id: "conveyor", x: 656, y: 656 },
   { id: "pipes_blue_tank", x: 654, y: 596 },
+  { id: "blue_puddle", x: 648, y: 584 },
   { id: "breakable_boiler", x: 656, y: 648 },
 ];
 
@@ -57,8 +70,8 @@ const POOLS = [
   { x: 360, y: 208 },
   { x: 480, y: 204 },
   { x: 600, y: 208 },
-  { x: 332, y: 340 },
-  { x: 628, y: 340 },
+  { x: 312, y: 584 },
+  { x: 648, y: 584 },
 ];
 
 const STEAM_VENTS = [
@@ -71,6 +84,18 @@ const STEAM_VENTS = [
 
 export const YARD_CLEAR = { x0: 352, y0: 318, x1: 608, y1: 638 };
 export const PHONE_CAM = { x0: 300, y0: 0, x1: 660, y1: 780 };
+
+const FIGHT_BAND_CRATE = new Set(["crate", "crate_stack", "barrel"]);
+
+export function yardCratePropsInClear(): number {
+  if (yardBound !== ZONE_BRASS) return 0;
+  let n = 0;
+  for (const p of PROPS) {
+    if (!FIGHT_BAND_CRATE.has(p.id)) continue;
+    if (p.x >= YARD_CLEAR.x0 && p.x <= YARD_CLEAR.x1 && p.y >= YARD_CLEAR.y0 && p.y <= YARD_CLEAR.y1) n++;
+  }
+  return n;
+}
 
 const BOILER_BUILDINGS = [
   { x: 360, y: 214 },
@@ -630,7 +655,10 @@ export function paintYardLive(
   }
   for (const p of propsOf()) {
     if (!visible(p.x, p.y, camX, camY, vw, vh, 90)) continue;
-    if (p.id === "breakable_gear_pylon" || p.id === "breakable_boiler" || p.id === "pipes_blue_tank") {
+    if (
+      p.id === "breakable_gear_pylon" || p.id === "breakable_boiler" || p.id === "pipes_blue_tank"
+      || p.id === "blue_puddle"
+    ) {
       bluePool(ctx, p.x, p.y + 8);
     }
     paintShadow(ctx, p.x, p.y, 12, 4);

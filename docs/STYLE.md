@@ -23,6 +23,10 @@ Closed **[#87](https://github.com/Champions4Work/arcadia-zombies/pull/87)** prov
 
 **Required fix:** blit **`tile_stone_seamless`** (packed from `art/az_art_v2/tile_stone_seamless.png`) across the yard in `paintGround`, and use **`tile_metal_seamless`** only for rail/grate cells—not a horizontal brass pad or code-drawn cobble fill. Brass district disables `brassPad` metal cells; metal tiles stay on tracks. Do not ship fill-only floor plates as the primary yard read.
 
+## Round 31 — open fight band, dense perimeter
+
+Review **`docs/reviews/r31/`** against r30. The brass yard keeps **`tile_stone_seamless`** (#90) but moves the **power-up belt to `y: 658`** (bottom edge) so **`CARGO_*` crates ride and land outside `YARD_CLEAR`**, not through the hunter lane. **`reviewDepth`** parks a glowing **`crate_stack` on that perimeter belt**, not on blue pads in the center. Perimeter **`PROPS`** densify with **`window_lit`**, side **`conveyor`**, **`blue_puddle`**, duplicate **`pipes_blue_tank` / `valve_steam` / `decal_grate` / `decal_vent`** runs on both rails—no **`crate` / `barrel` / `crate_stack`** inside the vertical fight band. Coordinator **Read** must compare r31 play vs r30 before merge.
+
 ## References (art bible)
 
 Review size is 390×844 CSS pixels. These two files are the art bible. Every visual PR compares against both.

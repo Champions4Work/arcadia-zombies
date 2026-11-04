@@ -161,8 +161,8 @@ describe("gameplay depth hooks", () => {
     expect(cargoOn(w, slot)).toBe(1);
     expect(cargoPhase(w, slot)).toBe(CARGO_LAND);
     expect(Math.abs(cargoX(w, slot) - LANE_X)).toBeLessThan(3);
-    expect(cargoY(w, slot)).toBeGreaterThan(200);
-    expect(cargoY(w, slot)).toBeLessThan(500);
+    expect(cargoY(w, slot)).toBeGreaterThan(630);
+    expect(cargoY(w, slot)).toBeLessThan(690);
   });
 
   it("heals from a landed crate and caps silent belt upgrades", () => {
@@ -219,14 +219,14 @@ describe("gameplay depth hooks", () => {
     expect(src.includes("decal_hazard")).toBe(false);
   });
 
-  it("parks a glowing crate in the review frame and keeps vent pads on the yard", () => {
+  it("parks a glowing crate on the perimeter belt and keeps vent pads on the yard", () => {
     const w = createWorld(6);
     reviewDepth(w);
     expect(cargoOn(w, 0)).toBe(1);
-    expect(cargoPhase(w, 0)).toBe(CARGO_LAND);
+    expect(cargoPhase(w, 0)).toBe(CARGO_RIDE);
     expect(cargoKind(w, 0)).toBe(CARGO_UPG);
-    expect(Math.abs(cargoX(w, 0) - 468)).toBeLessThan(0.1);
-    expect(Math.abs(cargoY(w, 0) - 404)).toBeLessThan(0.1);
+    expect(Math.abs(cargoX(w, 0) - 356)).toBeLessThan(0.1);
+    expect(Math.abs(cargoY(w, 0) - 658)).toBeLessThan(0.1);
     expect(ventCount(w)).toBeGreaterThanOrEqual(3);
     expect(ventX(w, 0)).toBeGreaterThan(0);
     expect(ventY(w, 0)).toBeGreaterThan(0);
