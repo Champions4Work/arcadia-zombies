@@ -4,6 +4,12 @@ import { INK, XP } from "../shell/theme";
 import { BELTS } from "../sim/belts";
 import { FEAT_LAMP, groundFeatureAt, groundFeatureCount } from "./ground";
 
+interface YardMark {
+  id: string;
+  x: number;
+  y: number;
+}
+
 const BUILDINGS = [
   { x: 360, y: 96 },
   { x: 480, y: 90 },
@@ -17,7 +23,7 @@ const BUILDINGS = [
   { x: 612, y: 520 },
 ];
 
-const PROPS: { id: string; x: number; y: number }[] = [
+const PROPS: readonly YardMark[] = [
   { id: "pipes_blue_tank", x: 348, y: 230 },
   { id: "pipes_blue_tank", x: 348, y: 310 },
   { id: "pipes_blue_tank", x: 348, y: 470 },
@@ -106,7 +112,7 @@ const PROPS: { id: string; x: number; y: number }[] = [
   { id: "breakable_gear_pylon", x: 620, y: 580 },
 ];
 
-const DECALS: { id: string; x: number; y: number }[] = [
+const DECALS: readonly YardMark[] = [
   { id: "decal_vent", x: 400, y: 256 },
   { id: "decal_vent", x: 560, y: 256 },
   { id: "decal_vent", x: 340, y: 250 },
