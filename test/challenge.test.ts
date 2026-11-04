@@ -45,6 +45,7 @@ describe("daily challenge", () => {
       const challenge = challengeAt(date);
       expect(challenge).toEqual(challengeForDay(utcDayKey(date)));
       expect(challenge.seed).toBeGreaterThan(0);
+      expect(challenge.seed).not.toBe(0x51ed0b);
       expect(challenge.mods & ~mask).toBe(0);
       let bits = 0;
       let left = challenge.mods;

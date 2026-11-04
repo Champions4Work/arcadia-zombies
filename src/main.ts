@@ -441,7 +441,7 @@ function launch(seed: number, runMods: number, daily: string): void {
     applyWorkshop(world, shop);
     const jump = devSeconds(location.search, import.meta.env.DEV);
     if (jump > 0) armDevJump(world, jump);
-    setRunEndless(world, crown.endless);
+    setRunEndless(world, daily ? false : crown.endless);
     resetShake();
     acc = 0;
     pendingPick = 0;
@@ -689,7 +689,7 @@ addEventListener("keydown", (e) => {
   if (k === " " || k === "enter") {
     if (session.phase !== PHASE_PLAY) {
       const target = e.target;
-      if (target instanceof HTMLElement && target.closest("#roster")) return;
+      if (target instanceof HTMLElement && (target.closest("#roster") || target.closest("#daily"))) return;
       e.preventDefault();
       startRun();
     }

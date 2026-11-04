@@ -46,9 +46,14 @@ function mixDay(day: string): number {
   return hash >>> 0;
 }
 
+const ARENA_SALT = 0x51ed0b;
+const SEED_BUMP = 0x9e3779b9;
+
 export function challengeForDay(day: string): Challenge {
   const hash = mixDay(day);
-  const seed = hash || 1;
+  let seed = hash >>> 0;
+  if (seed === 0 || seed === ARENA_SALT) seed = (seed ^ SEED_BUMP) >>> 0;
+  if (seed === 0) seed = 1;
   const pack = PACKS[hash % PACKS.length] ?? 0;
   return { day, seed, mods: clampMods(pack) };
 }
