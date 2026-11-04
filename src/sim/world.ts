@@ -66,6 +66,7 @@ export const createWorld = (seed: number, charId = CHAR_TINKER, mods = 0): World
     chestOpen: 0, chestCount: 0, chestT: 0, chestDur: 0, chestGold: 0, chestLinger: 0, chestCursor: 0,
     chestSeal: 0,
     ult: 0, ultBlast: 0, ultCd: 0,
+    dashT: 0, dashCd: 0, dashUx: 0, dashUy: 1,
     boss: createBoss(),
   };
   attachFinale(world);

@@ -51,7 +51,7 @@ export function paintVeil(ctx: CanvasRenderingContext2D, vw = W, vh = H): void {
 export function hurtAlpha(cd: number): number {
   if (cd <= 0) return 0;
   const a = cd / 90;
-  const cap = a > 0.4 ? 0.4 : a;
+  const cap = a > 0.28 ? 0.28 : a;
   return reduceMotionOn() ? cap * HURT_SOFT : cap;
 }
 

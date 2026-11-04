@@ -2,6 +2,7 @@ import { EV_BOOM, EV_HURT, EV_LEVEL, EV_WAVE } from "../sim/types";
 import { reduceMotionOn } from "./motion";
 
 export const SHAKE_CAP = 8;
+export const PHONE_SHAKE_SCALE = 0.72;
 export const SHAKE_AMP = 0.55;
 export const TRAUMA_HURT = 0.7;
 export const TRAUMA_BIG = 0.4;
@@ -13,12 +14,26 @@ export const SHAKE_DT = 1 / 60;
 let trauma = 0;
 let clock = 0;
 let seenTick = -1;
+let capScale = 1;
+let decayBoost = 1;
 const xy: [number, number] = [0, 0];
+
+export function setShakeView(viewW: number): void {
+  if (viewW > 0 && viewW < 420) {
+    capScale = PHONE_SHAKE_SCALE;
+    decayBoost = 1.15;
+  } else {
+    capScale = 1;
+    decayBoost = 1;
+  }
+}
 
 export function resetShake(): void {
   trauma = 0;
   clock = 0;
   seenTick = -1;
+  capScale = 1;
+  decayBoost = 1;
   xy[0] = 0;
   xy[1] = 0;
 }
@@ -49,8 +64,9 @@ export function punchShake(amount: number): void {
 }
 
 function clampAxis(v: number): number {
-  if (v > SHAKE_CAP) return SHAKE_CAP;
-  if (v < -SHAKE_CAP) return -SHAKE_CAP;
+  const cap = SHAKE_CAP * capScale;
+  if (v > cap) return cap;
+  if (v < -cap) return -cap;
   return v;
 }
 
@@ -61,15 +77,16 @@ function axis(seed: number, t: number): number {
 export function shakeOffset(magnitude: number, tick: number): [number, number] {
   const t = tick * 0.033;
   const shake = magnitude * magnitude;
-  xy[0] = clampAxis(SHAKE_CAP * shake * axis(1, t));
-  xy[1] = clampAxis(SHAKE_CAP * shake * axis(2.1, t));
+  const cap = SHAKE_CAP * capScale;
+  xy[0] = clampAxis(cap * shake * axis(1, t));
+  xy[1] = clampAxis(cap * shake * axis(2.1, t));
   return xy;
 }
 
 export function decayTrauma(dt: number): number {
   if (trauma <= 0) return 0;
   const step = dt > 0 ? dt : SHAKE_DT;
-  trauma *= Math.exp(-TRAUMA_DECAY * step);
+  trauma *= Math.exp(-TRAUMA_DECAY * decayBoost * step);
   if (trauma < TRAUMA_STOP) trauma = 0;
   return trauma;
 }

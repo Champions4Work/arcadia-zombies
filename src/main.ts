@@ -11,6 +11,7 @@ import { chestSkipKey } from "./render/chestFx";
 import { draw } from "./render/draw";
 import { abilityHit, pauseHit } from "./render/hud";
 import { ULT_KEY } from "./sim/ult";
+import { DASH_KEY } from "./sim/dash";
 import { bootSfx, persistSfx, playSfxCue, playUiClick, playWorldSfx, resetSfxPlayback, setSfxVolume, sfxMuted, sfxVolume, toggleSfxMuted } from "./render/sfx";
 import { CUE_BOSS, CUE_CLICK, CUE_LEVEL, CUE_PICK, CUE_SHIELD, sfxMuteLabel, sfxVolumePercent } from "./render/sfx-cues";
 import { audioHeld, holdAudio, setMuted, unlockAudio } from "./render/sound";
@@ -286,13 +287,15 @@ results.onCopy(() => {
   }
 });
 const keys = new Set<string>();
-const input: Input = { dx: 0, dy: 0, pick: 0, reroll: 0, skip: 0, ult: 0 };
+const input: Input = { dx: 0, dy: 0, pick: 0, reroll: 0, skip: 0, ult: 0, dash: 0 };
 const stick = createStick();
 let stickId = -1;
 let pendingPick = 0;
 let pendingReroll = 0;
 let pendingSkip = 0;
 let pendingUlt = 0;
+let pendingDash = 0;
+let stickPeak = 0;
 let lastScrap = 0;
 const STEP_MS = 1000 / 60;
 let acc = 0;
@@ -775,6 +778,11 @@ addEventListener("keydown", (e) => {
     pendingSkip = 1;
     return;
   }
+  if (session.phase === PHASE_PLAY && !world.chestOpen && !world.choosing && k === DASH_KEY && !e.repeat) {
+    e.preventDefault();
+    pendingDash = 1;
+    return;
+  }
   if (session.phase === PHASE_PLAY && !world.chestOpen && !world.choosing && k === ULT_KEY && !e.repeat) {
     e.preventDefault();
     pendingUlt = 1;
@@ -862,6 +870,7 @@ addEventListener("pointerdown", (e) => {
   const chrome = phoneChrome(viewNow().cssW, viewNow().cssH, 0, 0, frame);
   const origin = clampStick(e.clientX, e.clientY, chrome.joyR, frame);
   stickId = e.pointerId;
+  stickPeak = 0;
   pressStick(stick, origin.x, origin.y);
   input.dx = 0;
   input.dy = 0;
@@ -870,11 +879,15 @@ addEventListener("pointermove", (e) => {
   if (session.phase === PHASE_PLAY && e.cancelable && !fromHud(e.target)) e.preventDefault();
   if (!stick.on || e.pointerId !== stickId) return;
   moveStick(stick, e.clientX, e.clientY, phoneChrome(viewNow().cssW, viewNow().cssH).joyR);
+  const mag = Math.hypot(stick.dx, stick.dy);
+  if (mag > stickPeak) stickPeak = mag;
   input.dx = stick.dx;
   input.dy = stick.dy;
 });
 addEventListener("pointerup", (e) => {
   if (e.pointerId !== stickId) return;
+  if (session.phase === PHASE_PLAY && stickPeak >= 0.88) pendingDash = 1;
+  stickPeak = 0;
   stickId = -1;
   liftStick(stick);
   input.dx = 0;
@@ -927,6 +940,7 @@ function frame(now: number): void {
       input.reroll = pendingReroll;
       input.skip = pendingSkip;
       input.ult = pendingUlt;
+      input.dash = pendingDash;
       step(world, input);
       noteKills(tracker, world.events[EV_KILL] ?? 0);
       if (shouldSample(world.tick, logTick, runLog.samples.length)) {
@@ -938,10 +952,12 @@ function frame(now: number): void {
       pendingReroll = 0;
       pendingSkip = 0;
       pendingUlt = 0;
+      pendingDash = 0;
       input.pick = 0;
       input.reroll = 0;
       input.skip = 0;
       input.ult = 0;
+      input.dash = 0;
       acc -= STEP_MS;
       const reached = noteWave(bestWave, world.wave);
       const waveUp = reached !== bestWave;
@@ -1009,7 +1025,7 @@ function frame(now: number): void {
     tickXpGain(16, hud, world.xp);
   }
   const showHud = session.phase === PHASE_PLAY || session.phase === PHASE_PAUSE;
-  draw(ctx, world, { hud: showHud, shake: session.shake && !session.reduceMotion });
+  draw(ctx, world, { hud: showHud, shake: session.shake && !session.reduceMotion, blendMs: acc });
   syncPlayFocus();
   placeJoy();
   requestAnimationFrame(frame);

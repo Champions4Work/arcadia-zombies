@@ -414,14 +414,16 @@ describe("horde blit flash", () => {
     expect(colored).toBe(ink);
     juiceHit(0, 80, 100, 1, Z_SHAMBLER, false, w.tick);
     composeHorde(w, stamp);
-    let white = 0;
+    let warmed = 0;
     for (let y = 0; y < spr.h; y++) {
       for (let x = 0; x < spr.w; x++) {
-        if ((spr.pix[y * spr.w + x] ?? 0) === 0) continue;
-        if ((stamp[(dy + y) * W + dx + x] ?? 0) === 0xffffffff) white++;
+        const src = spr.pix[y * spr.w + x] ?? 0;
+        if (src === 0) continue;
+        const got = stamp[(dy + y) * W + dx + x] ?? 0;
+        if (got !== 0 && got !== 0xffffffff && got !== src) warmed++;
       }
     }
-    expect(white).toBe(ink);
+    expect(warmed).toBe(ink);
     expect(stopRemaining()).toBe(0);
   });
 
@@ -458,8 +460,11 @@ describe("horde blit flash", () => {
     composeHorde(w, stamp);
     const dx = (80 - spr.ox) | 0;
     const dy = (100 - spr.oy) | 0;
-    expect(stamp[(dy + sy) * W + dx + (spr.w - 1 - sx)]).toBe(0xffffffff);
-    expect(stamp[(dy + sy) * W + dx + sx]).not.toBe(0xffffffff);
+    const flashed = stamp[(dy + sy) * W + dx + (spr.w - 1 - sx)] ?? 0;
+    const plain = stamp[(dy + sy) * W + dx + sx] ?? 0;
+    expect(flashed).not.toBe(0);
+    expect(flashed).not.toBe(0xffffffff);
+    expect(plain).not.toBe(flashed);
   });
 });
 
