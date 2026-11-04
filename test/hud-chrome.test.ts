@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { createWorld } from "../src/sim/world";
 import { drawHud } from "../src/render/hud";
 import { bindHud, layoutHud } from "../src/shell/hud-layout";
@@ -66,5 +67,14 @@ describe("phone HUD chrome", () => {
     expect(texts).not.toContain("Q");
     expect(texts).not.toContain("E");
     expect(texts).not.toContain("R");
+  });
+
+  it("does not fill a same-color disc under the heart glyph", () => {
+    const hud = readFileSync(new URL("../src/render/hud.ts", import.meta.url), "utf8");
+    const start = hud.indexOf("function drawHealth");
+    const body = hud.slice(start, hud.indexOf("function drawXp"));
+    expect(body.includes("heartIcon")).toBe(true);
+    expect(body.includes("ctx.arc(cx, cy, r * 0.58")).toBe(false);
+    expect(body.includes("low ? DANGER : STEAM")).toBe(true);
   });
 });

@@ -127,11 +127,7 @@ function drawHealth(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   ctx.lineWidth = 3.4;
   ctx.stroke();
   ringMeter(ctx, cx, cy, r, frac, low ? DANGER : HEALTH);
-  ctx.beginPath();
-  ctx.arc(cx, cy, r * 0.58, 0, Math.PI * 2);
-  ctx.fillStyle = low ? DANGER : HEALTH;
-  ctx.fill();
-  heartIcon(ctx, cx, cy + 1, r * 1.05, low ? DANGER : HEALTH);
+  heartIcon(ctx, cx, cy + 1, r * 0.62, low ? DANGER : STEAM);
   if (w.meta.revive > 0) ink(ctx, "REV", cx, box.y + 8, 9, COPPER, "center");
 }
 
