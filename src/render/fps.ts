@@ -12,6 +12,10 @@ const GLYPH: Record<string, number> = {
   F: 0b111100110100100,
   P: 0b110101110100100,
   S: 0b011100010001110,
+  A: 0b010101111101101,
+  I: 0b111010010010111,
+  L: 0b100100100100111,
+  E: 0b111100111100111,
   "-": 0b000000111000000,
   " ": 0,
 };
@@ -21,6 +25,8 @@ let last = 0;
 let acc = 0;
 let frames = 0;
 let shown = -1;
+let debugHud = false;
+let sendFails = 0;
 
 export function fpsEnabled(): boolean {
   return on;
@@ -36,6 +42,8 @@ export function resetFps(): void {
   acc = 0;
   frames = 0;
   shown = -1;
+  debugHud = false;
+  sendFails = 0;
 }
 
 export function toggleFps(): boolean {
@@ -49,6 +57,21 @@ export function toggleFps(): boolean {
 
 export function toggleFromKey(key: string, repeat: boolean): boolean {
   return !repeat && key.toLowerCase() === "f";
+}
+
+export function setDebugHud(hud: boolean): void {
+  debugHud = hud;
+}
+
+export function noteSendFails(n: number): void {
+  sendFails = n < 0 ? 0 : n | 0;
+}
+
+export function overlayLines(fpsOn: boolean, fps: number, fails: number, hud: boolean): string[] {
+  const lines: string[] = [];
+  if (fpsOn) lines.push(fps < 0 ? "FPS --" : `FPS ${fps}`);
+  if (hud || fails > 0) lines.push(`FAIL ${fails}`);
+  return lines;
 }
 
 export function noteFrame(now: number): void {
@@ -79,11 +102,15 @@ function glyph(c: CanvasRenderingContext2D, x: number, y: number, ch: string, co
 }
 
 export function paintFps(c: CanvasRenderingContext2D): void {
-  if (!on) return;
-  const text = shown < 0 ? "FPS --" : `FPS ${shown}`;
+  const lines = overlayLines(on, shown, sendFails, debugHud);
+  if (lines.length === 0) return;
   const x0 = 8;
   const y0 = 58;
-  c.fillStyle = "#120c08";
-  c.fillRect(x0 - 2, y0 - 2, text.length * 4 + 4, 9);
-  for (let i = 0; i < text.length; i++) glyph(c, x0 + i * 4, y0, text.charAt(i), "#e8c878");
+  for (let row = 0; row < lines.length; row++) {
+    const text = lines[row] ?? "";
+    const y = y0 + row * 10;
+    c.fillStyle = "#120c08";
+    c.fillRect(x0 - 2, y - 2, text.length * 4 + 4, 9);
+    for (let i = 0; i < text.length; i++) glyph(c, x0 + i * 4, y, text.charAt(i), "#e8c878");
+  }
 }

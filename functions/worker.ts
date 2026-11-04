@@ -1,4 +1,4 @@
-import { acceptLog, jsonBody, listRuns, parseLimit, rejectBody, saveRun } from "../src/api/runs";
+import { dispatchRuns, jsonBody } from "../src/api/runs";
 
 export interface Env {
   ASSETS: { fetch(request: Request): Promise<Response> };
@@ -26,27 +26,11 @@ export default {
 };
 
 async function handleRuns(request: Request, url: URL, env: Env): Promise<Response> {
-  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
-  if (!env.RUNS) return reply(503, { error: "runs store missing" });
-  if (request.method === "GET") {
-    const rows = await listRuns(env.RUNS, parseLimit(url));
-    return reply(200, { runs: rows });
-  }
-  if (request.method !== "POST") return reply(405, { error: "method" });
-  const raw = await request.text();
-  const banned = rejectBody(raw);
-  if (banned) return reply(400, { error: banned });
-  let body: unknown;
-  try {
-    body = JSON.parse(raw);
-  } catch {
-    return reply(400, { error: "json" });
-  }
-  if (!acceptLog(body)) return reply(400, { error: "schema" });
+  const raw = request.method === "POST" ? await request.text() : "";
   const id = `${Date.now().toString(36)}${Math.floor(Math.random() * 1e9).toString(36)}`;
-  const row = await saveRun(env.RUNS, body, Date.now(), id);
-  if (!row) return reply(400, { error: "schema" });
-  return reply(201, { id: row.id });
+  const result = await dispatchRuns(request.method, url, raw, env.RUNS, Date.now(), id);
+  if (result.status === 204) return new Response(null, { status: 204, headers: CORS });
+  return reply(result.status, result.data);
 }
 
 function reply(status: number, data: unknown): Response {

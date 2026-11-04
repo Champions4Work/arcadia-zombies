@@ -62,10 +62,57 @@ export function jsonBody(status: number, data: unknown): { status: number; body:
   return { status, body: JSON.stringify(data) };
 }
 
+const BANNED_KEYS = new Set(["ip", "email", "userAgent"]);
+
 export function rejectBody(raw: string): string | null {
   if (raw.length > BODY_CAP) return "too large";
-  if (raw.includes("email") || raw.includes("ip") || raw.includes("userAgent")) return "personal";
+  try {
+    if (hasBannedKey(JSON.parse(raw))) return "personal";
+  } catch {
+    return null;
+  }
   return null;
+}
+
+export async function dispatchRuns(
+  method: string,
+  url: URL,
+  raw: string,
+  store: RunStore | undefined,
+  now: number,
+  id: string,
+): Promise<{ status: number; data: unknown }> {
+  if (method === "OPTIONS") return { status: 204, data: null };
+  if (!store) return { status: 503, data: { error: "runs store missing" } };
+  if (method === "GET") return { status: 200, data: { runs: await listRuns(store, parseLimit(url)) } };
+  if (method !== "POST") return { status: 405, data: { error: "method" } };
+  const banned = rejectBody(raw);
+  if (banned) return { status: 400, data: { error: banned } };
+  let body: unknown;
+  try {
+    body = JSON.parse(raw);
+  } catch {
+    return { status: 400, data: { error: "json" } };
+  }
+  if (!acceptLog(body)) return { status: 400, data: { error: "schema" } };
+  const row = await saveRun(store, body, now, id);
+  if (!row) return { status: 400, data: { error: "schema" } };
+  return { status: 201, data: { id: row.id } };
+}
+
+function hasBannedKey(v: unknown): boolean {
+  if (Array.isArray(v)) {
+    for (const item of v) {
+      if (hasBannedKey(item)) return true;
+    }
+    return false;
+  }
+  if (!v || typeof v !== "object") return false;
+  for (const [key, child] of Object.entries(v as Record<string, unknown>)) {
+    if (BANNED_KEYS.has(key)) return true;
+    if (hasBannedKey(child)) return true;
+  }
+  return false;
 }
 
 export function acceptLog(body: unknown): boolean {

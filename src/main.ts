@@ -1,5 +1,5 @@
 import { awardRun, applyWorkshop, emptyWorkshop, loadWorkshop, saveWorkshop, tryBuy } from "./meta/workshop";
-import { fpsReadout, noteFrame, toggleFps, toggleFromKey } from "./render/fps";
+import { fpsReadout, noteFrame, noteSendFails, setDebugHud, toggleFps, toggleFromKey } from "./render/fps";
 import { setNumbersOn, stopRemaining } from "./render/juice";
 import { resetXpGain, syncXpGain, tickXpGain } from "./render/xp-gain";
 import { bootMusic, mountMusicRow, musicMuted, persistMusic, syncMusic, type MusicSnap } from "./render/music";
@@ -29,6 +29,7 @@ import {
   saveDebug,
   shouldSample,
 } from "./shell/run-log";
+import { emptySendTally, fetchPoster, sendRunLog } from "./shell/run-send";
 import { bindViewport, readInsets, readViewport, ZERO_INSETS } from "./shell/viewport";
 import { mountPicker, paintPicker } from "./shell/picker";
 import {
@@ -130,6 +131,9 @@ let runLog = emptyLog();
 let logTick = 0;
 const fpsBuf: number[] = [];
 let debugOn = store ? loadDebug(store) : false;
+const sendTally = emptySendTally();
+setDebugHud(debugOn);
+noteSendFails(sendTally.fails);
 const codex = store ? loadCodex(store) : emptyCodex();
 let codexDrawn = "";
 function today(): string {
@@ -579,6 +583,8 @@ numbersBtn.addEventListener("click", numbers);
 debugBtn.addEventListener("click", () => {
   unlockAudio();
   debugOn = !debugOn;
+  setDebugHud(debugOn);
+  noteSendFails(sendTally.fails);
   if (store) saveDebug(store, debugOn);
   playUiClick();
   paint();
@@ -785,7 +791,7 @@ function frame(now: number): void {
       input.ult = pendingUlt;
       step(world, input);
       noteKills(tracker, world.events[EV_KILL] ?? 0);
-      if (shouldSample(world.tick, logTick)) {
+      if (shouldSample(world.tick, logTick, runLog.samples.length)) {
         logTick = world.tick;
         const vp = viewNow();
         pushSample(runLog, sampleRun(world, { w: vp.cssW, h: vp.cssH }, fpsBuf));
@@ -822,11 +828,9 @@ function frame(now: number): void {
         const endView = viewNow();
         const cause = deathCause(world, isWon(world), false);
         pushSample(runLog, sampleRun(world, { w: endView.cssW, h: endView.cssH }, fpsBuf, cause));
-        void fetch(RUNS_PATH, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(runLog),
-        }).catch(() => undefined);
+        void sendRunLog(RUNS_PATH, runLog, fetchPoster, sendTally).then(() => {
+          noteSendFails(sendTally.fails);
+        });
         const settled = settleRun(records, captureRun({
           score: world.score,
           time: world.tick,
