@@ -99,10 +99,11 @@ export function draw(c: CanvasRenderingContext2D, w: World, opts?: { hud?: boole
     c.fillRect(0, 0, viewW, viewH);
   }
   if (w.hurtCd > 0) paintHurt(c, w.hurtCd, viewW, viewH);
-  const vig = c.createRadialGradient(viewW * 0.5, viewH * 0.48, viewH * 0.18, viewW * 0.5, viewH * 0.5, viewH * 0.82);
+  const vig = c.createRadialGradient(viewW * 0.5, viewH * 0.48, viewH * 0.16, viewW * 0.5, viewH * 0.5, viewH * 0.86);
   vig.addColorStop(0, "rgba(0,0,0,0)");
-  vig.addColorStop(0.62, "rgba(8,8,12,0.14)");
-  vig.addColorStop(1, "rgba(6,6,10,0.16)");
+  vig.addColorStop(0.48, "rgba(8,10,16,0.12)");
+  vig.addColorStop(0.74, "rgba(6,8,14,0.46)");
+  vig.addColorStop(1, "rgba(4,6,12,0.68)");
   c.fillStyle = vig;
   c.fillRect(0, 0, viewW, viewH);
   paintLayers(c, w, LAYER_FRONT);

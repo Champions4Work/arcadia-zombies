@@ -1,4 +1,4 @@
-import { blitSheet, steamFrame } from "../art/sheet";
+import { blitSheet } from "../art/sheet";
 import { paintShadow } from "../art/look";
 import { INK, XP } from "../shell/theme";
 import { FEAT_LAMP, groundFeatureAt, groundFeatureCount } from "./ground";
@@ -90,8 +90,6 @@ const POOLS = [
 const STEAM_VENTS = [
   { x: 348, y: 188 },
   { x: 348, y: 268 },
-  { x: 612, y: 188 },
-  { x: 612, y: 268 },
 ];
 
 export const YARD_CLEAR = { x0: 368, y0: 188, x1: 588, y1: 428 };
@@ -102,29 +100,29 @@ function visible(x: number, y: number, camX: number, camY: number, vw: number, v
 }
 
 function lampPool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  const g = ctx.createRadialGradient(x, y - 18, 2, x, y + 8, 110);
-  g.addColorStop(0, "rgba(255,200,90,0.96)");
-  g.addColorStop(0.32, "rgba(255,140,36,0.58)");
+  const g = ctx.createRadialGradient(x, y - 10, 2, x, y + 10, 58);
+  g.addColorStop(0, "rgba(255,186,96,0.42)");
+  g.addColorStop(0.45, "rgba(255,140,48,0.18)");
   g.addColorStop(1, "rgba(10,10,14,0)");
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.ellipse(x, y + 8, 104, 60, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y + 10, 52, 32, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
 
 function doorPool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  const g = ctx.createRadialGradient(x, y + 8, 2, x, y + 22, 86);
-  g.addColorStop(0, "rgba(255,186,72,0.9)");
-  g.addColorStop(0.4, "rgba(255,120,28,0.4)");
+  const g = ctx.createRadialGradient(x, y + 10, 2, x, y + 20, 48);
+  g.addColorStop(0, "rgba(255,176,80,0.34)");
+  g.addColorStop(0.5, "rgba(255,130,40,0.14)");
   g.addColorStop(1, "rgba(10,10,14,0)");
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.ellipse(x, y + 22, 72, 42, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y + 20, 40, 24, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
@@ -142,6 +140,21 @@ function bluePool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   ctx.fill();
   blitSheet(ctx, "blue_puddle", x, y + 10);
   blitSheet(ctx, "blue_glow", x, y - 8);
+  ctx.restore();
+}
+
+function steamPuff(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number): void {
+  const lift = ((tick * 0.35) % 18);
+  ctx.save();
+  ctx.globalAlpha = 0.22;
+  ctx.fillStyle = "#7a8088";
+  ctx.beginPath();
+  ctx.ellipse(x, y - 6 - lift * 0.2, 9, 13, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 0.16;
+  ctx.beginPath();
+  ctx.ellipse(x + 5, y - 16 - lift * 0.25, 7, 10, 0.2, 0, Math.PI * 2);
+  ctx.fill();
   ctx.restore();
 }
 
@@ -199,7 +212,6 @@ export function paintYardLive(
     const f = groundFeatureAt(i);
     if (f.kind !== FEAT_LAMP) continue;
     if (!visible(f.x, f.y, camX, camY, vw, vh, 60)) continue;
-    lampPool(ctx, f.x, f.y);
     blitSheet(ctx, "lamp", f.x, f.y);
   }
   for (const b of BUILDINGS) {
@@ -237,10 +249,9 @@ export function paintYardLive(
     const cy = belt.vert ? belt.y + crateT : belt.y - 8;
     blitSheet(ctx, i & 1 ? "crate_stack" : "crate", cx, cy);
   }
-  const steam = steamFrame(tick);
   for (const vent of STEAM_VENTS) {
     if (!visible(vent.x, vent.y, camX, camY, vw, vh, 40)) continue;
-    blitSheet(ctx, steam, vent.x, vent.y);
+    steamPuff(ctx, vent.x, vent.y, tick);
   }
 }
 
