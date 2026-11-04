@@ -3,6 +3,7 @@ import { paintBehemoth, paintGearlord, paintWitch } from "./cast";
 import { paintTank } from "./tank";
 import { W, type World } from "../sim/types";
 import { LAYER_HUD, LAYER_MID, registerLayer } from "./plugins";
+import { font } from "./paint";
 const SOOT = "#120c08";
 const BRASS = "#c8963e";
 const BRASS_HI = "#e8c878";
@@ -116,7 +117,7 @@ function banner(c: CanvasRenderingContext2D, w: World): void {
   c.lineWidth = 2;
   c.strokeRect(16, 56, W - 32, 26);
   c.fillStyle = flash ? EMBER : BRASS_HI;
-  c.font = "bold 13px monospace";
+  c.font = font(13, 800);
   c.textAlign = "center";
   c.fillText(`WARNING  ${bossName(b.kind)}`, W / 2, 74);
   c.textAlign = "left";
@@ -140,7 +141,7 @@ function hpBar(c: CanvasRenderingContext2D, w: World): void {
   c.lineWidth = 2;
   c.strokeRect(x + 0.5, y + 0.5, bw - 1, bh - 1);
   c.fillStyle = BRASS_HI;
-  c.font = "bold 11px monospace";
+  c.font = font(12, 800);
   c.textAlign = "center";
   const hp = Math.max(0, b.hp | 0);
   c.fillText(`${bossName(b.kind)}  ${hp}/${b.maxHp | 0}`, W / 2, y + 13);

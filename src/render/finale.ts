@@ -46,7 +46,7 @@ function plate(ctx: CanvasRenderingContext2D, x: number, y: number, text: string
   ctx.lineWidth = 3;
   ctx.strokeStyle = OUTLINE;
   ctx.strokeText(text, x, y);
-  ctx.fillStyle = "#fff1c2";
+  ctx.fillStyle = "#f6eee2";
   ctx.fillText(text, x, y);
 }
 

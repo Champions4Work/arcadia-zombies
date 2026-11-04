@@ -1,5 +1,8 @@
+import { FONT_BODY, FONT_DISPLAY } from "../shell/theme";
+
 export const OUTLINE = "#1c120c";
-export const FONT = "sans-serif";
+export const FONT = FONT_DISPLAY;
+export const COPY_FONT = FONT_BODY;
 export const SCALE = 3;
 
 export interface Metal {
@@ -20,6 +23,10 @@ export const SKIN: Metal = { hi: "#ffe0c4", mid: "#f0b088", lo: "#c07858", edge:
 
 export function font(px: number, weight = 700): string {
   return `${weight} ${px}px ${FONT}`;
+}
+
+export function copyFont(px: number, weight = 600): string {
+  return `${weight} ${px}px ${COPY_FONT}`;
 }
 
 export function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number): void {
