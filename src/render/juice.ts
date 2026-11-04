@@ -16,6 +16,8 @@ export const STOP_HURT_MS = 50;
 export const STOP_CRIT_MS = 24;
 export const SHAKE_CRIT = 1.1;
 export const SHAKE_HIT = 0.55;
+export const SHAKE_BRUTE = 0.75;
+export const BLOOD_SPURT = 3;
 export const KNOCK_HIT = 3.4;
 export const KNOCK_CRIT = 6.5;
 export const STOP_BUDGET_MS = 100;
@@ -207,10 +209,18 @@ function spawnPart(x: number, y: number, vx: number, vy: number, gear: number): 
   pY[i] = y;
   pVx[i] = vx;
   pVy[i] = vy;
-  pLife[i] = 460;
+  pLife[i] = gear === 2 ? 280 : 460;
   pRot[i] = 0;
-  pSpin[i] = gear ? 11 : 4;
+  pSpin[i] = gear === 1 ? 11 : 4;
   pGear[i] = gear;
+}
+
+function spawnBlood(x: number, y: number, slot: number, tick: number): void {
+  const base = ((((slot | 0) * 13 + (tick | 0)) % 628) / 100);
+  for (let k = 0; k < BLOOD_SPURT; k++) {
+    const a = base + (k * 0.7) - 0.9;
+    spawnPart(x, y - 8, Math.cos(a) * (22 + k * 6), Math.sin(a) * 16 - 28, 2);
+  }
 }
 
 export function juicePlayerHurt(): void {
@@ -243,8 +253,10 @@ export function juiceHit(
   const crit = killed && (elite || boss);
   if (showNumbers) spawnNumber(x, y - 14, dealt, crit);
   if (dealt > 0) stampBlood(x, y, slot + tick);
+  if (dealt > 0 && !killed) spawnBlood(x, y, slot, tick);
   if (dealt >= 3 && !killed) grant(STOP_CRIT_MS);
   if (crit) punchShake(SHAKE_CRIT);
+  else if (boss && dealt > 0) punchShake(SHAKE_BRUTE);
   else if (dealt > 0) punchShake(SHAKE_HIT);
   if (slot >= 0 && slot < FLASH_CAP) {
     if ((flash[slot] ?? 0) <= 0) flashOn++;
@@ -379,6 +391,13 @@ export function drawJuice(c: CanvasRenderingContext2D): void {
         c.fillStyle = BRASS;
         c.fillRect(-4, -4, 8, 8);
         c.restore();
+      } else if ((pGear[i] ?? 0) === 2) {
+        c.fillStyle = "rgba(160,18,28,0.95)";
+        c.beginPath();
+        c.ellipse(x, y, 3.4, 2.6, pRot[i] ?? 0, 0, Math.PI * 2);
+        c.fill();
+        c.fillStyle = "rgba(210,36,42,0.88)";
+        c.fillRect((x - 1) | 0, (y - 2) | 0, 2, 3);
       } else {
         c.fillStyle = "rgba(255,140,40,0.45)";
         c.beginPath();

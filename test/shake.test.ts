@@ -1,9 +1,10 @@
-import { EV_HURT, EV_KILL, EV_LEVEL, EV_N, EV_SHOT, EV_WAVE, FX_FLASH, FX_PUFF } from "../src/sim/types";
+import { EV_BOOM, EV_HURT, EV_KILL, EV_LEVEL, EV_N, EV_SHOT, EV_WAVE, FX_FLASH, FX_PUFF } from "../src/sim/types";
 import { createWorld } from "../src/sim/world";
-import { juiceHit, resetJuice } from "../src/render/juice";
+import { juiceHit, resetJuice, SHAKE_BRUTE, SHAKE_HIT } from "../src/render/juice";
 import { setReduceMotion } from "../src/render/motion";
 import {
   SHAKE_CAP,
+  TRAUMA_BOOM,
   TRAUMA_DECAY,
   TRAUMA_HURT,
   absorbShake,
@@ -15,7 +16,7 @@ import {
   shakeOffset,
   shakePixels,
 } from "../src/render/shake";
-import { Z_SHAMBLER } from "../src/sim/types";
+import { Z_BRUTE, Z_SHAMBLER } from "../src/sim/types";
 import {
   createSession,
   loadStore,
@@ -74,6 +75,12 @@ describe("screen shake", () => {
     expect(impulseOf(big)).toBeLessThanOrEqual(1);
     expect(impulseOf(big)).toBeLessThan(impulseOf(hurt));
 
+    const boom = new Uint8Array(EV_N);
+    boom[EV_BOOM] = 1;
+    expect(impulseOf(boom)).toBeCloseTo(TRAUMA_BOOM);
+    expect(impulseOf(boom)).toBeGreaterThan(0);
+    expect(impulseOf(boom)).toBeLessThan(impulseOf(hurt));
+
     const slammed = shakeOffset(1, 3);
     expect(Math.abs(slammed[0])).toBeLessThanOrEqual(SHAKE_CAP);
     expect(Math.abs(slammed[1])).toBeLessThanOrEqual(SHAKE_CAP);
@@ -121,6 +128,17 @@ describe("screen shake", () => {
     expect(shakeEnergy()).toBeCloseTo(0.8);
     punchShake(1);
     expect(shakeEnergy()).toBe(1);
+  });
+
+  it("brute hits punch harder than a shambler tickle", () => {
+    resetShake();
+    resetJuice();
+    juiceHit(0, 10, 10, 1, Z_SHAMBLER, false, 0);
+    expect(shakeEnergy()).toBeCloseTo(SHAKE_HIT);
+    resetShake();
+    juiceHit(1, 10, 10, 1, Z_BRUTE, false, 1);
+    expect(shakeEnergy()).toBeCloseTo(SHAKE_BRUTE);
+    expect(SHAKE_BRUTE).toBeGreaterThan(SHAKE_HIT);
   });
 
   it("a crit hit punches shake and the setting still zeroes it", () => {

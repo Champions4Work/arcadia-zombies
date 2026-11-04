@@ -1,6 +1,7 @@
 import { composeHorde } from "../src/render/blit.hot";
 import { bg, buildSprites, zombieSprite } from "../src/render/horde-sprites";
 import {
+  BLOOD_SPURT,
   burstCount,
   CRIT_COLOR,
   damageNumbersOn,
@@ -227,7 +228,7 @@ describe("hit stop", () => {
     expect(numberCount()).toBe(1);
     expect(enemyFlash(0)).toBeGreaterThan(0);
     expect(enemyFlash(0)).toBeLessThanOrEqual(FLASH_MS);
-    expect(particleCount()).toBe(0);
+    expect(particleCount()).toBe(BLOOD_SPURT);
     expect(stopRemaining()).toBe(0);
     const tick = w.tick;
     step(w, idle);

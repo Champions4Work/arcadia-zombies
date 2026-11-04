@@ -51,14 +51,15 @@ function brassPad(c: number, r: number): number {
   if (r >= 8 && r <= 13 && c >= 9 && c <= 20) return 1;
   if (r >= 10 && r <= 11 && c >= 3 && c <= 52) return 1;
   if (r >= 12 && r <= 18 && c >= 48 && c <= 57) return 1;
-  if (r >= 20 && r <= 24 && c >= 28 && c <= 40) return 1;
+  if (r >= 20 && r <= 24 && c >= 2 && c <= 10) return 1;
+  if (r >= 20 && r <= 24 && c >= 50 && c <= 58) return 1;
   if (r >= 18 && r <= 22 && c >= 2 && c <= 10) return 1;
   if (r >= 30 && r <= 32 && c >= 16 && c <= 28) return 1;
   return 0;
 }
 
 function railH(r: number): number {
-  return r === 16 || r === 27 ? 1 : 0;
+  return r === 9 || r === 34 ? 1 : 0;
 }
 
 function railV(c: number): number {
@@ -127,8 +128,8 @@ function build(): void {
     }
   }
   forceVent(8, 10);
-  forceVent(22, 14);
-  forceVent(36, 12);
+  forceVent(8, 14);
+  forceVent(52, 12);
   forceVent(52, 20);
   forceVent(18, 28);
   forceVent(40, 32);
@@ -138,24 +139,24 @@ function build(): void {
   add(FEAT_PIPE, 920, 148, 80, 1);
   add(FEAT_PIPE, 40, 220, 180, 0);
   add(FEAT_PIPE, 40, 220, 70, 1);
-  add(FEAT_PIPE, 560, 360, 220, 0);
+  add(FEAT_PIPE, 40, 360, 180, 0);
   add(FEAT_PIPE, 780, 300, 110, 1);
-  add(FEAT_PIPE, 300, 500, 260, 0);
+  add(FEAT_PIPE, 40, 520, 200, 0);
   add(FEAT_PIPE, 880, 440, 160, 1);
   add(FEAT_LAMP, 56, 148, 72, 0);
   add(FEAT_LAMP, 188, 188, 68, 0);
   add(FEAT_LAMP, 352, 156, 74, 0);
-  add(FEAT_LAMP, 528, 208, 70, 0);
+  add(FEAT_LAMP, 332, 208, 70, 0);
   add(FEAT_LAMP, 708, 168, 76, 0);
   add(FEAT_LAMP, 868, 228, 68, 0);
   add(FEAT_LAMP, 248, 368, 80, 0);
   add(FEAT_LAMP, 648, 392, 78, 0);
-  add(FEAT_LAMP, 348, 210, 68, 0);
-  add(FEAT_LAMP, 600, 210, 68, 0);
+  add(FEAT_LAMP, 332, 210, 68, 0);
+  add(FEAT_LAMP, 628, 210, 68, 0);
   add(FEAT_LAMP, 348, 490, 68, 0);
   add(FEAT_LAMP, 620, 490, 68, 0);
   add(FEAT_GEAR, 120, 210, 14, 8);
-  add(FEAT_GEAR, 410, 250, 12, 7);
+  add(FEAT_GEAR, 332, 250, 12, 7);
   add(FEAT_GEAR, 610, 180, 15, 8);
   add(FEAT_GEAR, 790, 340, 13, 6);
   add(FEAT_GEAR, 330, 470, 16, 8);

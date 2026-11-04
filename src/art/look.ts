@@ -108,6 +108,25 @@ export function paintShadow(ctx: CanvasRenderingContext2D, x: number, y: number,
   ctx.restore();
 }
 
+export function walkBob(tick: number, moving: boolean): number {
+  if (!moving) return 0;
+  const frame = (tick >> 3) & 3;
+  if (frame === 1) return 2.2;
+  if (frame === 3) return 1.8;
+  if (frame === 2) return 0.4;
+  return 0;
+}
+
+export function shambleBob(tick: number, kind: number): number {
+  const rate = kind === 2 ? 0.16 : 0.28;
+  return Math.sin(tick * rate) * (kind === 2 ? 1.1 : 1.8);
+}
+
+export function shambleSway(tick: number, kind: number): number {
+  const rate = kind === 2 ? 0.09 : 0.17;
+  return Math.sin(tick * rate + 1.7) * (kind === 2 ? 0.035 : 0.07);
+}
+
 export function paintRifle(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -142,7 +161,7 @@ export function paintSignatureHero(
   shoot: boolean,
   tick: number,
 ): void {
-  const bob = moving ? Math.sin(tick * 0.35) * 1.6 : 0;
+  const bob = walkBob(tick, moving);
   const lean = Math.max(-0.16, Math.min(0.16, aimX * 0.14));
   const flip = aimX < 0;
   const s = HERO_DRAW_SCALE;
@@ -253,12 +272,13 @@ export function paintZombie(
   tick: number,
   flip: number,
 ): void {
-  const bob = Math.sin(tick * 0.28) * 1.8;
+  const bob = shambleBob(tick, kind);
+  const sway = shambleSway(tick, kind);
   const id = foeSpriteId(kind, elite);
   const spr = spriteOf(id);
   const scale = foeWorldScale(kind, spr?.["h"] ?? 32);
   paintShadow(ctx, x, y, 5 * scale, 2.1 * scale);
-  blitSheetLean(ctx, id, x, y, flip < 0, bob, 0, scale);
+  blitSheetLean(ctx, id, x, y, flip < 0, bob, sway, scale);
   if (kind !== 2) return;
   const destH = foeWorldH(kind);
   const cx = x;

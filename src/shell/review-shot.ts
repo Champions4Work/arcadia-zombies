@@ -1,3 +1,4 @@
+import { juiceHit } from "../render/juice";
 import { stampBlood, stampCasing } from "../render/stains";
 import { ARENA_H, ARENA_W } from "../sim/arena";
 import { Z_ELITE } from "../sim/foes";
@@ -12,15 +13,30 @@ export const REVIEW_RING = 58;
 
 const KINDS = [0, 0, 0, 0, 1, 0, 0, 0, 0, 0];
 
+let walkOn = false;
+
 export function wantsReviewShot(search = "", hash = ""): boolean {
-  return search.includes("shot=1") || hash === "#review";
+  return search.includes("shot=1") || search.includes("feel=1") || hash === "#review" || hash === "#feel";
+}
+
+export function wantsFeelShot(search = "", hash = ""): boolean {
+  return search.includes("feel=1") || hash === "#feel";
+}
+
+export function reviewWalkOn(): boolean {
+  return walkOn;
+}
+
+export function setReviewWalk(on: boolean): void {
+  walkOn = on;
 }
 
 export function reviewHorde(w: World): number {
+  walkOn = true;
   w.px = ARENA_W * 0.5;
   w.py = ARENA_H * 0.5;
-  w.aimX = 1;
-  w.aimY = 0;
+  w.aimX = 0.82;
+  w.aimY = -0.42;
   w.over = false;
   w.choosing = 0;
   w.hurtCd = 0;
@@ -70,11 +86,13 @@ export function reviewHorde(w: World): number {
     z.x[i] = w.px + dx;
     z.y[i] = w.py + dy;
     z.hp[i] = kind === Z_BRUTE || (kind & Z_ELITE) !== 0 ? 18 : 1;
-    z.vx[i] = 0;
+    z.vx[i] = (w.px - (z.x[i] ?? 0)) < 0 ? -0.2 : 0.2;
     z.vy[i] = 0;
     stampBlood(z.x[i] ?? 0, (z.y[i] ?? 0) + 6, i * 3);
     n++;
   }
+  juiceHit(3, z.x[3] ?? w.px, z.y[3] ?? w.py, 2, z.kind[3] ?? 0, false, w.tick, w.px, w.py);
+  juiceHit(7, z.x[7] ?? w.px, z.y[7] ?? w.py, 4, Z_BRUTE, false, w.tick, w.px, w.py);
   for (let c = 0; c < 24; c++) {
     stampCasing(w.px - 28 + ((c * 17) % 51), w.py + 4 + ((c * 13) % 23), c * 5);
   }

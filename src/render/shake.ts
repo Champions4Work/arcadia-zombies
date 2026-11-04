@@ -1,10 +1,11 @@
-import { EV_HURT, EV_LEVEL, EV_WAVE } from "../sim/types";
+import { EV_BOOM, EV_HURT, EV_LEVEL, EV_WAVE } from "../sim/types";
 import { reduceMotionOn } from "./motion";
 
 export const SHAKE_CAP = 2;
 export const SHAKE_AMP = 0.55;
 export const TRAUMA_HURT = 0.7;
 export const TRAUMA_BIG = 0.4;
+export const TRAUMA_BOOM = 0.45;
 export const TRAUMA_DECAY = 3.2;
 export const TRAUMA_STOP = 0.02;
 export const SHAKE_DT = 1 / 60;
@@ -30,6 +31,7 @@ export function impulseOf(events: ArrayLike<number>): number {
   let s = 0;
   if ((events[EV_HURT] ?? 0) > 0) s = TRAUMA_HURT;
   if ((events[EV_WAVE] ?? 0) > 0 || (events[EV_LEVEL] ?? 0) > 0) s = Math.max(s, TRAUMA_BIG);
+  if ((events[EV_BOOM] ?? 0) > 0) s = Math.max(s, TRAUMA_BOOM);
   return s > 1 ? 1 : s;
 }
 
