@@ -16,7 +16,7 @@ import { drawIcon } from "./icons";
 import { ultFill, ultReady } from "../sim/ult";
 import { heartIcon, hudType, ringMeter } from "../art/look";
 import { blitSheetFit } from "../art/sheet";
-import { BRASS, BRASS_HI, COPPER, CYAN, DANGER, FONT_BODY, HEALTH, INK, IRON, STEAM, XP } from "../shell/theme";
+import { BRASS, BRASS_HI, COPPER, CYAN, DANGER, FONT_BODY, INK, IRON, STEAM, XP } from "../shell/theme";
 import { drawWeaponRack } from "./weapons";
 import { drawXpBar } from "./xp-gain";
 import { zoneChapterAt, zoneTitleAt } from "../sim/zones";
@@ -118,14 +118,21 @@ function drawHealth(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   const cx = box.x + box.w / 2;
   const cy = box.y + box.h / 2;
   const r = Math.min(box.w, box.h) * 0.42;
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  ctx.fillStyle = "rgba(90,236,226,0.42)";
+  ctx.beginPath();
+  ctx.arc(cx, cy, r + 10, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
   blitSheetFit(ctx, "heart_ring", box.x - 8, box.y - 8, box.w + 16, box.h + 16);
   ctx.beginPath();
   ctx.arc(cx, cy, r + 4, 0, Math.PI * 2);
-  ctx.strokeStyle = BRASS;
+  ctx.strokeStyle = CYAN;
   ctx.lineWidth = 3.4;
   ctx.stroke();
-  ringMeter(ctx, cx, cy, r, frac, low ? DANGER : HEALTH);
-  heartIcon(ctx, cx, cy + 1, r * 0.62, low ? DANGER : STEAM);
+  ringMeter(ctx, cx, cy, r, frac, low ? DANGER : CYAN);
+  heartIcon(ctx, cx, cy + 1, r * 0.62, low ? DANGER : CYAN);
   if (w.meta.revive > 0) ink(ctx, "REV", cx, box.y + 8, 9, COPPER, "center");
 }
 

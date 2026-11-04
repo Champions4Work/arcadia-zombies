@@ -11,14 +11,14 @@ const BUILDINGS = [
 ];
 
 const BELTS = [
-  { x: 296, y: 420, w: 368, vert: 0 },
+  { x: 336, y: 188, w: 288, vert: 0 },
 ];
 
 const PIPE_RUNS = [
   { x: 296, y: 232, len: 368, vert: 0 },
 ];
 
-const BELT_H = 72;
+const BELT_H = 36;
 const GLASS_AT = [0.22, 0.5, 0.78];
 const VALVE = { x: 424, y: 232 };
 const VALVE_B = { x: 560, y: 232 };
@@ -495,9 +495,9 @@ function paintCrossBelt(
   w: number,
   tick: number,
 ): void {
-  ctx.fillStyle = "#14110e";
+  ctx.fillStyle = "#12161c";
   ctx.fillRect(x, y - BELT_H * 0.5, w, BELT_H);
-  ctx.fillStyle = "#2a2218";
+  ctx.fillStyle = "#1c242c";
   ctx.fillRect(x, y - BELT_H * 0.42, w, BELT_H * 0.84);
   ctx.strokeStyle = BRASS_LO;
   ctx.lineWidth = 3;

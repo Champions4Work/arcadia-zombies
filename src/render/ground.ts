@@ -524,6 +524,12 @@ export function paintGround(ctx: CanvasRenderingContext2D): void {
   ctx.globalCompositeOperation = "multiply";
   ctx.fillStyle = shade;
   ctx.fillRect(0, FLOOR0 * TILE, ARENA_W, ARENA_H - FLOOR0 * TILE);
+  ctx.fillStyle = "rgba(6,10,16,0.72)";
+  ctx.fillRect(280, 240, 400, 280);
+  ctx.restore();
+  ctx.save();
+  ctx.fillStyle = "rgba(14,20,28,0.5)";
+  ctx.fillRect(300, 250, 360, 260);
   ctx.restore();
   for (let r = FLOOR0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {

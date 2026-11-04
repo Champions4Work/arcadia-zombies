@@ -1,7 +1,7 @@
 import { paintShadow } from "../art/look";
 import { blitSheet } from "../art/sheet";
 import {
-  CARGO_LAND, CARGO_RIDE, CARGO_SLIDE, DROP_ALONG, LANE_VENT_N, LANE_X, beltN, beltVert, beltX, beltY,
+  CARGO_LAND, CARGO_RIDE, CARGO_SLIDE, LANE_VENT_N, LANE_X, beltN, beltX, beltY,
   cargoKind, cargoOn, cargoPhase, cargoX, cargoY, lanePropAt, lanePropCount, ventCount, ventX, ventY,
 } from "../sim/depth";
 import { OB_BARREL, OB_BOILER, OB_CRATE, OB_GEAR } from "../sim/arena";
@@ -35,17 +35,13 @@ function paintFeeder(ctx: CanvasRenderingContext2D, w: World, camX: number, camY
   const n = beltN(w);
   for (let i = 0; i < n; i++) {
     const x = beltX(w, i);
-    const y = beltY(w, i) + (beltVert(w, i) ? DROP_ALONG : 0);
+    const y = beltY(w, i);
     if (!visible(x, y, camX, camY, vw, vh, 80)) continue;
-    const inward = x < LANE_X ? 1 : -1;
-    for (let s = 0; s < 3; s++) {
-      const tx = x + inward * (28 + s * 36);
-      ctx.save();
-      ctx.translate(tx, y);
-      if (inward < 0) ctx.scale(-1, 1);
-      blitSheet(ctx, "conveyor", 0, 0);
-      ctx.restore();
-    }
+    ctx.save();
+    ctx.translate(x, y);
+    if (x >= LANE_X) ctx.scale(-1, 1);
+    blitSheet(ctx, "conveyor", 0, 0);
+    ctx.restore();
   }
 }
 

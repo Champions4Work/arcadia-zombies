@@ -53,6 +53,8 @@ describe("r21 phone look", () => {
     expect(texts).not.toContain("120/120");
     expect(texts).not.toContain("240/240");
     expect(texts).not.toContain("Chapter 1");
+    expect(texts).not.toContain("34/210");
+    expect(texts).not.toContain("6/36");
     expect(texts).not.toContain("Q");
     expect(texts).not.toContain("E");
     expect(texts).not.toContain("R");
@@ -112,8 +114,8 @@ describe("r21 phone look", () => {
 
   it("rims the hunter in lamp amber and dusks the sky", () => {
     const look = readFileSync("src/art/look.ts", "utf8");
-    expect(look.includes("rgba(255,176,80,0.36)")).toBe(true);
-    expect(look.includes("rgba(255,168,72,0.34)")).toBe(true);
+    expect(look.includes("rgba(255,176,80,0.55)")).toBe(true);
+    expect(look.includes("rgba(255,214,120,0.82)")).toBe(true);
     expect(look.includes("rgba(62,220,220,0.32)")).toBe(false);
     const stage = readFileSync("src/render/stage.ts", "utf8");
     expect(stage.includes("#241028")).toBe(true);

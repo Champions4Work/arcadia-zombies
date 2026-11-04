@@ -1,8 +1,8 @@
 {
   "mid": 60,
   "avg": 59,
-  "min": 20,
-  "max": 60,
+  "min": 30,
+  "max": 61,
   "alive": 40,
   "samples": [
     59,

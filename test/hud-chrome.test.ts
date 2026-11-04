@@ -78,6 +78,6 @@ describe("phone HUD chrome", () => {
     const body = hud.slice(start, hud.indexOf("function drawXp"));
     expect(body.includes("heartIcon")).toBe(true);
     expect(body.includes("ctx.arc(cx, cy, r * 0.58")).toBe(false);
-    expect(body.includes("low ? DANGER : STEAM")).toBe(true);
+    expect(body.includes("low ? DANGER : CYAN")).toBe(true);
   });
 });

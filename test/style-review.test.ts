@@ -107,9 +107,10 @@ describe("visual review gates", () => {
     expect(yard.includes("function blitScaled")).toBe(true);
     expect(yard.includes("TANK_SCALE")).toBe(true);
     expect(yard.includes("BUILD_SCALE")).toBe(true);
-    expect(yard.includes("BELT_H = 72")).toBe(true);
+    expect(yard.includes("BELT_H = 36")).toBe(true);
     expect(yard.includes("y: 232")).toBe(true);
-    expect(yard.includes("y: 420")).toBe(true);
+    expect(yard.includes("y: 188")).toBe(true);
+    expect(yard.includes("y: 420")).toBe(false);
     expect(yard.includes("vert: 1")).toBe(false);
     expect(yard.includes("GLASS_AT")).toBe(true);
     expect(yard.includes("{ x: 424, y: 232 }")).toBe(true);
