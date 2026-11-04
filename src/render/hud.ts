@@ -95,6 +95,10 @@ function barCount(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
   ctx.restore();
 }
 
+function phoneHud(layout: HudLayout): boolean {
+  return layout.view.w < 720;
+}
+
 function plate(ctx: CanvasRenderingContext2D, box: Box, id = "panel_frame_small"): void {
   ctx.save();
   ctx.fillStyle = IRON;
@@ -486,8 +490,10 @@ function checkLine(
   ink(ctx, text, x + 13, y, 10, "#f6f1e6");
 }
 
-function objectives(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
-  blitSheetFit(ctx, "panel_frame_gears", box.x - 10, box.y - 10, box.w + 20, box.h + 20);
+function objectives(ctx: CanvasRenderingContext2D, w: World, layout: HudLayout): void {
+  const box = layout.objectives;
+  const pad = phoneHud(layout) ? 10 : 10;
+  blitSheetFit(ctx, "panel_frame_gears", box.x - pad, box.y - pad, box.w + pad * 2, box.h + pad * 2);
   ctx.fillStyle = "rgba(8,10,16,0.78)";
   ctx.fillRect(box.x, box.y, box.w, box.h);
   ctx.fillStyle = "rgba(224,160,64,0.28)";
@@ -528,7 +534,7 @@ export function drawHud(ctx: CanvasRenderingContext2D, w: World): void {
     skillKeys(ctx, layout);
     drawWeaponRack(ctx, w);
     ability(ctx, w, layout.ability);
-    objectives(ctx, w, layout.objectives);
+    objectives(ctx, w, layout);
     rankCallout(ctx, w, layout);
   }
   ctx.restore();
