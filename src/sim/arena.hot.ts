@@ -1,8 +1,9 @@
 import {
-  ARENA_H, ARENA_W, CAM_LERP, EDGE_PAD, HEAL_HP, HEAL_R2, MAX_HEAL, MAX_TELE, MIN_SPAWN_R2,
+  ARENA_H, ARENA_W, CAM_LERP, EDGE_PAD, HEAL_HP, HEAL_R2, MAX_HEAL, MAX_TELE, MIN_SPAWN_R2, OB_BOILER, OB_CRATE, OB_GEAR,
   PROP_CELL, PROP_COLS, PROP_REACH, PROP_ROWS, PUFF_BARREL, SPAWN_BOT, SPAWN_INSET, SPAWN_MARGIN, SPAWN_TOP, TELE_LIFE, cameraTarget, edgePoint, hitsProp, propBreaks, spawnHidden,
   type Arena,
 } from "./arena";
+import { ventSlowZombieAt } from "./depth.hot";
 import { scaleSpeed, scaleThreat } from "./director";
 import { finaleBlocksBoss } from "./finale";
 import { foeHp, foePack, foeSpeed, Z_ELITE, Z_GAS, Z_KIND, Z_KNIGHT, Z_RAT, Z_SPITTER } from "./foes";
@@ -73,11 +74,16 @@ export function blocked(w: World, x: number, y: number, rad: number): boolean {
 function breakBarrel(w: World, i: number): void {
   const a = w.arena;
   if (!a.obsAlive[i]) return;
+  const kind = a.obsKind[i] ?? 0;
   a.obsAlive[i] = 0;
   const x = a.obsX[i] ?? 0;
   const y = a.obsY[i] ?? 0;
   emitFx(w, FX_SPARK, x, y, 0);
   emitFx(w, FX_PUFF, x, y, PUFF_BARREL);
+  if (kind === OB_BOILER || kind === OB_GEAR || kind === OB_CRATE) {
+    emitFx(w, FX_PUFF, x - 10, y + 6, PUFF_BARREL + 8);
+    emitFx(w, FX_SPARK, x + 8, y - 4, 4);
+  }
   for (let k = 0; k < MAX_HEAL; k++) {
     if (a.healAlive[k]) continue;
     a.healX[k] = x;
@@ -185,7 +191,8 @@ export function slideUnit(w: World, i: number, ux: number, uy: number, sp: numbe
   const z = w.zombies;
   const x = z.x[i] ?? 0;
   const y = z.y[i] ?? 0;
-  slide(w, x, y, x + ux * sp, y + uy * sp, rad, rad + 2);
+  const slow = ventSlowZombieAt(w, x, y);
+  slide(w, x, y, x + ux * sp * slow, y + uy * sp * slow, rad, rad + 2);
   z.x[i] = w.arena.scratch[0] ?? x;
   z.y[i] = w.arena.scratch[1] ?? y;
 }
@@ -228,7 +235,7 @@ export function chaseZombie(w: World, i: number): void {
   const rad = bodyR(kind);
   const x = z.x[i] ?? 0;
   const y = z.y[i] ?? 0;
-  const sp = z.vx[i] ?? 0;
+  const sp = (z.vx[i] ?? 0) * ventSlowZombieAt(w, x, y);
   const dx = w.px - x;
   const dy = w.py - y;
   const d = Math.sqrt(dx * dx + dy * dy) || 1;

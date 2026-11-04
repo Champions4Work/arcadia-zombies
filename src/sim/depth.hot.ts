@@ -1,10 +1,11 @@
 import { emitFx } from "./combat.hot";
 import {
-  BELT_SPEED, BELT_UPG_CAP, CARGO_GAP, CARGO_HEAL, CARGO_LAND, CARGO_R2, CARGO_RIDE, CARGO_SCORE,
-  CARGO_SLIDE, CARGO_UPG, DROP_ALONG, FIRST_CARGO, LANE_X, LAND_R2, SLIDE_SPEED, VENT_R2, VENT_SLOW,
+  BELT_SPEED, BELT_UPG_CAP, CARGO_GAP, CARGO_HEAL, CARGO_LAND, CARGO_PWR, CARGO_R2, CARGO_RIDE, CARGO_SCORE,
+  CARGO_SLIDE, CARGO_UPG, DROP_ALONG, FIRST_CARGO, LANE_X, LAND_R2, SLIDE_SPEED, VENT_R2, VENT_SLOW, ZOMBIE_VENT_R2,
   beltHeal, depthState, grantBeltUpg,
 } from "./depth";
 import { applyScore, hasMod, MOD_NOHEAL } from "./modifiers";
+import { chargeUlt } from "./ult";
 import { FX_PUFF, FX_SPARK, type World } from "./types";
 
 function beltBusy(w: World, belt: number): number {
@@ -77,7 +78,11 @@ function collectCargo(w: World, i: number): void {
   emitFx(w, FX_SPARK, w.px, w.py, 0);
   emitFx(w, FX_PUFF, d.cargoX[i] ?? w.px, d.cargoY[i] ?? w.py, 8);
   w.score += applyScore(CARGO_SCORE, w.mods);
-  if (kind === CARGO_UPG && grantBeltUpg(w)) return;
+  if (kind === CARGO_UPG) {
+    if (grantBeltUpg(w)) return;
+    chargeUlt(w, CARGO_PWR);
+    return;
+  }
   if (!hasMod(w.mods, MOD_NOHEAL)) beltHeal(w);
 }
 
@@ -108,14 +113,28 @@ function trySpawn(w: World): void {
   }
 }
 
-export function ventSlowMul(w: World): number {
+export function ventSlowAt(w: World, x: number, y: number): number {
   const d = depthState(w);
   for (let i = 0; i < d.ventN; i++) {
-    const dx = w.px - (d.ventX[i] ?? 0);
-    const dy = w.py - (d.ventY[i] ?? 0);
+    const dx = x - (d.ventX[i] ?? 0);
+    const dy = y - (d.ventY[i] ?? 0);
     if (dx * dx + dy * dy < VENT_R2) return VENT_SLOW;
   }
   return 1;
+}
+
+export function ventSlowZombieAt(w: World, x: number, y: number): number {
+  const d = depthState(w);
+  for (let i = 0; i < d.ventN; i++) {
+    const dx = x - (d.ventX[i] ?? 0);
+    const dy = y - (d.ventY[i] ?? 0);
+    if (dx * dx + dy * dy < ZOMBIE_VENT_R2) return VENT_SLOW;
+  }
+  return 1;
+}
+
+export function ventSlowMul(w: World): number {
+  return ventSlowAt(w, w.px, w.py);
 }
 
 export function stepDepth(w: World): void {
