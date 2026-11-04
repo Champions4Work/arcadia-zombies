@@ -12,6 +12,8 @@ export const FOE_TO_HERO = 0.58;
 export const BRUTE_TO_HERO = 1.12;
 export const CASE_W = 4.8;
 export const CASE_H = 2;
+const HIT_TINT = "#fff4c8";
+const DASH_RING = "#7ae0d4";
 
 export function foeWorldScale(kind: number, sprH: number): number {
   const dest = (kind === 2 ? BRUTE_TO_HERO : FOE_TO_HERO) * HERO_PACK_H;
@@ -193,6 +195,30 @@ export function paintSignatureHero(
   ctx.restore();
 }
 
+export function paintDashShell(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  tick: number,
+  moving: boolean,
+): void {
+  const bob = walkBob(tick, moving);
+  const s = HERO_DRAW_SCALE;
+  const pulse = 0.38 + 0.14 * Math.sin(tick * 0.85);
+  ctx.save();
+  ctx.globalCompositeOperation = "source-over";
+  ctx.globalAlpha = pulse;
+  ctx.strokeStyle = DASH_RING;
+  ctx.lineWidth = 2.4;
+  ctx.beginPath();
+  ctx.ellipse(x, y - 16 * s - bob, 13 * s, 19 * s, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.globalAlpha = pulse * 0.45;
+  ctx.fillStyle = "rgba(62,200,192,0.22)";
+  ctx.fill();
+  ctx.restore();
+}
+
 export function paintHitSpark(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
@@ -224,6 +250,7 @@ export function paintZombie(
   elite: boolean,
   tick: number,
   flip: number,
+  flashAlpha = 0,
 ): void {
   const bob = shambleBob(tick, kind);
   const sway = shambleSway(tick, kind);
@@ -232,6 +259,15 @@ export function paintZombie(
   const scale = foeWorldScale(kind, spr?.["h"] ?? 32);
   paintShadow(ctx, x, y, 5 * scale, 2.1 * scale);
   blitSheetLean(ctx, id, x, y, flip < 0, bob, sway, scale);
+  if (flashAlpha > 0) {
+    const h = foeWorldH(kind);
+    ctx.save();
+    ctx.globalAlpha = flashAlpha * 0.62;
+    ctx.globalCompositeOperation = "screen";
+    ctx.fillStyle = HIT_TINT;
+    ctx.fillRect((x - h * 0.38) | 0, (y - h - bob - 2) | 0, (h * 0.76) | 0, (h + 4) | 0);
+    ctx.restore();
+  }
   if (kind !== 2) return;
   const destH = foeWorldH(kind);
   const cx = x;

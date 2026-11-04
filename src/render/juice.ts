@@ -140,6 +140,14 @@ export function enemyFlash(slot: number): number {
   return flash[slot] ?? 0;
 }
 
+export function enemyFlashAlpha(slot: number): number {
+  if (slot < 0 || slot >= FLASH_CAP) return 0;
+  const t = flash[slot] ?? 0;
+  if (t <= 0) return 0;
+  const a = t / FLASH_MS;
+  return a > 1 ? 1 : a;
+}
+
 export function playerFlashMs(): number {
   return playerFlash;
 }

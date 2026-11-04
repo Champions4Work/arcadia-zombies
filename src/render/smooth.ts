@@ -25,6 +25,7 @@ export function noteSimPose(x: number, y: number, tick: number): void {
 
 export function drawPose(x: number, y: number, tick: number, blendMs: number): { x: number; y: number } {
   noteSimPose(x, y, tick);
-  const t = blendMs > 0 ? Math.min(1, blendMs / STEP_MS) : 1;
+  const raw = blendMs > 0 ? Math.min(1, blendMs / STEP_MS) : 1;
+  const t = 1 - (1 - raw) * (1 - raw);
   return { x: fromX + (toX - fromX) * t, y: fromY + (toY - fromY) * t };
 }

@@ -1,6 +1,7 @@
 import { juiceHit, juiceShot, tickJuice } from "../render/juice";
 import { stampBlood, stampCasing } from "../render/stains";
 import { ARENA_H, ARENA_W } from "../sim/arena";
+import { DASH_TICKS } from "../sim/dash";
 import { Z_ELITE } from "../sim/foes";
 import { reviewDepth } from "../sim/depth";
 import { mapState } from "../sim/map-events";
@@ -108,6 +109,10 @@ export function reviewHorde(w: World, zone = ZONE_BRASS): number {
   juiceHit(3, z.x[3] ?? w.px, z.y[3] ?? w.py, 2, z.kind[3] ?? 0, false, w.tick, w.px, w.py);
   juiceHit(7, z.x[7] ?? w.px, z.y[7] ?? w.py, 4, Z_BRUTE, false, w.tick, w.px, w.py);
   juiceShot(w.px + 20, w.py - 22, 0.82, -0.42, w.tick);
+  w.dashT = DASH_TICKS - 1;
+  w.dashUx = 0.86;
+  w.dashUy = -0.38;
+  w.dashCd = 0;
   tickJuice(70);
   for (let c = 0; c < 24; c++) {
     stampCasing(w.px - 52 + ((c * 37) % 96), w.py + 8 + ((c * 19) % 52), c * 7);

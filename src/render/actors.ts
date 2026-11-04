@@ -1,7 +1,7 @@
 import { ARENA_H } from "../sim/arena";
 import { Z_ELITE, Z_GAS, Z_KIND, Z_KNIGHT, Z_RAT, Z_SPITTER } from "../sim/foes";
 import { fogCover } from "../sim/map-events";
-import { enemyFlash, hitKnockX, hitKnockY, playerFlashAlpha } from "./juice";
+import { enemyFlashAlpha, hitKnockX, hitKnockY, playerFlashAlpha } from "./juice";
 import { dashActive } from "../sim/dash";
 import {
   EV_SHOT, FX_BOOM, FX_FLASH, FX_PUFF, FX_SPARK, FX_XP, Z_BRUTE, Z_GHOUL, Z_SHAMBLER, type World,
@@ -17,7 +17,7 @@ import {
   bulletPaint, fxPaint, registerBullet, registerFx, registerZombie, type BulletPaint, type Glyph,
 } from "./plugins";
 import { blitAtlas, foeFrameId } from "../art/atlas";
-import { foeWorldH, paintHitSpark, paintSignatureHero, paintZombie } from "../art/look";
+import { foeWorldH, paintDashShell, paintHitSpark, paintSignatureHero, paintZombie } from "../art/look";
 import { stampCasing, stainCount, STAIN_LIVE_CAP } from "./stains";
 import { drawPose } from "./smooth";
 import { paintTrail, stampTrail } from "./trail";
@@ -60,7 +60,8 @@ function paintHero(ctx: CanvasRenderingContext2D, w: World, moving: boolean, ble
   if (dash) stampTrail(pose.x, pose.y, w.tick, moving);
   const shoot = (w.events[EV_SHOT] ?? 0) !== 0;
   const flip = w.aimX < 0;
-  paintTrail(ctx, w.tick, flip, moving || dash);
+  paintTrail(ctx, w.tick, flip, dash);
+  if (dash) paintDashShell(ctx, pose.x, pose.y, w.tick, moving || dash);
   const flash = playerFlashAlpha();
   paintSignatureHero(ctx, pose.x, pose.y, w.aimX, w.aimY, moving || dash, shoot, w.tick, flash);
   if (shoot && w.tick !== caseTick) {
@@ -87,10 +88,11 @@ function paintOne(ctx: CanvasRenderingContext2D, w: World, i: number): void {
   const hp = z.hp[i] ?? 1;
   const toward = (z.vx[i] ?? 0) !== 0 ? (z.vx[i] ?? 0) : w.px - x;
   const flip = toward < 0 ? -1 : 1;
-  const flash = enemyFlash(i) > 0;
+  const flashA = enemyFlashAlpha(i);
   const marked = elite || kind === Z_BRUTE || kind === Z_KNIGHT;
-  paintZombie(ctx, x, y, kind, elite, w.tick + i * 3, flip);
+  paintZombie(ctx, x, y, kind, elite, w.tick + i * 3, flip, flashA);
   if (kind === Z_KNIGHT) paintKnightShield(ctx, x, y, z.vy[i] ?? 0, hp);
+  if (flashA > 0) paintHitSpark(ctx, x + 6, y - foeWorldH(kind) * 0.38);
   if (marked) {
     const bodyH = foeWorldH(kind) * (elite ? 1.12 : 1);
     const bw = Math.min(18, 4 + Math.min(hp, 8) * 1.6);
@@ -100,7 +102,6 @@ function paintOne(ctx: CanvasRenderingContext2D, w: World, i: number): void {
     ctx.fillStyle = kind === Z_BRUTE ? "#e0a028" : "#e24a32";
     ctx.fillRect(x - 9, top + 1, bw, 1.4);
   }
-  if (flash) paintHitSpark(ctx, x + 6, y - foeWorldH(kind) * 0.38);
 }
 
 export function paintActors(ctx: CanvasRenderingContext2D, w: World, moving: boolean, blendMs = 0): void {
