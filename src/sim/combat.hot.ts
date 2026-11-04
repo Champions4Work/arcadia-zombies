@@ -1,4 +1,5 @@
 import { juiceHit } from "../render/juice";
+import { stainCount } from "../render/stains";
 import { eliteChest } from "./chest";
 import { tallyKill } from "./finale";
 import { foeKillXp, foeScore, Z_ELITE, Z_GAS, Z_KIND } from "./foes";
@@ -6,10 +7,11 @@ import { detonateGas } from "./foes.hot";
 import { applyScore, cannonHit } from "./modifiers";
 import { takeXp } from "./progress";
 import {
-  EV_KILL, FX_PUFF, FX_SPARK, FX_XP, MAX_FX, UPG_DYNAMO, type World,
+  EV_KILL, FX_FLASH, FX_PUFF, FX_SPARK, FX_XP, MAX_FX, UPG_DYNAMO, type World,
 } from "./types";
 
 export function emitFx(w: World, kind: number, x: number, y: number, a: number): void {
+  if (kind === FX_FLASH && stainCount() > 96 && (w.tick & 1) === 1) return;
   const i = w.fxHead;
   w.fxKind[i] = kind;
   w.fxX[i] = x;

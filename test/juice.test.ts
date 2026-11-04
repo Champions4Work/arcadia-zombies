@@ -26,7 +26,7 @@ import {
   numberScale,
   numberY,
   ownJuiceClock,
-  PART_CAP,
+  PART_LIVE_CAP,
   particleCount,
   resetJuice,
   setNumbersOn,
@@ -174,8 +174,8 @@ describe("death burst", () => {
     expect(particleCount()).toBe(6);
     resetJuice();
     for (let i = 0; i < 80; i++) juiceHit(i, 0, 0, 1, Z_SHAMBLER, true, i);
-    expect(particleCount()).toBe(PART_CAP);
-    expect(particleCount()).toBeLessThanOrEqual(PART_CAP);
+    expect(particleCount()).toBe(PART_LIVE_CAP);
+    expect(particleCount()).toBeLessThanOrEqual(PART_LIVE_CAP);
   });
 });
 
@@ -351,6 +351,13 @@ describe("frame budget", () => {
     expect(tickMs).toBeLessThan(80);
     expect(numberCount()).toBeLessThanOrEqual(256);
     expect(enemyFlash(1499)).toBe(0);
+  });
+
+  it("caps live particles under sustained hits", () => {
+    resetJuice();
+    for (let i = 0; i < 400; i++) juiceHit(i, i & 127, 40, 2, i % 4, i % 11 === 0, i);
+    expect(particleCount()).toBeLessThanOrEqual(PART_LIVE_CAP);
+    expect(particleCount()).toBeGreaterThan(0);
   });
 });
 
