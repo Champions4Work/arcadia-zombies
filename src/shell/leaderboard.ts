@@ -5,7 +5,10 @@ import { clampMods, modNames, scoreLabel } from "../sim/modifiers";
 
 export const LEADERBOARD_KEY = "arcadia.leaderboard";
 export const BOARD_LIMIT = 10;
+export const DAILY_HEAD = "Today's challenge";
+export const DAILY_EMPTY = "No daily runs yet";
 export const TICKS_PER_SEC = 60;
+const BOARD_READ = 400;
 const CAP = 1_000_000_000;
 const CODES: readonly string[] = [
   "TESLA", "SHOT", "SAWS", "FIRE", "DMG", "HP", "SPEED", "VENT", "PIERCE", "SHIELD",
@@ -28,6 +31,7 @@ export interface RunRecord {
   character: string;
   mods: number;
   workshop: string;
+  daily: string;
 }
 
 export interface Life {
@@ -51,6 +55,7 @@ export interface RunInput {
   character?: string;
   mods?: number;
   workshop?: string;
+  daily?: string;
 }
 
 export interface KillTracker {
@@ -71,6 +76,8 @@ export interface AchView {
 export interface BoardView {
   life: string;
   rows: RowView[];
+  daily: RowView[];
+  dailyHead: string;
   achievements: AchView[];
   empty: boolean;
 }
@@ -142,6 +149,7 @@ export function captureRun(input: RunInput): RunRecord {
     character: input.character ?? characterAt(CHAR_TINKER).id,
     mods: clampMods(input.mods ?? 0),
     workshop: input.workshop ?? "",
+    daily: input.daily ?? "",
   });
 }
 
@@ -158,19 +166,23 @@ function fitSuffix(workshop: string): string {
 
 export function runLine(run: RunRecord): string {
   const row = sanitize(run);
-  return `${formatTime(row.time)} · ${tierName(row.tier)} · ${row.kills} kills · ${row.build} · ${characterAt(characterIndex(row.character)).name}${modSuffix(row.mods)}${fitSuffix(row.workshop)}`;
+  return `${formatTime(row.time)} · ${tierName(row.tier)} · ${row.kills} kills · ${row.build} · ${characterAt(characterIndex(row.character)).name}${modSuffix(row.mods)}${fitSuffix(row.workshop)}${dailySuffix(row.daily)}`;
 }
 
 export function shareText(run: RunRecord): string {
   const row = sanitize(run);
   const who = characterAt(characterIndex(row.character)).name;
-  return `Arcadia: Gears of the Dead — Score ${row.score} · ${formatTime(row.time)} · ${tierName(row.tier)} · ${row.kills} kills · ${row.build} · ${who}${modSuffix(row.mods)}${fitSuffix(row.workshop)}`;
+  return `Arcadia: Gears of the Dead — Score ${row.score} · ${formatTime(row.time)} · ${tierName(row.tier)} · ${row.kills} kills · ${row.build} · ${who}${modSuffix(row.mods)}${fitSuffix(row.workshop)}${dailySuffix(row.daily)}`;
 }
 
 function modSuffix(mods: number): string {
   if (!mods) return "";
   const names = modNames(mods);
   return names ? ` · ${scoreLabel(mods)} · ${names}` : ` · ${scoreLabel(mods)}`;
+}
+
+function dailySuffix(daily: string): string {
+  return daily ? ` · Daily ${daily}` : "";
 }
 
 export function toastText(name: string): string {
@@ -198,8 +210,7 @@ export function commitRun(saved: SavedRecords, run: RunRecord): string[] {
   saved.life.kills = clampInt(saved.life.kills + row.kills);
   if (row.time > saved.life.bestTime) saved.life.bestTime = row.time;
   saved.board.push(row);
-  saved.board.sort(compareRuns);
-  if (saved.board.length > BOARD_LIMIT) saved.board.length = BOARD_LIMIT;
+  keepBoard(saved.board);
   const fresh: string[] = [];
   for (const a of ACHIEVEMENTS) {
     if (saved.unlocked.indexOf(a.id) >= 0) continue;
@@ -222,16 +233,13 @@ export function settleRun(saved: SavedRecords, run: RunRecord): Settled {
 }
 
 export function presentBoard(saved: SavedRecords): BoardView {
-  const rows: RowView[] = [];
+  const free: RunRecord[] = [];
   for (let i = 0; i < saved.board.length; i++) {
     const run = saved.board[i];
-    if (!run) continue;
-    rows.push({
-      title: `#${i + 1}  Score ${run.score}`,
-      detail: runLine(run),
-      share: shareText(run),
-    });
+    if (!run || run.daily !== "") continue;
+    free.push(run);
   }
+  const rows = rowViews(free);
   const achievements: AchView[] = [];
   for (const a of ACHIEVEMENTS) {
     const on = saved.unlocked.indexOf(a.id) >= 0;
@@ -241,9 +249,35 @@ export function presentBoard(saved: SavedRecords): BoardView {
   return {
     life: `Kills ${saved.life.kills} · Best time ${best} · Runs ${saved.life.runs}`,
     rows,
+    daily: [],
+    dailyHead: DAILY_HEAD,
     achievements,
     empty: rows.length === 0,
   };
+}
+
+export function presentDaily(saved: SavedRecords, day: string): RowView[] {
+  const runs: RunRecord[] = [];
+  for (let i = 0; i < saved.board.length; i++) {
+    const run = saved.board[i];
+    if (!run || run.daily !== day) continue;
+    runs.push(run);
+  }
+  return rowViews(runs);
+}
+
+function rowViews(runs: readonly RunRecord[]): RowView[] {
+  const rows: RowView[] = [];
+  for (let i = 0; i < runs.length && rows.length < BOARD_LIMIT; i++) {
+    const run = runs[i];
+    if (!run) continue;
+    rows.push({
+      title: `#${rows.length + 1}  Score ${run.score}`,
+      detail: runLine(run),
+      share: shareText(run),
+    });
+  }
+  return rows;
 }
 
 export function loadLeaderboard(store: Store): SavedRecords {
@@ -261,7 +295,7 @@ export function saveLeaderboard(store: Store, saved: SavedRecords): void {
     store.setItem(LEADERBOARD_KEY, JSON.stringify({
       "v": 1,
       "board": saved.board.map((r) => ({
-        "score": r.score, "time": r.time, "tier": r.tier, "kills": r.kills, "build": r.build, "character": r.character, "mods": r.mods, "workshop": r.workshop,
+        "score": r.score, "time": r.time, "tier": r.tier, "kills": r.kills, "build": r.build, "character": r.character, "mods": r.mods, "workshop": r.workshop, "daily": r.daily,
       })),
       "life": { "kills": saved.life.kills, "bestTime": saved.life.bestTime, "runs": saved.life.runs },
       "unlocked": saved.unlocked.slice(),
@@ -269,6 +303,44 @@ export function saveLeaderboard(store: Store, saved: SavedRecords): void {
   } catch {
     return;
   }
+}
+
+function keepBoard(board: RunRecord[]): void {
+  board.sort(compareRuns);
+  const free: RunRecord[] = [];
+  const days: string[] = [];
+  const buckets: RunRecord[][] = [];
+  for (let i = 0; i < board.length; i++) {
+    const run = board[i];
+    if (!run) continue;
+    if (run.daily === "") {
+      if (free.length < BOARD_LIMIT) free.push(run);
+      continue;
+    }
+    let slot = -1;
+    for (let d = 0; d < days.length; d++) if (days[d] === run.daily) slot = d;
+    if (slot < 0) {
+      slot = days.length;
+      days.push(run.daily);
+      buckets.push([]);
+    }
+    const bucket = buckets[slot];
+    if (bucket && bucket.length < BOARD_LIMIT) bucket.push(run);
+  }
+  board.length = 0;
+  for (let i = 0; i < free.length; i++) {
+    const run = free[i];
+    if (run) board.push(run);
+  }
+  for (let d = 0; d < buckets.length; d++) {
+    const bucket = buckets[d];
+    if (!bucket) continue;
+    for (let i = 0; i < bucket.length; i++) {
+      const run = bucket[i];
+      if (run) board.push(run);
+    }
+  }
+  board.sort(compareRuns);
 }
 
 function compareRuns(a: RunRecord, b: RunRecord): number {
@@ -293,7 +365,13 @@ function sanitize(run: RunRecord): RunRecord {
     character: cleanCharacter(run.character),
     mods: clampMods(run.mods ?? 0),
     workshop: canonFit(run.workshop),
+    daily: cleanDaily(run.daily),
   };
+}
+
+function cleanDaily(v: unknown): string {
+  if (typeof v !== "string") return "";
+  return /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : "";
 }
 
 function cleanBuild(build: string): string {
@@ -331,7 +409,8 @@ function decode(v: unknown): SavedRecords {
   if (Array.isArray(board)) {
     let seen = 0;
     for (const item of board) {
-      if (seen++ > 30) break;
+      if (seen >= BOARD_READ) break;
+      seen += 1;
       if (!isRecord(item)) continue;
       const score = item["score"];
       const build = item["build"];
@@ -347,10 +426,10 @@ function decode(v: unknown): SavedRecords {
         character: typeof character === "string" ? character : "",
         mods: clampMods((item["mods"] as number) ?? 0),
         workshop: typeof workshop === "string" ? workshop : "",
+        daily: item["daily"] as string,
       }));
     }
-    saved.board.sort(compareRuns);
-    if (saved.board.length > BOARD_LIMIT) saved.board.length = BOARD_LIMIT;
+    keepBoard(saved.board);
   }
   const life = v["life"];
   if (isRecord(life)) {

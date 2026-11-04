@@ -49,7 +49,7 @@ describe("end of run sheet", () => {
     expect(fromWorld.stats.find((row) => row.id === "gold")?.value).toBe("7");
     expect(fromWorld.cards.some((card) => card.id === UPG_TESLA && card.level === 1)).toBe(true);
     const badges = resultBadges(
-      { score: 10, time: 120, tier: 0, kills: 1, build: "", character: "tinker", mods: 0, workshop: "" },
+      { score: 10, time: 120, tier: 0, kills: 1, build: "", character: "tinker", mods: 0, workshop: "", daily: "" },
       emptyLeaderboard().life,
       [],
     );

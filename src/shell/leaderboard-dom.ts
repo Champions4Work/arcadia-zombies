@@ -1,4 +1,4 @@
-import type { BoardView } from "./leaderboard";
+import { DAILY_EMPTY, DAILY_HEAD, type BoardView, type RowView } from "./leaderboard";
 import { PHASE_OVER, PHASE_TITLE, type Phase } from "./session";
 
 export interface LeaderChrome {
@@ -33,6 +33,8 @@ export function mountLeaderboard(panel: HTMLElement, present: () => BoardView): 
   const life = el("p", "lb-life");
   const cols = el("p", "lb-cols");
   cols.textContent = "Score · Time · Tier · Kills · Build · Survivor";
+  const dailyHead = el("h2", "lb-daily-head");
+  const dailyRanks = el("ol", "lb-daily");
   const ranks = el("ol", "lb-ranks");
   const achHead = el("h2", "");
   achHead.textContent = "Achievements";
@@ -46,7 +48,7 @@ export function mountLeaderboard(panel: HTMLElement, present: () => BoardView): 
   boardActions.append(back, shareTop);
   const title = el("h2", "");
   title.textContent = "Leaderboard";
-  board.append(title, boardActions, boardStatus, life, cols, ranks, achHead, achs);
+  board.append(title, boardActions, boardStatus, life, cols, dailyHead, dailyRanks, ranks, achHead, achs);
   const go = document.getElementById("go");
   if (go && go.parentElement === panel) panel.insertBefore(line, go);
   else panel.append(line);
@@ -57,25 +59,30 @@ export function mountLeaderboard(panel: HTMLElement, present: () => BoardView): 
   let openFlag = false;
   let chrome: LeaderChrome = { phase: PHASE_TITLE, line: "", share: null };
   let topShare: string | null = null;
-  const render = (view: BoardView): void => {
-    life.textContent = view.life;
-    ranks.replaceChildren();
-    if (view.empty) {
+  const fillList = (list: HTMLOListElement, rows: readonly RowView[], emptyText: string): void => {
+    list.replaceChildren();
+    if (rows.length === 0) {
       const item = document.createElement("li");
       item.className = "empty";
-      item.textContent = "No runs yet";
-      ranks.append(item);
-    } else {
-      for (const row of view.rows) {
-        const item = document.createElement("li");
-        const head = document.createElement("div");
-        head.textContent = row.title;
-        const detail = document.createElement("div");
-        detail.textContent = row.detail;
-        item.append(head, detail);
-        ranks.append(item);
-      }
+      item.textContent = emptyText;
+      list.append(item);
+      return;
     }
+    for (const row of rows) {
+      const item = document.createElement("li");
+      const head = document.createElement("div");
+      head.textContent = row.title;
+      const detail = document.createElement("div");
+      detail.textContent = row.detail;
+      item.append(head, detail);
+      list.append(item);
+    }
+  };
+  const render = (view: BoardView): void => {
+    life.textContent = view.life;
+    dailyHead.textContent = view.dailyHead || DAILY_HEAD;
+    fillList(dailyRanks, view.daily, DAILY_EMPTY);
+    fillList(ranks, view.rows, "No runs yet");
     achs.replaceChildren();
     for (const a of view.achievements) {
       const item = document.createElement("li");

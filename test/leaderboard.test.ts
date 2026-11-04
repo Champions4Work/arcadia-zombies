@@ -15,7 +15,9 @@ import {
   formatTime,
   loadLeaderboard,
   noteKills,
+  DAILY_HEAD,
   presentBoard,
+  presentDaily,
   rankSum,
   resetTracker,
   runLine,
@@ -37,9 +39,9 @@ const mem = (): Store & { raw(): Map<string, string> } => {
 };
 
 const row = (
-  score: number, time = 0, tier = 1, kills = 0, build = "STOCK", character = "tinker", mods = 0, workshop = "",
+  score: number, time = 0, tier = 1, kills = 0, build = "STOCK", character = "tinker", mods = 0, workshop = "", daily = "",
 ): RunRecord => ({
-  score, time, tier, kills, build, character, mods, workshop,
+  score, time, tier, kills, build, character, mods, workshop, daily,
 });
 
 const zero = (): RunRecord => row(0);
@@ -49,7 +51,7 @@ describe("run records", () => {
     const run = captureRun({
       score: 80, time: 600, tier: 4, kills: 9, upgrades: [0, 2, 0, 0, 1, 0, 0, 0, 0, 0],
     });
-    expect(run).toEqual({ score: 80, time: 600, tier: 4, kills: 9, build: "SHOT2 DMG1", character: "tinker", mods: 0, workshop: "" });
+    expect(run).toEqual({ score: 80, time: 600, tier: 4, kills: 9, build: "SHOT2 DMG1", character: "tinker", mods: 0, workshop: "", daily: "" });
     expect(shareText(run)).toBe("Arcadia: Gears of the Dead — Score 80 · 0:10 · OVERPRESSURE · 9 kills · SHOT2 DMG1 · Tinker");
     const brute = captureRun({
       score: 80, time: 600, tier: 4, kills: 9, upgrades: [0, 2, 0, 0, 1, 0, 0, 0, 0, 0], character: "brute",
@@ -381,7 +383,7 @@ describe("leaderboard storage", () => {
     ]);
     expect(loaded.life).toEqual({ kills: 40, bestTime: 500, runs: 12 });
     expect(loaded.unlocked).toEqual(["first-blood"]);
-    expect(loaded.board.every((r) => r.mods === 0 && r.workshop === "")).toBe(true);
+    expect(loaded.board.every((r) => r.mods === 0 && r.workshop === "" && r.daily === "")).toBe(true);
     const bits = MOD_DOUBLE | MOD_GEAR;
     store.setItem(LEADERBOARD_KEY, JSON.stringify({
       v: 1,
@@ -404,5 +406,84 @@ describe("leaderboard storage", () => {
       getItem: () => { throw new Error("blocked"); },
       setItem: () => undefined,
     })).toEqual(emptyLeaderboard());
+  });
+});
+
+describe("daily scores", () => {
+  it("tags a daily run and leaves a free run blank", () => {
+    const free = captureRun({
+      score: 80, time: 600, tier: 4, kills: 9, upgrades: [0, 2, 0, 0, 1, 0, 0, 0, 0, 0],
+    });
+    expect(free.daily).toBe("");
+    const tagged = captureRun({
+      score: 80, time: 600, tier: 4, kills: 9, upgrades: [0, 2, 0, 0, 1, 0, 0, 0, 0, 0],
+      daily: "2026-11-04",
+    });
+    expect(tagged.daily).toBe("2026-11-04");
+    expect(runLine(tagged)).toContain("Daily");
+    expect(runLine(tagged)).toContain("2026-11-04");
+    expect(shareText(tagged)).toContain("Daily");
+    expect(shareText(tagged)).toContain("2026-11-04");
+    expect(runLine(free)).not.toContain("Daily");
+    expect(captureRun({
+      score: 1, time: 1, tier: 1, kills: 0, upgrades: [], daily: "tomorrow",
+    }).daily).toBe("");
+  });
+
+  it("lists one UTC day and hides those rows from the free board", () => {
+    const saved = emptyLeaderboard();
+    commitRun(saved, row(30, 10));
+    commitRun(saved, row(80, 20, 1, 1, "STOCK", "tinker", 0, "", "2026-11-04"));
+    commitRun(saved, row(50, 40, 1, 1, "STOCK", "tinker", 0, "", "2026-11-04"));
+    commitRun(saved, row(90, 5, 1, 1, "STOCK", "tinker", 0, "", "2026-11-05"));
+    const board = presentBoard(saved);
+    expect(board.dailyHead).toBe(DAILY_HEAD);
+    expect(board.dailyHead).toBe("Today's challenge");
+    expect(board.daily).toEqual([]);
+    expect(board.rows.map((item) => item.title)).toEqual(["#1  Score 30"]);
+    expect(presentDaily(saved, "2026-11-04").map((item) => item.title)).toEqual([
+      "#1  Score 80",
+      "#2  Score 50",
+    ]);
+    expect(presentDaily(saved, "2026-11-05").map((item) => item.title)).toEqual(["#1  Score 90"]);
+    expect(presentDaily(saved, "2026-11-03")).toEqual([]);
+    expect(saved.life.runs).toBe(4);
+  });
+
+  it("keeps a free top 10 when daily scores are higher", () => {
+    const saved = emptyLeaderboard();
+    for (let i = 0; i < BOARD_LIMIT; i++) commitRun(saved, row(10 + i));
+    for (let i = 0; i < BOARD_LIMIT + 2; i++) {
+      commitRun(saved, row(1000 + i, 1, 1, 1, "STOCK", "tinker", 0, "", "2026-11-04"));
+    }
+    const free = presentBoard(saved).rows;
+    expect(free).toHaveLength(BOARD_LIMIT);
+    expect(free.some((item) => item.title.includes("1000"))).toBe(false);
+    const daily = presentDaily(saved, "2026-11-04");
+    expect(daily).toHaveLength(BOARD_LIMIT);
+    expect(daily[0]?.title).toBe(`#1  Score ${1000 + BOARD_LIMIT + 1}`);
+    expect(saved.life.runs).toBe(BOARD_LIMIT * 2 + 2);
+  });
+
+  it("loads a save without a daily tag as free and round-trips a tagged day", () => {
+    const store = mem();
+    store.setItem(LEADERBOARD_KEY, JSON.stringify({
+      v: 1,
+      board: [{ score: 12, time: 30, tier: 1, kills: 2, build: "STOCK", character: "brute" }],
+      life: { kills: 2, bestTime: 30, runs: 1 },
+      unlocked: [],
+    }));
+    expect(loadLeaderboard(store).board[0]?.daily).toBe("");
+    const saved = emptyLeaderboard();
+    commitRun(saved, captureRun({
+      score: 40, time: 90, tier: 2, kills: 3, upgrades: [], daily: "2026-11-04",
+    }));
+    saveLeaderboard(store, saved);
+    const loaded = loadLeaderboard(store);
+    expect(loaded.board[0]?.daily).toBe("2026-11-04");
+    expect(runLine(loaded.board[0] ?? row(0))).toContain("Daily");
+    expect(runLine(loaded.board[0] ?? row(0))).toContain("2026-11-04");
+    expect(shareText(loaded.board[0] ?? row(0))).toContain("Daily");
+    expect(shareText(loaded.board[0] ?? row(0))).toContain("2026-11-04");
   });
 });

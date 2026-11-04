@@ -343,6 +343,7 @@ function paint(): void {
         character: characterAt(world.charId).id,
         mods: world.mods,
         workshop: "",
+        daily: "",
       },
       records.life,
       records.unlocked,
