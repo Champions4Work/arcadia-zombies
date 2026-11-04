@@ -18,15 +18,17 @@ export const SHAKE_CRIT = 1.1;
 export const SHAKE_HIT = 0.55;
 export const SHAKE_BRUTE = 0.75;
 export const BLOOD_SPURT = 3;
-export const KNOCK_HIT = 3.4;
-export const KNOCK_CRIT = 6.5;
+export const KNOCK_HIT = 4.2;
+export const KNOCK_CRIT = 8;
 export const STOP_BUDGET_MS = 100;
 export const STOP_WINDOW_MS = 1000;
 export const JUICE_DT = 1000 / 60;
 export const CRIT_COLOR = "#ffe14a";
 export const HIT_COLOR = "#fff4c8";
 export const NUMBER_LIFE = 180;
-export const GLYPH_CELL = 1;
+export const GLYPH_CELL = 2;
+export const BLOOD_DROP_RX = 5.5;
+export const BLOOD_DROP_RY = 4.2;
 
 const SOOT = "#120c08";
 const BRASS = "#c8963e";
@@ -223,6 +225,12 @@ function spawnBlood(x: number, y: number, slot: number, tick: number): void {
   }
 }
 
+export function juiceShot(x: number, y: number, ux: number, uy: number, tick: number): void {
+  const side = ((tick | 0) & 1) === 0 ? 1 : -1;
+  spawnPart(x, y, -uy * 36 * side + ux * 6, ux * 36 * side - 18, 0);
+  spawnPart(x, y, -uy * 22 * side - ux * 4, ux * 22 * side - 10, 0);
+}
+
 export function juicePlayerHurt(): void {
   grant(STOP_HURT_MS);
 }
@@ -394,10 +402,10 @@ export function drawJuice(c: CanvasRenderingContext2D): void {
       } else if ((pGear[i] ?? 0) === 2) {
         c.fillStyle = "rgba(160,18,28,0.95)";
         c.beginPath();
-        c.ellipse(x, y, 3.4, 2.6, pRot[i] ?? 0, 0, Math.PI * 2);
+        c.ellipse(x, y, BLOOD_DROP_RX, BLOOD_DROP_RY, pRot[i] ?? 0, 0, Math.PI * 2);
         c.fill();
         c.fillStyle = "rgba(210,36,42,0.88)";
-        c.fillRect((x - 1) | 0, (y - 2) | 0, 2, 3);
+        c.fillRect((x - 2) | 0, (y - 3) | 0, 3, 4);
       } else {
         c.fillStyle = "rgba(255,140,40,0.45)";
         c.beginPath();

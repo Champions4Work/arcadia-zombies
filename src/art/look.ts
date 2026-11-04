@@ -10,6 +10,8 @@ export const HERO_PACK_H = 64;
 export const HERO_DRAW_SCALE = 1.25;
 export const FOE_TO_HERO = 0.58;
 export const BRUTE_TO_HERO = 1.12;
+export const CASE_W = 4.2;
+export const CASE_H = 1.8;
 
 export function foeWorldScale(kind: number, sprH: number): number {
   const dest = (kind === 2 ? BRUTE_TO_HERO : FOE_TO_HERO) * HERO_PACK_H;
@@ -335,19 +337,19 @@ export function paintHitSpark(ctx: CanvasRenderingContext2D, x: number, y: numbe
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
   ctx.strokeStyle = "rgba(255,140,32,0.95)";
-  ctx.lineWidth = 1.6;
+  ctx.lineWidth = 2.2;
   ctx.lineCap = "round";
   ctx.beginPath();
-  ctx.moveTo(x - 5, y);
-  ctx.lineTo(x + 5, y);
-  ctx.moveTo(x - 2, y - 3.5);
-  ctx.lineTo(x + 2, y + 3);
-  ctx.moveTo(x + 2, y - 3.5);
-  ctx.lineTo(x - 2, y + 3);
+  ctx.moveTo(x - 7, y);
+  ctx.lineTo(x + 7, y);
+  ctx.moveTo(x - 3, y - 5);
+  ctx.lineTo(x + 3, y + 4);
+  ctx.moveTo(x + 3, y - 5);
+  ctx.lineTo(x - 3, y + 4);
   ctx.stroke();
   ctx.fillStyle = "rgba(255,200,70,0.92)";
   ctx.beginPath();
-  ctx.ellipse(x, y, 2.4, 1.7, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y, 3.4, 2.4, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
@@ -443,13 +445,13 @@ export function paintBlood(ctx: CanvasRenderingContext2D, x: number, y: number, 
   const seed = ((x * 13 + y * 7 + s * 17) | 0);
   const n = 5 + (seed & 3);
   const fade = (0.6 + (seed & 3) * 0.05) * Math.max(0.22, Math.min(1, age));
-  const span = 5 + (s & 7);
+  const span = 7 + (s & 7);
   ctx.fillStyle = "#4a100e";
   for (let i = 0; i < n; i++) {
     const ox = ((seed + i * 19) % (span * 2 + 1)) - span;
     const oy = ((seed + i * 11) % (span + 3)) - (span >> 1);
-    const rw = 2.4 + ((seed + i * 5) % Math.max(3, span >> 1));
-    const rh = 1.4 + ((seed + i * 3) % Math.max(2, span >> 2));
+    const rw = 3.6 + ((seed + i * 5) % Math.max(3, span >> 1));
+    const rh = 2.2 + ((seed + i * 3) % Math.max(2, span >> 2));
     ctx.globalAlpha = fade;
     ctx.beginPath();
     ctx.ellipse(x + ox, y + oy, rw, rh, ((seed + i) % 8) * 0.28, 0, Math.PI * 2);
@@ -467,9 +469,9 @@ export function paintCasing(ctx: CanvasRenderingContext2D, x: number, y: number)
   ctx.translate(x, y);
   ctx.rotate(((x * 13 + y * 7) % 12) * 0.22);
   ctx.fillStyle = BRASS_LO;
-  ctx.fillRect(0, 0, 2.2, 1);
+  ctx.fillRect(0, 0, CASE_W, CASE_H);
   ctx.fillStyle = BRASS;
-  ctx.fillRect(1.5, 0, 0.7, 1);
+  ctx.fillRect(CASE_W * 0.62, 0, CASE_W * 0.28, CASE_H);
   ctx.restore();
 }
 

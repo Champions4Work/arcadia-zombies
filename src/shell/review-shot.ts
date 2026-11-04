@@ -1,4 +1,4 @@
-import { juiceHit, tickJuice } from "../render/juice";
+import { juiceHit, juiceShot, tickJuice } from "../render/juice";
 import { stampBlood, stampCasing } from "../render/stains";
 import { ARENA_H, ARENA_W } from "../sim/arena";
 import { Z_ELITE } from "../sim/foes";
@@ -93,6 +93,7 @@ export function reviewHorde(w: World): number {
   }
   juiceHit(3, z.x[3] ?? w.px, z.y[3] ?? w.py, 2, z.kind[3] ?? 0, false, w.tick, w.px, w.py);
   juiceHit(7, z.x[7] ?? w.px, z.y[7] ?? w.py, 4, Z_BRUTE, false, w.tick, w.px, w.py);
+  juiceShot(w.px + 20, w.py - 22, 0.82, -0.42, w.tick);
   tickJuice(70);
   for (let c = 0; c < 12; c++) {
     stampCasing(w.px - 52 + ((c * 37) % 96), w.py + 8 + ((c * 19) % 52), c * 7);

@@ -10,7 +10,7 @@ import { H, MAX_BULLETS, MAX_ZOMBIES, W, Z_BRUTE, Z_GHOUL, Z_SHAMBLER, type Inpu
 import { createWorld } from "../src/sim/world";
 import { composeHorde } from "../src/render/blit.hot";
 import { offScreen, shouldBlitHorde } from "../src/render/cull";
-import { fpsEnabled, fpsReadout, noteFrame, resetFps, toggleFps, toggleFromKey } from "../src/render/fps";
+import { fpsDump, fpsEnabled, fpsReadout, noteFrame, resetFps, toggleFps, toggleFromKey } from "../src/render/fps";
 import { bg, buildSprites, zombieSprite } from "../src/render/horde-sprites";
 
 const idle: Input = { dx: 0, dy: 0, pick: 0 };
@@ -345,6 +345,11 @@ describe("fps toggle", () => {
     noteFrame(1000);
     for (let i = 1; i <= 16; i++) noteFrame(1000 + i * 16);
     expect(fpsReadout()).toBe(63);
+    const dump = fpsDump();
+    expect(dump.avg).toBeGreaterThan(0);
+    expect(dump.min).toBeGreaterThan(0);
+    expect(dump.max).toBeGreaterThanOrEqual(dump.min);
+    expect(dump.mid).toBeGreaterThan(0);
     expect(toggleFps()).toBe(false);
     expect(fpsEnabled()).toBe(false);
   });

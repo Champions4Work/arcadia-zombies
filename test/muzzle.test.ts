@@ -1,3 +1,4 @@
+import { particleCount, resetJuice } from "../src/render/juice";
 import { fireRivet } from "../src/sim/weapons.hot";
 import { createWorld } from "../src/sim/world";
 import { bodyReach, FOE_BODY, foeBodyHit } from "../src/sim/hit";
@@ -59,6 +60,13 @@ describe("rivet spawn", () => {
       found = 1;
     }
     expect(found).toBe(1);
+  });
+
+  it("ejects flying brass from the same muzzle", () => {
+    resetJuice();
+    const w = quietAim(14, 70, 0);
+    fireRivet(w);
+    expect(particleCount()).toBe(2);
   });
 
   it("aims up-left still leaves the spawn on the barrel, not the feet", () => {

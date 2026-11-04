@@ -8,6 +8,7 @@ import { B_ACID, knightBlocks, Z_KIND, Z_KNIGHT } from "./foes";
 import { acidTouch } from "./foes.hot";
 import { beginQuery, beginRadiusQuery, nextQuery, rebuildZombieGrid } from "./grid.hot";
 import { bodyReach, FOE_BODY, foeBodyHit } from "./hit";
+import { juiceShot } from "../render/juice";
 import { muzzleX, muzzleY } from "./muzzle";
 import {
   EV_BOOM, EV_SHOT, EVOL_CANNON, FX_BOOM, FX_FLASH, FX_SPARK, MAX_BULLETS, MAX_ZOMBIES, UPG_PIERCE,
@@ -83,6 +84,7 @@ function spawnShot(w: World, ux: number, uy: number, speed: number, dmg: number,
     freshShot(w, j);
     w.events[EV_SHOT] = 1;
     emitFx(w, FX_FLASH, mx, my, Math.atan2(uy, ux));
+    juiceShot(mx, my, ux, uy, w.tick);
     return j;
   }
   return -1;

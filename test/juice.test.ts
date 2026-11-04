@@ -15,6 +15,7 @@ import {
   juiceFrame,
   juiceHit,
   juicePlayerHurt,
+  juiceShot,
   JUICE_DT,
   lastNumberCrit,
   lastNumberValue,
@@ -100,7 +101,7 @@ describe("damage numbers", () => {
     expect(numberScale(0)).toBe(1);
     expect(numberColor(0)).toBe(HIT_COLOR);
     expect(HIT_COLOR).toBe("#fff4c8");
-    expect(GLYPH_CELL).toBe(1);
+    expect(GLYPH_CELL).toBe(2);
     expect(NUMBER_LIFE).toBe(180);
     const y0 = numberY(0);
     tickJuice(40);
@@ -126,6 +127,17 @@ describe("damage numbers", () => {
     juiceHit(4, 3, 3, 4, Z_GHOUL, false, 2);
     expect(numberCount()).toBe(0);
     expect(enemyFlash(4)).toBe(FLASH_MS);
+  });
+});
+
+describe("casing eject", () => {
+  it("throws two brass particles from the muzzle without freezing", () => {
+    resetJuice();
+    juiceShot(40, 20, 1, 0, 4);
+    expect(particleCount()).toBe(2);
+    expect(stopRemaining()).toBe(0);
+    juiceShot(40, 20, 1, 0, 5);
+    expect(particleCount()).toBe(4);
   });
 });
 
