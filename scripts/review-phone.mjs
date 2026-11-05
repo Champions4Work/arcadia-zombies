@@ -96,7 +96,7 @@ print(y0, y1, w)
 ]);
 
 try {
-  const gateOut = execFileSync("python3", ["scripts/midband-pixel-gate.py", midbandPath], { encoding: "utf8" });
+  const gateOut = execFileSync("node", ["scripts/midband_pixel_gate.mjs", midbandPath], { encoding: "utf8" });
   writeFileSync(`${dest}/midband_gate.txt`, gateOut);
   console.log(`midband gate ${gateOut.trim()}`);
 } catch (e) {
@@ -104,6 +104,20 @@ try {
   if (gateOut) writeFileSync(`${dest}/midband_gate.txt`, gateOut);
   throw e;
 }
+
+const steamCropPath = `${dest}/steam_crop.png`;
+execFileSync("python3", [
+  "-c",
+  `
+from PIL import Image
+im = Image.open(${JSON.stringify(playPath)}).convert("RGBA")
+w, h = im.size
+y0 = int(h * 0.24)
+y1 = int(h * 0.46)
+im.crop((0, y0, w, y1)).save(${JSON.stringify(steamCropPath)})
+`,
+]);
+console.log(`wrote ${steamCropPath}`);
 
 function sideBySide(leftPath, rightPath, outPath, leftLabel, rightLabel) {
   execFileSync("node", [

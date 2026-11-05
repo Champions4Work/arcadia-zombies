@@ -28,12 +28,20 @@ const STEAM_VENT_ALPHA = 0.24;
 const BLUE_GLOW_ALPHA = 0.3;
 const PHONE_HERO_TANK_SCALE = 1.45;
 const PHONE_HERO_CONVEYOR_SCALE = 1.3;
+const PHONE_HERO_VALVE_SCALE = 1.14;
+const PHONE_HERO_STEAM_SCALE = 1.32;
+const PHONE_HERO_STEAM_ALPHA = 0.62;
 
 export const PHONE_HERO_BLITS: { id: string; x: number; y: number; sc: number }[] = [
   { id: "pipes_blue_tank", x: 378, y: 300, sc: PHONE_HERO_TANK_SCALE },
   { id: "pipes_blue_tank", x: 582, y: 300, sc: PHONE_HERO_TANK_SCALE },
   { id: "conveyor", x: 370, y: 380, sc: PHONE_HERO_CONVEYOR_SCALE },
   { id: "conveyor", x: 590, y: 380, sc: PHONE_HERO_CONVEYOR_SCALE },
+];
+
+export const PHONE_HERO_VALVES: { x: number; y: number }[] = [
+  { x: 356, y: 318 },
+  { x: 604, y: 318 },
 ];
 
 const PROPS: { id: string; x: number; y: number }[] = [
@@ -780,6 +788,36 @@ function paintPhoneHeroBlits(
   }
 }
 
+function paintPhoneHeroValveSteam(
+  ctx: CanvasRenderingContext2D,
+  tick: number,
+  camX: number,
+  camY: number,
+  vw: number,
+  vh: number,
+): void {
+  if (yardBound !== ZONE_BRASS) return;
+  const lift = ((tick * 0.35) % 14);
+  for (const v of PHONE_HERO_VALVES) {
+    if (!visible(v.x, v.y, camX, camY, vw, vh, 110)) continue;
+    paintShadow(ctx, v.x, v.y + 6, 18, 5);
+    ctx.save();
+    ctx.globalAlpha = 0.96;
+    blitScaled(ctx, "valve_steam", v.x - 16, v.y - 4, PHONE_HERO_VALVE_SCALE);
+    ctx.restore();
+    steamPuff(ctx, v.x, v.y - 10, tick);
+    ctx.save();
+    ctx.globalCompositeOperation = "soft-light";
+    ctx.globalAlpha = PHONE_HERO_STEAM_ALPHA;
+    blitScaled(ctx, steamFrame(tick), v.x - 12, v.y - 38 - lift, PHONE_HERO_STEAM_SCALE);
+    ctx.globalAlpha = PHONE_HERO_STEAM_ALPHA * 0.92;
+    blitScaled(ctx, steamFrame(tick + 4), v.x + 2, v.y - 56 - lift * 0.55, PHONE_HERO_STEAM_SCALE * 0.94);
+    ctx.globalAlpha = PHONE_HERO_STEAM_ALPHA * 0.78;
+    blitScaled(ctx, steamFrame(tick + 8), v.x - 6, v.y - 74 - lift * 0.82, PHONE_HERO_STEAM_SCALE * 0.8);
+    ctx.restore();
+  }
+}
+
 export function paintYardLive(
   ctx: CanvasRenderingContext2D,
   tick: number,
@@ -828,6 +866,7 @@ export function paintYardLive(
     else blitSheet(ctx, p.id, p.x, p.y);
   }
   paintPhoneHeroBlits(ctx, tick, camX, camY, vw, vh);
+  paintPhoneHeroValveSteam(ctx, tick, camX, camY, vw, vh);
   if (yardBound === ZONE_TRAM) {
     for (const car of TRAM_CARS) {
       if (!visible(car.x, car.y, camX, camY, vw, vh, 90)) continue;

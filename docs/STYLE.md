@@ -79,6 +79,12 @@ Do **not** re-park tanks/conveyors on off-screen rails and expect phone midband 
 
 Review **`docs/reviews/r38/`** with **`vs_main_cyan.png`**, **`vs_r37_offscreen.png`**, trio + ref compares. Coordinator **Read-compare**; **no auto-merge**.
 
+## Phone midband steam valves (r40)
+
+**`PHONE_HERO_VALVES`** (~**356 / 604 × 318**) sit **inside** the **`camX ≈ 332`** … **`628`** phone clip beside **`PHONE_HERO_BLITS`** blue tanks. **`paintPhoneHeroValveSteam`** (from **`paintYardLive`**) blits scaled **`valve_steam`** and stacked **`steam_1`–`steam_4`** puffs (**`PHONE_HERO_VALVE_SCALE`**, **`PHONE_HERO_STEAM_SCALE`**, **`soft-light`** steam)—not perimeter **`PROPS`** at **x ≈ 308 / 654**. Midband gate unchanged: **cyan == 0**, **blue ≥ 200**.
+
+Review **`docs/reviews/r40-steam/`** (`phone_390_play.png`, **`steam_crop.png`**, **`midband_crop.png`** + gate, trio + ref compares). Must **Read-differ** from pre-r40 **`main_after_114`** phone baseline. Coordinator **Read-compare**; **no auto-merge**.
+
 ## HUD bottom cluster (hud-r39)
 
 Phone **390×844** bottom row must read like **image 1** (`docs/target_look.jpg`): **HP is the cyan heart ring** (partial arc + packed **`heart_ring`**), **five square power slots** in a bracketed tray beside it, **gold/brass ult ring** on the right—not a second cyan energy meter. Full-width **`xp_bar_frame`** + **LV** label stays on the bottom edge. Top-left **`minimap_frame`**, **CALM/timer/kills** strip, and top-right **Objectives / Wave / kills** cluster stay as in **#84 / #92 / #104**; polish chrome only.

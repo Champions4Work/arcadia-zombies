@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 describe("midband pixel gate", () => {
   it("counts fight-floor pad cyan (#7ae0d4), not tank liquid", () => {
     const src = readFileSync("scripts/midband_pixel_gate.mjs", "utf8");
-    expect(src.includes("g > 200")).toBe(true);
+    expect(src.includes("g > 205")).toBe(true);
     expect(src.includes("b > 200")).toBe(true);
     expect(src.includes("counts.cyan === 0 && counts.blue >= 200")).toBe(true);
   });

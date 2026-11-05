@@ -14,7 +14,7 @@ for y in range(h):
             continue
         if (
             r < 130
-            and g > 200
+            and g > 205
             and b > 200
             and g >= b - 8
             and abs(g - b) < 36

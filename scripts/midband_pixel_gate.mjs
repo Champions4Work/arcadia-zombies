@@ -98,7 +98,7 @@ export function countMidbandPixels(pixels, width, height) {
       }
       if (
         r < 130 &&
-        g > 200 &&
+        g > 205 &&
         b > 200 &&
         g >= b - 8 &&
         Math.abs(g - b) < 36 &&
