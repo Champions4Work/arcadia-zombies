@@ -86,6 +86,12 @@ const STEAM_VENTS = [
   { x: 630, y: 468 },
 ];
 
+const HERO_BAND_STEAM = [
+  { x: 384, y: 348 },
+  { x: 576, y: 356 },
+  { x: 432, y: 412 },
+];
+
 export const YARD_CLEAR = { x0: 352, y0: 318, x1: 608, y1: 638 };
 export const PHONE_CAM = { x0: 300, y0: 0, x1: 660, y1: 780 };
 
@@ -269,7 +275,7 @@ function poolsOf() {
 function ventsOf() {
   if (yardBound === ZONE_BOILER) return BOILER_STEAM;
   if (yardBound === ZONE_TRAM) return TRAM_STEAM;
-  return STEAM_VENTS;
+  return HERO_BAND_STEAM.concat(STEAM_VENTS);
 }
 
 function visible(x: number, y: number, camX: number, camY: number, vw: number, vh: number, pad: number): boolean {
@@ -495,17 +501,40 @@ function steamPuff(ctx: CanvasRenderingContext2D, x: number, y: number, tick: nu
   ctx.restore();
 }
 
-function paintVentSteam(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number): void {
+export function paintVentSteam(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  tick: number,
+  heroBand = false,
+): void {
   const lift = ((tick * 0.35) % 14);
+  if (heroBand) {
+    ctx.save();
+    ctx.globalAlpha = 0.82;
+    blitScaled(ctx, "valve_steam", x - 8, y + 4, 0.58);
+    ctx.restore();
+  }
   steamPuff(ctx, x, y, tick);
+  const alpha = heroBand ? STEAM_VENT_ALPHA * 1.45 : STEAM_VENT_ALPHA;
+  const scale = heroBand ? STEAM_VENT_SCALE * 0.92 : STEAM_VENT_SCALE;
   ctx.save();
   ctx.globalCompositeOperation = "soft-light";
-  ctx.globalAlpha = STEAM_VENT_ALPHA;
-  blitScaled(ctx, steamFrame(tick), x - 6, y - 20 - lift, STEAM_VENT_SCALE);
+  ctx.globalAlpha = alpha;
+  blitScaled(ctx, steamFrame(tick), x - 6, y - 20 - lift, scale);
   ctx.globalCompositeOperation = "source-over";
-  ctx.globalAlpha = STEAM_VENT_ALPHA * 0.72;
-  blitScaled(ctx, steamFrame(tick + 4), x + 4, y - 12 - lift * 0.45, STEAM_VENT_SCALE * 0.88);
+  ctx.globalAlpha = alpha * 0.72;
+  blitScaled(ctx, steamFrame(tick + 4), x + 4, y - 12 - lift * 0.45, scale * 0.88);
   ctx.restore();
+}
+
+function heroBandVent(x: number, y: number): boolean {
+  for (let i = 0; i < HERO_BAND_STEAM.length; i++) {
+    const v = HERO_BAND_STEAM[i];
+    if (!v) continue;
+    if (v.x === x && v.y === y) return true;
+  }
+  return closeToHero(x, y);
 }
 
 function arrow(ctx: CanvasRenderingContext2D, x: number, y: number, ang: number, tick: number): void {
@@ -750,7 +779,7 @@ export function paintYardLive(
   }
   for (const vent of ventsOf()) {
     if (!visible(vent.x, vent.y, camX, camY, vw, vh, 40)) continue;
-    paintVentSteam(ctx, vent.x, vent.y, tick);
+    paintVentSteam(ctx, vent.x, vent.y, tick, heroBandVent(vent.x, vent.y));
   }
   if (yardBound === ZONE_BRASS) paintBrassGrade(ctx, camX, camY, vw, vh);
 }

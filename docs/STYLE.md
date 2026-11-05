@@ -39,6 +39,12 @@ FX-only tuning on current main (#90 stone, #92 HUD, #93 perimeter). Do **not** r
 
 Review **`docs/reviews/fx-r32/`** (`phone_390_play.png` 390×844, `?shot=1`) vs **`docs/target_look.jpg`** and **`docs/target_look2.png`**. Coordinator **Read-compare** before merge; **no auto-merge**.
 
+## Effects (phone read, r35)
+
+FX-only pass on r32 baseline. Steam must puff from **hero-band valve sites** that stay inside the **390×844 `?shot=1` camera** (not only off-screen perimeter rails). **`HERO_BAND_STEAM`** plus **`reviewDepth`** lane vents call exported **`paintVentSteam`** with a small **`valve_steam`** cap; packed **`steam_1`–`steam_4`** stay **small/dark** (soft-light, no #91 fog wall). Combat keeps **amber muzzle bloom + tracer**, **flying brass** particles, and floor casings readable at the rifle. Floor **blood stains** shrink slightly (lower **`paintBlood`** span/alpha) so stone vents stay legible in the phone crop.
+
+Review **`docs/reviews/fx-r35/`** with **`vs_baseline.png`** (before/after crops of steam + muzzle vs **`docs/reviews/fx-r32/phone_390_play.png`**). Coordinator **Read-compare**; **no auto-merge**.
+
 ## References (art bible)
 
 Review size is 390×844 CSS pixels. These two files are the art bible. Every visual PR compares against both.

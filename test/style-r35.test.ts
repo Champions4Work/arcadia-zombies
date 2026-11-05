@@ -1,5 +1,8 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { HERO_X, HERO_Y, HERO_R } from "../src/render/yard-fx";
+import { playView } from "../src/shell/play-view";
+import { ARENA_H, ARENA_W, cameraTarget } from "../src/sim/arena";
 
 describe("obj-r35 phone objectives cluster", () => {
   it("aligns the phone clock strip and objectives card in one column", () => {
@@ -24,3 +27,63 @@ describe("obj-r35 phone objectives cluster", () => {
     expect(readFileSync("docs/reviews/obj-r35/trio_ref1_play_ref2.png", "utf8").length).toBeGreaterThan(8000);
   });
 });
+
+describe("r35 fx-only mid-frame steam + combat read", () => {
+  it("adds hero-band steam sites and exports paintVentSteam for depth vents", () => {
+    const yard = readFileSync("src/render/yard-fx.ts", "utf8");
+    expect(yard.includes("const HERO_BAND_STEAM")).toBe(true);
+    expect(yard.includes("export function paintVentSteam")).toBe(true);
+    expect(yard.includes("HERO_BAND_STEAM.concat(STEAM_VENTS)")).toBe(true);
+    const depth = readFileSync("src/render/depth.ts", "utf8");
+    expect(depth.includes('import { paintVentSteam } from "./yard-fx"')).toBe(true);
+    expect(depth.includes("paintVentSteam(ctx, x, y - 6, w.tick, true)")).toBe(true);
+  });
+
+  it("keeps hero-band vents inside the phone camera around the review hunter", () => {
+    const { viewW, viewH } = playView(390, 844);
+    const cam = new Float32Array(2);
+    cameraTarget(HERO_X, HERO_Y, cam, viewW, viewH);
+    const camX = cam[0] ?? 0;
+    const camY = cam[1] ?? 0;
+    const band = yardHeroBandSites();
+    for (const v of band) {
+      expect(v.x).toBeGreaterThanOrEqual(camX + 8);
+      expect(v.x).toBeLessThanOrEqual(camX + viewW - 8);
+      expect(v.y).toBeGreaterThanOrEqual(camY + 48);
+      expect(v.y).toBeLessThanOrEqual(camY + viewH - 48);
+      const dx = v.x - HERO_X;
+      const dy = v.y - HERO_Y;
+      expect(dx * dx + dy * dy).toBeLessThan(HERO_R * HERO_R);
+    }
+    expect(ARENA_W).toBeGreaterThan(viewW);
+    expect(ARENA_H).toBeGreaterThanOrEqual(viewH);
+  });
+
+  it("tightens floor blood without shrinking combat brass read", () => {
+    const look = readFileSync("src/art/look.ts", "utf8");
+    expect(look.includes("const span = 6 + (s & 5)")).toBe(true);
+    expect(look.includes("createRadialGradient(mx, my, 0.5, mx, my, 18)")).toBe(true);
+    expect(look.includes("ellipse(mx, my, 22, 12")).toBe(false);
+    const juice = readFileSync("src/render/juice.ts", "utf8");
+    expect(juice.includes("rgba(255,158,46,0.72)")).toBe(true);
+    expect(juice.includes("c.arc(x, y, 9")).toBe(true);
+  });
+
+  it("stores fx-r35 review captures under docs/reviews/fx-r35", () => {
+    expect(readFileSync("docs/reviews/fx-r35/phone_390_play.png", "utf8").length).toBeGreaterThan(8000);
+    expect(readFileSync("docs/reviews/fx-r35/vs_baseline.png", "utf8").length).toBeGreaterThan(4000);
+    expect(readFileSync("docs/reviews/fx-r35/compare_390_ref2.png", "utf8").length).toBeGreaterThan(8000);
+  });
+});
+
+function yardHeroBandSites(): { x: number; y: number }[] {
+  const yard = readFileSync("src/render/yard-fx.ts", "utf8");
+  const block = yard.slice(yard.indexOf("const HERO_BAND_STEAM"), yard.indexOf("export const YARD_CLEAR"));
+  const out: { x: number; y: number }[] = [];
+  const re = /\{\s*x:\s*(\d+),\s*y:\s*(\d+)\s*\}/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(block))) {
+    out.push({ x: Number(m[1]), y: Number(m[2]) });
+  }
+  return out;
+}
