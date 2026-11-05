@@ -193,8 +193,10 @@ describe("visual review gates", () => {
     expect(hud.includes("#1a1612")).toBe(true);
     expect(hud.includes('blitSheetFit(ctx, "heart_ring"')).toBe(true);
     expect(hud.includes("heartIcon")).toBe(true);
-    expect(hud.includes("ctx.arc(cx, cy, r * 0.58")).toBe(false);
     expect(hud.includes("r * 0.62")).toBe(true);
+    const bottom = readFileSync("src/render/hud-bottom.ts", "utf8");
+    expect(bottom.includes("r * 0.5")).toBe(true);
+    expect(bottom.includes("drawPhoneHealth")).toBe(true);
     expect(hud.includes("function portrait")).toBe(true);
     expect(hud.includes("function paintHeroBust")).toBe(true);
     expect(hud.includes("function lvBadge")).toBe(true);

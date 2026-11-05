@@ -65,6 +65,19 @@ Do **not** re-park tanks/conveyors on off-screen rails and expect phone midband 
 
 Review **`docs/reviews/r38/`** with **`vs_main_cyan.png`**, **`vs_r37_offscreen.png`**, trio + ref compares. Coordinator **Read-compare**; **no auto-merge**.
 
+## HUD bottom cluster (hud-r39)
+
+Phone **390×844** bottom row must read like **image 1** (`docs/target_look.jpg`): **HP is the cyan heart ring** (partial arc + packed **`heart_ring`**), **five square power slots** in a bracketed tray beside it, **gold/brass ult ring** on the right—not a second cyan energy meter. Full-width **`xp_bar_frame`** + **LV** label stays on the bottom edge. Top-left **`minimap_frame`**, **CALM/timer/kills** strip, and top-right **Objectives / Wave / kills** cluster stay as in **#84 / #92 / #104**; polish chrome only.
+
+| Slot | Rule |
+| --- | --- |
+| Health | **`drawPhoneHealth`** in **`src/render/hud-bottom.ts`**: dark inner disc, HP arc only, glowing heart—no mana-bar fill. |
+| Power-ups | **`paintPhonePower`** square **`power_slot`** frames + **`paintPhonePowerTrayFrame`** bracket row; replaces any energy bar. |
+| Ult | **`drawPhoneUlt`**: charge arc **`XP` / `BRASS`**, orange ready bloom—not **`CYAN`** ringMeter. |
+| Tray | **`paintPhoneBottomTray`** brass strip ties heart + slots + ult before **`drawWeaponRack`**. |
+
+Review **`docs/reviews/hud-r39/`** (`phone_390_play.png` **`?shot=1`**, **`hud_bottom_crop.png`**, **`compare_390_ref1.png`** vs **`docs/target_look.jpg`**, trio). Coordinator **Read-compare**; **no auto-merge**.
+
 ## References (art bible)
 
 Review size is 390×844 CSS pixels. These two files are the art bible. Every visual PR compares against both.

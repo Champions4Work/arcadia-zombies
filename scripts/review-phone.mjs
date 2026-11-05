@@ -68,6 +68,20 @@ const playPath = `${dest}/phone_390_play.png`;
 await page.screenshot({ path: playPath });
 
 const midbandPath = `${dest}/midband_crop.png`;
+const bottomCropPath = `${dest}/hud_bottom_crop.png`;
+execFileSync("python3", [
+  "-c",
+  `
+from PIL import Image
+im = Image.open(${JSON.stringify(playPath)}).convert("RGBA")
+w, h = im.size
+frac = float(${process.env.HUD_BOTTOM_FRAC ?? "0.28"})
+y0 = int(h * (1 - frac))
+im.crop((0, y0, w, h)).save(${JSON.stringify(bottomCropPath)})
+print(y0, h, w)
+`,
+]);
+
 execFileSync("python3", [
   "-c",
   `
@@ -159,6 +173,7 @@ if (r37Fail) {
 }
 await browser.close();
 console.log(`wrote ${playPath}`);
+console.log(`wrote ${bottomCropPath}`);
 console.log(`wrote ${midbandPath}`);
 console.log(`wrote ${dest}/compare_390_ref1.png`);
 console.log(`wrote ${dest}/compare_390_ref2.png`);
