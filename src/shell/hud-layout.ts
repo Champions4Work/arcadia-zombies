@@ -128,20 +128,21 @@ export function layoutHud(vp: Viewport, fit: Fit): HudLayout {
     y: topY + rowH / 2,
     r: pauseR,
   };
-  const clockW = Math.round((phone ? 108 : portrait ? 104 : 108) * u);
+  const mapS = Math.round((phone ? 64 : portrait ? 80 : 70) * u);
+  const minimap = { x: inner.x + gap, y: topY, w: mapS, h: mapS };
+  const rankLeft = minimap.x + minimap.w + gap;
+  const clusterRight = pause.x - pauseR - gap;
+  const objWPhone = Math.min(150, Math.round(inner.w * 0.38));
+  const objXPhone = clusterRight - objWPhone;
+  const clockW = phone ? objWPhone : Math.round((portrait ? 104 : 108) * u);
   const clockH = Math.round((phone ? 32 : portrait ? 50 : 44) * u);
   const clock = {
-    x: pause.x - pauseR - gap - clockW,
+    x: phone ? objXPhone : pause.x - pauseR - gap - clockW,
     y: phone ? topY + (rowH - clockH) / 2 : topY,
     w: clockW,
     h: clockH,
   };
-  const mapS = Math.round((phone ? 64 : portrait ? 80 : 70) * u);
-  const minimap = { x: inner.x + gap, y: topY, w: mapS, h: mapS };
-  const rankLeft = minimap.x + minimap.w + gap;
-  const objWPhone = Math.min(168, Math.round(inner.w * 0.44));
-  const objXPhone = inner.x + inner.w - gap - objWPhone;
-  const rankRight = phone ? Math.min(clock.x - gap, objXPhone - gap) : clock.x - gap;
+  const rankRight = phone ? objXPhone - gap : clock.x - gap;
   const rankSpan = Math.max(0, rankRight - rankLeft);
   const difficulty = phone
     ? {
@@ -173,10 +174,10 @@ export function layoutHud(vp: Viewport, fit: Fit): HudLayout {
   const objW = phone
     ? objWPhone
     : Math.min(196, inner.x + inner.w - objX - gap);
-  const objH = phone ? 102 : 128;
+  const objH = phone ? 108 : 128;
   const objectives = {
     x: objX,
-    y: clock.y + clock.h + 6,
+    y: clock.y + clock.h + (phone ? 2 : 6),
     w: objW,
     h: objH,
   };

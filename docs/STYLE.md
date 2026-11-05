@@ -126,6 +126,8 @@ The wide amber rank bar on image 1 has no pack frame yet. Draw that bar to match
 
 **HUD r31** tightens phone chrome against `docs/target_look.jpg`: brass `panel_frame_small` timer strip with clock glyph, skull, and live kills; `objectives_panel` under gear frame; larger blits for `minimap_frame`, `heart_ring`, `power_slot`, and `ultimate_button`; brass pause ring on phone.
 
+**HUD obj-r35** stacks the phone timer strip and `objectives_panel` in one right-aligned column (shared width, 2 px gap), drops the gear overlay on phone objectives so the brass panel reads cleanly, and tightens minimap inset so the gold rim stays visible without covering the hunter lane.
+
 Do not blit a second resource bar.
 
 ## World sprites
