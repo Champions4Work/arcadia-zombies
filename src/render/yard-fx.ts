@@ -25,6 +25,9 @@ const PHONE_FACADE_VW = 420;
 const TANK_SCALE = 1.2;
 const STEAM_VENT_SCALE = 0.76;
 const STEAM_VENT_ALPHA = 0.24;
+const PHONE_HERO_VALVE_SCALE = 0.84;
+const PHONE_HERO_STEAM_SCALE = 0.9;
+const PHONE_HERO_STEAM_ALPHA = 0.42;
 const BLUE_GLOW_ALPHA = 0.3;
 const PHONE_HERO_TANK_SCALE = 1.45;
 const PHONE_HERO_CONVEYOR_SCALE = 1.3;
@@ -103,11 +106,12 @@ const STEAM_VENTS = [
   { x: 588, y: 462 },
 ];
 
-const HERO_BAND_STEAM = [
-  { x: 384, y: 348 },
-  { x: 576, y: 356 },
-  { x: 432, y: 412 },
+const HERO_BAND_STEAM: { x: number; y: number }[] = [
+  { x: 396, y: 288 },
+  { x: 564, y: 288 },
 ];
+
+export const PHONE_HERO_STEAM = HERO_BAND_STEAM;
 
 export const YARD_CLEAR = { x0: 352, y0: 318, x1: 608, y1: 638 };
 export const PHONE_CAM = { x0: 328, y0: 0, x1: 632, y1: 640 };
@@ -546,6 +550,30 @@ function steamPuff(ctx: CanvasRenderingContext2D, x: number, y: number, tick: nu
   ctx.restore();
 }
 
+export function paintPhoneHeroSteam(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  tick: number,
+): void {
+  const lift = ((tick * 0.35) % 14);
+  ctx.save();
+  ctx.globalAlpha = 0.96;
+  blitScaled(ctx, "valve_steam", x - 16, y + 8, PHONE_HERO_VALVE_SCALE);
+  ctx.restore();
+  steamPuff(ctx, x, y - 6, tick);
+  ctx.save();
+  ctx.globalCompositeOperation = "source-over";
+  ctx.globalAlpha = PHONE_HERO_STEAM_ALPHA;
+  blitScaled(ctx, steamFrame(tick), x - 12, y - 32 - lift, PHONE_HERO_STEAM_SCALE);
+  ctx.globalAlpha = PHONE_HERO_STEAM_ALPHA * 0.78;
+  blitScaled(ctx, steamFrame(tick + 2), x + 4, y - 22 - lift * 0.55, PHONE_HERO_STEAM_SCALE * 0.82);
+  ctx.globalCompositeOperation = "soft-light";
+  ctx.globalAlpha = PHONE_HERO_STEAM_ALPHA * 0.55;
+  blitScaled(ctx, steamFrame(tick + 5), x - 6, y - 44 - lift * 0.75, PHONE_HERO_STEAM_SCALE * 0.7);
+  ctx.restore();
+}
+
 export function paintVentSteam(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -553,23 +581,19 @@ export function paintVentSteam(
   tick: number,
   heroBand = false,
 ): void {
-  const lift = ((tick * 0.35) % 14);
   if (heroBand) {
-    ctx.save();
-    ctx.globalAlpha = 0.82;
-    blitScaled(ctx, "valve_steam", x - 8, y + 4, 0.58);
-    ctx.restore();
+    paintPhoneHeroSteam(ctx, x, y, tick);
+    return;
   }
+  const lift = ((tick * 0.35) % 14);
   steamPuff(ctx, x, y, tick);
-  const alpha = heroBand ? STEAM_VENT_ALPHA * 1.45 : STEAM_VENT_ALPHA;
-  const scale = heroBand ? STEAM_VENT_SCALE * 0.92 : STEAM_VENT_SCALE;
   ctx.save();
   ctx.globalCompositeOperation = "soft-light";
-  ctx.globalAlpha = alpha;
-  blitScaled(ctx, steamFrame(tick), x - 6, y - 20 - lift, scale);
+  ctx.globalAlpha = STEAM_VENT_ALPHA;
+  blitScaled(ctx, steamFrame(tick), x - 6, y - 20 - lift, STEAM_VENT_SCALE);
   ctx.globalCompositeOperation = "source-over";
-  ctx.globalAlpha = alpha * 0.72;
-  blitScaled(ctx, steamFrame(tick + 4), x + 4, y - 12 - lift * 0.45, scale * 0.88);
+  ctx.globalAlpha = STEAM_VENT_ALPHA * 0.72;
+  blitScaled(ctx, steamFrame(tick + 4), x + 4, y - 12 - lift * 0.45, STEAM_VENT_SCALE * 0.88);
   ctx.restore();
 }
 
@@ -778,6 +802,12 @@ function paintPhoneHeroBlits(
     if (b.id === "pipes_blue_tank") bluePool(ctx, b.x, b.y + 8, tick);
     blitScaled(ctx, b.id, b.x, b.y, b.sc);
   }
+  if (vw >= PHONE_FACADE_VW) return;
+  for (const s of PHONE_HERO_STEAM) {
+    if (!visible(s.x, s.y, camX, camY, vw, vh, 72)) continue;
+    paintShadow(ctx, s.x, s.y + 10, 10, 4);
+    paintPhoneHeroSteam(ctx, s.x, s.y, tick);
+  }
 }
 
 export function paintYardLive(
@@ -843,7 +873,9 @@ export function paintYardLive(
   }
   for (const vent of ventsOf()) {
     if (!visible(vent.x, vent.y, camX, camY, vw, vh, 40)) continue;
-    paintVentSteam(ctx, vent.x, vent.y, tick, heroBandVent(vent.x, vent.y));
+    const heroBand = heroBandVent(vent.x, vent.y);
+    if (heroBand && vw < PHONE_FACADE_VW) continue;
+    paintVentSteam(ctx, vent.x, vent.y, tick, heroBand);
   }
   if (yardBound === ZONE_BRASS) paintBrassGrade(ctx, camX, camY, vw, vh);
 }
