@@ -18,26 +18,42 @@ function collectPageFaults(page: Page): string[] {
 
 async function knobTravel(page: Page): Promise<number> {
   return page.locator("#knob").evaluate((el) => {
-    const node = el as HTMLElement;
-    const joy = node.parentElement;
-    if (!joy || joy.hasAttribute("hidden")) return 0;
-    const nums = node.style.transform.match(/-?\d+(?:\.\d+)?/g);
+    const nums = el.style.transform.match(/-?\d+(?:\.\d+)?/g);
     const x = Number(nums?.[0] ?? "0");
     const y = Number(nums?.[1] ?? "0");
     return Math.hypot(x, y);
   });
 }
 
-async function dragStick(page: Page, x: number, y: number): Promise<number> {
+async function pollKnobTravel(page: Page, min: number, ms = 1200): Promise<number> {
+  const deadline = Date.now() + ms;
   let travel = 0;
-  for (let attempt = 0; attempt < 4; attempt++) {
-    await page.keyboard.press("1");
-    await page.waitForTimeout(80);
-    await page.mouse.move(x, y);
-    await page.mouse.down();
-    await page.mouse.move(x + 90, y, { steps: 8 });
-    await page.waitForTimeout(100);
+  while (Date.now() < deadline) {
     travel = await knobTravel(page);
+    if (travel > min) return travel;
+    await page.waitForTimeout(40);
+  }
+  return travel;
+}
+
+async function dragStick(page: Page, x: number, y: number, boxH: number): Promise<number> {
+  const fallbacks = [y, y - 72, y - 144, y - boxH * 0.22];
+  let travel = 0;
+  for (let attempt = 0; attempt < fallbacks.length; attempt++) {
+    if (await page.locator("#play-focus:not([hidden])").isVisible()) {
+      await page.keyboard.press("1");
+      await page.waitForTimeout(120);
+      continue;
+    }
+    await page.evaluate(() => {
+      const el = document.activeElement;
+      if (el instanceof HTMLElement) el.blur();
+    });
+    const tryY = fallbacks[attempt] ?? y;
+    await page.mouse.move(x, tryY);
+    await page.mouse.down();
+    await page.mouse.move(x + 90, tryY, { steps: 8 });
+    travel = await pollKnobTravel(page, 8);
     if (travel > 8) return travel;
     await page.mouse.up();
   }
@@ -54,14 +70,15 @@ test("loads the game and plays a few seconds without page errors", async ({ page
   await page.waitForTimeout(3000);
   await expect(page.locator("#game")).toBeVisible();
   await expect(page.locator("#veil")).not.toHaveClass(/\bon\b/);
+  await expect(page.locator("#play-focus")).toBeHidden();
   await expect(page.locator("#sfx")).toBeHidden();
   await expect(page.locator("#opts")).toBeHidden();
   await expect(page.locator("#sfx-vol")).toBeHidden();
   const box = await page.locator("#game").boundingBox();
   if (!box) throw new Error("game has no box");
   const x = box.x + Math.min(110, box.width * 0.22);
-  const y = box.y + box.height - Math.min(150, box.height * 0.18);
-  const travel = await dragStick(page, x, y);
+  const y = box.y + box.height - Math.min(240, box.height * 0.32);
+  const travel = await dragStick(page, x, y, box.height);
   expect(travel).toBeGreaterThan(8);
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
   await page.mouse.up();

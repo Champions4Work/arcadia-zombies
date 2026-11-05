@@ -7,7 +7,8 @@ import { blitAtlas } from "../art/atlas";
 import { hudType } from "../art/look";
 import { blitSheetFit } from "../art/sheet";
 import { pixelWell } from "../art/chrome";
-import { BRASS_HI, CYAN, IRON, STEAM, XP } from "../shell/theme";
+import { IRON, STEAM } from "../shell/theme";
+import { BRASS_HI, XP } from "../art/palette";
 
 export const XP_BAR_FRAME_ASPECT = 240 / 70;
 
@@ -193,8 +194,8 @@ function drawPhoneXpBar(
   const fillW = Math.max(t > 0 ? 5 : 0, (tubeW - 2) * t);
   if (fillW > 0) {
     const glow = ctx.createLinearGradient(tubeX, tubeY, tubeX + fillW, tubeY);
-    glow.addColorStop(0, glowMs > 0 ? BRASS_HI : "#2a7ec8");
-    glow.addColorStop(0.55, glowMs > 0 ? XP : CYAN);
+    glow.addColorStop(0, glowMs > 0 ? "#f0c878" : "#2a7ec8");
+    glow.addColorStop(0.55, glowMs > 0 ? "#f0b44a" : "#7ae0d4");
     glow.addColorStop(1, "#9af4ff");
     ctx.fillStyle = glow;
     ctx.fillRect(tubeX + 1, tubeY + 1, fillW - 2, tubeH - 2);
