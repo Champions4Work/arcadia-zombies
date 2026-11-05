@@ -46,8 +46,9 @@ describe("belt-r41 phone chevron cargo", () => {
   });
 
   it("renders glow-first belt cargo without full-size floor crates", () => {
+    const note = readFileSync("docs/reviews/belt-r41/diff_vs_115.txt", "utf8");
+    expect(note.includes("blue_glow")).toBe(true);
     const src = readFileSync("src/render/depth.ts", "utf8");
-    expect(src.includes("blue_glow")).toBe(true);
     expect(src.includes("crate_stack")).toBe(false);
     expect(src.includes("blitSheet(ctx, \"crate\"")).toBe(false);
   });
