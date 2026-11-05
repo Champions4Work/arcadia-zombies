@@ -3,12 +3,47 @@ import type { World } from "../sim/types";
 import type { Box, HudLayout } from "../shell/hud-layout";
 import { heartIcon, ringMeter } from "../art/look";
 import { blitSheetFit } from "../art/sheet";
-import { BRASS, BRASS_HI, COPPER, DANGER, HEALTH, XP } from "../shell/theme";
+import { BRASS, BRASS_HI, COPPER, CYAN, DANGER, HEALTH, STEAM, XP } from "../shell/theme";
 import { drawIcon } from "./icons";
 import { weaponBadge } from "./weapon-badge";
 
 const HEART_GLOW = "#48f0e8";
 const HEART_CORE = "#d82428";
+const ULT_SUN = "#f0c040";
+const ULT_SUN_HI = "#ffe8a8";
+
+function paintPhoneUltSun(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number, strength: number): void {
+  const k = Math.max(0, Math.min(1, strength));
+  if (k <= 0) return;
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  ctx.globalAlpha = 0.22 + k * 0.48;
+  const halo = ctx.createRadialGradient(cx, cy, s * 0.05, cx, cy, s * 1.12);
+  halo.addColorStop(0, "rgba(255,228,140,0.95)");
+  halo.addColorStop(0.42, "rgba(240,168,48,0.62)");
+  halo.addColorStop(1, "rgba(232,104,32,0)");
+  ctx.fillStyle = halo;
+  ctx.beginPath();
+  ctx.arc(cx, cy, s * 1.12, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+  ctx.save();
+  ctx.globalAlpha = 0.35 + k * 0.55;
+  ctx.fillStyle = ULT_SUN;
+  ctx.beginPath();
+  ctx.arc(cx, cy, s * 0.44, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = ULT_SUN_HI;
+  ctx.lineWidth = 1.4;
+  for (let a = 0; a < 8; a++) {
+    const ang = (a / 8) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(ang) * s * 0.58, cy + Math.sin(ang) * s * 0.58);
+    ctx.lineTo(cx + Math.cos(ang) * s * (0.92 + k * 0.18), cy + Math.sin(ang) * s * (0.92 + k * 0.18));
+    ctx.stroke();
+  }
+  ctx.restore();
+}
 
 function badgeIcon(ctx: CanvasRenderingContext2D, kind: number, x: number, y: number): void {
   drawIcon(ctx, kind, x, y, 12);
@@ -49,7 +84,7 @@ export function drawPhoneHealth(ctx: CanvasRenderingContext2D, w: World, box: Bo
   const cy = box.y + box.h / 2;
   const r = Math.min(box.w, box.h) * 0.34;
   const ringCol = low ? DANGER : HEALTH;
-  const heartCol = low ? DANGER : HEART_CORE;
+  const heartCol = low ? HEART_CORE : CYAN;
   const pad = 18;
   const bw = box.w + pad * 2;
   const bh = box.h + pad * 2;
@@ -57,10 +92,18 @@ export function drawPhoneHealth(ctx: CanvasRenderingContext2D, w: World, box: Bo
   const by = box.y - pad;
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
-  ctx.globalAlpha = 0.28 + frac * 0.18;
+  ctx.globalAlpha = 0.38 + frac * 0.22;
   blitSheetFit(ctx, "heart_ring", bx - 2, by - 2, bw + 4, bh + 4);
   ctx.restore();
   blitSheetFit(ctx, "heart_ring", bx, by, bw, bh);
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  ctx.globalAlpha = 0.32 + frac * 0.2;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 0.72, 0, Math.PI * 2);
+  ctx.fillStyle = HEART_GLOW;
+  ctx.fill();
+  ctx.restore();
   ctx.beginPath();
   ctx.arc(cx, cy, r * 0.46, 0, Math.PI * 2);
   ctx.fillStyle = "rgba(6,8,12,0.68)";
@@ -68,15 +111,22 @@ export function drawPhoneHealth(ctx: CanvasRenderingContext2D, w: World, box: Bo
   ringMeter(ctx, cx, cy, r * 0.98, frac, ringCol);
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
-  ctx.globalAlpha = 0.55;
+  ctx.globalAlpha = 0.62;
   ringMeter(ctx, cx, cy, r * 0.98, frac, HEART_GLOW);
   ctx.restore();
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
-  ctx.globalAlpha = 0.42;
-  heartIcon(ctx, cx, cy + 1, r * 0.46, HEART_GLOW);
+  ctx.globalAlpha = 0.5;
+  heartIcon(ctx, cx, cy + 1, r * 0.5, HEART_GLOW);
   ctx.restore();
-  heartIcon(ctx, cx, cy + 1, r * 0.46, heartCol);
+  heartIcon(ctx, cx, cy + 1, r * 0.4, heartCol);
+  if (!low) {
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    ctx.globalAlpha = 0.35;
+    heartIcon(ctx, cx, cy, r * 0.28, STEAM);
+    ctx.restore();
+  }
   if (w.meta.revive > 0) {
     ctx.font = "700 9px sans-serif";
     ctx.textAlign = "center";
@@ -95,9 +145,10 @@ export function drawPhoneUlt(ctx: CanvasRenderingContext2D, w: World, box: Box):
   const pad = 18;
   blitSheetFit(ctx, "ultimate_button", box.x - pad, box.y - pad, box.w + pad * 2, box.h + pad * 2);
   ctx.beginPath();
-  ctx.arc(cx, cy, r * 0.48, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(6,8,12,0.72)";
+  ctx.arc(cx, cy, r * 0.86, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(10,8,6,0.9)";
   ctx.fill();
+  const sunPulse = ready ? 1 : 0.32 + fill * 0.68;
   if (ready) {
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
@@ -111,9 +162,10 @@ export function drawPhoneUlt(ctx: CanvasRenderingContext2D, w: World, box: Box):
   ringMeter(ctx, cx, cy, r, fill, ready ? XP : BRASS);
   ctx.beginPath();
   ctx.arc(cx, cy, r * 0.52, 0, Math.PI * 2);
-  ctx.fillStyle = ready ? "rgba(255,168,48,0.22)" : "rgba(24,20,16,0.55)";
+  ctx.fillStyle = ready ? "rgba(255,168,48,0.28)" : "rgba(48,36,24,0.62)";
   ctx.fill();
   badgeIcon(ctx, weaponBadge(w).kind, cx, cy);
+  paintPhoneUltSun(ctx, cx, cy, r * 0.96, sunPulse);
   if (ready) {
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
