@@ -1,0 +1,6 @@
+Closed #116 (r40) and #118 (r41) kept perimeter soft-light steam at STEAM_VENT_ALPHA≈0.24.
+The phone mid-band showed only faint grey ellipses — no brass valve wheel silhouette and no white/gray packed plume beside the #112 in-frame cyan tanks.
+
+steam-r42 adds PHONE_HERO_STEAM sites at world x≈356/604 y≈328 (inside camX≈332…628) and paintPhoneHeroSteam:
+scaled valve_steam plus steam_1–4 with soft-light under-puff and source-over white plumes (alpha≈0.64).
+Midband gate unchanged: scripts/midband_pixel_gate.mjs cyan=0 blue>=200 on midband_crop.

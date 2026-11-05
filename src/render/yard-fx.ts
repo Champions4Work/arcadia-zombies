@@ -36,6 +36,16 @@ export const PHONE_HERO_BLITS: { id: string; x: number; y: number; sc: number }[
   { id: "conveyor", x: 590, y: 380, sc: PHONE_HERO_CONVEYOR_SCALE },
 ];
 
+export const PHONE_HERO_STEAM: { x: number; y: number }[] = [
+  { x: 356, y: 328 },
+  { x: 604, y: 328 },
+];
+
+const PHONE_STEAM_VALVE_SCALE = 1.12;
+const PHONE_STEAM_PUFF_SCALE = 1.08;
+const PHONE_STEAM_PUFF_ALPHA = 0.64;
+const PHONE_STEAM_SOFT_ALPHA = 0.34;
+
 const PROPS: { id: string; x: number; y: number }[] = [
   { id: "window_lit", x: 324, y: 188 },
   { id: "window_lit", x: 348, y: 196 },
@@ -763,6 +773,30 @@ export function yardPropHits(x0: number, y0: number, x1: number, y1: number): nu
   return n;
 }
 
+export function paintPhoneHeroSteam(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  tick: number,
+): void {
+  const lift = ((tick * 0.35) % 14);
+  paintShadow(ctx, x, y + 6, 16, 5);
+  ctx.save();
+  ctx.globalAlpha = 0.96;
+  blitScaled(ctx, "valve_steam", x - 10, y + 2, PHONE_STEAM_VALVE_SCALE);
+  ctx.restore();
+  ctx.save();
+  ctx.globalCompositeOperation = "soft-light";
+  ctx.globalAlpha = PHONE_STEAM_SOFT_ALPHA;
+  blitScaled(ctx, steamFrame(tick), x - 8, y - 28 - lift, PHONE_STEAM_PUFF_SCALE);
+  ctx.globalCompositeOperation = "source-over";
+  ctx.globalAlpha = PHONE_STEAM_PUFF_ALPHA;
+  blitScaled(ctx, steamFrame(tick), x - 8, y - 28 - lift, PHONE_STEAM_PUFF_SCALE);
+  ctx.globalAlpha = PHONE_STEAM_PUFF_ALPHA * 0.78;
+  blitScaled(ctx, steamFrame(tick + 4), x + 2, y - 18 - lift * 0.5, PHONE_STEAM_PUFF_SCALE * 0.92);
+  ctx.restore();
+}
+
 function paintPhoneHeroBlits(
   ctx: CanvasRenderingContext2D,
   tick: number,
@@ -777,6 +811,10 @@ function paintPhoneHeroBlits(
     paintShadow(ctx, b.x, b.y, 14, 5);
     if (b.id === "pipes_blue_tank") bluePool(ctx, b.x, b.y + 8, tick);
     blitScaled(ctx, b.id, b.x, b.y, b.sc);
+  }
+  for (const s of PHONE_HERO_STEAM) {
+    if (!visible(s.x, s.y, camX, camY, vw, vh, 80)) continue;
+    paintPhoneHeroSteam(ctx, s.x, s.y, tick);
   }
 }
 
