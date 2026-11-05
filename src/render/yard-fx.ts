@@ -1,6 +1,11 @@
 import { blitSheet, steamFrame } from "../art/sheet";
 import { paintShadow } from "../art/look";
 import { BRASS, BRASS_HI, BRASS_LO, DANGER, INK, XP } from "../shell/theme";
+import {
+  PHONE_HERO_BELT_X0,
+  PHONE_HERO_BELT_X1,
+  PHONE_HERO_BELT_Y,
+} from "../sim/depth";
 import { ZONE_BOILER, ZONE_BRASS, ZONE_TRAM } from "../sim/zones";
 import { FEAT_LAMP, groundFeatureAt, groundFeatureCount } from "./ground";
 
@@ -35,6 +40,15 @@ export const PHONE_HERO_BLITS: { id: string; x: number; y: number; sc: number }[
   { id: "conveyor", x: 370, y: 380, sc: PHONE_HERO_CONVEYOR_SCALE },
   { id: "conveyor", x: 590, y: 380, sc: PHONE_HERO_CONVEYOR_SCALE },
 ];
+
+export {
+  PHONE_HERO_BELT_REVIEW_X,
+  PHONE_HERO_BELT_X0,
+  PHONE_HERO_BELT_X1,
+  PHONE_HERO_BELT_Y,
+} from "../sim/depth";
+const PHONE_HERO_CARGO_SLOT = 1.52;
+const PHONE_HERO_CARGO_PICKUP = 1.38;
 
 const PROPS: { id: string; x: number; y: number }[] = [
   { id: "window_lit", x: 324, y: 188 },
@@ -762,6 +776,33 @@ function paintPhoneHeroBlits(
   }
 }
 
+function paintPhoneHeroBeltCargo(
+  ctx: CanvasRenderingContext2D,
+  tick: number,
+  camX: number,
+  camY: number,
+  vw: number,
+  vh: number,
+): void {
+  if (yardBound !== ZONE_BRASS || vw >= PHONE_FACADE_VW) return;
+  const span = PHONE_HERO_BELT_X1 - PHONE_HERO_BELT_X0;
+  const kinds = ["crate_stack", "crate"] as const;
+  for (let k = 0; k < 2; k++) {
+    const along = (tick * 2.35 + k * span * 0.54) % span;
+    const x = PHONE_HERO_BELT_X0 + along;
+    const y = PHONE_HERO_BELT_Y;
+    if (!visible(x, y, camX, camY, vw, vh, 72)) continue;
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    ctx.globalAlpha = 0.58 + ((tick >> 2) & 1) * 0.22;
+    blitScaled(ctx, "blue_glow", x, y - 10, 1.12);
+    ctx.restore();
+    paintShadow(ctx, x, y, 16, 5);
+    blitScaled(ctx, "power_slot", x, y - 2, PHONE_HERO_CARGO_SLOT);
+    blitScaled(ctx, kinds[k] ?? "crate", x, y + 2, PHONE_HERO_CARGO_PICKUP);
+  }
+}
+
 export function paintYardLive(
   ctx: CanvasRenderingContext2D,
   tick: number,
@@ -809,6 +850,7 @@ export function paintYardLive(
     blitSheet(ctx, p.id, p.x, p.y);
   }
   paintPhoneHeroBlits(ctx, tick, camX, camY, vw, vh);
+  paintPhoneHeroBeltCargo(ctx, tick, camX, camY, vw, vh);
   if (yardBound === ZONE_TRAM) {
     for (const car of TRAM_CARS) {
       if (!visible(car.x, car.y, camX, camY, vw, vh, 90)) continue;

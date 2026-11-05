@@ -91,6 +91,20 @@ try {
   throw e;
 }
 
+const beltCargoPath = `${dest}/belt_cargo_crop.png`;
+execFileSync("python3", [
+  "-c",
+  `
+from PIL import Image
+im = Image.open(${JSON.stringify(playPath)}).convert("RGBA")
+w, h = im.size
+y0 = int(h * 0.30)
+y1 = int(h * 0.52)
+im.crop((0, y0, w, y1)).save(${JSON.stringify(beltCargoPath)})
+print("belt cargo crop", y0, y1, w)
+`,
+]);
+
 function sideBySide(leftPath, rightPath, outPath, leftLabel, rightLabel) {
   execFileSync("node", [
     "scripts/compare-shots.mjs",
@@ -157,9 +171,20 @@ if (r37Fail) {
     "PLAY",
   );
 }
+const r114Before = process.argv[7];
+if (r114Before) {
+  sideBySide(
+    resolve(root, r114Before),
+    playPath,
+    `${dest}/vs_r114_main_after.png`,
+    "R114 MAIN",
+    "R40 PLAY",
+  );
+}
 await browser.close();
 console.log(`wrote ${playPath}`);
 console.log(`wrote ${midbandPath}`);
+console.log(`wrote ${beltCargoPath}`);
 console.log(`wrote ${dest}/compare_390_ref1.png`);
 console.log(`wrote ${dest}/compare_390_ref2.png`);
 console.log(`wrote ${dest}/trio_ref1_play_ref2.png`);

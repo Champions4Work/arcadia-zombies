@@ -38,6 +38,10 @@ export const SIDE_BELT_LEFT_X = 304;
 export const SIDE_BELT_RIGHT_X = 656;
 export const SIDE_BELT_RIDE_Y = 392;
 export const BELT_PHONE_VISIBLE_Y = 560;
+export const PHONE_HERO_BELT_Y = 380;
+export const PHONE_HERO_BELT_X0 = 348;
+export const PHONE_HERO_BELT_X1 = 612;
+export const PHONE_HERO_BELT_REVIEW_X = 468;
 
 export interface DepthBag {
   beltX: Float32Array;
