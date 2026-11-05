@@ -10,8 +10,8 @@ export const HERO_PACK_H = 64;
 export const HERO_DRAW_SCALE = 1.4;
 export const FOE_TO_HERO = 0.58;
 export const BRUTE_TO_HERO = 1.12;
-export const CASE_W = 4.8;
-export const CASE_H = 2;
+export const CASE_W = 5.2;
+export const CASE_H = 2.2;
 const HIT_TINT = "#fff4c8";
 const DASH_RING = "#7ae0d4";
 
@@ -198,7 +198,7 @@ export function paintSignatureHero(
   ctx.lineCap = "round";
   ctx.beginPath();
   ctx.moveTo(mx, my);
-  ctx.lineTo(mx + nx * 28, my + ny * 28);
+  ctx.lineTo(mx + nx * 34, my + ny * 34);
   ctx.stroke();
   ctx.restore();
 }
@@ -349,24 +349,25 @@ export function paintEnergyTank(ctx: CanvasRenderingContext2D, x: number, y: num
 
 export function paintBlood(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, age = 1): void {
   const seed = ((x * 13 + y * 7 + s * 17) | 0);
-  const n = 7 + (seed & 3);
-  const fade = (0.62 + (seed & 3) * 0.05) * Math.max(0.24, Math.min(1, age));
-  const span = 6 + (s & 5);
+  const n = 11 + (seed & 7);
+  const fade = (0.44 + (seed & 3) * 0.04) * Math.max(0.2, Math.min(1, age));
+  const span = 4 + (s & 3);
   ctx.fillStyle = "#5a1410";
   for (let i = 0; i < n; i++) {
     const ox = ((seed + i * 19) % (span * 2 + 1)) - span;
-    const oy = ((seed + i * 11) % (span + 3)) - (span >> 1);
-    const rw = 3.2 + ((seed + i * 5) % Math.max(2, span >> 1));
-    const rh = 2.1 + ((seed + i * 3) % Math.max(2, span >> 2));
-    ctx.globalAlpha = fade;
-    ctx.beginPath();
-    ctx.ellipse(x + ox, y + oy, rw, rh, ((seed + i) % 8) * 0.28, 0, Math.PI * 2);
-    ctx.fill();
+    const oy = ((seed + i * 11) % (span + 2)) - (span >> 1);
+    const dot = 1 + ((seed + i * 5) & 1);
+    ctx.globalAlpha = fade * (0.58 + ((seed + i) & 3) * 0.1);
+    ctx.fillRect((x + ox) | 0, (y + oy) | 0, dot, dot);
+    if ((seed + i) & 3) ctx.fillRect((x + ox + 1) | 0, (y + oy - 1) | 0, 1, 1);
   }
-  ctx.fillStyle = "#320808";
-  ctx.fillRect(x + 3 + (seed % 3), y + 1, 2, 1);
-  ctx.fillRect(x - 4, y + 3, 1, 2);
-  ctx.fillRect(x + 1, y - 3, 1, 1);
+  ctx.fillStyle = "#7a1810";
+  for (let i = 0; i < 3 + (seed & 2); i++) {
+    const ox = ((seed + i * 23) % (span + 4)) - (span >> 1);
+    const oy = ((seed + i * 17) % (span + 3)) - (span >> 1);
+    ctx.globalAlpha = fade * 0.62;
+    ctx.fillRect((x + ox) | 0, (y + oy) | 0, 1, 2);
+  }
   ctx.globalAlpha = 1;
 }
 

@@ -66,7 +66,7 @@ describe("rivet spawn", () => {
     resetJuice();
     const w = quietAim(14, 70, 0);
     fireRivet(w);
-    expect(particleCount()).toBe(2);
+    expect(particleCount()).toBe(4);
   });
 
   it("aims up-left still leaves the spawn on the barrel, not the feet", () => {

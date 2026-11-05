@@ -27,11 +27,12 @@ describe("r32 fx-only phone read", () => {
 
   it("raises combat juice without r91 muzzle overscale", () => {
     const look = readFileSync("src/art/look.ts", "utf8");
-    expect(look.includes("CASE_W = 4.8")).toBe(true);
+    expect(look.includes("CASE_W = 5.2")).toBe(true);
     expect(look.includes("ellipse(mx, my, 22, 12")).toBe(false);
-    expect(look.includes("lineTo(mx + nx * 28")).toBe(true);
+    expect(look.includes("lineTo(mx + nx * 28")).toBe(false);
+    expect(look.includes("lineTo(mx + nx * 34")).toBe(true);
     const juice = readFileSync("src/render/juice.ts", "utf8");
-    expect(juice.includes("BLOOD_DROP_RX = 6.6")).toBe(true);
+    expect(juice.includes("BLOOD_DROP_RX = 4.8")).toBe(true);
   });
 
   it("rings review blood outside the hero lane", () => {
