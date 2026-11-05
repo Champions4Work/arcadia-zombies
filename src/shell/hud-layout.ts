@@ -128,8 +128,11 @@ export function layoutHud(vp: Viewport, fit: Fit): HudLayout {
     y: topY + rowH / 2,
     r: pauseR,
   };
-  const mapS = Math.round((phone ? 64 : portrait ? 80 : 70) * u);
-  const minimap = { x: inner.x + gap, y: topY, w: mapS, h: mapS };
+  const mapS = phone
+    ? Math.max(52, rowH)
+    : Math.round((portrait ? 80 : 70) * u);
+  const mapY = phone ? topY + Math.max(0, (rowH - mapS) * 0.5) : topY;
+  const minimap = { x: inner.x + gap, y: mapY, w: mapS, h: mapS };
   const rankLeft = minimap.x + minimap.w + gap;
   const clusterRight = pause.x - pauseR - gap;
   const objWPhone = Math.min(150, Math.round(inner.w * 0.38));

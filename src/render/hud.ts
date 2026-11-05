@@ -427,20 +427,63 @@ function pauseButton(ctx: CanvasRenderingContext2D, pause: Circle): void {
   ctx.fillRect(pause.x + 2, pause.y - 6, 3, 12);
 }
 
-function minimap(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
-  const layout = currentHud();
-  const phone = layout?.phone ?? false;
-  const pad = phone ? 12 : 14;
-  const r = Math.max(14, Math.min(box.w, box.h) / 2 - (phone ? 4 : 1));
-  const cx = box.x + box.w / 2;
-  const cy = box.y + box.h / 2;
-  blitSheetFit(ctx, "minimap_frame", box.x - pad, box.y - pad, box.w + pad * 2, box.h + pad * 2);
-  ctx.save();
+function miniAim(ctx: CanvasRenderingContext2D, cx: number, cy: number, aimX: number, aimY: number): void {
+  const len = Math.hypot(aimX, aimY);
+  const ux = len > 0.001 ? aimX / len : 1;
+  const uy = len > 0.001 ? aimY / len : 0;
+  const px = -uy;
+  const py = ux;
+  const tip = 6.5;
+  const back = 3.6;
+  const wing = 3.8;
+  ctx.fillStyle = XP;
   ctx.beginPath();
-  ctx.arc(cx, cy, r - (phone ? 4 : 3), 0, Math.PI * 2);
-  ctx.fillStyle = "#14100c";
+  ctx.moveTo(cx + ux * tip, cy + uy * tip);
+  ctx.lineTo(cx - ux * back + px * wing, cy - uy * back + py * wing);
+  ctx.lineTo(cx - ux * back - px * wing, cy - uy * back - py * wing);
+  ctx.closePath();
   ctx.fill();
-  ctx.clip();
+  ctx.fillStyle = BRASS_HI;
+  ctx.beginPath();
+  ctx.moveTo(cx + ux * (tip - 1.2), cy + uy * (tip - 1.2));
+  ctx.lineTo(cx - ux * back + px * (wing - 0.6), cy - uy * back + py * (wing - 0.6));
+  ctx.lineTo(cx - ux * back - px * (wing - 0.6), cy - uy * back - py * (wing - 0.6));
+  ctx.closePath();
+  ctx.fill();
+}
+
+function paintMiniObstacles(
+  ctx: CanvasRenderingContext2D,
+  w: World,
+  cx: number,
+  cy: number,
+  r: number,
+  span: number,
+): void {
+  const a = w.arena;
+  const scale = (r - 5) / span;
+  ctx.fillStyle = "#2a2620";
+  for (let i = 0; i < a.obsN; i++) {
+    if (!a.obsAlive[i]) continue;
+    const ox = a.obsX[i] ?? 0;
+    const oy = a.obsY[i] ?? 0;
+    const hw = Math.max(4, a.obsHW[i] ?? 8);
+    const hh = Math.max(4, a.obsHH[i] ?? 8);
+    const mx = cx + (ox - w.px) * scale;
+    const my = cy + (oy - w.py) * scale;
+    const mw = Math.max(3, hw * scale * 0.55);
+    const mh = Math.max(3, hh * scale * 0.55);
+    if (mx + mw < cx - r || mx - mw > cx + r || my + mh < cy - r || my - mh > cy + r) continue;
+    ctx.fillRect(mx - mw, my - mh, mw * 2, mh * 2);
+  }
+}
+
+function paintMiniRooms(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  r: number,
+): void {
   ctx.fillStyle = "#4a4030";
   ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
   ctx.fillStyle = "#1a1612";
@@ -466,8 +509,20 @@ function minimap(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   ctx.moveTo(cx - r * 0.52, cy);
   ctx.lineTo(cx + r * 0.2, cy);
   ctx.stroke();
-  const z = w.zombies;
+}
+
+function paintMiniDots(
+  ctx: CanvasRenderingContext2D,
+  w: World,
+  cx: number,
+  cy: number,
+  r: number,
+  span: number,
+  phone: boolean,
+): void {
   const local = 170;
+  const scale = (r - 5) / (phone ? span : local);
+  const z = w.zombies;
   let alive = 0;
   for (let i = 0; i < z.alive.length; i++) if (z.alive[i]) alive++;
   const step = alive > 96 ? Math.ceil(alive / 96) : 1;
@@ -475,27 +530,67 @@ function minimap(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   for (let i = 0; i < z.alive.length; i++) {
     if (!z.alive[i]) continue;
     if (step > 1 && seen++ % step !== 0) continue;
-    const mx = cx + (((z.x[i] ?? 0) - w.px) / local) * (r - 4);
-    const my = cy + (((z.y[i] ?? 0) - w.py) / local) * (r - 4);
-    ctx.fillStyle = DANGER;
-    ctx.fillRect(mx - 2.5, my - 2.5, 5, 5);
+    const mx = cx + (((z.x[i] ?? 0) - w.px) * scale);
+    const my = cy + (((z.y[i] ?? 0) - w.py) * scale);
+    if (phone) {
+      ctx.fillStyle = DANGER;
+      ctx.beginPath();
+      ctx.arc(mx, my, 2.4, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      ctx.fillStyle = DANGER;
+      ctx.fillRect(mx - 2.5, my - 2.5, 5, 5);
+    }
   }
   if (lichUp(w)) {
-    const lx = cx + ((lichX(w) - w.px) / local) * (r - 4);
-    const ly = cy + ((lichY(w) - w.py) / local) * (r - 4);
-    ctx.fillStyle = BRASS_HI;
-    ctx.fillRect(lx - 2.5, ly - 2.5, 5, 5);
+    const lx = cx + ((lichX(w) - w.px) * scale);
+    const ly = cy + ((lichY(w) - w.py) * scale);
+    if (phone) {
+      ctx.fillStyle = BRASS_HI;
+      ctx.beginPath();
+      ctx.arc(lx, ly, 2.8, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      ctx.fillStyle = BRASS_HI;
+      ctx.fillRect(lx - 2.5, ly - 2.5, 5, 5);
+    }
   }
-  ctx.fillStyle = "#7ef0ff";
+  if (phone) miniAim(ctx, cx, cy, w.aimX, w.aimY);
+  else {
+    ctx.fillStyle = "#7ef0ff";
+    ctx.beginPath();
+    ctx.arc(cx, cy, 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function minimap(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
+  const layout = currentHud();
+  const phone = layout?.phone ?? false;
+  const pad = phone ? 10 : 14;
+  const inset = phone ? 7 : 3;
+  const r = Math.max(14, Math.min(box.w, box.h) / 2 - inset);
+  const cx = box.x + box.w / 2;
+  const cy = box.y + box.h / 2;
+  const span = phone ? 200 : 170;
+  blitSheetFit(ctx, "minimap_frame", box.x - pad, box.y - pad, box.w + pad * 2, box.h + pad * 2);
+  ctx.save();
   ctx.beginPath();
-  ctx.arc(cx, cy, 2, 0, Math.PI * 2);
+  ctx.arc(cx, cy, r - (phone ? 5 : 3), 0, Math.PI * 2);
+  ctx.fillStyle = "#14100c";
   ctx.fill();
+  ctx.clip();
+  paintMiniRooms(ctx, cx, cy, r);
+  if (phone) paintMiniObstacles(ctx, w, cx, cy, r, span);
+  paintMiniDots(ctx, w, cx, cy, r, span, phone);
   ctx.restore();
-  ctx.beginPath();
-  ctx.arc(cx, cy, r - (phone ? 3 : 2), 0, Math.PI * 2);
-  ctx.strokeStyle = BRASS_HI;
-  ctx.lineWidth = phone ? 2.6 : 3.4;
-  ctx.stroke();
+  if (!phone) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r - 2, 0, Math.PI * 2);
+    ctx.strokeStyle = BRASS_HI;
+    ctx.lineWidth = 3.4;
+    ctx.stroke();
+  }
 }
 
 function badgeIcon(ctx: CanvasRenderingContext2D, kind: number, x: number, y: number): void {
