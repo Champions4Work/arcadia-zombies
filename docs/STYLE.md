@@ -220,6 +220,8 @@ The wide amber rank bar on image 1 has no pack frame yet. Draw that bar to match
 
 **HUD obj-r35** stacks the phone timer strip and `objectives_panel` in one right-aligned column (shared width, 2 px gap), drops the gear overlay on phone objectives so the brass panel reads cleanly, and tightens minimap inset so the gold rim stays visible without covering the hunter lane.
 
+**HUD obj-r46** restores **`panel_frame_gears`** on phone objectives, moves **Wave n/8** into the brass status strip (red skull + clock + stroked kills), and cleans the chapter strip with **`panel_frame_pipes`** + chapter title. Review **`docs/reviews/obj-r46/`** (`phone_390_play.png`, **`objectives_crop.png`**, trio vs refs, **`NOTE.md`**). Coordinator **Read-compare**; **no auto-merge**.
+
 Do not blit a second resource bar.
 
 ## World sprites

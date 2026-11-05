@@ -164,32 +164,35 @@ function banner(ctx: CanvasRenderingContext2D, w: World, box: Box, phone: boolea
     return;
   }
   const cy = box.y + box.h / 2;
-  const pad = 4;
-  const rx = 14;
+  const pad = 5;
+  const rx = 12;
+  blitSheetFit(ctx, "panel_frame_pipes", box.x - 10, box.y - 8, box.w + 20, box.h + 16);
   ctx.save();
   roundRect(ctx, box.x + pad, box.y + pad, box.w - pad * 2, box.h - pad * 2, rx);
-  ctx.fillStyle = "#6a3a10";
+  ctx.fillStyle = "rgba(12,10,8,0.78)";
   ctx.fill();
   roundRect(ctx, box.x + pad + 2, box.y + pad + 2, box.w - pad * 2 - 4, box.h - pad * 2 - 4, rx - 2);
   const glow = ctx.createLinearGradient(box.x, cy, box.x + box.w, cy);
-  glow.addColorStop(0, "#c87820");
-  glow.addColorStop(0.45, "#f0b040");
-  glow.addColorStop(1, "#e89828");
+  glow.addColorStop(0, "#8a5018");
+  glow.addColorStop(0.45, "#e0a040");
+  glow.addColorStop(1, "#b86820");
   ctx.fillStyle = glow;
   ctx.fill();
   ctx.restore();
   ctx.fillStyle = "#120c08";
   ctx.beginPath();
-  ctx.arc(box.x + 22, cy, 10, 0, Math.PI * 2);
+  ctx.arc(box.x + 22, cy, 9, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = "#f6e2a8";
   ctx.beginPath();
-  ctx.moveTo(box.x + 18, cy - 5);
-  ctx.lineTo(box.x + 18, cy + 5);
-  ctx.lineTo(box.x + 27, cy);
+  ctx.moveTo(box.x + 18, cy - 4);
+  ctx.lineTo(box.x + 18, cy + 4);
+  ctx.lineTo(box.x + 26, cy);
   ctx.closePath();
   ctx.fill();
-  stampInk(ctx, difficultyLabel(w.rank), box.x + 38 + (box.w - 46) / 2, cy, 15, "#120c08");
+  const chapterLine = `${zoneChapterAt(w.wave)} — ${zoneTitleAt(w.wave)}`;
+  fitInk(ctx, chapterLine, box.x + 40 + (box.w - 48) / 2, cy - 1, 12, box.w - 56, "#f0d080");
+  stampInk(ctx, difficultyLabel(w.rank), box.x + box.w - 10, cy, 9, "#120c08", "right");
 }
 
 function clockGlyph(ctx: CanvasRenderingContext2D, x: number, y: number, s: number): void {
@@ -208,22 +211,60 @@ function clockGlyph(ctx: CanvasRenderingContext2D, x: number, y: number, s: numb
   ctx.stroke();
 }
 
-function skull(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+function skull(ctx: CanvasRenderingContext2D, x: number, y: number, scale = 1): void {
+  const r = 6.2 * scale;
   ctx.beginPath();
-  ctx.arc(x, y - 1, 6.2, 0, Math.PI * 2);
+  ctx.arc(x, y - 1, r, 0, Math.PI * 2);
   ctx.fillStyle = "#f6f1e6";
   ctx.fill();
-  ctx.lineWidth = 1.3;
+  ctx.lineWidth = 1.3 * scale;
   ctx.strokeStyle = INK;
   ctx.stroke();
   ctx.fillStyle = INK;
   ctx.beginPath();
-  ctx.arc(x - 2.1, y - 1.6, 1.4, 0, Math.PI * 2);
-  ctx.arc(x + 2.1, y - 1.6, 1.4, 0, Math.PI * 2);
+  ctx.arc(x - 2.1 * scale, y - 1.6 * scale, 1.4 * scale, 0, Math.PI * 2);
+  ctx.arc(x + 2.1 * scale, y - 1.6 * scale, 1.4 * scale, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillRect(x - 2.6, y + 3.2, 1.4, 2.4);
-  ctx.fillRect(x - 0.6, y + 3.2, 1.4, 2.4);
-  ctx.fillRect(x + 1.4, y + 3.2, 1.4, 2.4);
+  ctx.fillRect(x - 2.6 * scale, y + 3.2 * scale, 1.4 * scale, 2.4 * scale);
+  ctx.fillRect(x - 0.6 * scale, y + 3.2 * scale, 1.4 * scale, 2.4 * scale);
+  ctx.fillRect(x + 1.4 * scale, y + 3.2 * scale, 1.4 * scale, 2.4 * scale);
+}
+
+function waveSkull(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(x, y - 1, 5.4, 0, Math.PI * 2);
+  ctx.fillStyle = DANGER;
+  ctx.fill();
+  ctx.lineWidth = 1.1;
+  ctx.strokeStyle = "#6a1810";
+  ctx.stroke();
+  ctx.fillStyle = "#f6f1e6";
+  ctx.beginPath();
+  ctx.arc(x - 1.8, y - 1.4, 1.1, 0, Math.PI * 2);
+  ctx.arc(x + 1.8, y - 1.4, 1.1, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function gearGlyph(ctx: CanvasRenderingContext2D, x: number, y: number, r: number): void {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = "#e8c46a";
+  ctx.strokeStyle = "#8a5a20";
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 8; i++) {
+    ctx.rotate(Math.PI / 4);
+    ctx.fillRect(-1.1, -r - 2.2, 2.2, 3.6);
+  }
+  ctx.beginPath();
+  ctx.arc(0, 0, r * 0.55, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(0, 0, r * 0.22, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(12,10,8,0.85)";
+  ctx.fill();
+  ctx.restore();
 }
 
 function clockPanel(ctx: CanvasRenderingContext2D, w: World, box: Box, phone: boolean): void {
@@ -232,24 +273,31 @@ function clockPanel(ctx: CanvasRenderingContext2D, w: World, box: Box, phone: bo
     blitSheetFit(ctx, "panel_frame_small", box.x - 10, box.y - 8, box.w + 20, box.h + 16);
     ctx.save();
     roundRect(ctx, box.x + 2, box.y + 2, box.w - 4, box.h - 4, 7);
-    ctx.fillStyle = "rgba(8,10,14,0.82)";
+    ctx.fillStyle = "rgba(8,10,14,0.84)";
     ctx.fill();
-    ctx.strokeStyle = "rgba(212,168,72,0.88)";
+    ctx.strokeStyle = "rgba(212,168,72,0.92)";
     ctx.lineWidth = 1.6;
     ctx.stroke();
     ctx.restore();
     const cy = box.y + box.h / 2;
-    const split = box.x + box.w * 0.54;
-    clockGlyph(ctx, box.x + 12, cy, 5.2);
-    stampInk(ctx, formatClock(w.tick), box.x + 24, cy, 10, "#fff6df", "left");
-    ctx.strokeStyle = "rgba(224,160,64,0.42)";
+    const splitA = box.x + box.w * 0.36;
+    const splitB = box.x + box.w * 0.68;
+    clockGlyph(ctx, box.x + 10, cy, 4.8);
+    stampInk(ctx, formatClock(w.tick), box.x + 20, cy, 9, "#fff6df", "left");
+    ctx.strokeStyle = "rgba(224,160,64,0.38)";
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(split, box.y + 4);
-    ctx.lineTo(split, box.y + box.h - 4);
+    ctx.moveTo(splitA, box.y + 4);
+    ctx.lineTo(splitA, box.y + box.h - 4);
     ctx.stroke();
-    skull(ctx, split + 12, cy);
-    stampInk(ctx, `${w.kills | 0}`, split + 22, cy, 10, "#fff6df", "left");
+    waveSkull(ctx, splitA + 10, cy);
+    stampInk(ctx, `Wave ${face.n}/${face.of}`, splitA + 18, cy, 9, "#fff6df", "left");
+    ctx.beginPath();
+    ctx.moveTo(splitB, box.y + 4);
+    ctx.lineTo(splitB, box.y + box.h - 4);
+    ctx.stroke();
+    skull(ctx, splitB + 10, cy, 0.82);
+    barCount(ctx, `${w.kills | 0}`, splitB + 18, cy);
     return;
   }
   plate(ctx, box, "panel_frame_small");
@@ -674,14 +722,13 @@ function checkLine(
 function objectives(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   const layout = currentHud();
   const phone = layout?.phone ?? false;
-  const face = waveFace(w);
-  const framePad = phone ? 10 : 14;
+  const framePad = phone ? 12 : 14;
   blitSheetFit(ctx, "objectives_panel", box.x - framePad, box.y - framePad, box.w + framePad * 2, box.h + framePad * 2);
-  if (!phone) blitSheetFit(ctx, "panel_frame_gears", box.x - 10, box.y - 10, box.w + 20, box.h + 20);
-  ctx.fillStyle = phone ? "rgba(8,10,16,0.76)" : "rgba(8,10,16,0.78)";
+  blitSheetFit(ctx, "panel_frame_gears", box.x - (phone ? 8 : 10), box.y - (phone ? 8 : 10), box.w + (phone ? 16 : 20), box.h + (phone ? 16 : 20));
+  ctx.fillStyle = phone ? "rgba(8,10,16,0.62)" : "rgba(8,10,16,0.78)";
   ctx.fillRect(box.x, box.y, box.w, box.h);
-  const headH = phone ? 18 : 24;
-  ctx.fillStyle = "rgba(224,160,64,0.32)";
+  const headH = phone ? 20 : 24;
+  ctx.fillStyle = phone ? "rgba(224,160,64,0.38)" : "rgba(224,160,64,0.32)";
   ctx.fillRect(box.x + 4, box.y + 4, box.w - 8, headH);
   ctx.strokeStyle = "rgba(212,168,72,0.92)";
   if (phone) ctx.lineWidth = 2.6;
@@ -690,19 +737,18 @@ function objectives(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   ctx.strokeStyle = "rgba(240,200,120,0.65)";
   ctx.lineWidth = phone ? 1.6 : 2.2;
   ctx.strokeRect(box.x + 4, box.y + 4, box.w - 8, box.h - 8);
-  stampInk(ctx, "Objectives", box.x + 10, box.y + (phone ? 13 : 16), phone ? 10 : 13, "#f0d080", "left");
-  if (phone) {
-    stampInk(ctx, `Wave ${face.n}/${face.of}`, box.x + box.w - 10, box.y + 13, 10, "#fff6df", "right");
-  }
+  const headY = box.y + (phone ? 14 : 16);
+  gearGlyph(ctx, box.x + 14, headY, phone ? 4.2 : 5);
+  stampInk(ctx, "Objectives", box.x + (phone ? 24 : 22), headY, phone ? 10 : 13, "#f0d080", "left");
   ctx.fillStyle = "#e8c46a";
   ctx.fillRect(box.x + 8, box.y + headH + 6, box.w - 16, 2);
   const rows = objectiveRows(w);
   const inkX = box.x + 10;
   const hold = rows[1];
   const holdText = hold?.clock ? `HOLD THE AREA ${hold.clock}` : "HOLD THE AREA";
-  const row0 = phone ? box.y + 36 : box.y + box.h * 0.38;
-  const row1 = phone ? box.y + 54 : box.y + box.h * 0.58;
-  const row2 = phone ? box.y + 72 : box.y + box.h * 0.78;
+  const row0 = phone ? box.y + 38 : box.y + box.h * 0.38;
+  const row1 = phone ? box.y + 56 : box.y + box.h * 0.58;
+  const row2 = phone ? box.y + 74 : box.y + box.h * 0.78;
   checkLine(ctx, inkX, row0, "ACTIVATE STEAM GATE", rows[0]?.done === true);
   checkLine(ctx, inkX, row1, holdText, hold?.done === true);
   checkLine(ctx, inkX, row2, "SURVIVE ALL WAVES", rows[2]?.done === true);
