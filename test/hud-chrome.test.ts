@@ -75,9 +75,10 @@ describe("phone HUD chrome", () => {
     const start = bottom.indexOf("export function drawPhoneHealth");
     const body = bottom.slice(start, bottom.indexOf("export function drawPhoneUlt"));
     expect(body.includes("heartIcon")).toBe(true);
-    expect(body.includes("ctx.arc(cx, cy, r * 0.58")).toBe(false);
-    expect(body.includes("heartCol = low ? DANGER : CYAN")).toBe(true);
-    expect(body.includes("rgba(6,8,12,0.88)")).toBe(true);
+    expect(body.includes("r * 0.46")).toBe(true);
+    expect(body.includes("HEALTH")).toBe(true);
+    expect(body.includes('blitSheetFit(ctx, "heart_ring"')).toBe(true);
+    expect(body.includes("HEART_GLOW")).toBe(true);
   });
 
   it("shows skull kills beside the phone timer strip", () => {

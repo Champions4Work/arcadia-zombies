@@ -7,7 +7,9 @@ import { blitAtlas } from "../art/atlas";
 import { hudType } from "../art/look";
 import { blitSheetFit } from "../art/sheet";
 import { pixelWell } from "../art/chrome";
-import { BRASS_HI, IRON, STEAM, XP } from "../shell/theme";
+import { BRASS_HI, CYAN, IRON, STEAM, XP } from "../shell/theme";
+
+export const XP_BAR_FRAME_ASPECT = 240 / 70;
 
 function caption(
   ctx: CanvasRenderingContext2D,
@@ -171,17 +173,60 @@ export function xpFillT(need: number): number {
   return t < 0 ? 0 : t > 1 ? 1 : t;
 }
 
+function drawPhoneXpBar(
+  ctx: CanvasRenderingContext2D,
+  box: HudLayout["xp"],
+  t: number,
+  needLabel: string,
+): void {
+  const frameW = box.w + 52;
+  const frameH = Math.max(box.h + 34, frameW / XP_BAR_FRAME_ASPECT);
+  const fx = box.x - 26;
+  const fy = box.y + box.h - frameH + 2;
+  blitSheetFit(ctx, "xp_bar_frame", fx, fy, frameW, frameH);
+  const tubeX = fx + frameW * 0.07;
+  const tubeW = frameW * 0.72;
+  const tubeH = Math.max(5, frameH * 0.16);
+  const tubeY = fy + frameH - tubeH - frameH * 0.11;
+  ctx.fillStyle = "rgba(8,12,18,0.82)";
+  ctx.fillRect(tubeX, tubeY, tubeW, tubeH);
+  const fillW = Math.max(t > 0 ? 5 : 0, (tubeW - 2) * t);
+  if (fillW > 0) {
+    const glow = ctx.createLinearGradient(tubeX, tubeY, tubeX + fillW, tubeY);
+    glow.addColorStop(0, glowMs > 0 ? BRASS_HI : "#2a7ec8");
+    glow.addColorStop(0.55, glowMs > 0 ? XP : CYAN);
+    glow.addColorStop(1, "#9af4ff");
+    ctx.fillStyle = glow;
+    ctx.fillRect(tubeX + 1, tubeY + 1, fillW - 2, tubeH - 2);
+    ctx.fillStyle = "rgba(255,255,255,0.22)";
+    ctx.fillRect(tubeX + 1, tubeY + 1, fillW - 2, Math.max(1, (tubeH - 2) * 0.35));
+  }
+  if (sparkMs > 0) {
+    caption(ctx, "+XP", tubeX + fillW + 10, fy + frameH * 0.28, 11, STEAM);
+  }
+  caption(ctx, needLabel, fx + frameW * 0.88, fy + frameH * 0.36, 11, BRASS_HI, "center");
+  if (popMs > 0) {
+    caption(ctx, `${popLevel}`, fx + frameW * 0.88, fy + frameH * 0.12, 13, BRASS_HI, "center");
+  }
+}
+
 export function drawXpBar(ctx: CanvasRenderingContext2D, layout: HudLayout, need: number): void {
   const box = layout.xp;
   const t = xpFillT(need);
   const phone = layout.phone;
   ctx.save();
+  if (phone) {
+    drawPhoneXpBar(ctx, box, t, xpLevelText(shownLevel));
+    ctx.restore();
+    drawGems(ctx);
+    return;
+  }
   blitSheetFit(ctx, "xp_bar_frame", box.x - 18, box.y - 10, box.w + 36, box.h + 20);
-  const pad = phone ? 8 : 10;
-  const badge = Math.min(phone ? 52 : 58, box.w * 0.15);
+  const pad = 10;
+  const badge = Math.min(58, box.w * 0.15);
   const innerW = box.w - pad * 2 - badge;
-  const tubeY = box.y + (phone ? 8 : 6);
-  const tubeH = Math.max(phone ? 4 : 6, box.h - (phone ? 16 : 12));
+  const tubeY = box.y + 6;
+  const tubeH = Math.max(6, box.h - 12);
   pixelWell(ctx, box.x + pad, tubeY, innerW, tubeH);
   ctx.fillStyle = IRON;
   ctx.fillRect(box.x + pad + 2, tubeY + 2, innerW - 4, tubeH - 4);

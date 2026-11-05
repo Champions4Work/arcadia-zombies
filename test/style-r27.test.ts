@@ -16,7 +16,7 @@ describe("r27 art-bible pass", () => {
     const hud = readFileSync("src/render/hud.ts", "utf8");
     expect(hud.includes('blitSheetFit(ctx, "panel_frame_small"')).toBe(true);
     const bottom = readFileSync("src/render/hud-bottom.ts", "utf8");
-    expect(bottom.includes("heartCol = low ? DANGER : CYAN")).toBe(true);
+    expect(bottom.includes("ringCol = low ? DANGER : HEALTH")).toBe(true);
     expect(bottom.includes("drawPhoneHealth")).toBe(true);
     const rack = readFileSync("src/render/weapons.ts", "utf8");
     expect(rack.includes("paintPhonePower(c, i, cx, cy")).toBe(true);

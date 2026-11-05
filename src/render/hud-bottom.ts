@@ -3,9 +3,12 @@ import type { World } from "../sim/types";
 import type { Box, HudLayout } from "../shell/hud-layout";
 import { heartIcon, ringMeter } from "../art/look";
 import { blitSheetFit } from "../art/sheet";
-import { BRASS, COPPER, CYAN, DANGER, XP } from "../shell/theme";
+import { BRASS, BRASS_HI, COPPER, DANGER, HEALTH, XP } from "../shell/theme";
 import { drawIcon } from "./icons";
 import { weaponBadge } from "./weapon-badge";
+
+const HEART_GLOW = "#48f0e8";
+const HEART_CORE = "#d82428";
 
 function badgeIcon(ctx: CanvasRenderingContext2D, kind: number, x: number, y: number): void {
   drawIcon(ctx, kind, x, y, 12);
@@ -25,14 +28,17 @@ export function paintPhoneBottomTray(ctx: CanvasRenderingContext2D, layout: HudL
   const h = bottom - top;
   blitSheetFit(ctx, "panel_frame_glow", left - 10, top - 8, w + 20, h + 14);
   ctx.save();
-  ctx.fillStyle = "rgba(8,10,14,0.78)";
+  ctx.fillStyle = "rgba(8,10,14,0.82)";
   ctx.fillRect(left, top, w, h);
-  ctx.strokeStyle = "rgba(212,168,72,0.72)";
-  ctx.lineWidth = 2;
+  ctx.strokeStyle = "rgba(212,168,72,0.88)";
+  ctx.lineWidth = 2.4;
   ctx.strokeRect(left + 0.5, top + 0.5, w - 1, h - 1);
-  ctx.strokeStyle = "rgba(90,62,32,0.55)";
+  ctx.strokeStyle = BRASS_HI;
+  ctx.lineWidth = 1.2;
+  ctx.strokeRect(left + 2.5, top + 2.5, w - 5, h - 5);
+  ctx.strokeStyle = "rgba(90,62,32,0.62)";
   ctx.lineWidth = 1;
-  ctx.strokeRect(left + 3, top + 3, w - 6, h - 6);
+  ctx.strokeRect(left + 4, top + 4, w - 8, h - 8);
   ctx.restore();
 }
 
@@ -41,20 +47,36 @@ export function drawPhoneHealth(ctx: CanvasRenderingContext2D, w: World, box: Bo
   const low = frac <= 0.35;
   const cx = box.x + box.w / 2;
   const cy = box.y + box.h / 2;
-  const r = Math.min(box.w, box.h) * 0.36;
-  const heartCol = low ? DANGER : CYAN;
-  blitSheetFit(ctx, "heart_ring", box.x - 14, box.y - 14, box.w + 28, box.h + 28);
-  ctx.beginPath();
-  ctx.arc(cx, cy, r + 2, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(6,8,12,0.88)";
-  ctx.fill();
-  ringMeter(ctx, cx, cy, r, frac, heartCol);
+  const r = Math.min(box.w, box.h) * 0.34;
+  const ringCol = low ? DANGER : HEALTH;
+  const heartCol = low ? DANGER : HEART_CORE;
+  const pad = 18;
+  const bw = box.w + pad * 2;
+  const bh = box.h + pad * 2;
+  const bx = box.x - pad;
+  const by = box.y - pad;
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
-  ctx.globalAlpha = 0.35 + frac * 0.25;
-  heartIcon(ctx, cx, cy + 1, r * 0.5, heartCol);
+  ctx.globalAlpha = 0.28 + frac * 0.18;
+  blitSheetFit(ctx, "heart_ring", bx - 2, by - 2, bw + 4, bh + 4);
   ctx.restore();
-  heartIcon(ctx, cx, cy + 1, r * 0.5, heartCol);
+  blitSheetFit(ctx, "heart_ring", bx, by, bw, bh);
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 0.46, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(6,8,12,0.68)";
+  ctx.fill();
+  ringMeter(ctx, cx, cy, r * 0.98, frac, ringCol);
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  ctx.globalAlpha = 0.55;
+  ringMeter(ctx, cx, cy, r * 0.98, frac, HEART_GLOW);
+  ctx.restore();
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  ctx.globalAlpha = 0.42;
+  heartIcon(ctx, cx, cy + 1, r * 0.46, HEART_GLOW);
+  ctx.restore();
+  heartIcon(ctx, cx, cy + 1, r * 0.46, heartCol);
   if (w.meta.revive > 0) {
     ctx.font = "700 9px sans-serif";
     ctx.textAlign = "center";
@@ -70,10 +92,11 @@ export function drawPhoneUlt(ctx: CanvasRenderingContext2D, w: World, box: Box):
   const r = Math.min(box.w, box.h) * 0.36;
   const ready = ultReady(w) || (w.ultBlast ?? 0) > 0;
   const fill = ultFill(w);
-  blitSheetFit(ctx, "ultimate_button", box.x - 14, box.y - 14, box.w + 28, box.h + 28);
+  const pad = 18;
+  blitSheetFit(ctx, "ultimate_button", box.x - pad, box.y - pad, box.w + pad * 2, box.h + pad * 2);
   ctx.beginPath();
-  ctx.arc(cx, cy, r + 2, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(6,8,12,0.88)";
+  ctx.arc(cx, cy, r * 0.48, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(6,8,12,0.72)";
   ctx.fill();
   if (ready) {
     ctx.save();
@@ -110,7 +133,7 @@ export function paintPhonePowerTrayFrame(
   h: number,
 ): void {
   const bracket = 8;
-  ctx.strokeStyle = "rgba(90,210,255,0.55)";
+  ctx.strokeStyle = "rgba(72,240,232,0.42)";
   ctx.lineWidth = 1.6;
   ctx.beginPath();
   ctx.moveTo(x + bracket, y);
@@ -122,8 +145,8 @@ export function paintPhonePowerTrayFrame(
   ctx.moveTo(x + w, y + bracket);
   ctx.lineTo(x + w, y + h - bracket);
   ctx.stroke();
-  ctx.strokeStyle = "rgba(212,168,72,0.45)";
-  ctx.lineWidth = 1;
+  ctx.strokeStyle = "rgba(212,168,72,0.58)";
+  ctx.lineWidth = 1.2;
   ctx.strokeRect(x + 1.5, y + 1.5, w - 3, h - 3);
 }
 
