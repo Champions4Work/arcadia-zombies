@@ -68,6 +68,7 @@ const playPath = `${dest}/phone_390_play.png`;
 await page.screenshot({ path: playPath });
 
 const midbandPath = `${dest}/midband_crop.png`;
+const beltCargoPath = `${dest}/belt_cargo_crop.png`;
 const bottomCropPath = `${dest}/hud_bottom_crop.png`;
 execFileSync("python3", [
   "-c",
@@ -92,6 +93,20 @@ y0 = int(h * 0.22)
 y1 = int(h * 0.58)
 im.crop((0, y0, w, y1)).save(${JSON.stringify(midbandPath)})
 print(y0, y1, w)
+`,
+]);
+
+execFileSync("python3", [
+  "-c",
+  `
+from PIL import Image
+im = Image.open(${JSON.stringify(playPath)}).convert("RGBA")
+w, h = im.size
+x1 = int(w * 0.45)
+y0 = int(h * 0.34)
+y1 = int(h * 0.52)
+im.crop((0, y0, x1, y1)).save(${JSON.stringify(beltCargoPath)})
+print(x1, y0, y1)
 `,
 ]);
 
@@ -175,6 +190,7 @@ await browser.close();
 console.log(`wrote ${playPath}`);
 console.log(`wrote ${bottomCropPath}`);
 console.log(`wrote ${midbandPath}`);
+console.log(`wrote ${beltCargoPath}`);
 console.log(`wrote ${dest}/compare_390_ref1.png`);
 console.log(`wrote ${dest}/compare_390_ref2.png`);
 console.log(`wrote ${dest}/trio_ref1_play_ref2.png`);

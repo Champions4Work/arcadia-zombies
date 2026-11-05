@@ -34,10 +34,11 @@ export const FIGHT_CLEAR_Y0 = 318;
 export const FIGHT_CLEAR_X1 = 608;
 export const FIGHT_CLEAR_Y1 = 638;
 export const PICKUP_DROP_Y = 648;
-export const SIDE_BELT_LEFT_X = 304;
-export const SIDE_BELT_RIGHT_X = 656;
-export const SIDE_BELT_RIDE_Y = 392;
-export const BELT_PHONE_VISIBLE_Y = 560;
+export const SIDE_BELT_LEFT_X = 370;
+export const SIDE_BELT_RIGHT_X = 590;
+export const SIDE_BELT_RIDE_Y = 380;
+export const BELT_PHONE_VISIBLE_Y = 548;
+export const PHONE_BELT_COL_R = 28;
 
 export interface DepthBag {
   beltX: Float32Array;
@@ -217,7 +218,13 @@ export function beltVert(w: World, i: number): number {
   return depthState(w).beltVert[i] ?? 0;
 }
 
+export function cargoOnPhoneHeroBelt(x: number, y: number): boolean {
+  const onCol = Math.abs(x - SIDE_BELT_LEFT_X) < PHONE_BELT_COL_R || Math.abs(x - SIDE_BELT_RIGHT_X) < PHONE_BELT_COL_R;
+  return onCol && y >= SIDE_BELT_RIDE_Y - 8 && y <= SIDE_BELT_RIDE_Y + DROP_ALONG + 12;
+}
+
 export function cargoOutsideFightClear(x: number, y: number): boolean {
+  if (cargoOnPhoneHeroBelt(x, y)) return true;
   return x < FIGHT_CLEAR_X0 || x > FIGHT_CLEAR_X1 || y < FIGHT_CLEAR_Y0 || y > FIGHT_CLEAR_Y1;
 }
 
@@ -303,6 +310,20 @@ export function beltHeal(w: World): number {
   return 1;
 }
 
+function ridePosReview(d: DepthBag, i: number): void {
+  const belt = d.cargoBelt[i] ?? 0;
+  const t = d.cargoT[i] ?? 0;
+  const bx = d.beltX[belt] ?? 0;
+  const by = d.beltY[belt] ?? 0;
+  if (d.beltVert[belt]) {
+    d.cargoX[i] = bx;
+    d.cargoY[i] = by + t;
+  } else {
+    d.cargoX[i] = bx + t;
+    d.cargoY[i] = by;
+  }
+}
+
 export function reviewDepth(w: World): void {
   attachDepth(w);
   const d = depthState(w);
@@ -311,11 +332,16 @@ export function reviewDepth(w: World): void {
   d.cargoBelt[0] = 0;
   d.cargoPhase[0] = CARGO_RIDE;
   d.cargoKind[0] = CARGO_UPG;
-  d.cargoX[0] = SIDE_BELT_LEFT_X;
-  d.cargoY[0] = SIDE_BELT_RIDE_Y + 48;
+  d.cargoT[0] = DROP_ALONG * 0.38;
+  ridePosReview(d, 0);
+  d.cargoOn[1] = 1;
+  d.cargoBelt[1] = 1;
+  d.cargoPhase[1] = CARGO_RIDE;
+  d.cargoKind[1] = CARGO_HEAL;
+  d.cargoT[1] = DROP_ALONG * 0.52;
+  ridePosReview(d, 1);
   d.ventX[0] = w.px - 108;
   d.ventY[0] = w.py + 152;
-  d.cargoT[0] = DROP_ALONG * 0.42;
   let slot = -1;
   for (let i = 0; i < MAX_OBS; i++) {
     if (i >= a.obsN || !a.obsAlive[i]) { slot = i; break; }
