@@ -1,0 +1,2 @@
+Closed FAIL #123 used huge tan/cardboard crate sprites on belts (cardboard≈858 in cargo crop).
+belt-r45 keeps vector paintBeltUpgradeCube only; belt_cargo_gate caps cardboard <200.

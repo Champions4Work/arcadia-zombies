@@ -1,0 +1,1 @@
+amber=657 cardboard=56 size=214x169

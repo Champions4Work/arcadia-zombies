@@ -74,6 +74,8 @@ function paintFeeder(ctx: CanvasRenderingContext2D, w: World, camX: number, camY
   }
 }
 
+const BELT_CUBE_S = 9.75;
+
 function paintBeltUpgradeCube(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -81,23 +83,29 @@ function paintBeltUpgradeCube(
   tick: number,
   upgrade: boolean,
 ): void {
-  const pulse = 0.78 + ((tick >> 2) & 1) * 0.16;
-  const glow = ctx.createRadialGradient(x, y - 6, 0, x, y - 4, 16);
-  glow.addColorStop(0, upgrade ? "rgba(255,196,72,0.52)" : "rgba(255,214,120,0.46)");
-  glow.addColorStop(1, "rgba(232,120,32,0)");
+  const pulse = 0.84 + ((tick >> 2) & 1) * 0.12;
+  const glow = ctx.createRadialGradient(x, y - 8, 0, x, y - 5, 30);
+  glow.addColorStop(0, upgrade ? "rgba(255,220,96,0.82)" : "rgba(255,232,140,0.76)");
+  glow.addColorStop(0.35, upgrade ? "rgba(255,152,40,0.52)" : "rgba(255,168,56,0.46)");
+  glow.addColorStop(0.72, upgrade ? "rgba(255,104,24,0.22)" : "rgba(255,120,32,0.18)");
+  glow.addColorStop(1, "rgba(220,72,16,0)");
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
-  ctx.globalAlpha = pulse * 0.42;
+  ctx.globalAlpha = pulse * 0.68;
   ctx.fillStyle = glow;
   ctx.beginPath();
-  ctx.arc(x, y - 4, 12, 0, Math.PI * 2);
+  ctx.arc(x, y - 5, 22, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = pulse * 0.34;
+  ctx.beginPath();
+  ctx.arc(x, y - 4, 32, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
-  paintShadow(ctx, x, y, 7, 2.5);
+  paintShadow(ctx, x, y, 10, 3.5);
   ctx.save();
-  ctx.translate(x, y - 9);
-  const s = 6.5;
-  ctx.fillStyle = upgrade ? "#f0d080" : "#ffe8a8";
+  ctx.translate(x, y - 13);
+  const s = BELT_CUBE_S;
+  ctx.fillStyle = upgrade ? "#fff0b0" : "#fff4c8";
   ctx.beginPath();
   ctx.moveTo(0, -s);
   ctx.lineTo(s, -s * 0.5);
@@ -136,13 +144,14 @@ function paintCargo(ctx: CanvasRenderingContext2D, w: World, i: number): void {
   if (phase === CARGO_SLIDE || phase === CARGO_RIDE) {
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
-    ctx.globalAlpha = 0.32 + ((w.tick >> 2) & 1) * 0.1;
-    const trail = ctx.createRadialGradient(x, y - 7, 0, x, y - 5, 9);
-    trail.addColorStop(0, "rgba(255,188,64,0.28)");
-    trail.addColorStop(1, "rgba(240,120,32,0)");
+    ctx.globalAlpha = 0.44 + ((w.tick >> 2) & 1) * 0.12;
+    const trail = ctx.createRadialGradient(x, y - 9, 0, x, y - 6, 14);
+    trail.addColorStop(0, "rgba(255,196,72,0.46)");
+    trail.addColorStop(0.55, "rgba(255,136,40,0.22)");
+    trail.addColorStop(1, "rgba(240,96,24,0)");
     ctx.fillStyle = trail;
     ctx.beginPath();
-    ctx.arc(x, y - 5, 7, 0, Math.PI * 2);
+    ctx.arc(x, y - 6, 11, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
   }

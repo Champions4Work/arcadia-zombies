@@ -102,9 +102,9 @@ execFileSync("python3", [
 from PIL import Image
 im = Image.open(${JSON.stringify(playPath)}).convert("RGBA")
 w, h = im.size
-x1 = int(w * 0.45)
-y0 = int(h * 0.34)
-y1 = int(h * 0.52)
+x1 = int(w * 0.55)
+y0 = int(h * 0.37)
+y1 = int(h * 0.57)
 im.crop((0, y0, x1, y1)).save(${JSON.stringify(beltCargoPath)})
 print(x1, y0, y1)
 `,

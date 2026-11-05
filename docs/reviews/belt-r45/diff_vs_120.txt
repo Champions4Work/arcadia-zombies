@@ -1,0 +1,5 @@
+Merged #120 (belt-r42) kept chevron placement and paintBeltUpgradeCube gold faces at s≈6.5.
+belt_cargo_crop still read weak on phone: amber halo too tight vs target_look2 belt pickup.
+
+belt-r45 scales BELT_CUBE_S to 9.75 (~1.5× #120) and widens the radial amber halo + ride trail.
+Still no fight-floor crate blits; midband cyan gate unchanged.
