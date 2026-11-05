@@ -82,6 +82,30 @@ export default tseslint.config(
     },
   },
   {
+    files: ["src/render/depth.ts", "src/render/yard-fx.ts"],
+    rules: {
+      "no-restricted-imports": ["error", {
+        paths: [{
+          name: "../shell/review-shot",
+          message: "Belt cargo paint and sim cargo must not gate on review-shot helpers (#132).",
+        }],
+      }],
+      "no-restricted-syntax": ["error", {
+        selector: "CallExpression[callee.name='wantsReviewShot']",
+        message: "Belt cargo must paint in normal play; do not gate on wantsReviewShot (#132).",
+      }],
+    },
+  },
+  {
+    files: ["src/render/yard-fx.ts"],
+    rules: {
+      "no-restricted-syntax": ["error", {
+        selector: "Identifier[name='paintBeltUpgradeCube']",
+        message: "Belt upgrade cubes paint from paintDepthLive on LAYER_MID only.",
+      }],
+    },
+  },
+  {
     files: ["src/api/**"],
     rules: {
       "no-restricted-syntax": ["error", {
