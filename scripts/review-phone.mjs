@@ -120,6 +120,17 @@ try {
   throw e;
 }
 
+try {
+  const beltGateOut = execFileSync("node", ["scripts/belt_cargo_pixel_gate.mjs", beltCargoPath, `${dest}/belt_cargo_gate.txt`], {
+    encoding: "utf8",
+  });
+  console.log(`belt cargo gate ${beltGateOut.trim()}`);
+} catch (e) {
+  const beltGateOut = e.stdout?.toString?.() ?? "";
+  if (beltGateOut) writeFileSync(`${dest}/belt_cargo_gate.txt`, beltGateOut);
+  throw e;
+}
+
 function sideBySide(leftPath, rightPath, outPath, leftLabel, rightLabel) {
   execFileSync("node", [
     "scripts/compare-shots.mjs",

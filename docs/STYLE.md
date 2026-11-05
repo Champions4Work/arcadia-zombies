@@ -131,6 +131,18 @@ After **#122 / hud-r42**, the phone bottom-right must read as an **orange glowin
 
 Review **`docs/reviews/hud-r45/`** (`phone_390_play.png` **`?shot=1`**, **`hud_bottom_crop.png`**, **`compare_390_ref1.png`**, **`NOTE.md`** vs #122). **`scripts/hud_ult_pixel_gate.mjs`** on **`hud_bottom_crop.png`**. Coordinator **Read-compare**; **no auto-merge**.
 
+## Belt cargo on phone chevrons (belt-r47)
+
+Closed **#132** painted glowing upgrade cubes only behind **`?shot=1`** / **`reviewDepth`**-only paint, so real runs never showed belt cargo. **#128** shipped an empty **`belt_cargo_crop`** while an amber gate passed on stale logic.
+
+| Rule | Detail |
+| --- | --- |
+| Sim | **`parkPhoneHeroBeltCargo`** runs from **`attachDepth`** on every world (normal wave/run), parking two **`CARGO_RIDE`** slots on **`SIDE_BELT_LEFT_X` / `SIDE_BELT_RIGHT_X`** at **`SIDE_BELT_RIDE_Y`** (~**370/590 × 380**). **`reviewDepth`** calls the same helper; **`?shot=1`** still captures it but does not own the path. |
+| Paint | **`paintBeltUpgradeCube`** in **`paintDepthLive`** → **`paintDepthMid`** on **`LAYER_MID`**: **`source-over`** gold iso cube + bright amber radial halo at **`BELT_CUBE_SCALE` 1.5× #120**. No **`wantsReviewShot`** gate. No yard **`crate_stack`** / fight-floor boilers as cargo. |
+| Gates | **`scripts/belt_cargo_pixel_gate.mjs`** on **`belt_cargo_crop.png`**: **`gold ≥ 48`**, **`warm ≥ 120`** (gold/amber halo on chevrons). **`midband_pixel_gate.mjs`** unchanged (**pad `#7ae0d4` == 0**, **`blue ≥ 200`**). |
+
+Review **`docs/reviews/belt-r47/`** (`phone_390_play.png`, **`belt_cargo_crop.png`**, **`midband_crop.png`**, **`NOTE.md`** vs #132). Coordinator **Read-compare**; **no auto-merge**.
+
 ## References (art bible)
 
 Review size is 390×844 CSS pixels. These two files are the art bible. Every visual PR compares against both.

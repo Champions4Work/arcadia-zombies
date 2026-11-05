@@ -74,6 +74,8 @@ function paintFeeder(ctx: CanvasRenderingContext2D, w: World, camX: number, camY
   }
 }
 
+const BELT_CUBE_SCALE = 1.5;
+
 function paintBeltUpgradeCube(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -81,22 +83,24 @@ function paintBeltUpgradeCube(
   tick: number,
   upgrade: boolean,
 ): void {
-  const pulse = 0.78 + ((tick >> 2) & 1) * 0.16;
-  const glow = ctx.createRadialGradient(x, y - 6, 0, x, y - 4, 16);
-  glow.addColorStop(0, upgrade ? "rgba(255,196,72,0.52)" : "rgba(255,214,120,0.46)");
-  glow.addColorStop(1, "rgba(232,120,32,0)");
+  const pulse = 0.82 + ((tick >> 2) & 1) * 0.14;
+  const haloR = 24 * BELT_CUBE_SCALE;
+  const glow = ctx.createRadialGradient(x, y - 8, 0, x, y - 6, haloR);
+  glow.addColorStop(0, upgrade ? "rgba(255,210,72,0.78)" : "rgba(255,228,140,0.72)");
+  glow.addColorStop(0.45, upgrade ? "rgba(255,150,32,0.38)" : "rgba(255,170,48,0.34)");
+  glow.addColorStop(1, "rgba(232,96,16,0)");
   ctx.save();
-  ctx.globalCompositeOperation = "lighter";
-  ctx.globalAlpha = pulse * 0.42;
+  ctx.globalCompositeOperation = "source-over";
+  ctx.globalAlpha = pulse * 0.72;
   ctx.fillStyle = glow;
   ctx.beginPath();
-  ctx.arc(x, y - 4, 12, 0, Math.PI * 2);
+  ctx.arc(x, y - 6, haloR * 0.72, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
-  paintShadow(ctx, x, y, 7, 2.5);
+  paintShadow(ctx, x, y, 9 * BELT_CUBE_SCALE, 3.5);
   ctx.save();
-  ctx.translate(x, y - 9);
-  const s = 6.5;
+  ctx.translate(x, y - 12 * BELT_CUBE_SCALE);
+  const s = 6.5 * BELT_CUBE_SCALE;
   ctx.fillStyle = upgrade ? "#f0d080" : "#ffe8a8";
   ctx.beginPath();
   ctx.moveTo(0, -s);
@@ -121,9 +125,9 @@ function paintBeltUpgradeCube(
   ctx.lineTo(s, s * 0.5);
   ctx.closePath();
   ctx.fill();
-  ctx.globalAlpha = 0.42 + ((tick >> 3) & 1) * 0.18;
+  ctx.globalAlpha = 0.55 + ((tick >> 3) & 1) * 0.22;
   ctx.strokeStyle = "#fff1c2";
-  ctx.lineWidth = 1;
+  ctx.lineWidth = 1.25;
   ctx.stroke();
   ctx.restore();
 }

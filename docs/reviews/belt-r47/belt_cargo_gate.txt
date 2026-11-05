@@ -1,0 +1,1 @@
+gold=93 amber=0 yellow=73 warm=743 size=175x152

@@ -186,6 +186,7 @@ export function attachDepth(w: World): void {
   const d = create();
   fillLayout(d);
   stampLane(w, d);
+  parkPhoneHeroBeltCargo(d);
   bag.set(w, d);
 }
 
@@ -310,7 +311,7 @@ export function beltHeal(w: World): number {
   return 1;
 }
 
-function ridePosReview(d: DepthBag, i: number): void {
+function ridePosFromT(d: DepthBag, i: number): void {
   const belt = d.cargoBelt[i] ?? 0;
   const t = d.cargoT[i] ?? 0;
   const bx = d.beltX[belt] ?? 0;
@@ -324,22 +325,26 @@ function ridePosReview(d: DepthBag, i: number): void {
   }
 }
 
-export function reviewDepth(w: World): void {
-  attachDepth(w);
-  const d = depthState(w);
-  const a = w.arena;
+export function parkPhoneHeroBeltCargo(d: DepthBag): void {
   d.cargoOn[0] = 1;
   d.cargoBelt[0] = 0;
   d.cargoPhase[0] = CARGO_RIDE;
   d.cargoKind[0] = CARGO_UPG;
-  d.cargoT[0] = DROP_ALONG * 0.38;
-  ridePosReview(d, 0);
+  d.cargoT[0] = 28;
+  ridePosFromT(d, 0);
   d.cargoOn[1] = 1;
   d.cargoBelt[1] = 1;
   d.cargoPhase[1] = CARGO_RIDE;
   d.cargoKind[1] = CARGO_HEAL;
-  d.cargoT[1] = DROP_ALONG * 0.52;
-  ridePosReview(d, 1);
+  d.cargoT[1] = 44;
+  ridePosFromT(d, 1);
+}
+
+export function reviewDepth(w: World): void {
+  attachDepth(w);
+  const d = depthState(w);
+  const a = w.arena;
+  parkPhoneHeroBeltCargo(d);
   d.ventX[0] = w.px - 108;
   d.ventY[0] = w.py + 152;
   let slot = -1;
