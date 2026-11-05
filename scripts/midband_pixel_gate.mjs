@@ -3,7 +3,7 @@ import { Buffer } from "node:buffer";
 import { inflateSync } from "node:zlib";
 import { pathToFileURL } from "node:url";
 
-function decodePngRgba(path) {
+export function decodePngRgba(path) {
   const buf = readFileSync(path);
   let pos = 8;
   let width = 0;
@@ -96,7 +96,14 @@ export function countMidbandPixels(pixels, width, height) {
       if (a < 200) {
         continue;
       }
-      if (b > 180 && g > 140 && r < 120 && (g + b) / 2 > r + 60) {
+      if (
+        r < 130 &&
+        g > 200 &&
+        b > 200 &&
+        g >= b - 8 &&
+        Math.abs(g - b) < 36 &&
+        (g + b) / 2 > r + 60
+      ) {
         cyan += 1;
       }
       if (b > 150 && r < 100 && g < 140 && b > g + 40 && b > r + 80) {

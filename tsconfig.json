@@ -6,7 +6,7 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "lib": ["ES2022", "DOM"],
-    "types": ["vitest/globals"],
+    "types": ["vitest/globals", "node"],
     "skipLibCheck": true,
     "noEmit": true
   },

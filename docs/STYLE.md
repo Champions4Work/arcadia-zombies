@@ -33,7 +33,9 @@ Closed **[#100](https://github.com/Champions4Work/arcadia-zombies/pull/100)**, *
 
 **Cyan fight-floor pads.** Code-drawn ellipses on **`PIPE_RUNS`** at **`y: 232`** using palette **`#7ae0d4`** are **fight-floor cyan pads**. They fail the art bible (see r32: no fight-floor cyan pads). Remove them; blue liquid read comes from **`pipes_blue_tank`** / **`blue_puddle`**, not floor fills.
 
-**Coordinator gate (pixels, not strings).** Crop the **`midband_crop`** from the 390×844 play capture (hero-band yard slice used in r37 review) and run **`node scripts/midband_pixel_gate.mjs <midband_crop.png>`**. Pass only when **`cyan == 0`** and **`blue >= 200`** in that crop. Do not merge mid-band yard FX on source-text checks alone.
+**Successful in-frame fix.** Merged **[#112](https://github.com/Champions4Work/arcadia-zombies/pull/112)** (`PHONE_HERO_BLITS`, no fight-floor **`PIPE_RUNS` at `y:232`**) proved the phone mid-band read when tanks and chevrons blit inside the camera clip.
+
+**Coordinator gate (pixels, not strings).** Crop the **`midband_crop`** from the 390×844 play capture (hero-band yard slice used in r37 review) and run **`node scripts/midband_pixel_gate.mjs <midband_crop.png>`**. Pass only when fight-floor **pad cyan** (**`#7ae0d4`**, not pack tank liquid) **`== 0`** and **`blue >= 200`** in that crop. Do not merge mid-band yard FX on source-text checks alone.
 
 ## Round 31 — open fight band, dense perimeter
 
@@ -71,7 +73,7 @@ Closed **#100 / #105 / #107 / #110** assumed perimeter **`PROPS`** and side rail
 | --- | --- |
 | Fight floor | **No `PIPE_RUNS` at `y:232`**. **`paintCrossPipe`** must not paint **`#7ae0d4`** pad ellipses / cyan glass halos in the hero band (`y ≤ YARD_CLEAR.y1`). Bottom perimeter pipe at **`y:648`** may keep cyan. |
 | Phone blits | **`PHONE_HERO_BLITS`**: scaled **`pipes_blue_tank`** (≥ **1.45**) and **`conveyor`** chevrons (≥ **1.30**) **inside** the phone camera, flanking the hunter (~**378/582 × 300**, conveyors ~**370/590 × 380**). Painted from **`paintYardLive`** ( **`?shot=1`** path). |
-| Proof | **`docs/reviews/r38/midband_crop.png`** (CSS **y 22%–58%**) must pass **`scripts/midband-pixel-gate.py`**: fight-floor **pad cyan** (**`#7ae0d4` / glass halo**, not pack tank liquid) **`== 0`**, **`blue ≥ 200`**. String-only tests are insufficient. |
+| Proof | **`docs/reviews/r38/midband_crop.png`** (CSS **y 22%–58%**) must pass **`node scripts/midband_pixel_gate.mjs`**: fight-floor **pad cyan** (**`#7ae0d4` / glass halo**, not pack tank liquid) **`== 0`**, **`blue ≥ 200`**. Implemented in **[#112](https://github.com/Champions4Work/arcadia-zombies/pull/112)**; string-only tests are insufficient. |
 
 Do **not** re-park tanks/conveyors on off-screen rails and expect phone midband reads. No brown **`breakable_boiler`** stand-ins for blue tanks.
 
