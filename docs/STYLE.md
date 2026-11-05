@@ -27,6 +27,20 @@ Closed **[#87](https://github.com/Champions4Work/arcadia-zombies/pull/87)** prov
 
 Review **`docs/reviews/r31/`** against r30. The brass yard keeps **`tile_stone_seamless`** (#90) but moves the **power-up belt to `y: 658`** (bottom edge) so **`CARGO_*` crates ride and land outside `YARD_CLEAR`**, not through the hunter lane. **`reviewDepth`** parks a glowing **`crate_stack` on that perimeter belt**, not on blue pads in the center. Perimeter **`PROPS`** densify with **`window_lit`**, side **`conveyor`**, **`blue_puddle`**, duplicate **`pipes_blue_tank` / `valve_steam` / `decal_grate` / `decal_vent`** runs on both rails—no **`crate` / `barrel` / `crate_stack`** inside the vertical fight band. Coordinator **Read** must compare r31 play vs r30 before merge.
 
+## Round 35 — kill fight-floor cyan pads, mid-frame az_art signatures
+
+Closed **#94 / #98 / #100** proved **edge-only** `pipes_blue_tank` / `conveyor` props and procedural **`paintCrossPipe`** cyan glass **do not** show up in the 390×844 phone crop: they sit under the HUD, stay too small, or lose to a **horizontal row of floor `bluePool` discs** across the upper yard.
+
+**Required fix (brass yard):**
+
+| Remove | Add |
+| --- | --- |
+| Horizontal **`PIPE_RUNS`** and **`TANKS`** floor **`bluePool`** halos in **`FIGHT_FLOOR_PAD`** | **`MID_TANK_SCALE`** / **`MID_CONVEYOR_SCALE`** blits for side **`pipes_blue_tank`** + **`conveyor`** in the camera band beside the hunter |
+| Perimeter-only duplicate tanks/conveyors at **`y: 584–656`** | Taller **`BELTS`** (`BELT_H`, **`SIDE_BELT_BLIT_SCALE`**) on **`x: 304 / 656`**, **`y: 392`** — chevron read in mid-frame |
+| Cyan **`blue_puddle`** inside **`FIGHT_FLOOR_PAD`** | Lit spawn row: **`window_lit`**, **`lamp`**, **`building_wall_door`** at top; **`tile_stone_seamless`** floor only in the lane |
+
+Review **`docs/reviews/r35/`** (`phone_390_play.png`, compares, **`vs_r34_fail.png`**) vs **`docs/target_look2.png`**. Coordinator **Read-compare** before merge; **no auto-merge**.
+
 ## Effects (phone read, r32)
 
 FX-only tuning on current main (#90 stone, #92 HUD, #93 perimeter). Do **not** repeat closed #91: no double **`lighter`** steam blits at high alpha, no fight-floor cyan pads, no yard prop moves.

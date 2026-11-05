@@ -208,7 +208,7 @@ describe("r25 art-bible phone pass", () => {
     const yard = readFileSync("src/render/yard-fx.ts", "utf8");
     expect(yard.includes("#7ae0d4")).toBe(true);
     expect(yard.includes("function paintCrossBelt")).toBe(true);
-    expect(yard.includes("BELT_H = 72")).toBe(true);
+    expect(yard.includes("BELT_H = 84")).toBe(true);
     expect(yard.includes("window_lit")).toBe(true);
     expect(yard.includes("building_wall_door")).toBe(true);
     expect(HAZARD_MARKS.length).toBe(0);

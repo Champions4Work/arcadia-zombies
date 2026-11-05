@@ -1,8 +1,10 @@
-import { blitSheet, steamFrame } from "../art/sheet";
+import { blitSheet, steamFrame, tileSheet } from "../art/sheet";
 import { paintShadow } from "../art/look";
 import { BRASS, BRASS_HI, BRASS_LO, DANGER, INK, XP } from "../shell/theme";
-import { ZONE_BOILER, ZONE_BRASS, ZONE_TRAM } from "../sim/zones";
+import { zoneAt, ZONE_BOILER, ZONE_BRASS, ZONE_TRAM } from "../sim/zones";
+import type { World } from "../sim/types";
 import { FEAT_LAMP, groundFeatureAt, groundFeatureCount } from "./ground";
+import { LAYER_BACK, LAYER_MID, registerLayer } from "./plugins";
 
 const BUILDINGS = [
   { x: 368, y: 214 },
@@ -11,20 +13,20 @@ const BUILDINGS = [
 ];
 
 const BELTS = [
-  { x: 304, y: 392, w: 168, vert: 1 },
-  { x: 656, y: 392, w: 168, vert: 1 },
+  { x: 304, y: 392, w: 196, vert: 1 },
+  { x: 656, y: 392, w: 196, vert: 1 },
 ];
 
-const PIPE_RUNS = [
-  { x: 296, y: 232, len: 368, vert: 0 },
-  { x: 296, y: 648, len: 368, vert: 0 },
-];
+const PIPE_RUNS: { x: number; y: number; len: number; vert: number }[] = [];
 
-const BELT_H = 72;
+const BELT_H = 84;
 const GLASS_AT = [0.22, 0.5, 0.78];
 const VALVE = { x: 424, y: 232 };
 const BUILD_SCALE = 1.28;
 const TANK_SCALE = 1.2;
+const MID_TANK_SCALE = 2.05;
+const MID_CONVEYOR_SCALE = 1.55;
+const SIDE_BELT_BLIT_SCALE = 1.35;
 const STEAM_VENT_SCALE = 0.76;
 const STEAM_VENT_ALPHA = 0.24;
 const BLUE_GLOW_ALPHA = 0.3;
@@ -39,57 +41,63 @@ const PROPS: { id: string; x: number; y: number }[] = [
   { id: "lamp", x: 360, y: 208 },
   { id: "lamp", x: 480, y: 204 },
   { id: "lamp", x: 600, y: 208 },
+  { id: "pipes_blue_tank", x: 272, y: 362 },
+  { id: "blue_puddle", x: 278, y: 478 },
+  { id: "conveyor", x: 266, y: 408 },
+  { id: "valve_steam", x: 282, y: 528 },
+  { id: "decal_grate", x: 300, y: 598 },
   { id: "breakable_gear_pylon", x: 308, y: 520 },
-  { id: "decal_grate", x: 304, y: 640 },
-  { id: "decal_grate", x: 368, y: 302 },
-  { id: "decal_grate", x: 592, y: 302 },
-  { id: "decal_grate", x: 656, y: 640 },
-  { id: "valve_steam", x: 308, y: 468 },
-  { id: "valve_steam", x: 308, y: 612 },
-  { id: "decal_vent", x: 310, y: 450 },
-  { id: "decal_vent", x: 310, y: 628 },
-  { id: "conveyor", x: 304, y: 656 },
-  { id: "pipes_blue_tank", x: 308, y: 596 },
-  { id: "blue_puddle", x: 312, y: 584 },
-  { id: "breakable_boiler", x: 306, y: 648 },
+  { id: "decal_vent", x: 298, y: 662 },
+  { id: "pipes_blue_tank", x: 660, y: 362 },
+  { id: "blue_puddle", x: 654, y: 478 },
+  { id: "conveyor", x: 668, y: 408 },
+  { id: "valve_steam", x: 652, y: 528 },
+  { id: "decal_grate", x: 654, y: 598 },
   { id: "breakable_gear_pylon", x: 652, y: 520 },
-  { id: "valve_steam", x: 654, y: 468 },
-  { id: "valve_steam", x: 654, y: 612 },
-  { id: "decal_vent", x: 656, y: 450 },
-  { id: "decal_vent", x: 656, y: 628 },
-  { id: "conveyor", x: 656, y: 656 },
-  { id: "pipes_blue_tank", x: 654, y: 596 },
-  { id: "blue_puddle", x: 648, y: 584 },
-  { id: "breakable_boiler", x: 656, y: 648 },
+  { id: "decal_vent", x: 658, y: 662 },
 ];
 
-const TANKS = [
-  { x: 320, y: 588 },
-  { x: 640, y: 588 },
-  { x: 348, y: 208 },
-  { x: 612, y: 208 },
-];
+const TANKS: { x: number; y: number }[] = [];
 
 const POOLS = [
   { x: 360, y: 208 },
   { x: 480, y: 204 },
   { x: 600, y: 208 },
-  { x: 312, y: 584 },
-  { x: 648, y: 584 },
 ];
 
 const STEAM_VENTS = [
   { x: 360, y: 226 },
-  { x: 424, y: 232 },
   { x: 520, y: 226 },
-  { x: 334, y: 468 },
-  { x: 630, y: 468 },
+  { x: 294, y: 518 },
+  { x: 648, y: 518 },
 ];
+
+export const FIGHT_FLOOR_PAD = { x0: 336, y0: 168, x1: 624, y1: 528 };
+const FIGHT_STONE_BAND = { x0: 296, y0: 168, x1: 664, y1: 318 };
 
 export const YARD_CLEAR = { x0: 352, y0: 318, x1: 608, y1: 638 };
 export const PHONE_CAM = { x0: 300, y0: 0, x1: 660, y1: 780 };
 
 const FIGHT_BAND_CRATE = new Set(["crate", "crate_stack", "barrel"]);
+
+function inFightFloorPad(x: number, y: number): boolean {
+  return x >= FIGHT_FLOOR_PAD.x0 && x <= FIGHT_FLOOR_PAD.x1 && y >= FIGHT_FLOOR_PAD.y0 && y <= FIGHT_FLOOR_PAD.y1;
+}
+
+export function yardFightFloorBluePools(): number {
+  if (yardBound !== ZONE_BRASS) return 0;
+  let n = 0;
+  for (const t of TANKS) if (inFightFloorPad(t.x, t.y)) n++;
+  for (const p of PROPS) {
+    if (p.id !== "blue_puddle" && p.id !== "pipes_blue_tank") continue;
+    if (inFightFloorPad(p.x, p.y)) n++;
+  }
+  for (const run of PIPE_RUNS) {
+    if (run.vert) continue;
+    if (run.y >= FIGHT_FLOOR_PAD.y0 && run.y <= FIGHT_FLOOR_PAD.y1) n++;
+  }
+  return n;
+}
 
 export function yardCratePropsInClear(): number {
   if (yardBound !== ZONE_BRASS) return 0;
@@ -576,7 +584,7 @@ function paintVertBelt(
   ctx.strokeStyle = BRASS_LO;
   ctx.lineWidth = 3;
   ctx.strokeRect(x - beltW * 0.5 + 1.5, y + 1.5, beltW - 3, len - 3);
-  const sc = beltW / 48;
+  const sc = (beltW / 48) * (yardBound === ZONE_BRASS ? SIDE_BELT_BLIT_SCALE : 1);
   const off = (tick * 2.6) % 28;
   for (let s = off; s < len; s += 28) {
     ctx.save();
@@ -688,6 +696,86 @@ export function yardPropHits(x0: number, y0: number, x1: number, y1: number): nu
   return n;
 }
 
+function paintBrassProps(
+  ctx: CanvasRenderingContext2D,
+  tick: number,
+  camX: number,
+  camY: number,
+  vw: number,
+  vh: number,
+): void {
+  for (const p of PROPS) {
+    if (!visible(p.x, p.y, camX, camY, vw, vh, 120)) continue;
+    if (p.id === "pipes_blue_tank") {
+      paintShadow(ctx, p.x, p.y, 32, 10);
+      blitScaled(ctx, "pipes_blue_tank", p.x, p.y, MID_TANK_SCALE);
+      ctx.save();
+      ctx.globalAlpha = BLUE_GLOW_ALPHA;
+      blitSheet(ctx, "blue_glow", p.x + 16, p.y + 42);
+      ctx.restore();
+      continue;
+    }
+    if (p.id === "conveyor") {
+      paintShadow(ctx, p.x, p.y, 24, 7);
+      blitScaled(ctx, "conveyor", p.x, p.y, MID_CONVEYOR_SCALE);
+      continue;
+    }
+    if (p.id === "blue_puddle") {
+      if (inFightFloorPad(p.x, p.y)) continue;
+      bluePuddle(ctx, p.x, p.y + 4);
+      continue;
+    }
+    paintShadow(ctx, p.x, p.y, 12, 4);
+    blitSheet(ctx, p.id, p.x, p.y);
+  }
+  const belts = BELTS;
+  for (let i = 0; i < belts.length; i++) {
+    const belt = belts[i];
+    if (!belt) continue;
+    if (!visible(belt.x, belt.y, camX, camY, vw, vh, 240)) continue;
+    paintCrossBelt(ctx, belt.x, belt.y, belt.w, tick, belt.vert);
+  }
+  for (const vent of STEAM_VENTS) {
+    if (!visible(vent.x, vent.y, camX, camY, vw, vh, 40)) continue;
+    paintVentSteam(ctx, vent.x, vent.y, tick);
+  }
+}
+
+function paintBrassFightStoneBand(ctx: CanvasRenderingContext2D, w: World): void {
+  bindYard(zoneAt(w.wave));
+  if (yardBound !== ZONE_BRASS || !w.arena) return;
+  const camX = w.arena.camX;
+  const camY = w.arena.camY;
+  const vw = w.arena.viewW;
+  const vh = w.arena.viewH;
+  const pad = 24;
+  if (
+    FIGHT_STONE_BAND.x1 < camX - pad ||
+    FIGHT_STONE_BAND.x0 > camX + vw + pad ||
+    FIGHT_STONE_BAND.y1 < camY - pad ||
+    FIGHT_STONE_BAND.y0 > camY + vh + pad
+  ) {
+    return;
+  }
+  const bw = FIGHT_STONE_BAND.x1 - FIGHT_STONE_BAND.x0;
+  const bh = FIGHT_STONE_BAND.y1 - FIGHT_STONE_BAND.y0;
+  tileSheet(ctx, "tile_stone_seamless", FIGHT_STONE_BAND.x0, FIGHT_STONE_BAND.y0, bw, bh);
+  ctx.save();
+  ctx.globalAlpha = 0.08;
+  ctx.fillStyle = "#120e0c";
+  ctx.fillRect(FIGHT_STONE_BAND.x0, FIGHT_STONE_BAND.y0, bw, bh);
+  ctx.restore();
+}
+
+function paintBrassMidSignatures(ctx: CanvasRenderingContext2D, w: World): void {
+  bindYard(zoneAt(w.wave));
+  if (yardBound !== ZONE_BRASS || !w.arena) return;
+  paintBrassProps(ctx, w.tick, w.arena.camX, w.arena.camY, w.arena.viewW, w.arena.viewH);
+}
+
+registerLayer(LAYER_BACK + 1, paintBrassFightStoneBand);
+registerLayer(LAYER_MID, paintBrassMidSignatures);
+
 export function paintYardLive(
   ctx: CanvasRenderingContext2D,
   tick: number,
@@ -697,6 +785,7 @@ export function paintYardLive(
   vh: number,
 ): void {
   for (const pool of poolsOf()) {
+    if (yardBound === ZONE_BRASS) continue;
     if (!visible(pool.x, pool.y, camX, camY, vw, vh, 60)) continue;
     lampPool(ctx, pool.x, pool.y);
   }
@@ -712,6 +801,7 @@ export function paintYardLive(
     blitScaled(ctx, "building_wall_door", b.x, b.y, BUILD_SCALE);
   }
   for (const tank of tanksOf()) {
+    if (yardBound === ZONE_BRASS) continue;
     if (!visible(tank.x, tank.y, camX, camY, vw, vh, 50)) continue;
     bluePool(ctx, tank.x, tank.y, tick);
   }
@@ -728,29 +818,47 @@ export function paintYardLive(
       furnaceGlow(ctx, glow.x, glow.y);
     }
   }
-  for (const p of propsOf()) {
-    if (!visible(p.x, p.y, camX, camY, vw, vh, 90)) continue;
-    if (p.id === "pipes_blue_tank") bluePool(ctx, p.x, p.y + 8, tick);
-    if (p.id === "blue_puddle") bluePuddle(ctx, p.x, p.y + 4);
-    paintShadow(ctx, p.x, p.y, 12, 4);
-    blitSheet(ctx, p.id, p.x, p.y);
-  }
-  if (yardBound === ZONE_TRAM) {
-    for (const car of TRAM_CARS) {
-      if (!visible(car.x, car.y, camX, camY, vw, vh, 90)) continue;
-      paintTramCar(ctx, car.x, car.y);
+  if (yardBound !== ZONE_BRASS) {
+    for (const p of propsOf()) {
+      if (!visible(p.x, p.y, camX, camY, vw, vh, 90)) continue;
+      if (p.id === "pipes_blue_tank") {
+        paintShadow(ctx, p.x, p.y, 28, 8);
+        blitScaled(ctx, "pipes_blue_tank", p.x, p.y, TANK_SCALE);
+        ctx.save();
+        ctx.globalAlpha = BLUE_GLOW_ALPHA;
+        blitSheet(ctx, "blue_glow", p.x + 14, p.y + 36);
+        ctx.restore();
+        continue;
+      }
+      if (p.id === "conveyor") {
+        paintShadow(ctx, p.x, p.y, 20, 6);
+        blitScaled(ctx, "conveyor", p.x, p.y, 1);
+        continue;
+      }
+      if (p.id === "blue_puddle") {
+        bluePuddle(ctx, p.x, p.y + 4);
+        continue;
+      }
+      paintShadow(ctx, p.x, p.y, 12, 4);
+      blitSheet(ctx, p.id, p.x, p.y);
     }
-  }
-  const belts = beltsOf();
-  for (let i = 0; i < belts.length; i++) {
-    const belt = belts[i];
-    if (!belt) continue;
-    if (!visible(belt.x, belt.y, camX, camY, vw, vh, 220)) continue;
-    paintCrossBelt(ctx, belt.x, belt.y, belt.w, tick, belt.vert);
-  }
-  for (const vent of ventsOf()) {
-    if (!visible(vent.x, vent.y, camX, camY, vw, vh, 40)) continue;
-    paintVentSteam(ctx, vent.x, vent.y, tick);
+    if (yardBound === ZONE_TRAM) {
+      for (const car of TRAM_CARS) {
+        if (!visible(car.x, car.y, camX, camY, vw, vh, 90)) continue;
+        paintTramCar(ctx, car.x, car.y);
+      }
+    }
+    const belts = beltsOf();
+    for (let i = 0; i < belts.length; i++) {
+      const belt = belts[i];
+      if (!belt) continue;
+      if (!visible(belt.x, belt.y, camX, camY, vw, vh, 220)) continue;
+      paintCrossBelt(ctx, belt.x, belt.y, belt.w, tick, belt.vert);
+    }
+    for (const vent of ventsOf()) {
+      if (!visible(vent.x, vent.y, camX, camY, vw, vh, 40)) continue;
+      paintVentSteam(ctx, vent.x, vent.y, tick);
+    }
   }
   if (yardBound === ZONE_BRASS) paintBrassGrade(ctx, camX, camY, vw, vh);
 }
