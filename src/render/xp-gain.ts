@@ -7,7 +7,7 @@ import { blitAtlas } from "../art/atlas";
 import { hudType } from "../art/look";
 import { blitSheetFit } from "../art/sheet";
 import { pixelWell } from "../art/chrome";
-import { IRON, STEAM } from "../shell/theme";
+import { IRON, STEAM, INK } from "../shell/theme";
 import { BRASS_HI, XP } from "../art/palette";
 
 export const XP_BAR_FRAME_ASPECT = 240 / 70;
@@ -174,6 +174,24 @@ export function xpFillT(need: number): number {
   return t < 0 ? 0 : t > 1 ? 1 : t;
 }
 
+function phoneLvCaption(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  size: number,
+): void {
+  ctx.font = `700 ${size}px sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.lineJoin = "round";
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = INK;
+  ctx.strokeText(text, x, y);
+  ctx.fillStyle = STEAM;
+  ctx.fillText(text, x, y);
+}
+
 function drawPhoneXpBar(
   ctx: CanvasRenderingContext2D,
   box: HudLayout["xp"],
@@ -205,9 +223,11 @@ function drawPhoneXpBar(
   if (sparkMs > 0) {
     caption(ctx, "+XP", tubeX + fillW + 10, fy + frameH * 0.28, 11, STEAM);
   }
-  caption(ctx, needLabel, fx + frameW * 0.88, fy + frameH * 0.36, 11, BRASS_HI, "center");
+  const lvX = fx + frameW * 0.81;
+  const lvY = fy + frameH * 0.48;
+  phoneLvCaption(ctx, needLabel, lvX, lvY, 13);
   if (popMs > 0) {
-    caption(ctx, `${popLevel}`, fx + frameW * 0.88, fy + frameH * 0.12, 13, BRASS_HI, "center");
+    phoneLvCaption(ctx, `${popLevel}`, lvX, lvY - frameH * 0.22, 13);
   }
 }
 

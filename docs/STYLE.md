@@ -104,6 +104,12 @@ Polish **#114 / hud-r39** bottom tray toward **image 1** without changing slot l
 
 Review **`docs/reviews/hud-r40/`** (`phone_390_play.png` **`?shot=1`**, **`hud_bottom_crop.png`**, **`compare_390_ref1.png`**, trio vs **`docs/target_look.jpg`**). Must differ from **`docs/reviews/hud-r39/hud_bottom_crop.png`** on heart + XP chrome. Coordinator **Read-compare**; **no auto-merge**.
 
+## HUD bottom polish (hud-r42)
+
+After **#117 / hud-r40**, match **image 1** polish items **8–9** without regressing the blue **`xp_bar_frame`** tube from r40. **`drawPhoneHealth`**: **`CYAN`** heart glyph + **`HEART_GLOW`** halo ( **`HEALTH`** arc only; no flat red heart at full HP). **`drawPhoneUlt`**: **`paintPhoneUltSun`** amber rays ( **`ready ? XP : BRASS`** charge ring — not a cyan meter). **`drawPhoneXpBar`**: **`phoneLvCaption`** (**`STEAM`** on **`INK`** stroke) on the frame gear. HUD chrome only; smoke stick travel unchanged.
+
+Review **`docs/reviews/hud-r42/`** (`phone_390_play.png` **`?shot=1`**, **`hud_bottom_crop.png`**, **`compare_390_ref1.png`** vs **`docs/target_look.jpg`**, **`NOTE.md`** vs #117). Coordinator **Read-compare**; **no auto-merge**.
+
 ## References (art bible)
 
 Review size is 390×844 CSS pixels. These two files are the art bible. Every visual PR compares against both.
