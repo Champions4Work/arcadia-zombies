@@ -78,17 +78,31 @@ function paintCargo(ctx: CanvasRenderingContext2D, w: World, i: number): void {
   const x = cargoX(w, i);
   const y = cargoY(w, i);
   const phase = cargoPhase(w, i);
+  const kind = cargoKind(w, i);
+  const pulse = phase === CARGO_LAND ? 0.88 : 0.68 + ((w.tick >> 2) & 1) * 0.24;
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
-  ctx.globalAlpha = phase === CARGO_LAND ? 0.92 : 0.68 + ((w.tick >> 2) & 1) * 0.24;
-  blitSheet(ctx, "blue_glow", x, y - 8);
+  ctx.globalAlpha = pulse;
+  blitScaled(ctx, "blue_glow", x, y - 10, kind ? 1.14 : 1.02);
   ctx.restore();
-  paintShadow(ctx, x, y, 10, 4);
-  blitSheet(ctx, cargoKind(w, i) ? "crate_stack" : "crate", x, y);
+  if (kind) {
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    ctx.globalAlpha = 0.72 + ((w.tick >> 3) & 1) * 0.16;
+    blitScaled(ctx, "blue_glow", x, y - 4, 0.62);
+    ctx.restore();
+  } else {
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    ctx.globalAlpha = 0.64 + ((w.tick >> 3) & 1) * 0.14;
+    blitScaled(ctx, "blue_glow", x, y - 2, 0.78);
+    ctx.restore();
+  }
   if (phase === CARGO_SLIDE || phase === CARGO_RIDE) {
     ctx.save();
-    ctx.globalAlpha = 0.8;
-    blitSheet(ctx, "blue_glow", x, y - 14);
+    ctx.globalAlpha = 0.76;
+    ctx.globalCompositeOperation = "lighter";
+    blitScaled(ctx, "blue_glow", x, y - 16, 0.44);
     ctx.restore();
   }
 }

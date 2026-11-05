@@ -208,10 +208,10 @@ describe("gameplay depth hooks", () => {
     expect(CARGO_PWR).toBeGreaterThan(0);
   });
 
-  it("blits pack sprites for the belt crate, breakables, and vent decals", () => {
+  it("blits pack sprites for the belt glow, breakables, and vent decals", () => {
     const src = readFileSync("src/render/depth.ts", "utf8");
     expect(src.includes("conveyor")).toBe(true);
-    expect(src.includes("crate")).toBe(true);
+    expect(src.includes("blue_glow")).toBe(true);
     expect(src.includes("breakable_boiler")).toBe(true);
     expect(src.includes("breakable_gear_pylon")).toBe(true);
     expect(src.includes("decal_vent")).toBe(true);

@@ -1,12 +1,8 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { YARD_CLEAR, yardCratePropsInClear, yardPropHits } from "../src/render/yard-fx";
-import { CARGO_RIDE, cargoOn, cargoPhase, cargoX, cargoY, reviewDepth } from "../src/sim/depth";
+import { CARGO_RIDE, cargoOn, cargoOnPhoneHeroBelt, cargoPhase, cargoX, cargoY, reviewDepth } from "../src/sim/depth";
 import { createWorld } from "../src/sim/world";
-
-function inClear(x: number, y: number): boolean {
-  return x >= YARD_CLEAR.x0 && x <= YARD_CLEAR.x1 && y >= YARD_CLEAR.y0 && y <= YARD_CLEAR.y1;
-}
 
 describe("r31 open fight floor + perimeter az_art", () => {
   it("keeps crate, barrel, and crate_stack props out of YARD_CLEAR on brass", () => {
@@ -19,12 +15,12 @@ describe("r31 open fight floor + perimeter az_art", () => {
     expect(yardPropHits(YARD_CLEAR.x0, YARD_CLEAR.y0, YARD_CLEAR.x1, YARD_CLEAR.y1)).toBe(0);
   });
 
-  it("parks the upgrade belt and review cargo on the bottom perimeter conveyor", () => {
+  it("parks review cargo on the phone chevron belts, not as floor clutter", () => {
     const w = createWorld(31);
     reviewDepth(w);
     expect(cargoOn(w, 0)).toBe(1);
     expect(cargoPhase(w, 0)).toBe(CARGO_RIDE);
-    expect(inClear(cargoX(w, 0), cargoY(w, 0))).toBe(false);
+    expect(cargoOnPhoneHeroBelt(cargoX(w, 0), cargoY(w, 0))).toBe(true);
   });
 
   it("stores r31 phone review captures under docs/reviews/r31", () => {

@@ -1,0 +1,6 @@
+Closed #115 (belt-r40) parked brown crate props on the open fight floor beside the review hero.
+That read as center clutter, not belt cargo, and the capture used a stale pre-#114 HUD base.
+
+belt-r41 moves glowing upgrade/heal cargo onto the #112 PHONE_HERO_BLITS chevron paths
+(world x≈370/590, y≈380) so power-ups ride the in-frame conveyors at 390×844.
+No new crate/barrel/crate_stack props in YARD_CLEAR; cargo is sim-drawn blue_glow on the belt rail.
