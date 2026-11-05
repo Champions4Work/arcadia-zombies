@@ -1,6 +1,7 @@
 import { blitSheetFit } from "../art/sheet";
 import { currentHud } from "../shell/hud-layout";
 import { BRASS, COPPER, CYAN, SOOT, XP } from "../shell/theme";
+import { paintPhonePowerTrayFrame } from "./hud-bottom";
 import { registerFx } from "./plugins";
 import {
   FX_BOOM, UPG_WPN_FLAME, UPG_WPN_HARP, UPG_WPN_MORT, UPG_WPN_RIVET, UPG_WPN_SHOT,
@@ -21,15 +22,17 @@ export function paintWeapon(c: CanvasRenderingContext2D, w: World, j: number): n
 
 registerFx(FX_BOOM, paintBoom);
 
-function paintPhonePower(c: CanvasRenderingContext2D, i: number, cx: number, cy: number, r: number): void {
-  c.beginPath();
-  c.arc(cx, cy, r, 0, Math.PI * 2);
+function paintPhonePower(c: CanvasRenderingContext2D, i: number, cx: number, cy: number, half: number): void {
+  const sx = cx - half;
+  const sy = cy - half;
+  const sw = half * 2;
+  blitSheetFit(c, "power_slot", sx - 7, sy - 7, sw + 14, sw + 14);
   c.fillStyle = "#141820";
-  c.fill();
-  c.strokeStyle = i === 0 ? XP : CYAN;
-  c.lineWidth = 2.6;
-  c.stroke();
-  const s = r * 0.52;
+  c.fillRect(sx + 2, sy + 2, sw - 4, sw - 4);
+  c.strokeStyle = i === 0 ? "rgba(240,192,72,0.92)" : "rgba(212,168,72,0.72)";
+  c.lineWidth = 2.2;
+  c.strokeRect(sx + 0.5, sy + 0.5, sw - 1, sw - 1);
+  const s = half * 0.72;
   if (i === 0) {
     c.fillStyle = "#f0c040";
     c.beginPath();
@@ -154,7 +157,7 @@ export function drawWeaponRack(c: CanvasRenderingContext2D, w: World): void {
     const trayW = row + trayPad * 2;
     const tx = x0 - trayPad;
     const ty = box.y + Math.max(0, (box.h - trayH) / 2);
-    blitSheetFit(c, "panel_frame_glow", tx - 8, ty - 6, trayW + 16, trayH + 12);
+    paintPhonePowerTrayFrame(c, tx, ty, trayW, trayH);
   }
   for (let i = 0; i < WPN_COUNT; i++) {
     const id = IDS[i] ?? 0;
@@ -168,11 +171,11 @@ export function drawWeaponRack(c: CanvasRenderingContext2D, w: World): void {
     const sy = y;
     const cx = sx + sw / 2;
     const cy = sy + sh / 2;
-    blitSheetFit(c, "power_slot", sx - (phone ? 8 : 7), sy - (phone ? 8 : 7), sw + (phone ? 16 : 14), sh + (phone ? 16 : 14));
     if (phone) {
-      paintPhonePower(c, i, cx, cy, sw * 0.34);
+      paintPhonePower(c, i, cx, cy, sw * 0.38);
       continue;
     }
+    blitSheetFit(c, "power_slot", sx - 7, sy - 7, sw + 14, sh + 14);
     const rim = hot ? sw * 0.56 : sw * 0.5;
     c.beginPath();
     c.arc(cx, cy, rim * 0.72, 0, Math.PI * 2);

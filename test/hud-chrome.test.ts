@@ -71,12 +71,13 @@ describe("phone HUD chrome", () => {
   });
 
   it("does not fill a same-color disc under the heart glyph", () => {
-    const hud = readFileSync("src/render/hud.ts", "utf8");
-    const start = hud.indexOf("function drawHealth");
-    const body = hud.slice(start, hud.indexOf("function drawXp"));
+    const bottom = readFileSync("src/render/hud-bottom.ts", "utf8");
+    const start = bottom.indexOf("export function drawPhoneHealth");
+    const body = bottom.slice(start, bottom.indexOf("export function drawPhoneUlt"));
     expect(body.includes("heartIcon")).toBe(true);
     expect(body.includes("ctx.arc(cx, cy, r * 0.58")).toBe(false);
-    expect(body.includes("phone ? CYAN : HEALTH")).toBe(true);
+    expect(body.includes("heartCol = low ? DANGER : CYAN")).toBe(true);
+    expect(body.includes("rgba(6,8,12,0.88)")).toBe(true);
   });
 
   it("shows skull kills beside the phone timer strip", () => {

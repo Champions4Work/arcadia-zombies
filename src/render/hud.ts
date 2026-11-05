@@ -4,11 +4,7 @@ import { objectiveRows, waveFace } from "../sim/objectives";
 import { offerCount } from "../sim/characters";
 import { pacedXpNeed } from "../sim/modifiers";
 import { CARD_Y, cardFrame, offerId, xpNeed } from "../sim/progress";
-import {
-  EVOL_AEGIS, EVOL_CANNON, EVOL_STORM, UNION_BELLOWS, UNION_BRIAR, UNION_CALLIOPE,
-  UNION_CROWN, UNION_HALO, UNION_HEART, UNION_HOWITZER, UPG_DMG, UPG_FIRE, UPG_MORTAR,
-  UPG_SAWS, UPG_SHOTGUN, UPG_TESLA, UPG_VENT, W, type World,
-} from "../sim/types";
+import { W, type World } from "../sim/types";
 import { currentHud, offerCards, pauseHitAt } from "../shell/hud-layout";
 import type { Box, Circle, HudLayout } from "../shell/hud-layout";
 import { drawRewardCard } from "./cards";
@@ -20,8 +16,11 @@ import { BRASS, BRASS_HI, COPPER, CYAN, DANGER, FONT_BODY, HEALTH, INK, IRON, ST
 import { drawWeaponRack } from "./weapons";
 import { drawXpBar } from "./xp-gain";
 import { zoneChapterAt, zoneTitleAt } from "../sim/zones";
+import { drawPhoneHealth, drawPhoneUlt, paintPhoneBottomTray } from "./hud-bottom";
+import { weaponBadge } from "./weapon-badge";
 
 export { blurbFor } from "./icons";
+export { weaponBadge } from "./weapon-badge";
 
 export const PAUSE_X = 456;
 export const PAUSE_Y = 24;
@@ -44,35 +43,6 @@ export function pauseHit(x: number, y: number): boolean {
   const dx = x - PAUSE_X;
   const dy = y - PAUSE_Y;
   return dx * dx + dy * dy <= (PAUSE_R + 6) * (PAUSE_R + 6);
-}
-
-export function weaponBadge(w: World): { name: string; pips: number; kind: number } {
-  const storm = w.upgrades[EVOL_STORM] ?? 0;
-  const cannon = w.upgrades[EVOL_CANNON] ?? 0;
-  const aegis = w.upgrades[EVOL_AEGIS] ?? 0;
-  const saws = w.upgrades[UPG_SAWS] ?? 0;
-  const tesla = w.upgrades[UPG_TESLA] ?? 0;
-  const shot = w.upgrades[UPG_SHOTGUN] ?? 0;
-  const fire = w.upgrades[UPG_FIRE] ?? 0;
-  const mortar = w.upgrades[UPG_MORTAR] ?? 0;
-  const vent = w.upgrades[UPG_VENT] ?? 0;
-  if ((w.upgrades[UNION_CROWN] ?? 0) > 0) return { name: "CROWN", pips: 1, kind: UNION_CROWN };
-  if ((w.upgrades[UNION_BELLOWS] ?? 0) > 0) return { name: "GATLING", pips: 1, kind: UNION_BELLOWS };
-  if ((w.upgrades[UNION_HALO] ?? 0) > 0) return { name: "HALO", pips: 1, kind: UNION_HALO };
-  if ((w.upgrades[UNION_HEART] ?? 0) > 0) return { name: "HEART", pips: 1, kind: UNION_HEART };
-  if ((w.upgrades[UNION_BRIAR] ?? 0) > 0) return { name: "BRIAR", pips: 1, kind: UNION_BRIAR };
-  if ((w.upgrades[UNION_HOWITZER] ?? 0) > 0) return { name: "HOWITZER", pips: 1, kind: UNION_HOWITZER };
-  if ((w.upgrades[UNION_CALLIOPE] ?? 0) > 0) return { name: "CALLIOPE", pips: 1, kind: UNION_CALLIOPE };
-  if (storm > 0) return { name: "STORM", pips: storm, kind: EVOL_STORM };
-  if (cannon > 0) return { name: "CANNON", pips: cannon, kind: EVOL_CANNON };
-  if (aegis > 0) return { name: "AEGIS", pips: aegis, kind: EVOL_AEGIS };
-  if (saws > 0 && saws >= tesla && saws >= shot) return { name: "SAWSTORM", pips: saws, kind: UPG_SAWS };
-  if (tesla > 0 && tesla >= shot) return { name: "TESLA", pips: tesla, kind: UPG_TESLA };
-  if (shot > 0) return { name: "SCATTER", pips: shot, kind: UPG_SHOTGUN };
-  if (mortar > 0) return { name: "MORTAR", pips: mortar, kind: UPG_MORTAR };
-  if (vent > 0) return { name: "VENT", pips: vent, kind: UPG_VENT };
-  if (fire > 0) return { name: "OVERDRIVE", pips: fire, kind: UPG_FIRE };
-  return { name: "RIVETER", pips: Math.max(1, w.upgrades[UPG_DMG] ?? 0), kind: -1 };
 }
 
 function ink(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, size: number, color: string, align: CanvasTextAlign = "left"): void {
@@ -115,20 +85,22 @@ function plate(ctx: CanvasRenderingContext2D, box: Box, id = "panel_frame_small"
 function drawHealth(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   const layout = currentHud();
   const phone = layout?.phone ?? false;
+  if (phone) {
+    drawPhoneHealth(ctx, w, box);
+    return;
+  }
   const frac = w.maxHp > 0 ? Math.max(0, Math.min(1, w.hp / w.maxHp)) : 0;
   const low = frac <= 0.35;
   const cx = box.x + box.w / 2;
   const cy = box.y + box.h / 2;
   const r = Math.min(box.w, box.h) * 0.42;
-  const heartCol = low ? DANGER : phone ? CYAN : HEALTH;
-  blitSheetFit(ctx, "heart_ring", box.x - (phone ? 12 : 8), box.y - (phone ? 12 : 8), box.w + (phone ? 24 : 16), box.h + (phone ? 24 : 16));
-  if (!phone) {
-    ctx.beginPath();
-    ctx.arc(cx, cy, r + 4, 0, Math.PI * 2);
-    ctx.strokeStyle = BRASS;
-    ctx.lineWidth = 3.4;
-    ctx.stroke();
-  }
+  const heartCol = low ? DANGER : HEALTH;
+  blitSheetFit(ctx, "heart_ring", box.x - 8, box.y - 8, box.w + 16, box.h + 16);
+  ctx.beginPath();
+  ctx.arc(cx, cy, r + 4, 0, Math.PI * 2);
+  ctx.strokeStyle = BRASS;
+  ctx.lineWidth = 3.4;
+  ctx.stroke();
   ringMeter(ctx, cx, cy, r, frac, heartCol);
   heartIcon(ctx, cx, cy + 1, r * 0.62, heartCol);
   if (w.meta.revive > 0) ink(ctx, "REV", cx, box.y + 8, 9, COPPER, "center");
@@ -540,6 +512,10 @@ export function abilityHit(x: number, y: number): boolean {
 function ability(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   const layout = currentHud();
   const phone = layout?.phone ?? false;
+  if (phone) {
+    drawPhoneUlt(ctx, w, box);
+    return;
+  }
   const cx = box.x + box.w / 2;
   const cy = box.y + box.h / 2;
   const r = Math.min(box.w, box.h) * 0.42;
@@ -643,6 +619,7 @@ export function drawHud(ctx: CanvasRenderingContext2D, w: World): void {
   ctx.save();
   const dpr = ctx.canvas.width / Math.max(1, layout.view.w);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (layout.phone && !w.choosing) paintPhoneBottomTray(ctx, layout);
   drawHealth(ctx, w, layout.hero);
   drawXp(ctx, w, layout);
   if (!w.choosing) banner(ctx, w, layout.difficulty, layout.phone);

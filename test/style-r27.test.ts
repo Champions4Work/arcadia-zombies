@@ -12,14 +12,17 @@ describe("r27 art-bible pass", () => {
     expect(rack.includes("bezierCurveTo")).toBe(true);
   });
 
-  it("paints cyan heart rings on phone without rectangular weapon slots", () => {
+  it("paints cyan heart rings on phone with brass square power slots", () => {
     const hud = readFileSync("src/render/hud.ts", "utf8");
     expect(hud.includes('blitSheetFit(ctx, "panel_frame_small"')).toBe(true);
-    expect(hud.includes("phone ? CYAN : HEALTH")).toBe(true);
+    const bottom = readFileSync("src/render/hud-bottom.ts", "utf8");
+    expect(bottom.includes("heartCol = low ? DANGER : CYAN")).toBe(true);
+    expect(bottom.includes("drawPhoneHealth")).toBe(true);
     const rack = readFileSync("src/render/weapons.ts", "utf8");
-    expect(rack.includes('if (phone) {\n      paintPhonePower')).toBe(true);
-    expect(rack.includes('blitSheetFit(c, "panel_frame_glow"')).toBe(true);
-    expect(rack.match(/blitSheetFit\(c, "power_slot"/g)?.length).toBe(1);
+    expect(rack.includes("paintPhonePower(c, i, cx, cy")).toBe(true);
+    expect(rack.includes("paintPhonePowerTrayFrame")).toBe(true);
+    expect(rack.includes('blitSheetFit(c, "power_slot"')).toBe(true);
+    expect(rack.match(/blitSheetFit\(c, "power_slot"/g)?.length).toBeGreaterThanOrEqual(1);
   });
 
   it("declutters brass yard perimeter breakables and drops center cyan pipe runs", () => {
