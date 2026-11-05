@@ -150,8 +150,9 @@ describe("visual review gates", () => {
     expect(rack.includes("Math.max(12, lv * 12)")).toBe(false);
     expect(yard.includes("tick * 2.2")).toBe(true);
     expect(yard.includes("w * 0.42")).toBe(false);
-    const vents = yard.slice(yard.indexOf("const STEAM_VENTS"), yard.indexOf("export const YARD_CLEAR"));
+    const vents = yard.slice(yard.indexOf("const STEAM_VENTS"), yard.indexOf("const HERO_BAND_STEAM"));
     expect((vents.match(/\{ x:/g) || []).length).toBe(5);
+    expect(yard.includes("const HERO_BAND_STEAM")).toBe(true);
     const bible = readFileSync("docs/STYLE.md", "utf8");
     expect(bible.includes("220 KB")).toBe(true);
     expect(bible.includes("124 KB")).toBe(true);
@@ -232,7 +233,7 @@ describe("visual review gates", () => {
     const look = readFileSync("src/art/look.ts", "utf8");
     expect(look.includes("s * 4.2")).toBe(false);
     expect(look.includes("const fade = 0.6")).toBe(false);
-    expect(look.includes("0.72 + (seed & 3) * 0.06")).toBe(true);
+    expect(look.includes("0.62 + (seed & 3) * 0.05")).toBe(true);
     expect(look.includes("#5a1410")).toBe(true);
     expect(look.includes("#b41c18")).toBe(false);
     expect(look.includes("#7a1410")).toBe(false);

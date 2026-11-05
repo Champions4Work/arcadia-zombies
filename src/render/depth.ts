@@ -7,6 +7,7 @@ import {
 import { OB_BARREL, OB_BOILER, OB_CRATE, OB_GEAR } from "../sim/arena";
 import { type World } from "../sim/types";
 import { LAYER_BACK, LAYER_MID, registerLayer } from "./plugins";
+import { paintVentSteam } from "./yard-fx";
 
 function visible(x: number, y: number, camX: number, camY: number, vw: number, vh: number, pad: number): boolean {
   return x >= camX - pad && y >= camY - pad && x <= camX + vw + pad && y <= camY + vh + pad;
@@ -105,6 +106,7 @@ function paintDepthFloor(ctx: CanvasRenderingContext2D, w: World): void {
     const y = ventY(w, i);
     if (!visible(x, y, camX, camY, vw, vh, 40)) continue;
     paintLaneVent(ctx, x, y, w.tick);
+    paintVentSteam(ctx, x, y - 6, w.tick, true);
   }
   paintFeeder(ctx, w, camX, camY, vw, vh);
 }

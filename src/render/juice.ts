@@ -443,10 +443,12 @@ export function drawJuice(c: CanvasRenderingContext2D): void {
         c.fillStyle = "rgba(210,36,42,0.88)";
         c.fillRect((x - 2) | 0, (y - 3) | 0, 3, 4);
       } else {
-        c.fillStyle = "rgba(255,158,46,0.62)";
+        c.fillStyle = "rgba(255,158,46,0.72)";
         c.beginPath();
-        c.arc(x, y, 8, 0, Math.PI * 2);
+        c.arc(x, y, 9, 0, Math.PI * 2);
         c.fill();
+        c.fillStyle = BRASS_HI;
+        c.fillRect((x - 6) | 0, (y - 4) | 0, 12, 8);
         c.fillStyle = BRASS;
         c.fillRect((x - 5) | 0, (y - 3) | 0, 11, 7);
         c.fillStyle = COPPER;

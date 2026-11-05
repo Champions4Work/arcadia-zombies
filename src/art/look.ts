@@ -177,6 +177,14 @@ export function paintSignatureHero(
   const my = y - 26 * s - bob + ny * 5;
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
+  const bloom = ctx.createRadialGradient(mx, my, 0.5, mx, my, 18);
+  bloom.addColorStop(0, "rgba(255,244,180,0.95)");
+  bloom.addColorStop(0.42, "rgba(255,150,32,0.55)");
+  bloom.addColorStop(1, "rgba(255,80,10,0)");
+  ctx.fillStyle = bloom;
+  ctx.beginPath();
+  ctx.ellipse(mx, my, 16, 9, Math.atan2(ny, nx), 0, Math.PI * 2);
+  ctx.fill();
   ctx.fillStyle = "rgba(255,120,18,0.92)";
   ctx.beginPath();
   ctx.ellipse(mx, my, 19, 10, Math.atan2(ny, nx), 0, Math.PI * 2);
@@ -342,14 +350,14 @@ export function paintEnergyTank(ctx: CanvasRenderingContext2D, x: number, y: num
 export function paintBlood(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, age = 1): void {
   const seed = ((x * 13 + y * 7 + s * 17) | 0);
   const n = 7 + (seed & 3);
-  const fade = (0.72 + (seed & 3) * 0.06) * Math.max(0.28, Math.min(1, age));
-  const span = 9 + (s & 7);
+  const fade = (0.62 + (seed & 3) * 0.05) * Math.max(0.24, Math.min(1, age));
+  const span = 6 + (s & 5);
   ctx.fillStyle = "#5a1410";
   for (let i = 0; i < n; i++) {
     const ox = ((seed + i * 19) % (span * 2 + 1)) - span;
     const oy = ((seed + i * 11) % (span + 3)) - (span >> 1);
-    const rw = 4.2 + ((seed + i * 5) % Math.max(3, span >> 1));
-    const rh = 2.6 + ((seed + i * 3) % Math.max(2, span >> 2));
+    const rw = 3.2 + ((seed + i * 5) % Math.max(2, span >> 1));
+    const rh = 2.1 + ((seed + i * 3) % Math.max(2, span >> 2));
     ctx.globalAlpha = fade;
     ctx.beginPath();
     ctx.ellipse(x + ox, y + oy, rw, rh, ((seed + i) % 8) * 0.28, 0, Math.PI * 2);
