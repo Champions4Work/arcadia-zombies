@@ -5,9 +5,8 @@ import { ZONE_BOILER, ZONE_BRASS, ZONE_TRAM } from "../sim/zones";
 import { FEAT_LAMP, groundFeatureAt, groundFeatureCount } from "./ground";
 
 const BUILDINGS = [
-  { x: 368, y: 214 },
-  { x: 480, y: 212 },
-  { x: 592, y: 214 },
+  { x: 416, y: 202 },
+  { x: 544, y: 202 },
 ];
 
 const BELTS = [
@@ -24,6 +23,8 @@ const BELT_H = 72;
 const GLASS_AT = [0.22, 0.5, 0.78];
 const VALVE = { x: 424, y: 232 };
 const BUILD_SCALE = 1.28;
+const SPAWN_FACADE_PHONE = 1.44;
+const PHONE_FACADE_VW = 420;
 const TANK_SCALE = 1.2;
 const STEAM_VENT_SCALE = 0.76;
 const STEAM_VENT_ALPHA = 0.24;
@@ -317,6 +318,7 @@ function paintBrickWall(ctx: CanvasRenderingContext2D): void {
       ctx.fillRect(300 + col * 20 + shift, oy, 18, 10);
     }
   }
+  if (yardBound === ZONE_BRASS) return;
   const panes = soot ? [340, 404, 468, 532, 596] : steel ? [328, 400, 480, 560, 632] : [348, 412, 476, 540];
   for (let i = 0; i < panes.length; i++) {
     const px = panes[i] ?? 348;
@@ -335,17 +337,34 @@ function paintBrickWall(ctx: CanvasRenderingContext2D): void {
   }
 }
 
-function doorPool(ctx: CanvasRenderingContext2D, x: number, y: number): void {
-  const g = ctx.createRadialGradient(x, y + 10, 2, x, y + 20, 48);
-  g.addColorStop(0, "rgba(255,176,80,0.34)");
-  g.addColorStop(0.5, "rgba(255,130,40,0.14)");
+function doorPool(ctx: CanvasRenderingContext2D, x: number, y: number, sc = 1): void {
+  const g = ctx.createRadialGradient(x, y + 8 * sc, 2, x, y + 18 * sc, 58 * sc);
+  g.addColorStop(0, "rgba(255,196,110,0.52)");
+  g.addColorStop(0.45, "rgba(255,140,48,0.22)");
   g.addColorStop(1, "rgba(10,10,14,0)");
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
   ctx.fillStyle = g;
   ctx.beginPath();
-  ctx.ellipse(x, y + 20, 40, 24, 0, 0, Math.PI * 2);
+  ctx.ellipse(x, y + 18 * sc, 48 * sc, 30 * sc, 0, 0, Math.PI * 2);
   ctx.fill();
+  ctx.restore();
+}
+
+function facadeScale(vw: number): number {
+  return vw < PHONE_FACADE_VW ? SPAWN_FACADE_PHONE : BUILD_SCALE;
+}
+
+function paintSpawnFacade(ctx: CanvasRenderingContext2D, x: number, y: number, sc: number): void {
+  doorPool(ctx, x, y, sc);
+  paintShadow(ctx, x, y, Math.round(52 * sc), 11);
+  blitScaled(ctx, "building_wall_door", x, y, sc);
+  blitSheet(ctx, "lamp", x + Math.round(36 * sc), y - Math.round(16 * sc));
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  ctx.globalAlpha = 0.78;
+  blitSheet(ctx, "window_lit", x - Math.round(26 * sc), y - Math.round(34 * sc));
+  blitSheet(ctx, "window_lit", x + Math.round(18 * sc), y - Math.round(34 * sc));
   ctx.restore();
 }
 
@@ -734,11 +753,10 @@ export function paintYardLive(
     if (!visible(run.x, run.y, camX, camY, vw, vh, run.len + 20)) continue;
     paintCrossPipe(ctx, run.x, run.y, run.len, tick, run.vert);
   }
+  const fsc = facadeScale(vw);
   for (const b of buildingsOf()) {
-    if (!visible(b.x, b.y, camX, camY, vw, vh, 160)) continue;
-    doorPool(ctx, b.x, b.y);
-    paintShadow(ctx, b.x, b.y, 52, 11);
-    blitScaled(ctx, "building_wall_door", b.x, b.y, BUILD_SCALE);
+    if (!visible(b.x, b.y, camX, camY, vw, vh, 180)) continue;
+    paintSpawnFacade(ctx, b.x, b.y, fsc);
   }
   for (const tank of tanksOf()) {
     if (!visible(tank.x, tank.y, camX, camY, vw, vh, 50)) continue;
@@ -788,7 +806,7 @@ function paintBrassGrade(ctx: CanvasRenderingContext2D, camX: number, camY: numb
   ctx.save();
   ctx.globalCompositeOperation = "multiply";
   const shade = ctx.createLinearGradient(camX, camY, camX, camY + vh);
-  shade.addColorStop(0, "rgba(72,36,48,0.22)");
+  shade.addColorStop(0, "rgba(72,36,48,0.12)");
   shade.addColorStop(0.35, "rgba(28,20,16,0.08)");
   shade.addColorStop(1, "rgba(6,8,14,0.38)");
   ctx.fillStyle = shade;
@@ -806,11 +824,10 @@ function paintBrassGrade(ctx: CanvasRenderingContext2D, camX: number, camY: numb
 }
 
 export function paintDoorSpawn(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number): void {
-  blitSheet(ctx, "building_wall_door", x, y);
-  blitSheet(ctx, "window_lit", x - 26, y - 36);
-  blitSheet(ctx, "lamp", x + 34, y - 18);
+  paintSpawnFacade(ctx, x, y, BUILD_SCALE);
   ctx.save();
   ctx.globalAlpha = 0.9;
+  ctx.globalCompositeOperation = "lighter";
   blitSheet(ctx, "window_lit", x, y + 4);
   ctx.restore();
   ctx.fillStyle = (tick >> 2 & 1) ? "rgba(232,160,48,0.45)" : "rgba(232,160,48,0.2)";
