@@ -1,0 +1,5 @@
+Merged #119 (belt-r41) placed glowing cargo on the in-frame chevron belts (good placement).
+Review vs docs/target_look2.png: pickup read as oversized blue_glow blobs dominating the midband.
+
+belt-r42 keeps #119 belt placement and #112 midband tanks/chevrons.
+Cargo render swaps stacked blue_glow blits for tight paintBeltUpgradeCube gold/amber cubes with a small amber trail.
