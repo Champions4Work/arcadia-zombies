@@ -36,7 +36,7 @@ describe("r35 fx-only mid-frame steam + combat read", () => {
     expect(yard.includes("HERO_BAND_STEAM.concat(STEAM_VENTS)")).toBe(true);
     const depth = readFileSync("src/render/depth.ts", "utf8");
     expect(depth.includes('import { paintVentSteam } from "./yard-fx"')).toBe(true);
-    expect(depth.includes("paintVentSteam(ctx, x, y - 6, w.tick, true)")).toBe(true);
+    expect(depth.includes("paintVentSteam(ctx, x, y - 6, w.tick, false)")).toBe(true);
   });
 
   it("keeps hero-band vents inside the phone camera around the review hunter", () => {

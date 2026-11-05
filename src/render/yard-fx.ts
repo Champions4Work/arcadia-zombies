@@ -25,6 +25,9 @@ const PHONE_FACADE_VW = 420;
 const TANK_SCALE = 1.2;
 const STEAM_VENT_SCALE = 0.76;
 const STEAM_VENT_ALPHA = 0.24;
+const STEAM_PHONE_VALVE_SCALE = 1.04;
+const STEAM_PHONE_PUFF_SCALE = 1.08;
+const STEAM_PHONE_PUFF_ALPHA = 0.94;
 const BLUE_GLOW_ALPHA = 0.3;
 const PHONE_HERO_TANK_SCALE = 1.45;
 const PHONE_HERO_CONVEYOR_SCALE = 1.3;
@@ -104,9 +107,8 @@ const STEAM_VENTS = [
 ];
 
 const HERO_BAND_STEAM = [
-  { x: 384, y: 348 },
-  { x: 576, y: 356 },
-  { x: 432, y: 412 },
+  { x: 363, y: 294 },
+  { x: 592, y: 294 },
 ];
 
 export const YARD_CLEAR = { x0: 352, y0: 318, x1: 608, y1: 638 };
@@ -556,13 +558,21 @@ export function paintVentSteam(
   const lift = ((tick * 0.35) % 14);
   if (heroBand) {
     ctx.save();
-    ctx.globalAlpha = 0.82;
-    blitScaled(ctx, "valve_steam", x - 8, y + 4, 0.58);
+    ctx.globalCompositeOperation = "source-over";
+    ctx.globalAlpha = 1;
+    blitScaled(ctx, "valve_steam", x - 12, y + 2, STEAM_PHONE_VALVE_SCALE);
+    ctx.filter = "brightness(1.48) contrast(1.04)";
+    ctx.globalAlpha = STEAM_PHONE_PUFF_ALPHA;
+    blitScaled(ctx, steamFrame(tick), x - 14, y - 38 - lift, STEAM_PHONE_PUFF_SCALE);
+    ctx.globalAlpha = STEAM_PHONE_PUFF_ALPHA * 0.86;
+    blitScaled(ctx, steamFrame(tick + 4), x + 2, y - 24 - lift * 0.5, STEAM_PHONE_PUFF_SCALE * 0.9);
+    ctx.filter = "none";
     ctx.restore();
+    return;
   }
   steamPuff(ctx, x, y, tick);
-  const alpha = heroBand ? STEAM_VENT_ALPHA * 1.45 : STEAM_VENT_ALPHA;
-  const scale = heroBand ? STEAM_VENT_SCALE * 0.92 : STEAM_VENT_SCALE;
+  const alpha = STEAM_VENT_ALPHA;
+  const scale = STEAM_VENT_SCALE;
   ctx.save();
   ctx.globalCompositeOperation = "soft-light";
   ctx.globalAlpha = alpha;
@@ -579,7 +589,7 @@ function heroBandVent(x: number, y: number): boolean {
     if (!v) continue;
     if (v.x === x && v.y === y) return true;
   }
-  return closeToHero(x, y);
+  return false;
 }
 
 function arrow(ctx: CanvasRenderingContext2D, x: number, y: number, ang: number, tick: number): void {
@@ -827,6 +837,11 @@ export function paintYardLive(
     if (yardBound === ZONE_BRASS && WING_PROP.has(p.id)) blitScaled(ctx, p.id, p.x, p.y, WING_PROP_SCALE);
     else blitSheet(ctx, p.id, p.x, p.y);
   }
+  for (const vent of ventsOf()) {
+    if (!heroBandVent(vent.x, vent.y)) continue;
+    if (!visible(vent.x, vent.y, camX, camY, vw, vh, 40)) continue;
+    paintVentSteam(ctx, vent.x, vent.y, tick, true);
+  }
   paintPhoneHeroBlits(ctx, tick, camX, camY, vw, vh);
   if (yardBound === ZONE_TRAM) {
     for (const car of TRAM_CARS) {
@@ -842,8 +857,9 @@ export function paintYardLive(
     paintCrossBelt(ctx, belt.x, belt.y, belt.w, tick, belt.vert);
   }
   for (const vent of ventsOf()) {
+    if (heroBandVent(vent.x, vent.y)) continue;
     if (!visible(vent.x, vent.y, camX, camY, vw, vh, 40)) continue;
-    paintVentSteam(ctx, vent.x, vent.y, tick, heroBandVent(vent.x, vent.y));
+    paintVentSteam(ctx, vent.x, vent.y, tick, false);
   }
   if (yardBound === ZONE_BRASS) paintBrassGrade(ctx, camX, camY, vw, vh);
 }

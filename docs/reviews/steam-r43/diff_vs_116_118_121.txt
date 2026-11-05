@@ -1,0 +1,3 @@
+Closed #116, #118, and #121 shipped soft-light steam at low alpha beside phone tanks. steam_crop had cyan tank read but white=0 and no brass valve wheel silhouette.
+
+This pass parks HERO_BAND_STEAM at world x=363/592 y=294 beside #112 PHONE_HERO_BLITS tanks inside camX 332-628. paintVentSteam heroBand uses full-opacity valve_steam plus source-over packed steam_1-4 at STEAM_PHONE_PUFF_ALPHA 0.94 so steam_crop counts near-white plumes (steam_gate white=132, not grey wisps at white=0).

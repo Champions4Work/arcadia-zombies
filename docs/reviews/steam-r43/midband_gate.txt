@@ -1,0 +1,1 @@
+cyan=0 blue=1237 yellow=1893 size=390x304

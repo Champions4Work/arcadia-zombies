@@ -171,7 +171,7 @@ function paintDepthFloor(ctx: CanvasRenderingContext2D, w: World): void {
     const y = ventY(w, i);
     if (!visible(x, y, camX, camY, vw, vh, 40)) continue;
     paintLaneVent(ctx, x, y, w.tick);
-    paintVentSteam(ctx, x, y - 6, w.tick, true);
+    paintVentSteam(ctx, x, y - 6, w.tick, false);
   }
   paintFeeder(ctx, w, camX, camY, vw, vh);
 }
