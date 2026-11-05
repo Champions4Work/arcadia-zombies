@@ -125,6 +125,12 @@ After **#117 / hud-r40**, match **image 1** polish items **8–9** without regre
 
 Review **`docs/reviews/hud-r42/`** (`phone_390_play.png` **`?shot=1`**, **`hud_bottom_crop.png`**, **`compare_390_ref1.png`** vs **`docs/target_look.jpg`**, **`NOTE.md`** vs #117). Coordinator **Read-compare**; **no auto-merge**.
 
+## HUD ult sun (hud-r45)
+
+After **#122 / hud-r42**, the phone bottom-right must read as an **orange glowing sun/star** inside the same **`heart_ring`** brass frame as the teal heart—not the packed **`ultimate_button`** steering wheel with a weapon **`badgeIcon`** crosshair, and not a blue **`XP`** charge arc when ready. **`drawPhoneUlt`**: double **`heart_ring`**, warm **`BRASS` / `COPPER`** charge arc, **`paintPhoneUltSun`** filled star burst only (no center badge). Left heart, power tray, and **`xp_bar_frame`** unchanged.
+
+Review **`docs/reviews/hud-r45/`** (`phone_390_play.png` **`?shot=1`**, **`hud_bottom_crop.png`**, **`compare_390_ref1.png`**, **`NOTE.md`** vs #122). **`scripts/hud_ult_pixel_gate.mjs`** on **`hud_bottom_crop.png`**. Coordinator **Read-compare**; **no auto-merge**.
+
 ## References (art bible)
 
 Review size is 390×844 CSS pixels. These two files are the art bible. Every visual PR compares against both.

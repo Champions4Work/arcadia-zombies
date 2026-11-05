@@ -70,8 +70,8 @@ describe("hud r42 phone bottom polish", () => {
     const bottom = readFileSync("src/render/hud-bottom.ts", "utf8");
     expect(bottom.includes("heartCol = low ? HEART_CORE : CYAN")).toBe(true);
     expect(bottom.includes("paintPhoneUltSun")).toBe(true);
-    expect(bottom.includes("ready ? XP : BRASS")).toBe(true);
-    expect(bottom.includes("ready ? XP : CYAN")).toBe(false);
+    expect(bottom.includes("ULT_CHARGE")).toBe(true);
+    expect(bottom.includes("ready ? XP")).toBe(false);
     expect(bottom.includes("ringCol = low ? DANGER : HEALTH")).toBe(true);
     const xp = readFileSync("src/render/xp-gain.ts", "utf8");
     expect(xp.includes("phoneLvCaption")).toBe(true);
