@@ -1,0 +1,4 @@
+belt-r43 keeps cargo on the #112 PHONE_HERO_BLITS chevron paths (world x≈370/590, y≈380).
+Same sim placement as merged #120; no new crate/barrel/crate_stack props in YARD_CLEAR (#115 fail).
+
+No new crate/barrel/crate_stack props in YARD_CLEAR; cargo is sim-drawn readable gold/amber cubes on the belt rail.

@@ -1,0 +1,5 @@
+Merged #120 (belt-r42) swapped blue_glow blobs for paintBeltUpgradeCube gold/amber cubes on #119 belt placement.
+Coordinator belt_cargo_crop gate read amber≈16 — cubes too tiny/dim on yellow chevrons.
+
+belt-r43 keeps #120 belt placement and #112 midband tanks/chevrons.
+Same cargo path; paintBeltUpgradeCube scales to readable phone gold cubes (amber gate >= 80) with ink outlines, not blue_glow blobs.

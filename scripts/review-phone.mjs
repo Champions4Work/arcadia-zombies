@@ -102,9 +102,9 @@ execFileSync("python3", [
 from PIL import Image
 im = Image.open(${JSON.stringify(playPath)}).convert("RGBA")
 w, h = im.size
-x1 = int(w * 0.45)
-y0 = int(h * 0.34)
-y1 = int(h * 0.52)
+x1 = int(w * float(${process.env.BELT_CARGO_X1_FRAC ?? "0.52"}))
+y0 = int(h * float(${process.env.BELT_CARGO_Y0_FRAC ?? "0.56"}))
+y1 = int(h * float(${process.env.BELT_CARGO_Y1_FRAC ?? "0.66"}))
 im.crop((0, y0, x1, y1)).save(${JSON.stringify(beltCargoPath)})
 print(x1, y0, y1)
 `,
@@ -117,6 +117,18 @@ try {
 } catch (e) {
   const gateOut = e.stdout?.toString?.() ?? "";
   if (gateOut) writeFileSync(`${dest}/midband_gate.txt`, gateOut);
+  throw e;
+}
+
+try {
+  const beltGateOut = execFileSync("node", ["scripts/belt_cargo_pixel_gate.mjs", beltCargoPath], {
+    encoding: "utf8",
+  });
+  writeFileSync(`${dest}/belt_cargo_gate.txt`, beltGateOut);
+  console.log(`belt cargo gate ${beltGateOut.trim()}`);
+} catch (e) {
+  const beltGateOut = e.stdout?.toString?.() ?? e.stderr?.toString?.() ?? "";
+  if (beltGateOut) writeFileSync(`${dest}/belt_cargo_gate.txt`, beltGateOut);
   throw e;
 }
 

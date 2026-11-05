@@ -81,23 +81,24 @@ function paintBeltUpgradeCube(
   tick: number,
   upgrade: boolean,
 ): void {
-  const pulse = 0.78 + ((tick >> 2) & 1) * 0.16;
-  const glow = ctx.createRadialGradient(x, y - 6, 0, x, y - 4, 16);
-  glow.addColorStop(0, upgrade ? "rgba(255,196,72,0.52)" : "rgba(255,214,120,0.46)");
+  const pulse = 0.82 + ((tick >> 2) & 1) * 0.14;
+  const glow = ctx.createRadialGradient(x, y - 8, 0, x, y - 6, 24);
+  glow.addColorStop(0, upgrade ? "rgba(255,208,96,0.72)" : "rgba(255,220,140,0.66)");
+  glow.addColorStop(0.55, "rgba(240,140,40,0.22)");
   glow.addColorStop(1, "rgba(232,120,32,0)");
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
-  ctx.globalAlpha = pulse * 0.42;
+  ctx.globalAlpha = pulse * 0.58;
   ctx.fillStyle = glow;
   ctx.beginPath();
-  ctx.arc(x, y - 4, 12, 0, Math.PI * 2);
+  ctx.arc(x, y - 6, 18, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
-  paintShadow(ctx, x, y, 7, 2.5);
+  paintShadow(ctx, x, y, 14, 4);
   ctx.save();
-  ctx.translate(x, y - 9);
-  const s = 6.5;
-  ctx.fillStyle = upgrade ? "#f0d080" : "#ffe8a8";
+  ctx.translate(x, y - 20);
+  const s = 25;
+  ctx.fillStyle = upgrade ? "#f0c878" : "#ffe8a8";
   ctx.beginPath();
   ctx.moveTo(0, -s);
   ctx.lineTo(s, -s * 0.5);
@@ -105,7 +106,7 @@ function paintBeltUpgradeCube(
   ctx.lineTo(-s, -s * 0.5);
   ctx.closePath();
   ctx.fill();
-  ctx.fillStyle = upgrade ? "#a05828" : "#c89840";
+  ctx.fillStyle = upgrade ? "#8a5a20" : "#a05828";
   ctx.beginPath();
   ctx.moveTo(-s, -s * 0.5);
   ctx.lineTo(0, 0);
@@ -121,9 +122,44 @@ function paintBeltUpgradeCube(
   ctx.lineTo(s, s * 0.5);
   ctx.closePath();
   ctx.fill();
-  ctx.globalAlpha = 0.42 + ((tick >> 3) & 1) * 0.18;
+  ctx.fillStyle = "#fff1c2";
+  ctx.globalAlpha = 0.55 + ((tick >> 3) & 1) * 0.2;
+  ctx.beginPath();
+  ctx.arc(-s * 0.22, -s * 0.72, s * 0.16, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = "#0c0a08";
+  ctx.lineWidth = 1.35;
+  ctx.beginPath();
+  ctx.moveTo(0, -s);
+  ctx.lineTo(s, -s * 0.5);
+  ctx.lineTo(0, 0);
+  ctx.lineTo(-s, -s * 0.5);
+  ctx.closePath();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-s, -s * 0.5);
+  ctx.lineTo(0, 0);
+  ctx.lineTo(0, s);
+  ctx.lineTo(-s, s * 0.5);
+  ctx.closePath();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(s, -s * 0.5);
+  ctx.lineTo(0, 0);
+  ctx.lineTo(0, s);
+  ctx.lineTo(s, s * 0.5);
+  ctx.closePath();
+  ctx.stroke();
+  ctx.globalAlpha = 0.72 + ((tick >> 3) & 1) * 0.18;
   ctx.strokeStyle = "#fff1c2";
-  ctx.lineWidth = 1;
+  ctx.lineWidth = 1.1;
+  ctx.beginPath();
+  ctx.moveTo(0, -s);
+  ctx.lineTo(s, -s * 0.5);
+  ctx.lineTo(0, 0);
+  ctx.lineTo(-s, -s * 0.5);
+  ctx.closePath();
   ctx.stroke();
   ctx.restore();
 }
@@ -136,13 +172,13 @@ function paintCargo(ctx: CanvasRenderingContext2D, w: World, i: number): void {
   if (phase === CARGO_SLIDE || phase === CARGO_RIDE) {
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
-    ctx.globalAlpha = 0.32 + ((w.tick >> 2) & 1) * 0.1;
-    const trail = ctx.createRadialGradient(x, y - 7, 0, x, y - 5, 9);
-    trail.addColorStop(0, "rgba(255,188,64,0.28)");
+    ctx.globalAlpha = 0.46 + ((w.tick >> 2) & 1) * 0.12;
+    const trail = ctx.createRadialGradient(x, y - 9, 0, x, y - 7, 16);
+    trail.addColorStop(0, "rgba(255,196,72,0.44)");
     trail.addColorStop(1, "rgba(240,120,32,0)");
     ctx.fillStyle = trail;
     ctx.beginPath();
-    ctx.arc(x, y - 5, 7, 0, Math.PI * 2);
+    ctx.arc(x, y - 7, 12, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
   }
