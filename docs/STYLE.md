@@ -51,6 +51,20 @@ Brass **`BUILDINGS`** stay two **`building_wall_door`** facades in the phone upp
 
 Review **`docs/reviews/spawn-r36/`** (`phone_390_play.png`, compares vs **`docs/target_look.jpg`** / **`docs/target_look2.png`**, **`trio_ref1_play_ref2.png`**). Coordinator **Read-compare** before merge; **no auto-merge**.
 
+## Phone camera + midband props (r38)
+
+Closed **#100 / #105 / #107 / #110** assumed perimeter **`PROPS`** and side rails at world **`x ≈ 304–312 / 648–656`** would read in the **390×844 `?shot=1`** midband. **`playView(390,844)`** centers on the review hunter (**`480,320`**) with **`camX ≈ 332`**, **`viewW ≈ 296`**: visible world **X is only `[332,628]`**. Rails outside that clip **do not paint on phone**—source-string tests can pass while **`midband_crop` blue pixels stay 0**.
+
+| Rule | Detail |
+| --- | --- |
+| Fight floor | **No `PIPE_RUNS` at `y:232`**. **`paintCrossPipe`** must not paint **`#7ae0d4`** pad ellipses / cyan glass halos in the hero band (`y ≤ YARD_CLEAR.y1`). Bottom perimeter pipe at **`y:648`** may keep cyan. |
+| Phone blits | **`PHONE_HERO_BLITS`**: scaled **`pipes_blue_tank`** (≥ **1.45**) and **`conveyor`** chevrons (≥ **1.30**) **inside** the phone camera, flanking the hunter (~**378/582 × 300**, conveyors ~**370/590 × 380**). Painted from **`paintYardLive`** ( **`?shot=1`** path). |
+| Proof | **`docs/reviews/r38/midband_crop.png`** (CSS **y 22%–58%**) must pass **`scripts/midband-pixel-gate.py`**: fight-floor **pad cyan** (**`#7ae0d4` / glass halo**, not pack tank liquid) **`== 0`**, **`blue ≥ 200`**. String-only tests are insufficient. |
+
+Do **not** re-park tanks/conveyors on off-screen rails and expect phone midband reads. No brown **`breakable_boiler`** stand-ins for blue tanks.
+
+Review **`docs/reviews/r38/`** with **`vs_main_cyan.png`**, **`vs_r37_offscreen.png`**, trio + ref compares. Coordinator **Read-compare**; **no auto-merge**.
+
 ## References (art bible)
 
 Review size is 390×844 CSS pixels. These two files are the art bible. Every visual PR compares against both.

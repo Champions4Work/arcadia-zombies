@@ -14,10 +14,7 @@ const BELTS = [
   { x: 656, y: 392, w: 168, vert: 1 },
 ];
 
-const PIPE_RUNS = [
-  { x: 296, y: 232, len: 368, vert: 0 },
-  { x: 296, y: 648, len: 368, vert: 0 },
-];
+const PIPE_RUNS = [{ x: 296, y: 648, len: 368, vert: 0 }];
 
 const BELT_H = 72;
 const GLASS_AT = [0.22, 0.5, 0.78];
@@ -29,6 +26,15 @@ const TANK_SCALE = 1.2;
 const STEAM_VENT_SCALE = 0.76;
 const STEAM_VENT_ALPHA = 0.24;
 const BLUE_GLOW_ALPHA = 0.3;
+const PHONE_HERO_TANK_SCALE = 1.45;
+const PHONE_HERO_CONVEYOR_SCALE = 1.3;
+
+export const PHONE_HERO_BLITS: { id: string; x: number; y: number; sc: number }[] = [
+  { id: "pipes_blue_tank", x: 378, y: 300, sc: PHONE_HERO_TANK_SCALE },
+  { id: "pipes_blue_tank", x: 582, y: 300, sc: PHONE_HERO_TANK_SCALE },
+  { id: "conveyor", x: 370, y: 380, sc: PHONE_HERO_CONVEYOR_SCALE },
+  { id: "conveyor", x: 590, y: 380, sc: PHONE_HERO_CONVEYOR_SCALE },
+];
 
 const PROPS: { id: string; x: number; y: number }[] = [
   { id: "window_lit", x: 324, y: 188 },
@@ -434,6 +440,7 @@ function paintCrossPipe(
     paintVertPipe(ctx, x, y, len, tick);
     return;
   }
+  const heroBand = y <= YARD_CLEAR.y1;
   ctx.fillStyle = "#1a120c";
   ctx.fillRect(x, y - 30, len, 60);
   ctx.fillStyle = "#8a5a20";
@@ -442,38 +449,40 @@ function paintCrossPipe(
   ctx.fillRect(x, y - 18, len, 36);
   ctx.fillStyle = "#f0c878";
   ctx.fillRect(x, y - 20, len, 10);
-  ctx.fillStyle = "#0a4a52";
-  ctx.fillRect(x + 4, y - 8, len - 8, 16);
-  ctx.fillStyle = "#7ae0d4";
-  ctx.fillRect(x + 4, y - 5, len - 8, 10);
-  for (let i = 0; i < GLASS_AT.length; i++) {
-    const t = GLASS_AT[i] ?? 0.5;
-    const px = x + len * t;
-    const pulse = 0.38 + ((tick + i * 7) & 7) * 0.025;
-    ctx.fillStyle = "#0a6a72";
-    ctx.beginPath();
-    ctx.ellipse(px, y, 28, 12, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.save();
-    ctx.globalCompositeOperation = "lighter";
-    ctx.fillStyle = `rgba(70,230,255,${pulse})`;
-    ctx.beginPath();
-    ctx.ellipse(px, y, 22, 9, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "rgba(140,220,230,0.55)";
-    ctx.beginPath();
-    ctx.ellipse(px, y, 12, 5, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-    ctx.strokeStyle = BRASS_HI;
-    ctx.lineWidth = 2.4;
-    ctx.beginPath();
-    ctx.ellipse(px, y, 28, 12, 0, 0, Math.PI * 2);
-    ctx.stroke();
+  if (!heroBand) {
+    ctx.fillStyle = "#0a4a52";
+    ctx.fillRect(x + 4, y - 8, len - 8, 16);
+    ctx.fillStyle = "#7ae0d4";
+    ctx.fillRect(x + 4, y - 5, len - 8, 10);
+    for (let i = 0; i < GLASS_AT.length; i++) {
+      const t = GLASS_AT[i] ?? 0.5;
+      const px = x + len * t;
+      const pulse = 0.38 + ((tick + i * 7) & 7) * 0.025;
+      ctx.fillStyle = "#0a6a72";
+      ctx.beginPath();
+      ctx.ellipse(px, y, 28, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.save();
+      ctx.globalCompositeOperation = "lighter";
+      ctx.fillStyle = `rgba(70,230,255,${pulse})`;
+      ctx.beginPath();
+      ctx.ellipse(px, y, 22, 9, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "rgba(140,220,230,0.55)";
+      ctx.beginPath();
+      ctx.ellipse(px, y, 12, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      ctx.strokeStyle = BRASS_HI;
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      ctx.ellipse(px, y, 28, 12, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    blitScaled(ctx, "pipes_blue_tank", x + 28, y + 22, TANK_SCALE);
+    blitScaled(ctx, "pipes_blue_tank", x + len - 28, y + 22, TANK_SCALE);
   }
-  blitScaled(ctx, "pipes_blue_tank", x + 28, y + 22, TANK_SCALE);
-  blitScaled(ctx, "pipes_blue_tank", x + len - 28, y + 22, TANK_SCALE);
-  paintRedValve(ctx, VALVE.x, VALVE.y);
+  if (y <= 280) paintRedValve(ctx, VALVE.x, VALVE.y);
 }
 
 function paintVertPipe(ctx: CanvasRenderingContext2D, x: number, y: number, len: number, tick: number): void {
@@ -736,6 +745,23 @@ export function yardPropHits(x0: number, y0: number, x1: number, y1: number): nu
   return n;
 }
 
+function paintPhoneHeroBlits(
+  ctx: CanvasRenderingContext2D,
+  tick: number,
+  camX: number,
+  camY: number,
+  vw: number,
+  vh: number,
+): void {
+  if (yardBound !== ZONE_BRASS) return;
+  for (const b of PHONE_HERO_BLITS) {
+    if (!visible(b.x, b.y, camX, camY, vw, vh, 120)) continue;
+    paintShadow(ctx, b.x, b.y, 14, 5);
+    if (b.id === "pipes_blue_tank") bluePool(ctx, b.x, b.y + 8, tick);
+    blitScaled(ctx, b.id, b.x, b.y, b.sc);
+  }
+}
+
 export function paintYardLive(
   ctx: CanvasRenderingContext2D,
   tick: number,
@@ -782,6 +808,7 @@ export function paintYardLive(
     paintShadow(ctx, p.x, p.y, 12, 4);
     blitSheet(ctx, p.id, p.x, p.y);
   }
+  paintPhoneHeroBlits(ctx, tick, camX, camY, vw, vh);
   if (yardBound === ZONE_TRAM) {
     for (const car of TRAM_CARS) {
       if (!visible(car.x, car.y, camX, camY, vw, vh, 90)) continue;

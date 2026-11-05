@@ -85,6 +85,8 @@ Do not merge look-changing work without those captures and without coordinator *
 
 Folder naming and required filenames: `docs/reviews/README.md`.
 
+Yard props and pipe art must land **inside the 390×844 play camera** (see **`PHONE_HERO_BLITS`** and **`docs/STYLE.md` r38**). Perimeter rails at world **x ≈ 304 / 656** sit outside **`camX ≈ 332`** … **`camX + viewW`** and do not read in phone review crops; pixel gates on **`midband_crop`** are the proof, not source-string checks alone.
+
 ## Systems order after art
 
 Do this work after the art pack is on `main`. Do not start a later row until the row above it has landed.
