@@ -175,31 +175,59 @@ export function paintSignatureHero(
   const side = flip ? -1 : 1;
   const mx = x + side * 34 * s + nx * 4;
   const my = y - 26 * s - bob + ny * 5;
+  const flashAng = Math.atan2(ny, nx);
+  const trace = 36;
   ctx.save();
   ctx.globalCompositeOperation = "lighter";
-  const bloom = ctx.createRadialGradient(mx, my, 0.5, mx, my, 18);
-  bloom.addColorStop(0, "rgba(255,244,180,0.95)");
-  bloom.addColorStop(0.42, "rgba(255,150,32,0.55)");
+  const bloom = ctx.createRadialGradient(mx, my, 0.5, mx, my, 22);
+  bloom.addColorStop(0, "rgba(255,252,210,0.98)");
+  bloom.addColorStop(0.38, "rgba(255,168,40,0.62)");
   bloom.addColorStop(1, "rgba(255,80,10,0)");
   ctx.fillStyle = bloom;
   ctx.beginPath();
-  ctx.ellipse(mx, my, 16, 9, Math.atan2(ny, nx), 0, Math.PI * 2);
+  ctx.ellipse(mx, my, 18, 10, flashAng, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = "rgba(255,120,18,0.92)";
   ctx.beginPath();
-  ctx.ellipse(mx, my, 19, 10, Math.atan2(ny, nx), 0, Math.PI * 2);
+  ctx.ellipse(mx, my, 21, 11, flashAng, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = "rgba(255,230,110,0.88)";
+  ctx.fillStyle = "rgba(255,230,110,0.92)";
   ctx.beginPath();
-  ctx.ellipse(mx, my, 10, 5.5, Math.atan2(ny, nx), 0, Math.PI * 2);
+  ctx.ellipse(mx, my, 11, 6, flashAng, 0, Math.PI * 2);
   ctx.fill();
-  ctx.strokeStyle = "#ffe07a";
-  ctx.lineWidth = 3.8;
+  ctx.fillStyle = "rgba(255,248,200,0.95)";
+  ctx.beginPath();
+  ctx.ellipse(mx + nx * 2, my + ny * 2, 5, 3.2, flashAng, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(255,110,20,0.58)";
+  ctx.lineWidth = 8;
   ctx.lineCap = "round";
   ctx.beginPath();
   ctx.moveTo(mx, my);
-  ctx.lineTo(mx + nx * 28, my + ny * 28);
+  ctx.lineTo(mx + nx * trace, my + ny * trace);
   ctx.stroke();
+  ctx.strokeStyle = "#ffe07a";
+  ctx.lineWidth = 4.2;
+  ctx.beginPath();
+  ctx.moveTo(mx, my);
+  ctx.lineTo(mx + nx * trace, my + ny * trace);
+  ctx.stroke();
+  ctx.strokeStyle = "#fff6c8";
+  ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  ctx.moveTo(mx + nx * 2, my + ny * 2);
+  ctx.lineTo(mx + nx * (trace - 4), my + ny * (trace - 4));
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(255,200,80,0.88)";
+  ctx.lineWidth = 2.4;
+  ctx.lineCap = "round";
+  for (let k = -1; k <= 1; k++) {
+    const a = flashAng + k * 0.38;
+    ctx.beginPath();
+    ctx.moveTo(mx, my);
+    ctx.lineTo(mx + Math.cos(a) * 16, my + Math.sin(a) * 16);
+    ctx.stroke();
+  }
   ctx.restore();
 }
 
@@ -349,9 +377,14 @@ export function paintEnergyTank(ctx: CanvasRenderingContext2D, x: number, y: num
 
 export function paintBlood(ctx: CanvasRenderingContext2D, x: number, y: number, s: number, age = 1): void {
   const seed = ((x * 13 + y * 7 + s * 17) | 0);
-  const n = 7 + (seed & 3);
-  const fade = (0.62 + (seed & 3) * 0.05) * Math.max(0.24, Math.min(1, age));
-  const span = 6 + (s & 5);
+  const n = 9 + (seed & 4);
+  const fade = (0.72 + (seed & 3) * 0.06) * Math.max(0.28, Math.min(1, age));
+  const span = 8 + (s & 6);
+  ctx.fillStyle = "#3a0c08";
+  ctx.globalAlpha = fade * 0.42;
+  ctx.beginPath();
+  ctx.ellipse(x, y, span * 0.62, span * 0.42, ((seed & 7) * 0.22), 0, Math.PI * 2);
+  ctx.fill();
   ctx.fillStyle = "#5a1410";
   for (let i = 0; i < n; i++) {
     const ox = ((seed + i * 19) % (span * 2 + 1)) - span;

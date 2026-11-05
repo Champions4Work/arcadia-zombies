@@ -1,5 +1,6 @@
 import { juiceHit, juiceShot, tickJuice } from "../render/juice";
 import { stampBlood, stampCasing } from "../render/stains";
+import { HERO_R } from "../render/yard-fx";
 import { ARENA_H, ARENA_W } from "../sim/arena";
 import { DASH_TICKS } from "../sim/dash";
 import { Z_ELITE } from "../sim/foes";
@@ -15,6 +16,14 @@ export const REVIEW_HORDE = 40;
 export const REVIEW_RING = 58;
 
 const KINDS = [0, 0, 0, 0, 1, 0, 0, 0, 0, 0];
+
+const HERO_LANE_R2 = (HERO_R * 0.58) * (HERO_R * 0.58);
+
+function outsideHeroLane(x: number, y: number, px: number, py: number): boolean {
+  const dx = x - px;
+  const dy = y - py;
+  return dx * dx + dy * dy >= HERO_LANE_R2;
+}
 
 let walkOn = false;
 
@@ -101,9 +110,12 @@ export function reviewHorde(w: World, zone = ZONE_BRASS): number {
     z.vx[i] = (w.px - (z.x[i] ?? 0)) < 0 ? -0.2 : 0.2;
     z.vy[i] = 0;
     stampBlood(z.x[i] ?? 0, (z.y[i] ?? 0) + 6, i * 3);
+    if (outsideHeroLane(z.x[i] ?? 0, z.y[i] ?? 0, w.px, w.py) && (i & 1) === 0) {
+      stampBlood((z.x[i] ?? 0) + 4, (z.y[i] ?? 0) + 10, i * 5 + 2);
+    }
     n++;
   }
-  for (let c = 0; c < 18; c++) {
+  for (let c = 0; c < 22; c++) {
     stampCasing(w.px - 58 + ((c * 31) % 104), w.py + 6 + ((c * 17) % 56), c * 5);
   }
   juiceHit(3, z.x[3] ?? w.px, z.y[3] ?? w.py, 2, z.kind[3] ?? 0, false, w.tick, w.px, w.py);
@@ -114,8 +126,11 @@ export function reviewHorde(w: World, zone = ZONE_BRASS): number {
   w.dashUy = -0.38;
   w.dashCd = 0;
   tickJuice(70);
-  for (let c = 0; c < 24; c++) {
+  for (let c = 0; c < 28; c++) {
     stampCasing(w.px - 52 + ((c * 37) % 96), w.py + 8 + ((c * 19) % 52), c * 7);
+  }
+  for (const spot of [[92, 44], [-94, 48], [88, 72], [-86, 68], [104, 34], [-78, 26], [96, 16], [-100, 20], [72, -54], [-82, -48], [108, 58], [-96, 62], [84, -28], [-104, -22]] as const) {
+    if (outsideHeroLane(w.px + spot[0], w.py + spot[1], w.px, w.py)) stampBlood(w.px + spot[0], w.py + spot[1], 60 + spot[0]);
   }
   stampBlood(w.px + 86, w.py + 48, 5);
   stampBlood(w.px - 94, w.py + 52, 9);

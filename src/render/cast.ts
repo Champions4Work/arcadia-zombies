@@ -172,13 +172,17 @@ function drawGun(ctx: CanvasRenderingContext2D, gun: number, hot: boolean): void
     rivet(ctx, 9, -1.6, 0.9);
   }
   if (hot) {
-    const g = ctx.createRadialGradient(along, 0, 0.4, along, 0, 10);
-    g.addColorStop(0, "#fff6d0");
-    g.addColorStop(0.35, "#ff9a24");
+    const g = ctx.createRadialGradient(along, 0, 0.4, along, 0, 14);
+    g.addColorStop(0, "#fff8e8");
+    g.addColorStop(0.32, "#ffaa28");
     g.addColorStop(1, "rgba(255,80,10,0)");
     ctx.fillStyle = g;
     ctx.beginPath();
-    ctx.arc(along, 0, 10, 0, Math.PI * 2);
+    ctx.arc(along, 0, 14, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(255,230,120,0.92)";
+    ctx.beginPath();
+    ctx.ellipse(along + 2, 0, 7, 4, 0, 0, Math.PI * 2);
     ctx.fill();
   }
 }

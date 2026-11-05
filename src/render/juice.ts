@@ -252,8 +252,9 @@ function spawnBlood(x: number, y: number, slot: number, tick: number): void {
 
 export function juiceShot(x: number, y: number, ux: number, uy: number, tick: number): void {
   const side = ((tick | 0) & 1) === 0 ? 1 : -1;
-  spawnPart(x, y, -uy * 42 * side + ux * 8, ux * 42 * side - 22, 0);
-  spawnPart(x, y, -uy * 26 * side - ux * 6, ux * 26 * side - 14, 0);
+  spawnPart(x, y, -uy * 50 * side + ux * 10, ux * 50 * side - 28, 0);
+  spawnPart(x, y, -uy * 34 * side - ux * 8, ux * 34 * side - 18, 0);
+  spawnPart(x, y, -uy * 40 * side + ux * 4, ux * 38 * side - 12, 0);
   if (stainCount() < STAIN_LIVE_CAP) {
     const bx = x - uy * 11 * side + ux * 5;
     const by = y + ux * 11 * side + uy * 4 + 6;
@@ -443,16 +444,16 @@ export function drawJuice(c: CanvasRenderingContext2D): void {
         c.fillStyle = "rgba(210,36,42,0.88)";
         c.fillRect((x - 2) | 0, (y - 3) | 0, 3, 4);
       } else {
-        c.fillStyle = "rgba(255,158,46,0.72)";
+        c.fillStyle = "rgba(255,158,46,0.78)";
         c.beginPath();
-        c.arc(x, y, 9, 0, Math.PI * 2);
+        c.arc(x, y, 10.5, 0, Math.PI * 2);
         c.fill();
         c.fillStyle = BRASS_HI;
-        c.fillRect((x - 6) | 0, (y - 4) | 0, 12, 8);
+        c.fillRect((x - 7) | 0, (y - 5) | 0, 14, 9);
         c.fillStyle = BRASS;
-        c.fillRect((x - 5) | 0, (y - 3) | 0, 11, 7);
+        c.fillRect((x - 6) | 0, (y - 4) | 0, 12, 8);
         c.fillStyle = COPPER;
-        c.fillRect((x - 2) | 0, (y - 1) | 0, 5, 5);
+        c.fillRect((x - 2) | 0, (y - 1) | 0, 6, 5);
       }
     }
   }

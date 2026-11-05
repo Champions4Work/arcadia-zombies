@@ -42,7 +42,7 @@ function put(x: number, y: number, s: number, kind: number): void {
 }
 
 export function stampBlood(x: number, y: number, salt: number): void {
-  const n = 4 + (salt & 3);
+  const n = 6 + (salt & 3);
   for (let k = 0; k < n; k++) {
     const ox = ((salt + k * 17) % 19) - 9;
     const oy = ((salt + k * 9) % 17) - 8;

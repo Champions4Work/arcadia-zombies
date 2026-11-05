@@ -46,9 +46,9 @@ describe("visual review gates", () => {
     expect(look.includes("ctx.transform(1, 0, lean")).toBe(false);
     expect(look.includes("rgba(200,208,220")).toBe(false);
     expect(look.includes("lineTo(mx + nx * 62")).toBe(false);
-    expect(look.includes("lineTo(mx + nx * 28")).toBe(true);
+    expect(look.includes("lineTo(mx + nx * trace")).toBe(true);
     expect(look.includes("lineTo(mx + nx * 24")).toBe(false);
-    expect(look.includes("ellipse(mx, my, 19, 10")).toBe(true);
+    expect(look.includes("ellipse(mx, my, 21, 11")).toBe(true);
     expect(look.includes("rgba(255,120,18,0.92)")).toBe(true);
     expect(look.includes("export function walkBob")).toBe(true);
     expect(look.includes("export function shambleBob")).toBe(true);
@@ -240,12 +240,12 @@ describe("visual review gates", () => {
     const look = readFileSync("src/art/look.ts", "utf8");
     expect(look.includes("s * 4.2")).toBe(false);
     expect(look.includes("const fade = 0.6")).toBe(false);
-    expect(look.includes("0.62 + (seed & 3) * 0.05")).toBe(true);
+    expect(look.includes("0.72 + (seed & 3) * 0.06")).toBe(true);
     expect(look.includes("#5a1410")).toBe(true);
     expect(look.includes("#b41c18")).toBe(false);
     expect(look.includes("#7a1410")).toBe(false);
     const stains = readFileSync("src/render/stains.ts", "utf8");
-    expect(stains.includes("n = 4 + (salt & 3)")).toBe(true);
+    expect(stains.includes("n = 6 + (salt & 3)")).toBe(true);
     expect(stains.includes("BLOOD_STAIN_BASE = 10")).toBe(true);
     expect(stains.includes("export function stainFade")).toBe(true);
     expect(look.includes("fillRect(0, 0, CASE_W, CASE_H)")).toBe(true);
@@ -253,11 +253,12 @@ describe("visual review gates", () => {
     expect(look.includes("fillRect(0, 0, 3.4, 1.4)")).toBe(false);
     expect(look.includes("fillRect(-4, -2, 11, 4.2)")).toBe(false);
     const shot = readFileSync("src/shell/review-shot.ts", "utf8");
+    expect(shot.includes("outsideHeroLane")).toBe(true);
     expect(shot.includes("Math.cos")).toBe(false);
     expect(shot.includes("REVIEW_RING *")).toBe(false);
     expect(shot.includes("i === 7 || i === 24 ? Z_BRUTE")).toBe(true);
-    expect(shot.includes("c < 24")).toBe(true);
-    expect(shot.includes("c < 20")).toBe(false);
+    expect(shot.includes("c < 28")).toBe(true);
+    expect(shot.includes("c < 24")).toBe(false);
   });
 
   it("keeps spawn telegraphs and kill puffs on pack sprites, and aligns vertical belts", () => {

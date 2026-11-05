@@ -29,7 +29,7 @@ describe("r32 fx-only phone read", () => {
     const look = readFileSync("src/art/look.ts", "utf8");
     expect(look.includes("CASE_W = 4.8")).toBe(true);
     expect(look.includes("ellipse(mx, my, 22, 12")).toBe(false);
-    expect(look.includes("lineTo(mx + nx * 28")).toBe(true);
+    expect(look.includes("lineTo(mx + nx * trace")).toBe(true);
     const juice = readFileSync("src/render/juice.ts", "utf8");
     expect(juice.includes("BLOOD_DROP_RX = 6.6")).toBe(true);
   });

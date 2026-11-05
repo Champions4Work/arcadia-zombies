@@ -131,13 +131,13 @@ describe("damage numbers", () => {
 });
 
 describe("casing eject", () => {
-  it("throws two brass particles from the muzzle without freezing", () => {
+  it("throws three brass particles from the muzzle without freezing", () => {
     resetJuice();
     juiceShot(40, 20, 1, 0, 4);
-    expect(particleCount()).toBe(2);
+    expect(particleCount()).toBe(3);
     expect(stopRemaining()).toBe(0);
     juiceShot(40, 20, 1, 0, 5);
-    expect(particleCount()).toBe(4);
+    expect(particleCount()).toBe(6);
   });
 });
 

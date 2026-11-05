@@ -59,14 +59,13 @@ describe("r35 fx-only mid-frame steam + combat read", () => {
     expect(ARENA_H).toBeGreaterThanOrEqual(viewH);
   });
 
-  it("tightens floor blood without shrinking combat brass read", () => {
+  it("keeps hero-band steam while combat juice evolves in later fx rounds", () => {
     const look = readFileSync("src/art/look.ts", "utf8");
-    expect(look.includes("const span = 6 + (s & 5)")).toBe(true);
-    expect(look.includes("createRadialGradient(mx, my, 0.5, mx, my, 18)")).toBe(true);
+    expect(look.includes("createRadialGradient(mx, my, 0.5, mx, my, 22)")).toBe(true);
     expect(look.includes("ellipse(mx, my, 22, 12")).toBe(false);
     const juice = readFileSync("src/render/juice.ts", "utf8");
-    expect(juice.includes("rgba(255,158,46,0.72)")).toBe(true);
-    expect(juice.includes("c.arc(x, y, 9")).toBe(true);
+    expect(juice.includes("rgba(255,158,46,0.78)")).toBe(true);
+    expect(juice.includes("c.arc(x, y, 10.5")).toBe(true);
   });
 
   it("stores fx-r35 review captures under docs/reviews/fx-r35", () => {
