@@ -11,7 +11,7 @@ describe("hud r39 phone bottom cluster", () => {
     expect(bottom.includes("heartIcon")).toBe(true);
     expect(bottom.includes("paintPhoneBottomTray")).toBe(true);
     expect(bottom.includes("paintPhonePowerTrayFrame")).toBe(true);
-    expect(bottom.includes("ready ? XP : BRASS")).toBe(true);
+    expect(bottom.includes("ULT_CHARGE")).toBe(true);
     expect(bottom.includes("ready ? XP : CYAN")).toBe(false);
     const hud = readFileSync("src/render/hud.ts", "utf8");
     expect(hud.includes("drawPhoneHealth(ctx, w, box)")).toBe(true);
