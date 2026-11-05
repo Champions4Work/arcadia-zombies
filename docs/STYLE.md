@@ -128,6 +128,8 @@ The wide amber rank bar on image 1 has no pack frame yet. Draw that bar to match
 
 **HUD obj-r35** stacks the phone timer strip and `objectives_panel` in one right-aligned column (shared width, 2 px gap), drops the gear overlay on phone objectives so the brass panel reads cleanly, and tightens minimap inset so the gold rim stays visible without covering the hunter lane.
 
+**r36 mid-frame blit** — On brass, `paintMidFrameBlits` draws scaled **`pipes_blue_tank`** and **`conveyor`** (yellow chevrons) in the phone mid band (`PHONE_MID_Y0`–`PHONE_MID_Y1`, left and right of the hunter). Perimeter-only tanks and edge rails **FAIL** the 390×844 read; coordinator **Read** compares `docs/reviews/r36/phone_390_play.png` to **`docs/target_look2.png`**. No fight-floor cyan pads; no mid **`breakable_boiler`** stand-in for blue liquid.
+
 Do not blit a second resource bar.
 
 ## World sprites

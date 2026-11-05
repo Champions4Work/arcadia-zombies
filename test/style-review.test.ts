@@ -118,10 +118,12 @@ describe("visual review gates", () => {
     expect(yard.includes("ellipse(x, y, 22, 16")).toBe(true);
     expect(yard.includes("ellipse(x, y, 68, 50")).toBe(false);
     const brassProps = yard.slice(yard.indexOf("const PROPS:"), yard.indexOf("const TANKS"));
-    expect(brassProps.includes("breakable_gear_pylon")).toBe(true);
-    expect(brassProps.includes("breakable_boiler")).toBe(true);
-    expect(brassProps.includes("x: 308, y: 520")).toBe(true);
-    expect(brassProps.includes("x: 652, y: 520")).toBe(true);
+    expect(brassProps.includes("breakable_gear_pylon")).toBe(false);
+    expect(brassProps.includes("breakable_boiler")).toBe(false);
+    expect(brassProps.includes("x: 308, y: 520")).toBe(false);
+    expect(brassProps.includes("x: 652, y: 520")).toBe(false);
+    expect(yard.includes("MID_FRAME_BLITS")).toBe(true);
+    expect(yard.includes("function paintMidFrameBlits")).toBe(true);
     expect(yard.includes("x: 348, y: 196")).toBe(true);
     expect(yard.includes("x: 540, y: 192")).toBe(true);
     expect(yard.includes("x: 336, y: 176")).toBe(false);

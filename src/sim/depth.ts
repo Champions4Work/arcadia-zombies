@@ -1,4 +1,4 @@
-import { ARENA_W, CLEAR_R, HEAL_HP, MAX_OBS, OB_BOILER, OB_CRATE, OB_GEAR, indexProps } from "./arena";
+import { ARENA_W, CLEAR_R, HEAL_HP, MAX_OBS, OB_CRATE, OB_GEAR, indexProps } from "./arena";
 import { applyUpgrade, offerable } from "./progress";
 import { UPG_DMG, UPG_FIRE, UPG_HP, UPG_SPEED, type World } from "./types";
 
@@ -76,8 +76,7 @@ const VENTS: readonly [number, number][] = [
 ];
 
 const LANE: readonly [number, number, number, number, number, number, number][] = [
-  [OB_BOILER, 308, 520, 14, 16, 16, 2],
-  [OB_GEAR, 652, 520, 13, 13, 13, 2],
+  [OB_GEAR, 652, 648, 13, 13, 13, 2],
 ];
 
 function create(): DepthBag {
@@ -302,30 +301,13 @@ export function beltHeal(w: World): number {
 export function reviewDepth(w: World): void {
   attachDepth(w);
   const d = depthState(w);
-  const a = w.arena;
   d.cargoOn[0] = 1;
   d.cargoBelt[0] = 0;
   d.cargoPhase[0] = CARGO_RIDE;
   d.cargoKind[0] = CARGO_UPG;
   d.cargoX[0] = SIDE_BELT_LEFT_X;
   d.cargoY[0] = SIDE_BELT_RIDE_Y + 48;
+  d.cargoT[0] = DROP_ALONG * 0.42;
   d.ventX[0] = w.px - 96;
   d.ventY[0] = w.py + 96;
-  d.cargoT[0] = DROP_ALONG * 0.42;
-  let slot = -1;
-  for (let i = 0; i < MAX_OBS; i++) {
-    if (i >= a.obsN || !a.obsAlive[i]) { slot = i; break; }
-  }
-  if (slot >= 0) {
-    a.obsX[slot] = 308;
-    a.obsY[slot] = 520;
-    a.obsKind[slot] = OB_BOILER;
-    a.obsHW[slot] = 14;
-    a.obsHH[slot] = 16;
-    a.obsR[slot] = 16;
-    a.obsHp[slot] = 2;
-    a.obsAlive[slot] = 1;
-    if (slot >= a.obsN) a.obsN = slot + 1;
-    indexProps(a);
-  }
 }

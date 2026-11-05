@@ -25,6 +25,16 @@ const GLASS_AT = [0.22, 0.5, 0.78];
 const VALVE = { x: 424, y: 232 };
 const BUILD_SCALE = 1.28;
 const TANK_SCALE = 1.2;
+export const PHONE_MID_Y0 = 280;
+export const PHONE_MID_Y1 = 520;
+const MID_TANK_SCALE = 1.56;
+const MID_BELT_SCALE = 1.42;
+const MID_FRAME_BLITS: readonly { id: string; x: number; y: number; sc: number; rot: number }[] = [
+  { id: "pipes_blue_tank", x: 318, y: 452, sc: MID_TANK_SCALE, rot: 0 },
+  { id: "pipes_blue_tank", x: 642, y: 452, sc: MID_TANK_SCALE, rot: 0 },
+  { id: "conveyor", x: 314, y: 518, sc: MID_BELT_SCALE, rot: Math.PI * 0.5 },
+  { id: "conveyor", x: 646, y: 518, sc: MID_BELT_SCALE, rot: -Math.PI * 0.5 },
+];
 const STEAM_VENT_SCALE = 0.76;
 const STEAM_VENT_ALPHA = 0.24;
 const BLUE_GLOW_ALPHA = 0.3;
@@ -39,7 +49,6 @@ const PROPS: { id: string; x: number; y: number }[] = [
   { id: "lamp", x: 360, y: 208 },
   { id: "lamp", x: 480, y: 204 },
   { id: "lamp", x: 600, y: 208 },
-  { id: "breakable_gear_pylon", x: 308, y: 520 },
   { id: "decal_grate", x: 304, y: 640 },
   { id: "decal_grate", x: 368, y: 302 },
   { id: "decal_grate", x: 592, y: 302 },
@@ -49,23 +58,16 @@ const PROPS: { id: string; x: number; y: number }[] = [
   { id: "decal_vent", x: 310, y: 450 },
   { id: "decal_vent", x: 310, y: 628 },
   { id: "conveyor", x: 304, y: 656 },
-  { id: "pipes_blue_tank", x: 308, y: 596 },
   { id: "blue_puddle", x: 312, y: 584 },
-  { id: "breakable_boiler", x: 306, y: 648 },
-  { id: "breakable_gear_pylon", x: 652, y: 520 },
   { id: "valve_steam", x: 654, y: 468 },
   { id: "valve_steam", x: 654, y: 612 },
   { id: "decal_vent", x: 656, y: 450 },
   { id: "decal_vent", x: 656, y: 628 },
   { id: "conveyor", x: 656, y: 656 },
-  { id: "pipes_blue_tank", x: 654, y: 596 },
   { id: "blue_puddle", x: 648, y: 584 },
-  { id: "breakable_boiler", x: 656, y: 648 },
 ];
 
 const TANKS = [
-  { x: 320, y: 588 },
-  { x: 640, y: 588 },
   { x: 348, y: 208 },
   { x: 612, y: 208 },
 ];
@@ -74,8 +76,8 @@ const POOLS = [
   { x: 360, y: 208 },
   { x: 480, y: 204 },
   { x: 600, y: 208 },
-  { x: 312, y: 584 },
-  { x: 648, y: 584 },
+  { x: 318, y: 452 },
+  { x: 642, y: 452 },
 ];
 
 const STEAM_VENTS = [
@@ -576,7 +578,7 @@ function paintVertBelt(
   ctx.strokeStyle = BRASS_LO;
   ctx.lineWidth = 3;
   ctx.strokeRect(x - beltW * 0.5 + 1.5, y + 1.5, beltW - 3, len - 3);
-  const sc = beltW / 48;
+  const sc = (beltW / 48) * (yardBound === ZONE_BRASS ? 1.14 : 1);
   const off = (tick * 2.6) % 28;
   for (let s = off; s < len; s += 28) {
     ctx.save();
@@ -657,6 +659,37 @@ function paintTramCar(ctx: CanvasRenderingContext2D, x: number, y: number): void
   blitSheet(ctx, "lamp", x + 30, y - 8);
 }
 
+function paintMidFrameBlits(
+  ctx: CanvasRenderingContext2D,
+  tick: number,
+  camX: number,
+  camY: number,
+  vw: number,
+  vh: number,
+): void {
+  if (yardBound !== ZONE_BRASS) return;
+  for (const b of MID_FRAME_BLITS) {
+    if (!visible(b.x, b.y, camX, camY, vw, vh, 110)) continue;
+    if (b.id === "pipes_blue_tank") bluePool(ctx, b.x, b.y + 8, tick);
+    paintShadow(ctx, b.x, b.y, 14, 5);
+    ctx.save();
+    ctx.translate(b.x, b.y);
+    if (b.rot) ctx.rotate(b.rot);
+    ctx.scale(b.sc, b.sc);
+    blitSheet(ctx, b.id, 0, 0);
+    ctx.restore();
+  }
+}
+
+export function yardMidFrameHits(x0: number, y0: number, x1: number, y1: number): number {
+  if (yardBound !== ZONE_BRASS) return 0;
+  let n = 0;
+  for (const b of MID_FRAME_BLITS) {
+    if (b.x >= x0 && b.x <= x1 && b.y >= y0 && b.y <= y1) n++;
+  }
+  return n;
+}
+
 export function yardPropHits(x0: number, y0: number, x1: number, y1: number): number {
   let n = 0;
   for (const b of buildingsOf()) {
@@ -685,6 +718,7 @@ export function yardPropHits(x0: number, y0: number, x1: number, y1: number): nu
       if (glow.x >= x0 && glow.x <= x1 && glow.y >= y0 && glow.y <= y1) n++;
     }
   }
+  if (yardBound === ZONE_BRASS) n += yardMidFrameHits(x0, y0, x1, y1);
   return n;
 }
 
@@ -753,6 +787,7 @@ export function paintYardLive(
     paintVentSteam(ctx, vent.x, vent.y, tick);
   }
   if (yardBound === ZONE_BRASS) paintBrassGrade(ctx, camX, camY, vw, vh);
+  paintMidFrameBlits(ctx, tick, camX, camY, vw, vh);
 }
 
 function paintBrassGrade(ctx: CanvasRenderingContext2D, camX: number, camY: number, vw: number, vh: number): void {

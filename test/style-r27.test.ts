@@ -29,12 +29,13 @@ describe("r27 art-bible pass", () => {
     expect(yard.includes("y: 392")).toBe(true);
     expect(yard.includes("vert: 1")).toBe(true);
     expect(yard.includes("paintBrassGrade")).toBe(true);
-    expect(brassProps.includes("breakable_gear_pylon")).toBe(true);
-    expect(brassProps.includes("breakable_boiler")).toBe(true);
+    expect(brassProps.includes("breakable_gear_pylon")).toBe(false);
+    expect(brassProps.includes("breakable_boiler")).toBe(false);
     expect(brassProps.includes("decal_grate")).toBe(true);
     expect(brassProps.includes("crate_stack")).toBe(false);
     expect(brassProps.includes('"barrel"')).toBe(false);
-    expect(brassProps.includes("x: 308, y: 520")).toBe(true);
+    expect(brassProps.includes("x: 308, y: 520")).toBe(false);
+    expect(yard.includes("MID_FRAME_BLITS")).toBe(true);
     expect(brassPipes.includes("vert: 1")).toBe(false);
     expect(HAZARD_MARKS.length).toBe(0);
     expect(yardPropHits(YARD_CLEAR.x0, YARD_CLEAR.y0, YARD_CLEAR.x1, YARD_CLEAR.y1)).toBe(0);

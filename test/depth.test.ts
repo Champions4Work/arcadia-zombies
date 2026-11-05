@@ -231,6 +231,7 @@ describe("gameplay depth hooks", () => {
     expect(ventCount(w)).toBeGreaterThanOrEqual(3);
     expect(ventX(w, 0)).toBeGreaterThan(0);
     expect(ventY(w, 0)).toBeGreaterThan(0);
-    expect(w.arena.obsAlive.some((on, i) => on && w.arena.obsKind[i] === OB_BOILER)).toBe(true);
+    expect(w.arena.obsAlive.some((on, i) => on && w.arena.obsKind[i] === OB_GEAR)).toBe(true);
+    expect(readFileSync("src/sim/depth.ts", "utf8").includes("obsKind[slot] = OB_BOILER")).toBe(false);
   });
 });
