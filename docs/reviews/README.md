@@ -20,3 +20,19 @@ Do **not** merge look-changing work until the coordinator **Read** review approv
 ## Naming
 
 Use a folder per PR or review round (`r27/`, `pr50/`, `hud-polish/`, `zones/`, etc.). Keep filenames stable so `scripts/compare-shots.mjs` and reviewers can diff history.
+
+## Mid-band pixel gate (r38+)
+
+Yard FX that targets the **phone hero mid-band** must pass **pixel counts**, not only `yard-fx.ts` string tests. Premise and camera math: **`docs/STYLE.md`** (*Phone mid-band (failed premise r34–r37)*).
+
+1. Capture **`phone_390_play.png`** at **`?shot=1`** (390×844).
+2. Save a **`midband_crop.png`** — the hero-band yard slice coordinators use for r37+ (same vertical band as the hunter lane; full width of the play capture is fine when it matches review crops).
+3. Run:
+
+```bash
+node scripts/midband_pixel_gate.mjs docs/reviews/<round>/midband_crop.png
+```
+
+Exit **0** only when **`cyan=0`** and **`blue>=200`** (counts printed to stdout). **`yellow`** is reported for chevron read but is not part of the pass line today.
+
+Fixture checks live in **`test/midband-pixel-gate.test.ts`**. **`npm run ci`** includes them.

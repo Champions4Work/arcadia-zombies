@@ -73,6 +73,8 @@ Lock yard **mood** and metal chrome to reference image 2. Lock yard **prop count
 
 The floor is dark brick and flagstone. Rails and belts cut across it. Blue tanks and pipe runs sit on the edges and throw cyan light. Steam valves puff. Warm lamps throw amber discs. Buildings hold lit windows. A **few** crates, barrels, vents, and gear sit on rails with a **walkable gap** in the middle. Blood stains the stone. Spent casings sit on the floor as small brass ticks. The rifle shows an amber muzzle when it fires. The horde fills the open stone and still leaves a path.
 
+**Phone mid-band placement** is locked in **`docs/STYLE.md`** (*Phone mid-band (failed premise r34–r37)*): props on off-clip rails do not satisfy image 2 in the 390×844 frame. Large mid-band blits must land inside the phone camera X band; coordinator review runs **`scripts/midband_pixel_gate.mjs`** on the **`midband_crop`**, not yard source strings alone.
+
 HUD chrome on that frame is glass discs and brass-framed pills with a soft amber or cyan glow. Type is a clean system sans, thin, tracked, uppercase. No square pixel plates.
 
 Image 2 is not a license to fill the phone center or to copy its dual resource bars. Density and chrome come from image 2. Phone slot positions come from image 1.

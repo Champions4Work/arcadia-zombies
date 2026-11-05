@@ -1,0 +1,5 @@
+FAILED PREMISE (r34-r37): "Park pipes_blue_tank + conveyor on left/right rails at world x≈304/656 (outside YARD_CLEAR) and the phone midband will show blue tanks + yellow chevrons."
+
+EVIDENCE: Phone ?shot=1 uses playView(390,844) → viewW≈295.4 viewH=640, camX≈332 camY=0 (hero 480,320). Visible world X is only [332,627]. Rails at 312/648 are OFF the phone clip (screen x -20 and +316). #110 killed cyan (PIPE_RUN y:232) but midband blue_pixels=0. Source-text tests passed; pixels did not.
+
+TRUE FIX: Place LARGE scaled blits INSIDE the phone camera X range, flanking the hunter (e.g. world x≈378/582), call them from paintYardLive AND/OR LAYER_MID, remove cyan fight-floor pad, and gate on PIXEL counts in midband_crop (blue>200, cyan==0), not string checks alone.

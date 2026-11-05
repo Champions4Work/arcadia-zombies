@@ -23,6 +23,18 @@ Closed **[#87](https://github.com/Champions4Work/arcadia-zombies/pull/87)** prov
 
 **Required fix:** blit **`tile_stone_seamless`** (packed from `art/az_art_v2/tile_stone_seamless.png`) across the yard in `paintGround`, and use **`tile_metal_seamless`** only for rail/grate cells—not a horizontal brass pad or code-drawn cobble fill. Brass district disables `brassPad` metal cells; metal tiles stay on tracks. Do not ship fill-only floor plates as the primary yard read.
 
+## Phone mid-band (failed premise r34–r37)
+
+Closed **[#100](https://github.com/Champions4Work/arcadia-zombies/pull/100)**, **[#105](https://github.com/Champions4Work/arcadia-zombies/pull/105)**, **[#107](https://github.com/Champions4Work/arcadia-zombies/pull/107)**, and **[#110](https://github.com/Champions4Work/arcadia-zombies/pull/110)** repeated the same mistake: park **`pipes_blue_tank`** and **`conveyor`** chevrons on **left/right rails outside the phone camera** and assume the mid-band will show blue tanks plus yellow belt read. Source-string tests passed; **pixels did not**. Full write-up: **`docs/premise/phone-midband-failed-r34-r37.txt`**.
+
+**Phone camera (`?shot=1`).** `playView(390, 844)` → **`viewW` ≈ 296**, **`viewH` = 640**, **`camX` ≈ 332**, **`camY` = 0** with review hero **(480, 320)**. Visible world **X ≈ [332, 628]** only.
+
+**Off-screen rails.** Legacy rail props at world **x ≈ 304 / 656** (and similar off-clip columns) sit **outside** that X band. They never appear in the phone mid-band crop. Mid-band tanks and chevrons **must** blit at **in-frame world X** (e.g. **≈ 378 / 582**) from **`paintYardLive`** and/or **`LAYER_MID`**, flanking the hunter inside the clip.
+
+**Cyan fight-floor pads.** Code-drawn ellipses on **`PIPE_RUNS`** at **`y: 232`** using palette **`#7ae0d4`** are **fight-floor cyan pads**. They fail the art bible (see r32: no fight-floor cyan pads). Remove them; blue liquid read comes from **`pipes_blue_tank`** / **`blue_puddle`**, not floor fills.
+
+**Coordinator gate (pixels, not strings).** Crop the **`midband_crop`** from the 390×844 play capture (hero-band yard slice used in r37 review) and run **`node scripts/midband_pixel_gate.mjs <midband_crop.png>`**. Pass only when **`cyan == 0`** and **`blue >= 200`** in that crop. Do not merge mid-band yard FX on source-text checks alone.
+
 ## Round 31 — open fight band, dense perimeter
 
 Review **`docs/reviews/r31/`** against r30. The brass yard keeps **`tile_stone_seamless`** (#90) but moves the **power-up belt to `y: 658`** (bottom edge) so **`CARGO_*` crates ride and land outside `YARD_CLEAR`**, not through the hunter lane. **`reviewDepth`** parks a glowing **`crate_stack` on that perimeter belt**, not on blue pads in the center. Perimeter **`PROPS`** densify with **`window_lit`**, side **`conveyor`**, **`blue_puddle`**, duplicate **`pipes_blue_tank` / `valve_steam` / `decal_grate` / `decal_vent`** runs on both rails—no **`crate` / `barrel` / `crate_stack`** inside the vertical fight band. Coordinator **Read** must compare r31 play vs r30 before merge.
