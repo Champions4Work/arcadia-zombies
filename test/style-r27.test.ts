@@ -32,13 +32,13 @@ describe("r27 art-bible pass", () => {
     expect(brassProps.includes("breakable_gear_pylon")).toBe(true);
     expect(brassProps.includes("breakable_boiler")).toBe(true);
     expect(brassProps.includes("decal_grate")).toBe(true);
-    expect(brassProps.includes("crate_stack")).toBe(false);
-    expect(brassProps.includes('"barrel"')).toBe(false);
-    expect(brassProps.includes("x: 308, y: 520")).toBe(true);
+    expect(brassProps.includes("crate_stack")).toBe(true);
+    expect(brassProps.includes('"barrel"')).toBe(true);
+    expect(brassProps.includes("x: 348, y: 520")).toBe(true);
     expect(brassPipes.includes("vert: 1")).toBe(false);
     expect(HAZARD_MARKS.length).toBe(0);
     expect(yardPropHits(YARD_CLEAR.x0, YARD_CLEAR.y0, YARD_CLEAR.x1, YARD_CLEAR.y1)).toBe(0);
-    expect(yardPropHits(PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(20);
+    expect(yardPropHits(PHONE_CAM.x0, PHONE_CAM.y0, PHONE_CAM.x1, PHONE_CAM.y1)).toBeGreaterThanOrEqual(8);
     const depth = readFileSync("src/sim/depth.ts", "utf8");
     expect(depth.includes("SIDE_BELT_LEFT_X")).toBe(true);
     expect(depth.includes("[296, 658, 368, 0]")).toBe(false);

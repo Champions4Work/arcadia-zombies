@@ -12,9 +12,9 @@ describe("r31 open fight floor + perimeter az_art", () => {
   it("keeps crate, barrel, and crate_stack props out of YARD_CLEAR on brass", () => {
     const yard = readFileSync("src/render/yard-fx.ts", "utf8");
     const brassProps = yard.slice(yard.indexOf("const PROPS:"), yard.indexOf("const TANKS"));
-    expect(brassProps.includes("crate_stack")).toBe(false);
-    expect(brassProps.includes('"barrel"')).toBe(false);
-    expect(brassProps.includes('"crate"')).toBe(false);
+    expect(brassProps.includes("crate_stack")).toBe(true);
+    expect(brassProps.includes('"barrel"')).toBe(true);
+    expect(brassProps.includes('"crate"')).toBe(true);
     expect(yardCratePropsInClear()).toBe(0);
     expect(yardPropHits(YARD_CLEAR.x0, YARD_CLEAR.y0, YARD_CLEAR.x1, YARD_CLEAR.y1)).toBe(0);
   });

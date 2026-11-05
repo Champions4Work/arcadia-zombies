@@ -13,6 +13,14 @@ function visible(x: number, y: number, camX: number, camY: number, vw: number, v
   return x >= camX - pad && y >= camY - pad && x <= camX + vw + pad && y <= camY + vh + pad;
 }
 
+function blitScaled(ctx: CanvasRenderingContext2D, id: string, x: number, y: number, sc: number): void {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(sc, sc);
+  blitSheet(ctx, id, 0, 0);
+  ctx.restore();
+}
+
 function propSprite(kind: number): string {
   if (kind === OB_BOILER) return "breakable_boiler";
   if (kind === OB_GEAR) return "breakable_gear_pylon";
@@ -22,11 +30,12 @@ function propSprite(kind: number): string {
 }
 
 function paintLaneVent(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number): void {
+  const sc = 1.36;
   ctx.save();
   ctx.globalAlpha = 0.92;
-  blitSheet(ctx, "decal_grate", x, y);
+  blitScaled(ctx, "decal_grate", x, y, sc);
   ctx.globalAlpha = 0.7 + ((tick >> 3) & 1) * 0.18;
-  blitSheet(ctx, "decal_vent", x, y);
+  blitScaled(ctx, "decal_vent", x, y, sc);
   ctx.restore();
 }
 

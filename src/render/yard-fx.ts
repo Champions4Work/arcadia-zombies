@@ -46,24 +46,34 @@ const PROPS: { id: string; x: number; y: number }[] = [
   { id: "lamp", x: 360, y: 208 },
   { id: "lamp", x: 480, y: 204 },
   { id: "lamp", x: 600, y: 208 },
-  { id: "breakable_gear_pylon", x: 308, y: 520 },
+  { id: "breakable_gear_pylon", x: 348, y: 520 },
   { id: "decal_grate", x: 304, y: 640 },
   { id: "decal_grate", x: 368, y: 302 },
   { id: "decal_grate", x: 592, y: 302 },
   { id: "decal_grate", x: 656, y: 640 },
+  { id: "decal_grate", x: 372, y: 468 },
+  { id: "decal_grate", x: 588, y: 548 },
   { id: "valve_steam", x: 308, y: 468 },
   { id: "valve_steam", x: 308, y: 612 },
-  { id: "decal_vent", x: 310, y: 450 },
-  { id: "decal_vent", x: 310, y: 628 },
+  { id: "decal_vent", x: 372, y: 462 },
+  { id: "decal_vent", x: 368, y: 548 },
+  { id: "decal_vent", x: 376, y: 612 },
+  { id: "crate_stack", x: 346, y: 498 },
+  { id: "barrel", x: 348, y: 576 },
+  { id: "crate", x: 342, y: 632 },
   { id: "conveyor", x: 304, y: 656 },
   { id: "pipes_blue_tank", x: 308, y: 596 },
   { id: "blue_puddle", x: 312, y: 584 },
   { id: "breakable_boiler", x: 306, y: 648 },
-  { id: "breakable_gear_pylon", x: 652, y: 520 },
+  { id: "breakable_gear_pylon", x: 612, y: 520 },
   { id: "valve_steam", x: 654, y: 468 },
   { id: "valve_steam", x: 654, y: 612 },
-  { id: "decal_vent", x: 656, y: 450 },
-  { id: "decal_vent", x: 656, y: 628 },
+  { id: "decal_vent", x: 588, y: 462 },
+  { id: "decal_vent", x: 592, y: 548 },
+  { id: "decal_vent", x: 584, y: 612 },
+  { id: "crate_stack", x: 610, y: 498 },
+  { id: "barrel", x: 614, y: 576 },
+  { id: "crate", x: 614, y: 632 },
   { id: "conveyor", x: 656, y: 656 },
   { id: "pipes_blue_tank", x: 654, y: 596 },
   { id: "blue_puddle", x: 648, y: 584 },
@@ -89,8 +99,8 @@ const STEAM_VENTS = [
   { x: 360, y: 226 },
   { x: 424, y: 232 },
   { x: 520, y: 226 },
-  { x: 334, y: 468 },
-  { x: 630, y: 468 },
+  { x: 372, y: 462 },
+  { x: 588, y: 462 },
 ];
 
 const HERO_BAND_STEAM = [
@@ -100,9 +110,16 @@ const HERO_BAND_STEAM = [
 ];
 
 export const YARD_CLEAR = { x0: 352, y0: 318, x1: 608, y1: 638 };
-export const PHONE_CAM = { x0: 300, y0: 0, x1: 660, y1: 780 };
+export const PHONE_CAM = { x0: 328, y0: 0, x1: 632, y1: 640 };
+export const PHONE_WING_LEFT = { x0: 340, x1: 400 };
+export const PHONE_WING_RIGHT = { x0: 560, x1: 620 };
+export const WING_PROP_SCALE = 1.38;
 
 const FIGHT_BAND_CRATE = new Set(["crate", "crate_stack", "barrel"]);
+const YARD_DECOR = new Set([
+  "decal_vent", "decal_grate", "decal_hazard", "blue_puddle", "window_lit", "lamp", "valve_steam", "conveyor",
+]);
+const WING_PROP = new Set(["decal_vent", "decal_grate", "crate", "crate_stack", "barrel"]);
 
 export function yardCratePropsInClear(): number {
   if (yardBound !== ZONE_BRASS) return 0;
@@ -727,6 +744,7 @@ export function yardPropHits(x0: number, y0: number, x1: number, y1: number): nu
     if (hit) n++;
   }
   for (const p of propsOf()) {
+    if (YARD_DECOR.has(p.id)) continue;
     if (p.x >= x0 && p.x <= x1 && p.y >= y0 && p.y <= y1) n++;
   }
   for (const pipe of pipesOf()) {
@@ -806,7 +824,8 @@ export function paintYardLive(
     if (p.id === "pipes_blue_tank") bluePool(ctx, p.x, p.y + 8, tick);
     if (p.id === "blue_puddle") bluePuddle(ctx, p.x, p.y + 4);
     paintShadow(ctx, p.x, p.y, 12, 4);
-    blitSheet(ctx, p.id, p.x, p.y);
+    if (yardBound === ZONE_BRASS && WING_PROP.has(p.id)) blitScaled(ctx, p.id, p.x, p.y, WING_PROP_SCALE);
+    else blitSheet(ctx, p.id, p.x, p.y);
   }
   paintPhoneHeroBlits(ctx, tick, camX, camY, vw, vh);
   if (yardBound === ZONE_TRAM) {

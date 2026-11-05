@@ -165,6 +165,10 @@ function build(): void {
       cells[i] = v < 2 ? KIND_COBBLE_W : v < 6 ? KIND_COBBLE_D : KIND_COBBLE;
     }
   }
+  forceVent(22, 29);
+  forceVent(22, 35);
+  forceVent(36, 29);
+  forceVent(36, 35);
   forceVent(8, 10);
   forceVent(8, 14);
   forceVent(52, 12);
