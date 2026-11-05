@@ -92,6 +92,18 @@ Phone **390×844** bottom row must read like **image 1** (`docs/target_look.jpg`
 
 Review **`docs/reviews/hud-r39/`** (`phone_390_play.png` **`?shot=1`**, **`hud_bottom_crop.png`**, **`compare_390_ref1.png`** vs **`docs/target_look.jpg`**, trio). Coordinator **Read-compare**; **no auto-merge**.
 
+## HUD bottom chrome (hud-r40)
+
+Polish **#114 / hud-r39** bottom tray toward **image 1** without changing slot layout: packed **`heart_ring`** brass + **greener HP glow** ( **`HEALTH`** arc, crimson heart core, lighter halo—no flat **`CYAN`** disc), and **`xp_bar_frame`** at **240×70 aspect** wrapping the XP tube + **LV** label (no phone **`pixelWell`** strip). Power slots + gold ult unchanged. Top HUD untouched.
+
+| Slot | Rule |
+| --- | --- |
+| Health | **`drawPhoneHealth`**: double **`heart_ring`** blit (lighter halo + asset), small inner disc, **`HEART_GLOW`** + **`HEALTH`** arc. |
+| XP | **`drawPhoneXpBar`** in **`xp-gain.ts`**: frame anchored to bottom, blue/cyan fill in asset channel, **`BRASS_HI`** LV on frame gear. |
+| Tray | **`paintPhoneBottomTray`**: stronger brass double stroke. |
+
+Review **`docs/reviews/hud-r40/`** (`phone_390_play.png` **`?shot=1`**, **`hud_bottom_crop.png`**, **`compare_390_ref1.png`**, trio vs **`docs/target_look.jpg`**). Must differ from **`docs/reviews/hud-r39/hud_bottom_crop.png`** on heart + XP chrome. Coordinator **Read-compare**; **no auto-merge**.
+
 ## References (art bible)
 
 Review size is 390×844 CSS pixels. These two files are the art bible. Every visual PR compares against both.

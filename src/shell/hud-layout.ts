@@ -98,7 +98,7 @@ export function layoutHud(vp: Viewport, fit: Fit): HudLayout {
   const phone = portrait && vp.cssW < 720;
   const u = portrait ? clamp(inner.w / 390, 0.85, 1.15) : clamp(inner.h / 360, 0.78, 1.05);
   const gap = Math.max(4, (phone ? 8 : 6) * u);
-  const xpH = Math.round((phone ? 20 : portrait ? 16 : 14) * u);
+  const xpH = Math.round((phone ? 24 : portrait ? 16 : 14) * u);
   const xp = { x: inner.x + gap, y: inner.y + inner.h - xpH, w: inner.w - gap * 2, h: xpH };
   const heroS = Math.round((phone ? 58 : portrait ? 48 : 42) * u);
   const abilS = Math.round((phone ? 68 : portrait ? 60 : 54) * u);

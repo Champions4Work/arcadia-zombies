@@ -228,6 +228,6 @@ describe("r25 art-bible phone pass", () => {
     expect(hud.includes("layout.phone")).toBe(true);
     expect(hud.includes("if (!layout.phone && layout.face.w > 0) portrait")).toBe(true);
     const bottom = readFileSync("src/render/hud-bottom.ts", "utf8");
-    expect(bottom.includes("heartCol = low ? DANGER : CYAN")).toBe(true);
+    expect(bottom.includes("ringCol = low ? DANGER : HEALTH")).toBe(true);
   });
 });
