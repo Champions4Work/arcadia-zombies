@@ -47,7 +47,7 @@ FX-only tuning on current main (#90 stone, #92 HUD, #93 perimeter). Do **not** r
 
 | Effect | Rule |
 | --- | --- |
-| Steam valves | **`paintVentSteam`**: scaled **`steam_1`–`steam_4`** at **`STEAM_VENT_SCALE`**, warm gray under-puffs, **`soft-light`** compositing, alpha ≤ **`STEAM_VENT_ALPHA`**. |
+| Steam valves | Perimeter **`paintVentSteam`**: scaled **`steam_1`–`steam_4`**, warm gray under-puffs, **`soft-light`**, alpha ≤ **`STEAM_VENT_ALPHA`**. **Hero-band phone exception (steam-r44):** blit packed **`valve_steam`** with **`source-over`** on **`PHONE_HERO_VALVE_BLITS`** tank rims inside **`PHONE_CAM`** from **`paintPhoneHeroValveSteam`** on **`LAYER_MID`** (above actors). No soft-light wash on those sites. |
 | Blue liquid | Subtle **`bluePool`** on **`TANKS`** and **`pipes_blue_tank`** only; **`blue_puddle`** blit on puddle props. No glow on breakables. |
 | Combat | Amber muzzle/tracer, flying brass particles, floor casings, horde blood denser than calm main but **outside `HERO_R`**. |
 
@@ -58,6 +58,21 @@ Review **`docs/reviews/fx-r32/`** (`phone_390_play.png` 390×844, `?shot=1`) vs 
 FX-only pass on r32 baseline. Steam must puff from **hero-band valve sites** that stay inside the **390×844 `?shot=1` camera** (not only off-screen perimeter rails). **`HERO_BAND_STEAM`** plus **`reviewDepth`** lane vents call exported **`paintVentSteam`** with a small **`valve_steam`** cap; packed **`steam_1`–`steam_4`** stay **small/dark** (soft-light, no #91 fog wall). Combat keeps **amber muzzle bloom + tracer**, **flying brass** particles, and floor casings readable at the rifle. Floor **blood stains** shrink slightly (lower **`paintBlood`** span/alpha) so stone vents stay legible in the phone crop.
 
 Review **`docs/reviews/fx-r35/`** with **`vs_baseline.png`** (before/after crops of steam + muzzle vs **`docs/reviews/fx-r32/phone_390_play.png`**). Coordinator **Read-compare**; **no auto-merge**.
+
+## Effects (phone read, steam-r44)
+
+Closed **#116 / #118 / #121 / #124** assumed **`soft-light`** + small **`valve_steam`** caps + low **`STEAM_VENT_ALPHA`** would read beside **`#112 PHONE_HERO_BLITS`** cyan tanks. **`fail_r43_steam_crop.png`** proved **`whiteish=132`** was invisible on tank+zombie mid-band.
+
+**New premise (merged only after pixel proof):**
+
+| Rule | Detail |
+| --- | --- |
+| Valve blit | **`PHONE_HERO_VALVE_BLITS`**: packed **`valve_steam`**, **`source-over`**, scale ≥ **1.14**, world **X ∈ [332,628]`**, seated on tank rim beside **`pipes_blue_tank`** hero blits. |
+| Depth | **`paintPhoneHeroValveSteam`** on **`LAYER_MID`** so white plume draws **above** tanks and nearby horde. |
+| Perimeter | **`STEAM_VENTS`** keep r32 **`soft-light`** wisps only; hero-band tank valves **never** use soft-light wash. |
+| Gates | **`scripts/steam_pixel_gate.mjs`** on **`steam_crop.png`**: **`whiteish ≥ 800`**, **`valveRed ≥ 36`**. **`midband_pixel_gate.mjs`** unchanged (**pad `#7ae0d4` == 0**, **`blue ≥ 200`**). |
+
+Review **`docs/reviews/steam-r44/`** (`phone_390_play.png`, **`steam_crop.png`**, trio vs refs, **`NOTE.md`** vs #124). Coordinator **Read-compare**; **no auto-merge**.
 
 ## Spawn buildings (spawn-r36)
 

@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { HERO_X, HERO_Y, HERO_R } from "../src/render/yard-fx";
+import { HERO_X, HERO_Y } from "../src/render/yard-fx";
 import { playView } from "../src/shell/play-view";
 import { ARENA_H, ARENA_W, cameraTarget } from "../src/sim/arena";
 
@@ -33,13 +33,15 @@ describe("r35 fx-only mid-frame steam + combat read", () => {
     const yard = readFileSync("src/render/yard-fx.ts", "utf8");
     expect(yard.includes("const HERO_BAND_STEAM")).toBe(true);
     expect(yard.includes("export function paintVentSteam")).toBe(true);
-    expect(yard.includes("HERO_BAND_STEAM.concat(STEAM_VENTS)")).toBe(true);
+    expect(yard.includes("export function paintPhoneHeroValveSteam")).toBe(true);
+    expect(yard.includes("export const PHONE_HERO_VALVE_BLITS")).toBe(true);
+    expect(yard.includes("return STEAM_VENTS")).toBe(true);
     const depth = readFileSync("src/render/depth.ts", "utf8");
-    expect(depth.includes('import { paintVentSteam } from "./yard-fx"')).toBe(true);
+    expect(depth.includes("paintVentSteam")).toBe(true);
     expect(depth.includes("paintVentSteam(ctx, x, y - 6, w.tick, true)")).toBe(true);
   });
 
-  it("keeps hero-band vents inside the phone camera around the review hunter", () => {
+  it("keeps hero-band valve sites on phone tank rims inside the camera clip", () => {
     const { viewW, viewH } = playView(390, 844);
     const cam = new Float32Array(2);
     cameraTarget(HERO_X, HERO_Y, cam, viewW, viewH);
@@ -51,10 +53,8 @@ describe("r35 fx-only mid-frame steam + combat read", () => {
       expect(v.x).toBeLessThanOrEqual(camX + viewW - 8);
       expect(v.y).toBeGreaterThanOrEqual(camY + 48);
       expect(v.y).toBeLessThanOrEqual(camY + viewH - 48);
-      const dx = v.x - HERO_X;
-      const dy = v.y - HERO_Y;
-      expect(dx * dx + dy * dy).toBeLessThan(HERO_R * HERO_R);
     }
+    expect(band.length).toBeGreaterThanOrEqual(2);
     expect(ARENA_W).toBeGreaterThan(viewW);
     expect(ARENA_H).toBeGreaterThanOrEqual(viewH);
   });

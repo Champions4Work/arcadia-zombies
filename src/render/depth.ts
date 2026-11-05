@@ -7,7 +7,7 @@ import {
 import { OB_BARREL, OB_BOILER, OB_CRATE, OB_GEAR } from "../sim/arena";
 import { type World } from "../sim/types";
 import { LAYER_BACK, LAYER_MID, registerLayer } from "./plugins";
-import { paintVentSteam } from "./yard-fx";
+import { paintPhoneHeroValveSteam, paintVentSteam } from "./yard-fx";
 
 function visible(x: number, y: number, camX: number, camY: number, vw: number, vh: number, pad: number): boolean {
   return x >= camX - pad && y >= camY - pad && x <= camX + vw + pad && y <= camY + vh + pad;
@@ -200,5 +200,11 @@ function paintDepthLive(ctx: CanvasRenderingContext2D, w: World): void {
   }
 }
 
+function paintDepthMid(ctx: CanvasRenderingContext2D, w: World): void {
+  paintDepthLive(ctx, w);
+  if (!w.arena) return;
+  paintPhoneHeroValveSteam(ctx, w.tick, w.arena.camX, w.arena.camY, w.arena.viewW, w.arena.viewH);
+}
+
 registerLayer(LAYER_BACK, paintDepthFloor);
-registerLayer(LAYER_MID, paintDepthLive);
+registerLayer(LAYER_MID, paintDepthMid);

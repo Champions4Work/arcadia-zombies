@@ -36,6 +36,13 @@ export const PHONE_HERO_BLITS: { id: string; x: number; y: number; sc: number }[
   { id: "conveyor", x: 590, y: 380, sc: PHONE_HERO_CONVEYOR_SCALE },
 ];
 
+const PHONE_HERO_VALVE_SCALE = 1.24;
+
+export const PHONE_HERO_VALVE_BLITS: { x: number; y: number; sc: number }[] = [
+  { x: 378, y: 196, sc: PHONE_HERO_VALVE_SCALE },
+  { x: 582, y: 196, sc: PHONE_HERO_VALVE_SCALE },
+];
+
 const PROPS: { id: string; x: number; y: number }[] = [
   { id: "window_lit", x: 324, y: 188 },
   { id: "window_lit", x: 348, y: 196 },
@@ -104,9 +111,8 @@ const STEAM_VENTS = [
 ];
 
 const HERO_BAND_STEAM = [
-  { x: 384, y: 348 },
-  { x: 576, y: 356 },
-  { x: 432, y: 412 },
+  { x: 378, y: 196 },
+  { x: 582, y: 196 },
 ];
 
 export const YARD_CLEAR = { x0: 352, y0: 318, x1: 608, y1: 638 };
@@ -299,7 +305,16 @@ function poolsOf() {
 function ventsOf() {
   if (yardBound === ZONE_BOILER) return BOILER_STEAM;
   if (yardBound === ZONE_TRAM) return TRAM_STEAM;
-  return HERO_BAND_STEAM.concat(STEAM_VENTS);
+  return STEAM_VENTS;
+}
+
+function phoneHeroValveAt(x: number, y: number): boolean {
+  for (let i = 0; i < PHONE_HERO_VALVE_BLITS.length; i++) {
+    const v = PHONE_HERO_VALVE_BLITS[i];
+    if (!v) continue;
+    if (Math.abs(v.x - x) < 3 && Math.abs(v.y - y) < 3) return true;
+  }
+  return false;
 }
 
 function visible(x: number, y: number, camX: number, camY: number, vw: number, vh: number, pad: number): boolean {
@@ -553,16 +568,12 @@ export function paintVentSteam(
   tick: number,
   heroBand = false,
 ): void {
+  if (phoneHeroValveAt(x, y)) return;
   const lift = ((tick * 0.35) % 14);
-  if (heroBand) {
-    ctx.save();
-    ctx.globalAlpha = 0.82;
-    blitScaled(ctx, "valve_steam", x - 8, y + 4, 0.58);
-    ctx.restore();
-  }
   steamPuff(ctx, x, y, tick);
-  const alpha = heroBand ? STEAM_VENT_ALPHA * 1.45 : STEAM_VENT_ALPHA;
-  const scale = heroBand ? STEAM_VENT_SCALE * 0.92 : STEAM_VENT_SCALE;
+  if (heroBand) return;
+  const alpha = STEAM_VENT_ALPHA;
+  const scale = STEAM_VENT_SCALE;
   ctx.save();
   ctx.globalCompositeOperation = "soft-light";
   ctx.globalAlpha = alpha;
@@ -571,6 +582,34 @@ export function paintVentSteam(
   ctx.globalAlpha = alpha * 0.72;
   blitScaled(ctx, steamFrame(tick + 4), x + 4, y - 12 - lift * 0.45, scale * 0.88);
   ctx.restore();
+}
+
+export function paintPhoneHeroValveSteam(
+  ctx: CanvasRenderingContext2D,
+  tick: number,
+  camX: number,
+  camY: number,
+  vw: number,
+  vh: number,
+): void {
+  if (yardBound !== ZONE_BRASS || vw > PHONE_FACADE_VW) return;
+  for (let i = 0; i < PHONE_HERO_VALVE_BLITS.length; i++) {
+    const v = PHONE_HERO_VALVE_BLITS[i];
+    if (!v) continue;
+    if (v.x < PHONE_CAM.x0 || v.x > PHONE_CAM.x1) continue;
+    if (!visible(v.x, v.y, camX, camY, vw, vh, 120)) continue;
+    ctx.save();
+    ctx.globalCompositeOperation = "source-over";
+    ctx.globalAlpha = 1;
+    blitScaled(ctx, "valve_steam", v.x, v.y, v.sc);
+    ctx.restore();
+    const lift = ((tick * 0.35) % 14);
+    ctx.save();
+    ctx.globalCompositeOperation = "source-over";
+    ctx.globalAlpha = 0.42;
+    blitScaled(ctx, steamFrame(tick + i * 5), v.x + 12, v.y - 38 - lift, 0.54);
+    ctx.restore();
+  }
 }
 
 function heroBandVent(x: number, y: number): boolean {
@@ -843,6 +882,7 @@ export function paintYardLive(
   }
   for (const vent of ventsOf()) {
     if (!visible(vent.x, vent.y, camX, camY, vw, vh, 40)) continue;
+    if (phoneHeroValveAt(vent.x, vent.y)) continue;
     paintVentSteam(ctx, vent.x, vent.y, tick, heroBandVent(vent.x, vent.y));
   }
   if (yardBound === ZONE_BRASS) paintBrassGrade(ctx, camX, camY, vw, vh);
