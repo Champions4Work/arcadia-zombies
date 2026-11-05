@@ -254,9 +254,10 @@ describe("visual review gates", () => {
 
   it("keeps spawn telegraphs and kill puffs on pack sprites, and aligns vertical belts", () => {
     const yard = readFileSync("src/render/yard-fx.ts", "utf8");
-    const door = yard.slice(yard.indexOf("export function paintDoorSpawn"));
-    expect(door.includes("window_lit")).toBe(true);
-    expect(door.includes("building_wall_door")).toBe(true);
+    const facade = yard.slice(yard.indexOf("function paintSpawnFacade"), yard.indexOf("export function paintDoorSpawn"));
+    expect(facade.includes("window_lit")).toBe(true);
+    expect(facade.includes("building_wall_door")).toBe(true);
+    expect(facade.includes("lamp")).toBe(true);
     expect(yard.includes("ctx.rotate(Math.PI * 0.5)")).toBe(true);
     const puff = readFileSync("src/render/cast-fx.ts", "utf8");
     expect(puff.includes("paintZombie")).toBe(true);
