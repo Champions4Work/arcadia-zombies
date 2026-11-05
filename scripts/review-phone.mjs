@@ -1,6 +1,7 @@
-import { mkdirSync, readFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { execFileSync } from "node:child_process";
 import { chromium } from "@playwright/test";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -65,6 +66,41 @@ await page.goto(`${host}/?shot=1`, { waitUntil: "domcontentloaded" });
 await page.waitForTimeout(1200);
 const playPath = `${dest}/phone_390_play.png`;
 await page.screenshot({ path: playPath });
+
+const midbandPath = `${dest}/midband_crop.png`;
+execFileSync("python3", [
+  "-c",
+  `
+from PIL import Image
+im = Image.open(${JSON.stringify(playPath)}).convert("RGBA")
+w, h = im.size
+y0 = int(h * 0.22)
+y1 = int(h * 0.58)
+im.crop((0, y0, w, y1)).save(${JSON.stringify(midbandPath)})
+print(y0, y1, w)
+`,
+]);
+
+try {
+  const gateOut = execFileSync("python3", ["scripts/midband-pixel-gate.py", midbandPath], { encoding: "utf8" });
+  writeFileSync(`${dest}/midband_gate.txt`, gateOut);
+  console.log(`midband gate ${gateOut.trim()}`);
+} catch (e) {
+  const gateOut = e.stdout?.toString?.() ?? "";
+  if (gateOut) writeFileSync(`${dest}/midband_gate.txt`, gateOut);
+  throw e;
+}
+
+function sideBySide(leftPath, rightPath, outPath, leftLabel, rightLabel) {
+  execFileSync("node", [
+    "scripts/compare-shots.mjs",
+    leftPath,
+    rightPath,
+    outPath,
+  ]);
+  console.log(`wrote ${outPath} (${leftLabel} vs ${rightLabel})`);
+}
+
 await writeCompare(
   browser,
   playPath,
@@ -101,8 +137,29 @@ if (beforeArg) {
   );
   console.log(`wrote ${dest}/before_after_vs_r29.png`);
 }
+const mainCyanFail = process.argv[5];
+if (mainCyanFail) {
+  sideBySide(
+    resolve(root, mainCyanFail),
+    playPath,
+    `${dest}/vs_main_cyan.png`,
+    "MAIN CYAN FAIL",
+    "PLAY",
+  );
+}
+const r37Fail = process.argv[6];
+if (r37Fail) {
+  sideBySide(
+    resolve(root, r37Fail),
+    playPath,
+    `${dest}/vs_r37_offscreen.png`,
+    "R37 OFFSCREEN",
+    "PLAY",
+  );
+}
 await browser.close();
 console.log(`wrote ${playPath}`);
+console.log(`wrote ${midbandPath}`);
 console.log(`wrote ${dest}/compare_390_ref1.png`);
 console.log(`wrote ${dest}/compare_390_ref2.png`);
 console.log(`wrote ${dest}/trio_ref1_play_ref2.png`);
