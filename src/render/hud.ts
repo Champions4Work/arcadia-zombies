@@ -259,25 +259,25 @@ function clockPanel(ctx: CanvasRenderingContext2D, w: World, box: Box, phone: bo
   if (phone) {
     blitSheetFit(ctx, "panel_frame_small", box.x - 10, box.y - 8, box.w + 20, box.h + 16);
     ctx.save();
-    roundRect(ctx, box.x + 3, box.y + 3, box.w - 6, box.h - 6, 8);
-    ctx.fillStyle = "rgba(8,10,14,0.78)";
+    roundRect(ctx, box.x + 2, box.y + 2, box.w - 4, box.h - 4, 7);
+    ctx.fillStyle = "rgba(8,10,14,0.82)";
     ctx.fill();
-    ctx.strokeStyle = "rgba(212,168,72,0.72)";
-    ctx.lineWidth = 1.4;
+    ctx.strokeStyle = "rgba(212,168,72,0.88)";
+    ctx.lineWidth = 1.6;
     ctx.stroke();
     ctx.restore();
     const cy = box.y + box.h / 2;
-    const split = box.x + box.w * 0.52;
-    clockGlyph(ctx, box.x + 14, cy, 5.5);
-    stampInk(ctx, formatClock(w.tick), box.x + 26, cy, 11, "#fff6df", "left");
-    ctx.strokeStyle = "rgba(224,160,64,0.35)";
+    const split = box.x + box.w * 0.54;
+    clockGlyph(ctx, box.x + 12, cy, 5.2);
+    stampInk(ctx, formatClock(w.tick), box.x + 24, cy, 10, "#fff6df", "left");
+    ctx.strokeStyle = "rgba(224,160,64,0.42)";
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(split, box.y + 5);
-    ctx.lineTo(split, box.y + box.h - 5);
+    ctx.moveTo(split, box.y + 4);
+    ctx.lineTo(split, box.y + box.h - 4);
     ctx.stroke();
-    skull(ctx, split + 14, cy);
-    stampInk(ctx, `${w.kills | 0}`, split + 24, cy, 11, "#fff6df", "left");
+    skull(ctx, split + 12, cy);
+    stampInk(ctx, `${w.kills | 0}`, split + 22, cy, 10, "#fff6df", "left");
     return;
   }
   plate(ctx, box, "panel_frame_small");
@@ -456,18 +456,23 @@ function pauseButton(ctx: CanvasRenderingContext2D, pause: Circle): void {
 }
 
 function minimap(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
-  const r = Math.max(16, Math.min(box.w, box.h) / 2 - 1);
+  const layout = currentHud();
+  const phone = layout?.phone ?? false;
+  const pad = phone ? 12 : 14;
+  const r = Math.max(14, Math.min(box.w, box.h) / 2 - (phone ? 4 : 1));
   const cx = box.x + box.w / 2;
   const cy = box.y + box.h / 2;
-  blitSheetFit(ctx, "minimap_frame", box.x - 14, box.y - 14, box.w + 28, box.h + 28);
+  blitSheetFit(ctx, "minimap_frame", box.x - pad, box.y - pad, box.w + pad * 2, box.h + pad * 2);
   ctx.save();
   ctx.beginPath();
-  ctx.arc(cx, cy, r - 3, 0, Math.PI * 2);
-  ctx.fillStyle = "#1a1612";
+  ctx.arc(cx, cy, r - (phone ? 4 : 3), 0, Math.PI * 2);
+  ctx.fillStyle = "#14100c";
   ctx.fill();
   ctx.clip();
   ctx.fillStyle = "#4a4030";
   ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+  ctx.fillStyle = "#1a1612";
+  ctx.fillRect(cx - r * 0.2, cy - r * 0.2, r * 0.44, r * 0.36);
   ctx.fillStyle = "#8a7654";
   ctx.fillRect(cx - r * 0.78, cy - r * 0.74, r * 0.5, r * 0.36);
   ctx.fillRect(cx + r * 0.08, cy - r * 0.7, r * 0.52, r * 0.34);
@@ -515,9 +520,9 @@ function minimap(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   ctx.fill();
   ctx.restore();
   ctx.beginPath();
-  ctx.arc(cx, cy, r - 2, 0, Math.PI * 2);
+  ctx.arc(cx, cy, r - (phone ? 3 : 2), 0, Math.PI * 2);
   ctx.strokeStyle = BRASS_HI;
-  ctx.lineWidth = 3.4;
+  ctx.lineWidth = phone ? 2.6 : 3.4;
   ctx.stroke();
 }
 
@@ -599,32 +604,37 @@ function objectives(ctx: CanvasRenderingContext2D, w: World, box: Box): void {
   const layout = currentHud();
   const phone = layout?.phone ?? false;
   const face = waveFace(w);
-  blitSheetFit(ctx, "objectives_panel", box.x - 14, box.y - 14, box.w + 28, box.h + 28);
-  blitSheetFit(ctx, "panel_frame_gears", box.x - 10, box.y - 10, box.w + 20, box.h + 20);
-  ctx.fillStyle = phone ? "rgba(8,10,16,0.72)" : "rgba(8,10,16,0.78)";
+  const framePad = phone ? 10 : 14;
+  blitSheetFit(ctx, "objectives_panel", box.x - framePad, box.y - framePad, box.w + framePad * 2, box.h + framePad * 2);
+  if (!phone) blitSheetFit(ctx, "panel_frame_gears", box.x - 10, box.y - 10, box.w + 20, box.h + 20);
+  ctx.fillStyle = phone ? "rgba(8,10,16,0.76)" : "rgba(8,10,16,0.78)";
   ctx.fillRect(box.x, box.y, box.w, box.h);
-  ctx.fillStyle = "rgba(224,160,64,0.28)";
-  ctx.fillRect(box.x + 4, box.y + 4, box.w - 8, phone ? 20 : 24);
+  const headH = phone ? 18 : 24;
+  ctx.fillStyle = "rgba(224,160,64,0.32)";
+  ctx.fillRect(box.x + 4, box.y + 4, box.w - 8, headH);
   ctx.strokeStyle = "rgba(212,168,72,0.92)";
-  if (phone) ctx.lineWidth = 3.2;
+  if (phone) ctx.lineWidth = 2.6;
   else ctx.lineWidth = 4.6;
   ctx.strokeRect(box.x + 0.5, box.y + 0.5, box.w - 1, box.h - 1);
-  ctx.strokeStyle = "rgba(240,200,120,0.7)";
-  ctx.lineWidth = 2.2;
+  ctx.strokeStyle = "rgba(240,200,120,0.65)";
+  ctx.lineWidth = phone ? 1.6 : 2.2;
   ctx.strokeRect(box.x + 4, box.y + 4, box.w - 8, box.h - 8);
-  stampInk(ctx, "Objectives", box.x + box.w * 0.34, box.y + (phone ? 14 : 16), phone ? 11 : 13, "#f0d080");
+  stampInk(ctx, "Objectives", box.x + 10, box.y + (phone ? 13 : 16), phone ? 10 : 13, "#f0d080", "left");
   if (phone) {
-    stampInk(ctx, `Wave ${face.n}/${face.of}`, box.x + box.w - 8, box.y + 14, 10, "#fff6df", "right");
+    stampInk(ctx, `Wave ${face.n}/${face.of}`, box.x + box.w - 10, box.y + 13, 10, "#fff6df", "right");
   }
   ctx.fillStyle = "#e8c46a";
-  ctx.fillRect(box.x + 10, box.y + (phone ? 22 : 26), box.w - 20, 3);
+  ctx.fillRect(box.x + 8, box.y + headH + 6, box.w - 16, 2);
   const rows = objectiveRows(w);
   const inkX = box.x + 10;
   const hold = rows[1];
   const holdText = hold?.clock ? `HOLD THE AREA ${hold.clock}` : "HOLD THE AREA";
-  checkLine(ctx, inkX, box.y + box.h * 0.38, "ACTIVATE STEAM GATE", rows[0]?.done === true);
-  checkLine(ctx, inkX, box.y + box.h * 0.58, holdText, hold?.done === true);
-  checkLine(ctx, inkX, box.y + box.h * 0.78, "SURVIVE ALL WAVES", rows[2]?.done === true);
+  const row0 = phone ? box.y + 36 : box.y + box.h * 0.38;
+  const row1 = phone ? box.y + 54 : box.y + box.h * 0.58;
+  const row2 = phone ? box.y + 72 : box.y + box.h * 0.78;
+  checkLine(ctx, inkX, row0, "ACTIVATE STEAM GATE", rows[0]?.done === true);
+  checkLine(ctx, inkX, row1, holdText, hold?.done === true);
+  checkLine(ctx, inkX, row2, "SURVIVE ALL WAVES", rows[2]?.done === true);
 }
 
 export function drawHud(ctx: CanvasRenderingContext2D, w: World): void {
