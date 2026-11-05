@@ -23,9 +23,10 @@ function propSprite(kind: number): string {
 
 function paintLaneVent(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number): void {
   ctx.save();
-  ctx.globalAlpha = 0.92;
+  ctx.globalAlpha = 0.9;
+  blitSheet(ctx, "decal_hazard", x - 6, y - 2);
   blitSheet(ctx, "decal_grate", x, y);
-  ctx.globalAlpha = 0.7 + ((tick >> 3) & 1) * 0.18;
+  ctx.globalAlpha = 0.96 + ((tick >> 3) & 1) * 0.04;
   blitSheet(ctx, "decal_vent", x, y);
   ctx.restore();
 }
@@ -90,7 +91,12 @@ function paintLaneProp(ctx: CanvasRenderingContext2D, w: World, slot: number): v
   const x = a.obsX[slot] ?? 0;
   const y = a.obsY[slot] ?? 0;
   paintShadow(ctx, x, y, 12, 4);
-  blitSheet(ctx, propSprite(a.obsKind[slot] ?? 0), x, y);
+  const id = propSprite(a.obsKind[slot] ?? 0);
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(1.12, 1.12);
+  blitSheet(ctx, id, 0, 0);
+  ctx.restore();
 }
 
 function paintDepthFloor(ctx: CanvasRenderingContext2D, w: World): void {

@@ -216,7 +216,7 @@ describe("gameplay depth hooks", () => {
     expect(src.includes("breakable_gear_pylon")).toBe(true);
     expect(src.includes("decal_vent")).toBe(true);
     expect(src.includes("decal_grate")).toBe(true);
-    expect(src.includes("decal_hazard")).toBe(false);
+    expect(src.includes("decal_hazard")).toBe(true);
   });
 
   it("parks a glowing crate on the perimeter belt and keeps vent pads on the yard", () => {
@@ -228,9 +228,11 @@ describe("gameplay depth hooks", () => {
     expect(Math.abs(cargoX(w, 0) - SIDE_BELT_LEFT_X)).toBeLessThan(0.1);
     expect(cargoY(w, 0)).toBeGreaterThan(SIDE_BELT_RIDE_Y);
     expect(cargoOutsideFightClear(cargoX(w, 0), cargoY(w, 0))).toBe(true);
-    expect(ventCount(w)).toBeGreaterThanOrEqual(3);
-    expect(ventX(w, 0)).toBeGreaterThan(0);
-    expect(ventY(w, 0)).toBeGreaterThan(0);
+    expect(ventCount(w)).toBeGreaterThanOrEqual(7);
+    expect(ventX(w, 0)).toBe(310);
+    expect(ventY(w, 0)).toBe(458);
+    expect(ventX(w, 1)).toBe(656);
+    expect(ventY(w, 1)).toBe(458);
     expect(w.arena.obsAlive.some((on, i) => on && w.arena.obsKind[i] === OB_BOILER)).toBe(true);
   });
 });

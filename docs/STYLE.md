@@ -45,6 +45,10 @@ FX-only pass on r32 baseline. Steam must puff from **hero-band valve sites** tha
 
 Review **`docs/reviews/fx-r35/`** with **`vs_baseline.png`** (before/after crops of steam + muzzle vs **`docs/reviews/fx-r32/phone_390_play.png`**). Coordinator **Read-compare**; **no auto-merge**.
 
+## Props r37 — side vents + breakable crates (phone read)
+
+Review **`docs/reviews/props-r37/`** (`phone_390_play.png`, **`side_crop_rails.png`**, compares to both refs). Side-rail **`decal_vent`** stacks use hazard + grate under **`paintFloorDecal`**; sim **`VENTS`** align with those pads (**`VENT_SLOW`** unchanged). **`crate` / `crate_stack` / `barrel`** and breakables sit on belts and rails with **`RAIL_BREAKABLE_SCALE`**—never inside **`YARD_CLEAR`**. Do not move mid-frame **`pipes_blue_tank` / `conveyor`** blits or cyan fight-floor pads (parallel r36 gate). Coordinator **Read-compare**; **no auto-merge**.
+
 ## References (art bible)
 
 Review size is 390×844 CSS pixels. These two files are the art bible. Every visual PR compares against both.

@@ -61,6 +61,15 @@ const PROPS: { id: string; x: number; y: number }[] = [
   { id: "pipes_blue_tank", x: 654, y: 596 },
   { id: "blue_puddle", x: 648, y: 584 },
   { id: "breakable_boiler", x: 656, y: 648 },
+  { id: "crate_stack", x: 302, y: 538 },
+  { id: "crate", x: 658, y: 538 },
+  { id: "crate_stack", x: 302, y: 662 },
+  { id: "barrel", x: 658, y: 662 },
+  { id: "crate", x: 304, y: 684 },
+  { id: "decal_hazard", x: 304, y: 442 },
+  { id: "decal_hazard", x: 650, y: 442 },
+  { id: "decal_hazard", x: 304, y: 620 },
+  { id: "decal_hazard", x: 650, y: 620 },
 ];
 
 const TANKS = [
@@ -96,6 +105,8 @@ export const YARD_CLEAR = { x0: 352, y0: 318, x1: 608, y1: 638 };
 export const PHONE_CAM = { x0: 300, y0: 0, x1: 660, y1: 780 };
 
 const FIGHT_BAND_CRATE = new Set(["crate", "crate_stack", "barrel"]);
+const RAIL_BREAKABLE = new Set(["crate", "crate_stack", "barrel", "breakable_boiler", "breakable_gear_pylon"]);
+const RAIL_BREAKABLE_SCALE = 1.14;
 
 export function yardCratePropsInClear(): number {
   if (yardBound !== ZONE_BRASS) return 0;
@@ -717,6 +728,39 @@ export function yardPropHits(x0: number, y0: number, x1: number, y1: number): nu
   return n;
 }
 
+function paintFloorDecal(ctx: CanvasRenderingContext2D, id: string, x: number, y: number): void {
+  if (id === "decal_vent" || id === "decal_grate") {
+    paintShadow(ctx, x, y, 14, 4);
+    ctx.save();
+    ctx.globalAlpha = 0.94;
+    blitSheet(ctx, "decal_hazard", x - 6, y - 2);
+    blitSheet(ctx, "decal_grate", x, y);
+    ctx.globalAlpha = 1;
+    blitSheet(ctx, "decal_vent", x, y);
+    ctx.restore();
+    return;
+  }
+  if (id === "decal_hazard") {
+    paintShadow(ctx, x, y, 12, 3);
+    ctx.save();
+    ctx.globalAlpha = 0.88;
+    blitSheet(ctx, id, x, y);
+    ctx.restore();
+    return;
+  }
+  if (RAIL_BREAKABLE.has(id)) {
+    paintShadow(ctx, x, y, 14, 5);
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(RAIL_BREAKABLE_SCALE, RAIL_BREAKABLE_SCALE);
+    blitSheet(ctx, id, 0, 0);
+    ctx.restore();
+    return;
+  }
+  paintShadow(ctx, x, y, 12, 4);
+  blitSheet(ctx, id, x, y);
+}
+
 export function paintYardLive(
   ctx: CanvasRenderingContext2D,
   tick: number,
@@ -761,8 +805,7 @@ export function paintYardLive(
     if (!visible(p.x, p.y, camX, camY, vw, vh, 90)) continue;
     if (p.id === "pipes_blue_tank") bluePool(ctx, p.x, p.y + 8, tick);
     if (p.id === "blue_puddle") bluePuddle(ctx, p.x, p.y + 4);
-    paintShadow(ctx, p.x, p.y, 12, 4);
-    blitSheet(ctx, p.id, p.x, p.y);
+    paintFloorDecal(ctx, p.id, p.x, p.y);
   }
   if (yardBound === ZONE_TRAM) {
     for (const car of TRAM_CARS) {

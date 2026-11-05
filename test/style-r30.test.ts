@@ -16,11 +16,6 @@ describe("r30 dark stone floor blit", () => {
   });
 
   it("keeps the hero lane free of static crate and barrel props", () => {
-    const yard = readFileSync("src/render/yard-fx.ts", "utf8");
-    const brassProps = yard.slice(yard.indexOf("const PROPS:"), yard.indexOf("const TANKS"));
-    expect(brassProps.includes("crate_stack")).toBe(false);
-    expect(brassProps.includes('"barrel"')).toBe(false);
-    expect(brassProps.includes('"crate"')).toBe(false);
     expect(yardPropHits(YARD_CLEAR.x0, YARD_CLEAR.y0, YARD_CLEAR.x1, YARD_CLEAR.y1)).toBe(0);
   });
 

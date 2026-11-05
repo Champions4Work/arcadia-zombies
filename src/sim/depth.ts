@@ -73,11 +73,17 @@ const VENTS: readonly [number, number][] = [
   [360, 200],
   [480, 190],
   [600, 200],
+  [310, 458],
+  [656, 458],
+  [310, 636],
+  [656, 636],
 ];
 
 const LANE: readonly [number, number, number, number, number, number, number][] = [
   [OB_BOILER, 308, 520, 14, 16, 16, 2],
   [OB_GEAR, 652, 520, 13, 13, 13, 2],
+  [OB_CRATE, 302, 538, 12, 12, 0, 1],
+  [OB_CRATE, 658, 538, 12, 12, 0, 1],
 ];
 
 function create(): DepthBag {
@@ -309,8 +315,10 @@ export function reviewDepth(w: World): void {
   d.cargoKind[0] = CARGO_UPG;
   d.cargoX[0] = SIDE_BELT_LEFT_X;
   d.cargoY[0] = SIDE_BELT_RIDE_Y + 48;
-  d.ventX[0] = w.px - 96;
-  d.ventY[0] = w.py + 96;
+  d.ventX[0] = 310;
+  d.ventY[0] = 458;
+  d.ventX[1] = 656;
+  d.ventY[1] = 458;
   d.cargoT[0] = DROP_ALONG * 0.42;
   let slot = -1;
   for (let i = 0; i < MAX_OBS; i++) {
