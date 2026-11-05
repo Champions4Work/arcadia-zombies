@@ -29,12 +29,16 @@ export const CRIT_COLOR = "#ffe14a";
 export const HIT_COLOR = "#fff4c8";
 export const NUMBER_LIFE = 180;
 export const GLYPH_CELL = 2;
-export const BLOOD_DROP_RX = 6.6;
-export const BLOOD_DROP_RY = 5.2;
+export const BLOOD_DROP_RX = 4.8;
+export const BLOOD_DROP_RY = 3.8;
+export const CASING_PART_W = 14;
+export const CASING_PART_H = 5;
+export const CASING_EJECT_N = 4;
 
 const SOOT = "#120c08";
 const BRASS = "#c8963e";
 const BRASS_HI = "#e8c878";
+const BRASS_LO = "#7a5420";
 const COPPER = "#b5562f";
 const GLYPH = new Uint16Array([
   0b111101101101111, 0b010010010010010, 0b111001111100111, 0b111001111001111, 0b101101111001001,
@@ -236,8 +240,8 @@ function spawnPart(x: number, y: number, vx: number, vy: number, gear: number): 
   pVx[i] = vx;
   pVy[i] = vy;
   pLife[i] = gear === 2 ? 280 : 460;
-  pRot[i] = 0;
-  pSpin[i] = gear === 1 ? 11 : 4;
+  pRot[i] = gear === 0 ? Math.atan2(vy, vx) + 0.62 : 0;
+  pSpin[i] = gear === 1 ? 11 : gear === 0 ? (((i | 0) & 1) === 0 ? 8 : -7) : 4;
   pGear[i] = gear;
 }
 
@@ -252,8 +256,13 @@ function spawnBlood(x: number, y: number, slot: number, tick: number): void {
 
 export function juiceShot(x: number, y: number, ux: number, uy: number, tick: number): void {
   const side = ((tick | 0) & 1) === 0 ? 1 : -1;
-  spawnPart(x, y, -uy * 42 * side + ux * 8, ux * 42 * side - 22, 0);
-  spawnPart(x, y, -uy * 26 * side - ux * 6, ux * 26 * side - 14, 0);
+  const px = -uy;
+  const py = ux;
+  const eject = 44 * side;
+  spawnPart(x, y, px * eject + ux * 10, py * eject - 20, 0);
+  spawnPart(x, y, px * (eject * 0.68) - ux * 8, py * (eject * 0.68) - 12, 0);
+  spawnPart(x, y, px * (eject * 0.48) + ux * 16, py * (eject * 0.48) - 26, 0);
+  spawnPart(x, y, px * (eject * 0.84) - ux * 4, py * (eject * 0.84) - 34, 0);
   if (stainCount() < STAIN_LIVE_CAP) {
     const bx = x - uy * 11 * side + ux * 5;
     const by = y + ux * 11 * side + uy * 4 + 6;
@@ -443,16 +452,20 @@ export function drawJuice(c: CanvasRenderingContext2D): void {
         c.fillStyle = "rgba(210,36,42,0.88)";
         c.fillRect((x - 2) | 0, (y - 3) | 0, 3, 4);
       } else {
-        c.fillStyle = "rgba(255,158,46,0.72)";
-        c.beginPath();
-        c.arc(x, y, 9, 0, Math.PI * 2);
-        c.fill();
+        c.save();
+        c.translate(x | 0, y | 0);
+        c.rotate(pRot[i] ?? 0);
+        const cw = CASING_PART_W;
+        const ch = CASING_PART_H;
+        c.fillStyle = BRASS_LO;
+        c.fillRect(-cw * 0.52, -ch * 0.5, cw, ch);
         c.fillStyle = BRASS_HI;
-        c.fillRect((x - 6) | 0, (y - 4) | 0, 12, 8);
+        c.fillRect(-cw * 0.44, -ch * 0.42, cw * 0.78, ch * 0.84);
         c.fillStyle = BRASS;
-        c.fillRect((x - 5) | 0, (y - 3) | 0, 11, 7);
+        c.fillRect(cw * 0.06, -ch * 0.3, cw * 0.24, ch * 0.6);
         c.fillStyle = COPPER;
-        c.fillRect((x - 2) | 0, (y - 1) | 0, 5, 5);
+        c.fillRect(-cw * 0.12, -ch * 0.22, cw * 0.18, ch * 0.44);
+        c.restore();
       }
     }
   }
