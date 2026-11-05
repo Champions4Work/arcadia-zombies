@@ -45,6 +45,12 @@ FX-only pass on r32 baseline. Steam must puff from **hero-band valve sites** tha
 
 Review **`docs/reviews/fx-r35/`** with **`vs_baseline.png`** (before/after crops of steam + muzzle vs **`docs/reviews/fx-r32/phone_390_play.png`**). Coordinator **Read-compare**; **no auto-merge**.
 
+## Spawn buildings (spawn-r36)
+
+Brass **`BUILDINGS`** stay two **`building_wall_door`** facades in the phone upper-mid band (`?shot=1`). **`paintSpawnFacade`** blits the pack door wall at **`SPAWN_FACADE_PHONE`** when **`viewW < 420`**, adds **`window_lit`** and **`lamp`** pools, and skips procedural brick panes on **`ZONE_BRASS`** so the facades stay readable. Do not add center crates, cyan pads, or belt/tank moves in the same PR.
+
+Review **`docs/reviews/spawn-r36/`** (`phone_390_play.png`, compares vs **`docs/target_look.jpg`** / **`docs/target_look2.png`**, **`trio_ref1_play_ref2.png`**). Coordinator **Read-compare** before merge; **no auto-merge**.
+
 ## References (art bible)
 
 Review size is 390×844 CSS pixels. These two files are the art bible. Every visual PR compares against both.
