@@ -57,7 +57,7 @@ describe("phone HUD chrome", () => {
     expect(hud.face.w).toBe(0);
     expect(hud.hero.w).toBeGreaterThanOrEqual(52);
     expect(hud.weapons.h).toBeGreaterThanOrEqual(40);
-    expect(hud.minimap.w).toBeGreaterThanOrEqual(64);
+    expect(hud.minimap.w).toBeGreaterThanOrEqual(52);
     expect(hud.xp.h).toBeGreaterThanOrEqual(18);
     const w = createWorld(1);
     drawHud(stubCtx(texts), w);

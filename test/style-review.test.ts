@@ -208,7 +208,8 @@ describe("visual review gates", () => {
     expect(hud.includes("ctx.lineWidth = 3.4")).toBe(true);
     expect(hud.includes("ctx.lineWidth = 3.2")).toBe(true);
     expect(hud.includes("layout.face")).toBe(true);
-    expect(hud.includes("const local = 170")).toBe(true);
+    expect(hud.includes("const local = 170")).toBe(false);
+    expect(hud.includes("const span = phone ? 200 : 170")).toBe(true);
     expect(hud.includes("function restStick")).toBe(true);
     expect(hud.includes("function skillKeys")).toBe(true);
     expect(hud.includes("function skillIcon")).toBe(true);
