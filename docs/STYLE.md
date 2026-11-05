@@ -182,6 +182,14 @@ Sampled from both frames. Night stone stays darker than the hero. Health is cyan
 
 Sprite sources use only these hexes.
 
+## Art-v2 integration (art-r47)
+
+Merged **`art_v2_slim`** hero frames into **`art/az_art_v2/`** and repacked **`scripts/pack-art.py`**. Hunters blit through **`blitSheetLean`** + manifest foot anchors (**`hero_idle`**, **`hero_walk_1`–`4`** at **128 px** source → **64 px** pack height, **`HERO_DRAW_SCALE` 1.4**). Horde types map in **`foeSpriteId`** (**`zombie_worker`**, **`zombie_crawler`**, **`zombie_tubes`**, **`zombie_bloater`**, **`brute`**) with **`foeWorldScale`** from packed **`h`**.
+
+Phone yard props use the same **`blitSheet` / `blitScaled`** path: **`PHONE_HERO_BLITS`** keeps **`pipes_blue_tank`** + **`conveyor`** chevrons in-frame; wing **`PROPS`** (**`decal_vent`**, **`decal_grate`**, **`crate`**, **`crate_stack`**, **`barrel`**, **`breakable_gear_pylon`**) scale at **`WING_PROP_SCALE`** inside **`PHONE_WING_*`**, not in **`YARD_CLEAR`**. Perimeter-only **`breakable_boiler`** at off-clip rails stays desktop-only; phone read uses gear pylons + side rails.
+
+Review **`docs/reviews/art-r47/`** (`phone_390_play.png` **`?shot=1`**, **`hero_crop.png`**, **`props_crop.png`**, **`midband_crop.png`**, **`midband_gate.txt`**). Coordinator **Read-compare**; **no auto-merge**.
+
 ## Pack paths
 
 Source PNGs live in `art/az_art_v2/`. The manifest is `art/az_art_v2/manifest.json`. Hero height in the source pack is 128 px.

@@ -4,7 +4,7 @@ export const PACK = {
   "sheets": {
     "actors": {
       "file": "actors.webp",
-      "w": 553,
+      "w": 441,
       "h": 100
     },
     "world": {
@@ -47,54 +47,54 @@ export const PACK = {
       "ax": 28,
       "ay": 68
     },
-    "hero_idle": {
+    "hero_walk_1": {
       "sheet": "actors",
       "x": 132,
       "y": 1,
-      "w": 62,
+      "w": 40,
       "h": 64,
-      "ax": 26,
-      "ay": 64
-    },
-    "hero_walk_4": {
-      "sheet": "actors",
-      "x": 195,
-      "y": 1,
-      "w": 62,
-      "h": 64,
-      "ax": 26,
-      "ay": 64
-    },
-    "hero_walk_3": {
-      "sheet": "actors",
-      "x": 258,
-      "y": 1,
-      "w": 61,
-      "h": 64,
-      "ax": 26,
-      "ay": 64
-    },
-    "hero_walk_1": {
-      "sheet": "actors",
-      "x": 320,
-      "y": 1,
-      "w": 60,
-      "h": 64,
-      "ax": 25,
+      "ax": 20,
       "ay": 64
     },
     "hero_walk_2": {
       "sheet": "actors",
-      "x": 381,
+      "x": 173,
       "y": 1,
-      "w": 60,
+      "w": 39,
       "h": 64,
-      "ax": 25,
+      "ax": 20,
+      "ay": 64
+    },
+    "hero_walk_3": {
+      "sheet": "actors",
+      "x": 213,
+      "y": 1,
+      "w": 39,
+      "h": 64,
+      "ax": 20,
+      "ay": 64
+    },
+    "hero_walk_4": {
+      "sheet": "actors",
+      "x": 253,
+      "y": 1,
+      "w": 38,
+      "h": 64,
+      "ax": 19,
+      "ay": 64
+    },
+    "hero_idle": {
+      "sheet": "actors",
+      "x": 292,
+      "y": 1,
+      "w": 37,
+      "h": 64,
+      "ax": 18,
       "ay": 64
     },
     "zombie_tubes": {
       "sheet": "actors",
-      "x": 442,
+      "x": 330,
       "y": 1,
       "w": 36,
       "h": 64,
@@ -103,7 +103,7 @@ export const PACK = {
     },
     "zombie_worker": {
       "sheet": "actors",
-      "x": 479,
+      "x": 367,
       "y": 1,
       "w": 34,
       "h": 62,
@@ -112,7 +112,7 @@ export const PACK = {
     },
     "zombie_crawler": {
       "sheet": "actors",
-      "x": 514,
+      "x": 402,
       "y": 1,
       "w": 38,
       "h": 52,
