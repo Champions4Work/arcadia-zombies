@@ -1,8 +1,10 @@
 import { blitSheet, steamFrame } from "../art/sheet";
 import { paintShadow } from "../art/look";
-import { BRASS, BRASS_HI, BRASS_LO, DANGER, INK, XP } from "../shell/theme";
+import { BRASS, BRASS_LO, DANGER, INK, XP } from "../shell/theme";
 import { ZONE_BOILER, ZONE_BRASS, ZONE_TRAM } from "../sim/zones";
+import { type World } from "../sim/types";
 import { FEAT_LAMP, groundFeatureAt, groundFeatureCount } from "./ground";
+import { LAYER_MID, registerLayer } from "./plugins";
 
 const BUILDINGS = [
   { x: 368, y: 214 },
@@ -15,10 +17,7 @@ const BELTS = [
   { x: 656, y: 392, w: 168, vert: 1 },
 ];
 
-const PIPE_RUNS = [
-  { x: 296, y: 232, len: 368, vert: 0 },
-  { x: 296, y: 648, len: 368, vert: 0 },
-];
+const PIPE_RUNS = [{ x: 296, y: 648, len: 368, vert: 0 }];
 
 const BELT_H = 72;
 const GLASS_AT = [0.22, 0.5, 0.78];
@@ -94,6 +93,14 @@ const HERO_BAND_STEAM = [
 
 export const YARD_CLEAR = { x0: 352, y0: 318, x1: 608, y1: 638 };
 export const PHONE_CAM = { x0: 300, y0: 0, x1: 660, y1: 780 };
+export const PHONE_MID_BAND = { y0: 185, y1: 489 };
+
+const MID_BAND_BLITS: { id: "pipes_blue_tank" | "conveyor"; x: number; y: number; sc: number }[] = [
+  { id: "pipes_blue_tank", x: 312, y: 318, sc: 1.48 },
+  { id: "conveyor", x: 304, y: 388, sc: 1.32 },
+  { id: "pipes_blue_tank", x: 648, y: 318, sc: 1.48 },
+  { id: "conveyor", x: 656, y: 388, sc: 1.32 },
+];
 
 const FIGHT_BAND_CRATE = new Set(["crate", "crate_stack", "barrel"]);
 
@@ -416,44 +423,14 @@ function paintCrossPipe(
     return;
   }
   ctx.fillStyle = "#1a120c";
-  ctx.fillRect(x, y - 30, len, 60);
-  ctx.fillStyle = "#8a5a20";
-  ctx.fillRect(x, y - 24, len, 48);
-  ctx.fillStyle = "#e0a040";
-  ctx.fillRect(x, y - 18, len, 36);
-  ctx.fillStyle = "#f0c878";
-  ctx.fillRect(x, y - 20, len, 10);
-  ctx.fillStyle = "#0a4a52";
-  ctx.fillRect(x + 4, y - 8, len - 8, 16);
-  ctx.fillStyle = "#7ae0d4";
-  ctx.fillRect(x + 4, y - 5, len - 8, 10);
-  for (let i = 0; i < GLASS_AT.length; i++) {
-    const t = GLASS_AT[i] ?? 0.5;
-    const px = x + len * t;
-    const pulse = 0.38 + ((tick + i * 7) & 7) * 0.025;
-    ctx.fillStyle = "#0a6a72";
-    ctx.beginPath();
-    ctx.ellipse(px, y, 28, 12, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.save();
-    ctx.globalCompositeOperation = "lighter";
-    ctx.fillStyle = `rgba(70,230,255,${pulse})`;
-    ctx.beginPath();
-    ctx.ellipse(px, y, 22, 9, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "rgba(140,220,230,0.55)";
-    ctx.beginPath();
-    ctx.ellipse(px, y, 12, 5, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-    ctx.strokeStyle = BRASS_HI;
-    ctx.lineWidth = 2.4;
-    ctx.beginPath();
-    ctx.ellipse(px, y, 28, 12, 0, 0, Math.PI * 2);
-    ctx.stroke();
-  }
-  blitScaled(ctx, "pipes_blue_tank", x + 28, y + 22, TANK_SCALE);
-  blitScaled(ctx, "pipes_blue_tank", x + len - 28, y + 22, TANK_SCALE);
+  ctx.fillRect(x, y - 22, len, 44);
+  ctx.fillStyle = "#5a3a18";
+  ctx.fillRect(x, y - 16, len, 32);
+  ctx.strokeStyle = BRASS_LO;
+  ctx.lineWidth = 2;
+  ctx.strokeRect(x + 2, y - 14, len - 4, 28);
+  blitScaled(ctx, "pipes_blue_tank", x + 32, y + 18, TANK_SCALE * 0.92);
+  blitScaled(ctx, "pipes_blue_tank", x + len - 32, y + 18, TANK_SCALE * 0.92);
   paintRedValve(ctx, VALVE.x, VALVE.y);
 }
 
@@ -675,6 +652,32 @@ function furnaceGlow(ctx: CanvasRenderingContext2D, x: number, y: number): void 
   ctx.fill();
   ctx.restore();
 }
+
+function paintMidBandBlits(
+  ctx: CanvasRenderingContext2D,
+  tick: number,
+  camX: number,
+  camY: number,
+  vw: number,
+  vh: number,
+): void {
+  if (yardBound !== ZONE_BRASS) return;
+  for (let i = 0; i < MID_BAND_BLITS.length; i++) {
+    const b = MID_BAND_BLITS[i];
+    if (!b) continue;
+    if (!visible(b.x, b.y, camX, camY, vw, vh, 110)) continue;
+    if (b.id === "pipes_blue_tank") bluePool(ctx, b.x, b.y + 10, tick);
+    paintShadow(ctx, b.x, b.y, 16, 5);
+    blitScaled(ctx, b.id, b.x, b.y, b.sc);
+  }
+}
+
+export function paintMidBandYard(ctx: CanvasRenderingContext2D, w: World): void {
+  if (!w.arena) return;
+  paintMidBandBlits(ctx, w.tick, w.arena.camX, w.arena.camY, w.arena.viewW, w.arena.viewH);
+}
+
+registerLayer(LAYER_MID, paintMidBandYard);
 
 function paintTramCar(ctx: CanvasRenderingContext2D, x: number, y: number): void {
   paintShadow(ctx, x, y, 48, 8);

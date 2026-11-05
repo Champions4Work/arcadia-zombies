@@ -45,6 +45,18 @@ FX-only pass on r32 baseline. Steam must puff from **hero-band valve sites** tha
 
 Review **`docs/reviews/fx-r35/`** with **`vs_baseline.png`** (before/after crops of steam + muzzle vs **`docs/reviews/fx-r32/phone_390_play.png`**). Coordinator **Read-compare**; **no auto-merge**.
 
+## World mid-band (phone read, r37)
+
+Brass yard **`?shot=1`** mid-frame (CSS **y 22%–58%** on 390×844) must read like **`docs/target_look2.png`**: packed **`pipes_blue_tank`** (glowing blue liquid) and **`conveyor`** (yellow chevrons) **left and right of the hunter**, not brown **`breakable_boiler`** stand-ins and not a horizontal **fight-floor cyan pipe pad** row.
+
+| Rule | Detail |
+| --- | --- |
+| Fight floor | **No** `PIPE_RUNS` at **`y: 232`**. **`paintCrossPipe`** must not paint **`#7ae0d4`** pad ellipses or cyan glass halos in the hero band. |
+| Mid-band blits | **`MID_BAND_BLITS`** in **`src/render/yard-fx.ts`** calls **`blitScaled`** with **`pipes_blue_tank`** + **`conveyor`** at phone-visible coords via **`paintMidBandBlits`**. Hunter lane stays open. |
+| Perimeter | Bottom **`y: 648`** pipe run may stay; perimeter **`PROPS`** unchanged from r31. Do not densify center breakables. |
+
+Review **`docs/reviews/r37/`** (`phone_390_play.png`, **`midband_crop.png`**, **`vs_main_cyan.png`**, **`vs_r35_brown.png`**, ref compares). Coordinator **Read** **`midband_crop`** + trio before merge; **no auto-merge**.
+
 ## References (art bible)
 
 Review size is 390×844 CSS pixels. These two files are the art bible. Every visual PR compares against both.

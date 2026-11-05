@@ -71,7 +71,7 @@ export default tseslint.config(
   },
   { files: ["scripts/**", "*.config.*"], languageOptions: { globals: { process: "readonly", console: "readonly" } } },
   {
-    files: ["scripts/ui-shots.mjs", "scripts/review-phone.mjs", "scripts/feel-dump.mjs", "scripts/chapter-shot.mjs", "scripts/zone-shots.mjs"],
+    files: ["scripts/ui-shots.mjs", "scripts/review-phone.mjs", "scripts/review-r37.mjs", "scripts/feel-dump.mjs", "scripts/chapter-shot.mjs", "scripts/zone-shots.mjs"],
     languageOptions: {
       globals: {
         localStorage: "readonly",
