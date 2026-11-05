@@ -1,0 +1,1 @@
+PASS red=26 gold=1334 corridor=10 dark_ratio=0.23
