@@ -1,0 +1,5 @@
+#128 belt-r46 premise fix
+- Cargo review park: REVIEW_CARGO_T_* on chevron anchors (y≈410), not DROP_ALONG*0.38 drop.
+- Removed review OB_BOILER fight-floor prop (#123).
+- belt-cube.ts: 1.65× source-over gold block + halo on LAYER_MID after horde (?shot=1).
+- belt_cargo_pixel_gate: chevronCube band targets cube body gold, not chevron yellow alone.

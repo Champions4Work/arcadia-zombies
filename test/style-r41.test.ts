@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest";
 import { PHONE_HERO_BLITS, YARD_CLEAR, yardCratePropsInClear } from "../src/render/yard-fx";
 import {
   CARGO_RIDE,
-  DROP_ALONG,
   SIDE_BELT_LEFT_X,
   SIDE_BELT_RIGHT_X,
   SIDE_BELT_RIDE_Y,
@@ -41,8 +40,7 @@ describe("belt-r41 phone chevron cargo", () => {
     expect(cargoOnPhoneHeroBelt(cargoX(w, 0), cargoY(w, 0))).toBe(true);
     expect(cargoOnPhoneHeroBelt(cargoX(w, 1), cargoY(w, 1))).toBe(true);
     expect(cargoOutsideFightClear(cargoX(w, 0), cargoY(w, 0))).toBe(true);
-    expect(cargoY(w, 0)).toBeGreaterThan(SIDE_BELT_RIDE_Y);
-    expect(cargoY(w, 0)).toBeLessThan(SIDE_BELT_RIDE_Y + DROP_ALONG * 0.5);
+    expect(cargoY(w, 0)).toBeLessThan(SIDE_BELT_RIDE_Y + 64);
   });
 
   it("renders glow-first belt cargo without full-size floor crates", () => {

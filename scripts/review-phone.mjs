@@ -52,18 +52,20 @@ async function writeTrio(browser, playPath, ref1Path, ref2Path, outPath) {
 }
 
 const browser = await chromium.launch({ headless: true });
-const page = await browser.newPage({
+const context = await browser.newContext({
   viewport: { width: view.w, height: view.h },
   deviceScaleFactor: 1,
+  serviceWorkers: "block",
 });
+const page = await context.newPage();
 await page.addInitScript(() => {
   localStorage.setItem("arcadia.howto", "1");
   const root = document.documentElement;
   root.style.setProperty("--safe-t", "0px");
   root.style.setProperty("--safe-b", "0px");
 });
-await page.goto(`${host}/?shot=1`, { waitUntil: "domcontentloaded" });
-await page.waitForTimeout(1200);
+await page.goto(`${host}/?shot=1&_review=${Date.now()}`, { waitUntil: "networkidle" });
+await page.waitForTimeout(2200);
 const playPath = `${dest}/phone_390_play.png`;
 await page.screenshot({ path: playPath });
 
@@ -117,6 +119,16 @@ try {
 } catch (e) {
   const gateOut = e.stdout?.toString?.() ?? "";
   if (gateOut) writeFileSync(`${dest}/midband_gate.txt`, gateOut);
+  throw e;
+}
+
+try {
+  const beltGateOut = execFileSync("node", ["scripts/belt_cargo_pixel_gate.mjs", beltCargoPath], { encoding: "utf8" });
+  writeFileSync(`${dest}/belt_cargo_gate.txt`, beltGateOut);
+  console.log(`belt cargo gate ${beltGateOut.trim()}`);
+} catch (e) {
+  const beltGateOut = e.stdout?.toString?.() ?? e.stderr?.toString?.() ?? "";
+  if (beltGateOut) writeFileSync(`${dest}/belt_cargo_gate.txt`, beltGateOut);
   throw e;
 }
 
@@ -186,9 +198,9 @@ if (r37Fail) {
     "PLAY",
   );
 }
+await context.close();
 await browser.close();
 console.log(`wrote ${playPath}`);
-console.log(`wrote ${bottomCropPath}`);
 console.log(`wrote ${midbandPath}`);
 console.log(`wrote ${beltCargoPath}`);
 console.log(`wrote ${dest}/compare_390_ref1.png`);

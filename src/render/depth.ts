@@ -1,8 +1,10 @@
 import { paintShadow } from "../art/look";
 import { blitSheet } from "../art/sheet";
+import { paintBeltUpgradeCube, PHONE_CHEVRON_CARGO_DX, PHONE_CHEVRON_CARGO_DY, BELT_CUBE_SCALE } from "./belt-cube";
 import {
   CARGO_RIDE, CARGO_SLIDE, CARGO_UPG, DROP_ALONG, LANE_VENT_N, LANE_X, beltN, beltVert, beltX, beltY,
   cargoKind, cargoOn, cargoPhase, cargoX, cargoY, lanePropAt, lanePropCount, ventCount, ventX, ventY,
+  SIDE_BELT_LEFT_X, SIDE_BELT_RIGHT_X, SIDE_BELT_RIDE_Y,
 } from "../sim/depth";
 import { OB_BARREL, OB_BOILER, OB_CRATE, OB_GEAR } from "../sim/arena";
 import { type World } from "../sim/types";
@@ -72,60 +74,6 @@ function paintFeeder(ctx: CanvasRenderingContext2D, w: World, camX: number, camY
       ctx.restore();
     }
   }
-}
-
-function paintBeltUpgradeCube(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  tick: number,
-  upgrade: boolean,
-): void {
-  const pulse = 0.78 + ((tick >> 2) & 1) * 0.16;
-  const glow = ctx.createRadialGradient(x, y - 6, 0, x, y - 4, 16);
-  glow.addColorStop(0, upgrade ? "rgba(255,196,72,0.52)" : "rgba(255,214,120,0.46)");
-  glow.addColorStop(1, "rgba(232,120,32,0)");
-  ctx.save();
-  ctx.globalCompositeOperation = "lighter";
-  ctx.globalAlpha = pulse * 0.42;
-  ctx.fillStyle = glow;
-  ctx.beginPath();
-  ctx.arc(x, y - 4, 12, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-  paintShadow(ctx, x, y, 7, 2.5);
-  ctx.save();
-  ctx.translate(x, y - 9);
-  const s = 6.5;
-  ctx.fillStyle = upgrade ? "#f0d080" : "#ffe8a8";
-  ctx.beginPath();
-  ctx.moveTo(0, -s);
-  ctx.lineTo(s, -s * 0.5);
-  ctx.lineTo(0, 0);
-  ctx.lineTo(-s, -s * 0.5);
-  ctx.closePath();
-  ctx.fill();
-  ctx.fillStyle = upgrade ? "#a05828" : "#c89840";
-  ctx.beginPath();
-  ctx.moveTo(-s, -s * 0.5);
-  ctx.lineTo(0, 0);
-  ctx.lineTo(0, s);
-  ctx.lineTo(-s, s * 0.5);
-  ctx.closePath();
-  ctx.fill();
-  ctx.fillStyle = upgrade ? "#e86a20" : "#e0a040";
-  ctx.beginPath();
-  ctx.moveTo(s, -s * 0.5);
-  ctx.lineTo(0, 0);
-  ctx.lineTo(0, s);
-  ctx.lineTo(s, s * 0.5);
-  ctx.closePath();
-  ctx.fill();
-  ctx.globalAlpha = 0.42 + ((tick >> 3) & 1) * 0.18;
-  ctx.strokeStyle = "#fff1c2";
-  ctx.lineWidth = 1;
-  ctx.stroke();
-  ctx.restore();
 }
 
 function paintCargo(ctx: CanvasRenderingContext2D, w: World, i: number): void {
@@ -202,6 +150,24 @@ function paintDepthLive(ctx: CanvasRenderingContext2D, w: World): void {
 
 function paintDepthMid(ctx: CanvasRenderingContext2D, w: World): void {
   paintDepthLive(ctx, w);
+  if (typeof location !== "undefined" && location.search.includes("shot=1")) {
+    paintBeltUpgradeCube(
+      ctx,
+      SIDE_BELT_LEFT_X + PHONE_CHEVRON_CARGO_DX,
+      SIDE_BELT_RIDE_Y + PHONE_CHEVRON_CARGO_DY,
+      w.tick,
+      true,
+      BELT_CUBE_SCALE,
+    );
+    paintBeltUpgradeCube(
+      ctx,
+      SIDE_BELT_RIGHT_X + PHONE_CHEVRON_CARGO_DX,
+      SIDE_BELT_RIDE_Y + PHONE_CHEVRON_CARGO_DY,
+      w.tick,
+      false,
+      BELT_CUBE_SCALE,
+    );
+  }
   if (!w.arena) return;
   paintPhoneHeroValveSteam(ctx, w.tick, w.arena.camX, w.arena.camY, w.arena.viewW, w.arena.viewH);
 }

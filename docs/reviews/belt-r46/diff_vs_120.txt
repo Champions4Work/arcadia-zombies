@@ -1,0 +1,1 @@
+belt-r46 vs belt-r42 (#120): same chevron crop frame; r46 parks cargo at PHONE_CHEVRON_CARGO_DY on chevrons, 1.65× source-over gold block on LAYER_MID (?shot=1), chevronCube gate targets cube-body gold not chevron yellow alone.

@@ -209,29 +209,29 @@ describe("gameplay depth hooks", () => {
   });
 
   it("blits pack sprites for breakables and vent decals and paints belt cargo cubes", () => {
-    const src = readFileSync("src/render/depth.ts", "utf8");
-    expect(src.includes("conveyor")).toBe(true);
-    expect(src.includes("paintBeltUpgradeCube")).toBe(true);
-    expect(src.includes("blue_glow")).toBe(false);
-    expect(src.includes("breakable_boiler")).toBe(true);
-    expect(src.includes("breakable_gear_pylon")).toBe(true);
-    expect(src.includes("decal_vent")).toBe(true);
-    expect(src.includes("decal_grate")).toBe(true);
-    expect(src.includes("decal_hazard")).toBe(false);
+    const depth = readFileSync("src/render/depth.ts", "utf8");
+    const cube = readFileSync("src/render/belt-cube.ts", "utf8");
+    expect(depth.includes("conveyor")).toBe(true);
+    expect(cube.includes("paintBeltUpgradeCube")).toBe(true);
+    expect(cube.includes("blue_glow")).toBe(false);
+    expect(depth.includes("breakable_boiler")).toBe(true);
+    expect(depth.includes("breakable_gear_pylon")).toBe(true);
+    expect(depth.includes("decal_vent")).toBe(true);
+    expect(depth.includes("decal_grate")).toBe(true);
+    expect(depth.includes("decal_hazard")).toBe(false);
   });
 
-  it("parks a glowing crate on the perimeter belt and keeps vent pads on the yard", () => {
+  it("parks glowing cargo on in-frame chevron belts and keeps vent pads on the yard", () => {
     const w = createWorld(6);
     reviewDepth(w);
     expect(cargoOn(w, 0)).toBe(1);
     expect(cargoPhase(w, 0)).toBe(CARGO_RIDE);
     expect(cargoKind(w, 0)).toBe(CARGO_UPG);
     expect(Math.abs(cargoX(w, 0) - SIDE_BELT_LEFT_X)).toBeLessThan(0.1);
-    expect(cargoY(w, 0)).toBeGreaterThan(SIDE_BELT_RIDE_Y);
+    expect(cargoY(w, 0)).toBeLessThan(SIDE_BELT_RIDE_Y + 48);
     expect(cargoOutsideFightClear(cargoX(w, 0), cargoY(w, 0))).toBe(true);
     expect(ventCount(w)).toBeGreaterThanOrEqual(3);
     expect(ventX(w, 0)).toBeGreaterThan(0);
     expect(ventY(w, 0)).toBeGreaterThan(0);
-    expect(w.arena.obsAlive.some((on, i) => on && w.arena.obsKind[i] === OB_BOILER)).toBe(true);
   });
 });

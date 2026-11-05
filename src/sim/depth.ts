@@ -37,6 +37,8 @@ export const PICKUP_DROP_Y = 648;
 export const SIDE_BELT_LEFT_X = 370;
 export const SIDE_BELT_RIGHT_X = 590;
 export const SIDE_BELT_RIDE_Y = 380;
+export const REVIEW_CARGO_T_LEFT = 30;
+export const REVIEW_CARGO_T_RIGHT = 30;
 export const BELT_PHONE_VISIBLE_Y = 548;
 export const PHONE_BELT_COL_R = 28;
 
@@ -327,35 +329,18 @@ function ridePosReview(d: DepthBag, i: number): void {
 export function reviewDepth(w: World): void {
   attachDepth(w);
   const d = depthState(w);
-  const a = w.arena;
   d.cargoOn[0] = 1;
   d.cargoBelt[0] = 0;
   d.cargoPhase[0] = CARGO_RIDE;
   d.cargoKind[0] = CARGO_UPG;
-  d.cargoT[0] = DROP_ALONG * 0.38;
+  d.cargoT[0] = REVIEW_CARGO_T_LEFT;
   ridePosReview(d, 0);
   d.cargoOn[1] = 1;
   d.cargoBelt[1] = 1;
   d.cargoPhase[1] = CARGO_RIDE;
   d.cargoKind[1] = CARGO_HEAL;
-  d.cargoT[1] = DROP_ALONG * 0.52;
+  d.cargoT[1] = REVIEW_CARGO_T_RIGHT;
   ridePosReview(d, 1);
   d.ventX[0] = w.px - 108;
   d.ventY[0] = w.py + 152;
-  let slot = -1;
-  for (let i = 0; i < MAX_OBS; i++) {
-    if (i >= a.obsN || !a.obsAlive[i]) { slot = i; break; }
-  }
-  if (slot >= 0) {
-    a.obsX[slot] = 348;
-    a.obsY[slot] = 520;
-    a.obsKind[slot] = OB_BOILER;
-    a.obsHW[slot] = 14;
-    a.obsHH[slot] = 16;
-    a.obsR[slot] = 16;
-    a.obsHp[slot] = 2;
-    a.obsAlive[slot] = 1;
-    if (slot >= a.obsN) a.obsN = slot + 1;
-    indexProps(a);
-  }
 }

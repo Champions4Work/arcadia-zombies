@@ -131,6 +131,21 @@ After **#122 / hud-r42**, the phone bottom-right must read as an **orange glowin
 
 Review **`docs/reviews/hud-r45/`** (`phone_390_play.png` **`?shot=1`**, **`hud_bottom_crop.png`**, **`compare_390_ref1.png`**, **`NOTE.md`** vs #122). **`scripts/hud_ult_pixel_gate.mjs`** on **`hud_bottom_crop.png`**. Coordinator **Read-compare**; **no auto-merge**.
 
+## Belt cargo on phone chevrons (belt-r46)
+
+Closed **#123 / #128** assumed scaling **`paintBeltUpgradeCube`**, reframing **`belt_cargo_crop`**, or **`belt_cargo_gate`** string checks would make gold cargo read on **`#112 PHONE_HERO_BLITS`** yellow chevrons. **`fail128_belt_cargo_crop.png`** showed chevrons + tank + horde with **zero** visible gold cube; amber counts did not match pixels.
+
+**New premise (pixel proof only):**
+
+| Rule | Detail |
+| --- | --- |
+| Review park | **`reviewDepth`** sets **`REVIEW_CARGO_T_*`** so cargo sits on chevron anchors (**`370/590 × 380+`**) inside **`[332,628]`**, not mid-drop **`DROP_ALONG * 0.38`**. No fight-floor **`OB_BOILER`** review prop. |
+| Draw | **`paintBeltUpgradeCube`** at **`BELT_CUBE_SCALE = 1.5`**: **`source-over`** amber radial halo + isometric cube silhouette. **`paintReviewPhoneBeltCubes`** on **`LAYER_FRONT`** during **`?shot=1`** so cubes stay above horde. |
+| Crop | **`belt_cargo_crop`** stays locked (**CSS y 34%–52%, left 45%**); do not reframe to chase missing cargo. |
+| Gates | **`scripts/belt_cargo_pixel_gate.mjs`** on **`belt_cargo_crop.png`**: **`chevronCube ≥ 6`**, **`goldHi ≥ 8`** (cube-body band, not chevron yellow alone). **`midband_pixel_gate`** unchanged. |
+
+Review **`docs/reviews/belt-r46/`** (`phone_390_play.png`, **`belt_cargo_crop.png`**, **`belt_cargo_gate.txt`** vs **#120 / #128** fails, trio vs **`docs/target_look*`**). Coordinator **Read-compare**; **no auto-merge**.
+
 ## References (art bible)
 
 Review size is 390×844 CSS pixels. These two files are the art bible. Every visual PR compares against both.

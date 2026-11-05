@@ -1,0 +1,1 @@
+amber=141 goldHi=9 beltGold=1 chevronCube=6 yellow=73 size=175x152
